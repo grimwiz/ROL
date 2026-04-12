@@ -4,7 +4,8 @@ const SheetForm = (() => {
   const DEFAULT = {
     name: '', pronouns: '', birthplace: '', residence: '',
     occupation: '', age: '',
-    glitch: '', reputation: '',
+    glitch: '', backstory: '', reputation: '',
+    portrait: '',
     str: '', con: '', dex: '', int: '', pow: '',
     advantages: '', disadvantages: '',
     mandatory_skills: [
@@ -67,8 +68,19 @@ const SheetForm = (() => {
       </div>
       ${fg('The "Glitch" – What was your anomalous event?',
         `<textarea id="sf_glitch" rows="4" placeholder="Describe the unexplained event that drew you in…"${rdAttr}>${esc(d.glitch)}</textarea>`)}
+      ${fg('Backstory',
+        `<textarea id="sf_backstory" rows="5" placeholder="Who are they, where did they come from, and what shaped them?"${rdAttr}>${esc(d.backstory)}</textarea>`)}
       ${fg('Reputation',
         `<input type="text" id="sf_reputation" value="${esc(d.reputation)}" placeholder="e.g. Analytical. Thorough. Sceptical."${rdAttr}>`)}
+      <div class="form-group">
+        <label>Portrait</label>
+        <div class="portrait-controls">
+          ${!readonly ? '<input type="file" id="sf_portrait_file" accept="image/*" onchange="SheetForm.handlePortraitUpload(event)">' : ''}
+          <input type="hidden" id="sf_portrait" value="${esc(d.portrait)}">
+          ${!readonly ? '<button type="button" class="btn btn-sm" onclick="SheetForm.clearPortrait()">Remove picture</button>' : ''}
+        </div>
+        <div id="portrait-help" class="card-sub">Upload a JPG/PNG/GIF/WebP image to display at the top-right when viewing this sheet.</div>
+      </div>
     </div>
   </div>
 
@@ -100,9 +112,11 @@ const SheetForm = (() => {
       <div class="skills-grid" id="mandatory-skills">
         ${d.mandatory_skills.map((sk, i) => `
           <div class="skill-row">
-            <input type="text" id="sf_msk_name_${i}" class="msk-name" value="${esc(sk.name)}" placeholder="Skill name"${rdAttr}>
+            <div class="skill-name-wrap">
+              <input type="text" id="sf_msk_name_${i}" class="msk-name" value="${esc(sk.name)}" placeholder="Skill name"${rdAttr}>
+              ${!readonly ? `<button type="button" class="btn btn-inline-remove" title="Remove mandatory skill" onclick="SheetForm.removeMandatory(this)">✕</button>` : ''}
+            </div>
             <input type="number" id="sf_msk_val_${i}" class="msk-val" value="${esc(sk.value)}" placeholder="%" min="0" max="100"${rdAttr}>
-            ${!readonly ? `<button type="button" class="btn btn-sm btn-danger" onclick="SheetForm.removeMandatory(this)">✕</button>` : ''}
           </div>`).join('')}
       </div>
       ${!readonly ? `<button type="button" class="btn btn-sm" style="margin-top:0.5rem" onclick="SheetForm.addMandatory()">+ Add mandatory skill</button>` : ''}
@@ -141,6 +155,11 @@ const SheetForm = (() => {
   </div>
 
 </div>`;
+
+    const portraitPreview = d.portrait
+      ? `<img src="${esc(d.portrait)}" alt="Character portrait" class="sheet-portrait-image">`
+      : '<div class="sheet-portrait-empty">No picture</div>';
+    container.insertAdjacentHTML('afterbegin', `<div class="sheet-portrait">${portraitPreview}</div>`);
   }
 
   function renderCustomField(cf, i, readonly) {
@@ -157,9 +176,11 @@ const SheetForm = (() => {
     const i = grid.querySelectorAll('.skill-row').length;
     const div = document.createElement('div');
     div.className = 'skill-row';
-    div.innerHTML = `<input type="text" id="sf_msk_name_${i}" class="msk-name" placeholder="Skill name">
-      <input type="number" id="sf_msk_val_${i}" class="msk-val" placeholder="%" min="0" max="100">
-      <button type="button" class="btn btn-sm btn-danger" onclick="SheetForm.removeMandatory(this)">✕</button>`;
+    div.innerHTML = `<div class="skill-name-wrap">
+      <input type="text" id="sf_msk_name_${i}" class="msk-name" placeholder="Skill name">
+      <button type="button" class="btn btn-inline-remove" title="Remove mandatory skill" onclick="SheetForm.removeMandatory(this)">✕</button>
+    </div>
+    <input type="number" id="sf_msk_val_${i}" class="msk-val" placeholder="%" min="0" max="100">`;
     grid.appendChild(div);
   }
 
@@ -195,6 +216,34 @@ const SheetForm = (() => {
     if (row) row.remove();
   }
 
+  function handlePortraitUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file.');
+      event.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      const hidden = document.getElementById('sf_portrait');
+      if (hidden) hidden.value = dataUrl;
+      const slot = document.querySelector('.sheet-portrait');
+      if (slot) slot.innerHTML = `<img src="${esc(dataUrl)}" alt="Character portrait" class="sheet-portrait-image">`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearPortrait() {
+    const hidden = document.getElementById('sf_portrait');
+    if (hidden) hidden.value = '';
+    const slot = document.querySelector('.sheet-portrait');
+    if (slot) slot.innerHTML = '<div class="sheet-portrait-empty">No picture</div>';
+    const picker = document.getElementById('sf_portrait_file');
+    if (picker) picker.value = '';
+  }
+
   function collect() {
     const g = (id) => { const el = document.getElementById(`sf_${id}`); return el ? el.value.trim() : ''; };
 
@@ -223,7 +272,8 @@ const SheetForm = (() => {
       name: g('name'), pronouns: g('pronouns'),
       birthplace: g('birthplace'), residence: g('residence'),
       occupation: g('occupation'), age: g('age'),
-      glitch: g('glitch'), reputation: g('reputation'),
+      glitch: g('glitch'), backstory: g('backstory'), reputation: g('reputation'),
+      portrait: g('portrait'),
       str: g('str'), con: g('con'), dex: g('dex'), int: g('int'), pow: g('pow'),
       advantages: g('advantages'), disadvantages: g('disadvantages'),
       mandatory_skills, additional_skills,
@@ -232,5 +282,5 @@ const SheetForm = (() => {
     };
   }
 
-  return { render, collect, addMandatory, removeMandatory, addAdditional, addCustomField, removeCustomField };
+  return { render, collect, addMandatory, removeMandatory, addAdditional, addCustomField, removeCustomField, handlePortraitUpload, clearPortrait };
 })();
