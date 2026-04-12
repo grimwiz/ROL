@@ -28,6 +28,14 @@ function modal(html, onMount) {
   return bd;
 }
 
+function summarizeSkills(skills) {
+  if (!Array.isArray(skills) || skills.length === 0) return '—';
+  return skills
+    .filter(s => s && s.name)
+    .map(s => `${s.name}${s.value ? ` (${s.value}%)` : ''}`)
+    .join(', ') || '—';
+}
+
 // ── Routing ───────────────────────────────────────────────────────────────────
 function showPage(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -281,6 +289,42 @@ async function renderGMSessionView(sessionId) {
   sheets.forEach(s => { sheetMap[s.user_id] = s; });
 
   content.innerHTML = `
+    <div class="card gm-overview-pane">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Session Overview</div>
+          <div class="card-sub">All characters, stats, skills, and essential items.</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Player</th><th>Character</th><th>STR</th><th>CON</th><th>DEX</th><th>INT</th><th>POW</th><th>Speed</th><th>Luck</th><th>Skills</th><th>Essential items</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${players.map((p) => {
+              const d = (sheetMap[p.id] && sheetMap[p.id].data) || {};
+              const allSkills = [...(d.mandatory_skills || []), ...(d.additional_skills || [])];
+              return `<tr>
+                <td><strong>${esc(p.username)}</strong></td>
+                <td>${esc(d.name || '—')}</td>
+                <td>${esc(d.str || '—')}</td>
+                <td>${esc(d.con || '—')}</td>
+                <td>${esc(d.dex || '—')}</td>
+                <td>${esc(d.int || '—')}</td>
+                <td>${esc(d.pow || '—')}</td>
+                <td>${esc(d.mov || '—')}</td>
+                <td>${esc(d.luck || '—')}</td>
+                <td>${esc(summarizeSkills(allSkills))}</td>
+                <td>${esc(d.carry || '—')}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
     <div style="margin-bottom:1rem">
       <div class="sheet-tabs" id="gm-sheet-tabs">
         ${players.map((p, i) => `
