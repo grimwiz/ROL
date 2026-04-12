@@ -86,8 +86,14 @@ sudo systemctl enable --now folly
 
 ## Roles
 
-- **GM**: Can create/delete sessions, create/manage player accounts, assign players to sessions, view all character sheets in a session as a set.
+- **GM (admin-level access)**: Can create, rename, and delete sessions, create/manage player accounts, assign players to sessions, and create/edit character sheets on behalf of assigned players in those sessions.
 - **Player**: Can see their assigned sessions, create and edit their character sheet for each session.
+
+## Front-end scripts
+
+- `public/js/api.js`: Centralized browser API client used by UI actions (`auth`, `users`, `sessions`, and character sheet endpoints).
+- `public/js/app.js`: Main SPA logic (auth flow, session/account tabs, session rename modal, player assignment, GM/player sheet interactions).
+- `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views.
 
 ## Data
 
