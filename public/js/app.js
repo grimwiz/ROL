@@ -169,7 +169,10 @@ function renderSessionCard(s) {
         <div class="card-title">${esc(s.name)}</div>
         ${s.description ? `<div class="card-sub">${esc(s.description)}</div>` : ''}
       </div>
-      ${isGM ? `<button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteSession(${s.id})">Delete</button>` : ''}
+      ${isGM ? `<div style="display:flex;gap:0.5rem">
+        <button class="btn btn-sm" onclick="event.stopPropagation();openEditSession(${s.id})">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteSession(${s.id})">Delete</button>
+      </div>` : ''}
     </div>
     ${isGM ? `<p class="player-count">👥 ${s.player_count || 0} player${s.player_count !== 1 ? 's' : ''}</p>` : ''}
   </div>`;
@@ -193,6 +196,34 @@ async function createSession(btn) {
   btn.disabled = true;
   try {
     await api.createSession({ name, description: el('m-sdesc').value.trim() });
+    btn.closest('.modal-backdrop').remove();
+    await loadSessionsTab();
+  } catch (e) {
+    showAlert(e.message, 'danger', 'modal-alert');
+    btn.disabled = false;
+  }
+}
+
+function openEditSession(sessionId) {
+  const session = State.sessions.find(s => s.id === sessionId);
+  if (!session) return;
+  modal(`
+    <h3>Edit session</h3>
+    <div id="modal-alert"></div>
+    <div class="form-group"><label>Session name</label><input type="text" id="m-sname" value="${esc(session.name)}"></div>
+    <div class="form-group"><label>Description (optional)</label><textarea id="m-sdesc" rows="2">${esc(session.description || '')}</textarea></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Cancel</button>
+      <button class="btn btn-primary" onclick="updateSession(${sessionId},this)">Save changes</button>
+    </div>`);
+}
+
+async function updateSession(sessionId, btn) {
+  const name = el('m-sname').value.trim();
+  if (!name) return showAlert('Name required', 'danger', 'modal-alert');
+  btn.disabled = true;
+  try {
+    await api.updateSession(sessionId, { name, description: el('m-sdesc').value.trim() });
     btn.closest('.modal-backdrop').remove();
     await loadSessionsTab();
   } catch (e) {
@@ -335,12 +366,20 @@ async function removePlayerFromSession(sessionId, userId) {
 window.removePlayerFromSession = removePlayerFromSession;
 
 function openAssignPlayer(sessionId) {
+  openAssignPlayerModal(sessionId).catch((e) => {
+    showAlert(e.message, 'danger', 'session-alert');
+  });
+}
+window.openAssignPlayer = openAssignPlayer;
+
+async function openAssignPlayerModal(sessionId) {
+  State.users = await api.getUsers();
   const players = State.users.filter(u => u.role === 'player');
   if (players.length === 0) {
     alert('No player accounts exist yet. Create player accounts in the Accounts tab first.');
     return;
   }
-  const m = modal(`
+  modal(`
     <h3>Assign player to session</h3>
     <div id="modal-alert"></div>
     <div class="form-group">
@@ -354,7 +393,6 @@ function openAssignPlayer(sessionId) {
       <button class="btn btn-primary" onclick="assignPlayer(${sessionId},this)">Assign</button>
     </div>`);
 }
-window.openAssignPlayer = openAssignPlayer;
 
 async function assignPlayer(sessionId, btn) {
   const userId = el('m-player-sel').value;
@@ -498,6 +536,8 @@ window.switchTab = switchTab;
 window.loadSessionsTab = loadSessionsTab;
 window.openSession = openSession;
 window.openCreateSession = openCreateSession;
+window.openEditSession = openEditSession;
+window.updateSession = updateSession;
 window.createSession = createSession;
 window.deleteSession = deleteSession;
 window.doLogout = doLogout;
