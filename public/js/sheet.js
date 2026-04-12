@@ -100,8 +100,9 @@ const SheetForm = (() => {
       <div class="skills-grid" id="mandatory-skills">
         ${d.mandatory_skills.map((sk, i) => `
           <div class="skill-row">
-            <input type="text" id="sf_msk_name_${i}" value="${esc(sk.name)}" placeholder="Skill name"${rdAttr}>
-            <input type="number" id="sf_msk_val_${i}" value="${esc(sk.value)}" placeholder="%" min="0" max="100"${rdAttr}>
+            <input type="text" id="sf_msk_name_${i}" class="msk-name" value="${esc(sk.name)}" placeholder="Skill name"${rdAttr}>
+            <input type="number" id="sf_msk_val_${i}" class="msk-val" value="${esc(sk.value)}" placeholder="%" min="0" max="100"${rdAttr}>
+            ${!readonly ? `<button type="button" class="btn btn-sm btn-danger" onclick="SheetForm.removeMandatory(this)">✕</button>` : ''}
           </div>`).join('')}
       </div>
       ${!readonly ? `<button type="button" class="btn btn-sm" style="margin-top:0.5rem" onclick="SheetForm.addMandatory()">+ Add mandatory skill</button>` : ''}
@@ -110,8 +111,8 @@ const SheetForm = (() => {
       <div class="skills-grid" id="additional-skills">
         ${d.additional_skills.map((sk, i) => `
           <div class="skill-row">
-            <input type="text" id="sf_ask_name_${i}" value="${esc(sk.name)}" placeholder="Skill name"${rdAttr}>
-            <input type="number" id="sf_ask_val_${i}" value="${esc(sk.value)}" placeholder="%" min="0" max="100"${rdAttr}>
+            <input type="text" id="sf_ask_name_${i}" class="ask-name" value="${esc(sk.name)}" placeholder="Skill name"${rdAttr}>
+            <input type="number" id="sf_ask_val_${i}" class="ask-val" value="${esc(sk.value)}" placeholder="%" min="0" max="100"${rdAttr}>
           </div>`).join('')}
       </div>
       ${!readonly ? `<button type="button" class="btn btn-sm" style="margin-top:0.5rem" onclick="SheetForm.addAdditional()">+ Add skill</button>` : ''}
@@ -156,9 +157,15 @@ const SheetForm = (() => {
     const i = grid.querySelectorAll('.skill-row').length;
     const div = document.createElement('div');
     div.className = 'skill-row';
-    div.innerHTML = `<input type="text" id="sf_msk_name_${i}" placeholder="Skill name">
-      <input type="number" id="sf_msk_val_${i}" placeholder="%" min="0" max="100">`;
+    div.innerHTML = `<input type="text" id="sf_msk_name_${i}" class="msk-name" placeholder="Skill name">
+      <input type="number" id="sf_msk_val_${i}" class="msk-val" placeholder="%" min="0" max="100">
+      <button type="button" class="btn btn-sm btn-danger" onclick="SheetForm.removeMandatory(this)">✕</button>`;
     grid.appendChild(div);
+  }
+
+  function removeMandatory(btn) {
+    const row = btn && btn.closest('.skill-row');
+    if (row) row.remove();
   }
 
   function addAdditional() {
@@ -166,8 +173,8 @@ const SheetForm = (() => {
     const i = grid.querySelectorAll('.skill-row').length;
     const div = document.createElement('div');
     div.className = 'skill-row';
-    div.innerHTML = `<input type="text" id="sf_ask_name_${i}" placeholder="Skill name">
-      <input type="number" id="sf_ask_val_${i}" placeholder="%" min="0" max="100">`;
+    div.innerHTML = `<input type="text" id="sf_ask_name_${i}" class="ask-name" placeholder="Skill name">
+      <input type="number" id="sf_ask_val_${i}" class="ask-val" placeholder="%" min="0" max="100">`;
     grid.appendChild(div);
   }
 
@@ -192,16 +199,16 @@ const SheetForm = (() => {
     const g = (id) => { const el = document.getElementById(`sf_${id}`); return el ? el.value.trim() : ''; };
 
     const mandatory_skills = [];
-    document.querySelectorAll('#mandatory-skills .skill-row').forEach((_, i) => {
-      const name = (document.getElementById(`sf_msk_name_${i}`) || {}).value || '';
-      const value = (document.getElementById(`sf_msk_val_${i}`) || {}).value || '';
+    document.querySelectorAll('#mandatory-skills .skill-row').forEach((row) => {
+      const name = (row.querySelector('.msk-name') || {}).value || '';
+      const value = (row.querySelector('.msk-val') || {}).value || '';
       if (name) mandatory_skills.push({ name: name.trim(), value: value.trim() });
     });
 
     const additional_skills = [];
-    document.querySelectorAll('#additional-skills .skill-row').forEach((_, i) => {
-      const name = (document.getElementById(`sf_ask_name_${i}`) || {}).value || '';
-      const value = (document.getElementById(`sf_ask_val_${i}`) || {}).value || '';
+    document.querySelectorAll('#additional-skills .skill-row').forEach((row) => {
+      const name = (row.querySelector('.ask-name') || {}).value || '';
+      const value = (row.querySelector('.ask-val') || {}).value || '';
       if (name) additional_skills.push({ name: name.trim(), value: value.trim() });
     });
 
@@ -225,5 +232,5 @@ const SheetForm = (() => {
     };
   }
 
-  return { render, collect, addMandatory, addAdditional, addCustomField, removeCustomField };
+  return { render, collect, addMandatory, removeMandatory, addAdditional, addCustomField, removeCustomField };
 })();
