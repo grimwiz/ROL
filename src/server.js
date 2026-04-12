@@ -26,7 +26,7 @@ app.listen(PORT, () => {
 
   // Create default GM account if no users exist
   const db = require('./db');
-  const bcrypt = require('bcrypt');
+  const bcrypt = require('bcryptjs');
   const existing = db.prepare('SELECT COUNT(*) as n FROM users').get();
   if (existing.n === 0) {
     const defaultPassword = process.env.GM_INITIAL_PASSWORD || 'changeme123';

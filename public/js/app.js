@@ -49,6 +49,7 @@ async function init() {
 // ── Login ─────────────────────────────────────────────────────────────────────
 function renderLoginPage() {
   const app = el('app');
+  el('loading-screen') && el('loading-screen').remove();
   if (!el('login-page')) {
     const div = document.createElement('div');
     div.id = 'login-page';
@@ -93,6 +94,7 @@ function renderLoginPage() {
 // ── Main shell ────────────────────────────────────────────────────────────────
 async function renderMain() {
   const app = el('app');
+  el('loading-screen') && el('loading-screen').remove();
   if (!el('main-page')) {
     const div = document.createElement('div');
     div.id = 'main-page';
@@ -279,7 +281,12 @@ async function renderGMSessionView(sessionId) {
     area.innerHTML = '<p style="color:var(--text2)">Loading sheet…</p>';
     const sheet = sheetMap[userId];
     area.innerHTML = '';
-    SheetForm.render(area, sheet ? sheet.data : {}, true);
+    SheetForm.render(area, sheet ? sheet.data : {}, false);
+    area.insertAdjacentHTML('beforeend', `
+      <div class="sheet-actions">
+      <button class="btn btn-primary" onclick="gmSaveSheet(${sessionId},${userId})">Save sheet</button>
+      <span class="save-status" id="save-status"></span>
+    </div>`);
   }
   window.gmSelectSheet = gmSelectSheet;
 }
@@ -460,6 +467,22 @@ async function changePassword(userId, btn) {
   }
 }
 window.changePassword = changePassword;
+
+async function gmSaveSheet(sessionId, userId) {
+  const status = el('save-status');
+  status.textContent = 'Saving…';
+  status.className = 'save-status';
+  try {
+    const data = SheetForm.collect();
+    await api.saveSheet(sessionId, userId, data);
+    status.textContent = '✓ Saved';
+    status.className = 'save-status saved';
+  } catch (e) {
+    status.textContent = '✕ ' + e.message;
+    status.className = 'save-status error';
+  }
+}
+window.gmSaveSheet = gmSaveSheet;
 
 async function deleteUser(id) {
   if (!confirm('Delete this account? This will also remove their character sheets.')) return;

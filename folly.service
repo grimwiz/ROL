@@ -1,0 +1,20 @@
+[Unit]
+Description=The Folly – Investigator Case Files
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/ROL
+ExecStart=/usr/bin/node src/server.js
+Restart=on-failure
+RestartSec=5
+
+Environment=NODE_ENV=production
+Environment=PORT=80
+Environment=JWT_SECRET=REPLACE_WITH_LONG_RANDOM_SECRET
+Environment=DB_PATH=/root/ROL/data/folly.db
+Environment=GM_INITIAL_PASSWORD=REPLACE_WITH_SECURE_PASSWORD
+
+[Install]
+WantedBy=multi-user.target
