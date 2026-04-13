@@ -8,6 +8,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use('/rules-files', express.static(path.join(__dirname, '..', 'Rivers_of_London')));
 
 app.use('/api', require('./routes'));
 

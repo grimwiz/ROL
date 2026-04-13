@@ -269,6 +269,39 @@ tr:hover td { background: var(--bg3); }
 .gm-overview-pane { margin-bottom: 1.25rem; }
 .gm-overview-pane td { vertical-align: top; }
 
+/* ── Rules library ───────────────────────────────────────── */
+.rules-access-card .rules-links {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.rules-search-actions { margin-bottom: 0.75rem; }
+.rules-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.rules-result-item {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.7rem 0.8rem;
+}
+.rules-result-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.rules-result-title span {
+  font-weight: 400;
+  color: var(--text2);
+  font-size: 0.82rem;
+}
+.rules-result-item p {
+  color: var(--text2);
+  font-size: 0.86rem;
+}
+
 /* ── Modal ───────────────────────────────────────────────── */
 .modal-backdrop {
   position: fixed; inset: 0;
