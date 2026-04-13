@@ -38,5 +38,7 @@ const api = (() => {
     getSheets: (sessionId) => req('GET', `/sessions/${sessionId}/sheets`),
     getSheet: (sessionId, userId) => req('GET', `/sessions/${sessionId}/sheets/${userId}`),
     saveSheet: (sessionId, userId, data) => req('PUT', `/sessions/${sessionId}/sheets/${userId}`, { data }),
+    getRules: () => req('GET', '/rules'),
+    searchRules: (query) => req('GET', `/rules/search?q=${encodeURIComponent(query)}`),
   };
 })();
