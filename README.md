@@ -89,11 +89,19 @@ sudo systemctl enable --now folly
 - **GM (admin-level access)**: Can create, rename, and delete sessions, create/manage player accounts, assign players to sessions, and create/edit character sheets on behalf of assigned players in those sessions.
 - **Player**: Can see their assigned sessions, create and edit their character sheet for each session.
 
+## Character sheet coverage
+
+- Personal details include **glitch**, **backstory**, and **reputation** notes.
+- Portrait upload is supported directly on the sheet (stored with sheet data and shown in the top-right of the sheet view).
+- Skills include mandatory and additional groups, with inline removal for mandatory entries.
+- Vitals include movement (speed), luck, and everyday carry/essential items.
+- GM session view includes a consolidated table for all assigned players showing character identity, stats (STR/CON/DEX/INT/POW plus speed/luck), skills, and essential items.
+
 ## Front-end scripts
 
 - `public/js/api.js`: Centralized browser API client used by UI actions (`auth`, `users`, `sessions`, and character sheet endpoints).
-- `public/js/app.js`: Main SPA logic (auth flow, session/account tabs, session rename modal, player assignment, GM/player sheet interactions).
-- `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views, including add/remove controls for mandatory skills and add controls for additional skills/custom fields.
+- `public/js/app.js`: Main SPA logic (auth flow, session/account tabs, session rename modal, player assignment, GM/player sheet interactions, and the GM session overview table).
+- `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views, including backstory support, portrait upload/clear behavior, add/remove controls for mandatory skills, and add controls for additional skills/custom fields.
 
 ## Data
 
