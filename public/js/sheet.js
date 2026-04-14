@@ -52,6 +52,24 @@ const SheetForm = (() => {
     { name: 'Special agent', novel: true },
     { name: 'Tradesperson', novel: true }
   ];
+  const STAT_OPTIONS = [30, 40, 50, 60, 70, 80];
+  const STAT_KEYS = ['str', 'con', 'dex', 'int', 'pow'];
+  const ADVANTAGES = [
+    { name: 'Connected' },
+    { name: 'Damage Bonus', requirements: [{ stat: 'str', min: 60 }] },
+    { name: 'Fast Reactions', requirements: [{ stat: 'dex', min: 60 }] },
+    { name: 'Magical (Major Advantage)', requirements: [{ stat: 'int', min: 60 }, { stat: 'pow', min: 60 }] },
+    { name: 'Natural Toughness', requirements: [{ stat: 'str', min: 60 }, { stat: 'con', min: 60 }] },
+    { name: 'Rich (Major Advantage)' },
+    { name: 'Scary' },
+    { name: 'Signature Firearm' },
+    { name: 'Signature Weapon' },
+    { name: 'Silver-Tongued' },
+    { name: 'Speedy', requirements: [{ stat: 'dex', min: 60 }] },
+    { name: 'Steadfast', requirements: [{ stat: 'pow', min: 60 }] },
+    { name: 'The Knowledge', requirements: [{ stat: 'int', min: 60 }] },
+    { name: 'Wealthy' }
+  ];
 
   function merge(saved) {
     const base = JSON.parse(JSON.stringify(DEFAULT));
@@ -126,16 +144,17 @@ const SheetForm = (() => {
         ${['str','con','dex','int','pow'].map(s => `
           <div class="char-field form-group">
             <label>${s.toUpperCase()}</label>
-            <input type="number" id="sf_${s}" value="${esc(d[s])}" min="1" max="100"${rdAttr}>
+            ${renderStatSelect(s, d[s], readonly)}
           </div>`).join('')}
       </div>
+      <div id="stat-allocation-note" class="card-sub" style="margin-top:0.5rem"></div>
     </div>
   </div>
 
   <div class="sheet-section">
     <div class="sheet-section-header">3 · Edges &amp; Flaws</div>
     <div class="sheet-section-body">
-      ${fg('Advantages', `<input type="text" id="sf_advantages" value="${esc(d.advantages)}" placeholder="e.g. Magical (Major), Steadfast, Wealthy"${rdAttr}>`)}
+      ${fg('Advantages', renderAdvantagesSelect(d.advantages, readonly))}
       ${fg('Disadvantages', `<input type="text" id="sf_disadvantages" value="${esc(d.disadvantages)}" placeholder="e.g. Weak (Max STR 40)"${rdAttr}>`)}
     </div>
   </div>
@@ -190,7 +209,7 @@ const SheetForm = (() => {
   </div>
 
 </div>`;
-
+    initialiseDynamicFields(readonly);
   }
 
   function renderPortraitPreview(value) {
@@ -209,8 +228,96 @@ const SheetForm = (() => {
     return `<select id="sf_occupation"${rdAttr}>
       <option value="">Select a profession</option>
       ${options}
-    </select>
-    <div class="occupation-key">${OCCUPATIONS.filter((o) => o.novel).map((o) => `<span>${esc(o.name)}</span>`).join('')}<div class="occupation-key-help">Brighter entries are occupations held by characters in the Rivers of London novels.</div></div>`;
+    </select>`;
+  }
+
+  function renderStatSelect(statKey, value, readonly) {
+    const rdAttr = readonly ? ' disabled' : '';
+    const options = STAT_OPTIONS.map((n) => {
+      const selectedAttr = String(value || '') === String(n) ? ' selected' : '';
+      return `<option value="${n}"${selectedAttr}>${n}</option>`;
+    }).join('');
+    return `<select id="sf_${statKey}"${rdAttr}>
+      <option value="">-</option>
+      ${options}
+    </select>`;
+  }
+
+  function parseAdvantages(value) {
+    return String(value || '')
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+  }
+
+  function renderAdvantagesSelect(value, readonly) {
+    const selected = parseAdvantages(value);
+    const rdAttr = readonly ? ' disabled' : '';
+    const options = ADVANTAGES.map((adv) => {
+      const selectedAttr = selected.includes(adv.name) ? ' selected' : '';
+      return `<option value="${esc(adv.name)}"${selectedAttr}>${esc(adv.name)}</option>`;
+    }).join('');
+    return `<select id="sf_advantages" multiple size="8"${rdAttr}>${options}</select>
+      <div class="card-sub" style="margin-top:0.35rem">Hold Ctrl/Cmd to select multiple advantages.</div>`;
+  }
+
+  function getStatValue(statKey) {
+    const el = document.getElementById(`sf_${statKey}`);
+    const val = parseInt(el ? el.value : '', 10);
+    return Number.isFinite(val) ? val : 0;
+  }
+
+  function meetsRequirements(requirements) {
+    if (!requirements || !requirements.length) return true;
+    return requirements.every((req) => getStatValue(req.stat) >= req.min);
+  }
+
+  function updateAdvantagesAvailability() {
+    const select = document.getElementById('sf_advantages');
+    if (!select) return;
+    const options = Array.from(select.options);
+    options.forEach((opt) => {
+      const advantage = ADVANTAGES.find((adv) => adv.name === opt.value);
+      const allowed = meetsRequirements(advantage && advantage.requirements);
+      opt.disabled = !allowed;
+      opt.style.textDecoration = allowed ? 'none' : 'line-through';
+      if (!allowed) opt.selected = false;
+    });
+  }
+
+  function updateStatAllocationMessage() {
+    const messageEl = document.getElementById('stat-allocation-note');
+    if (!messageEl) return;
+    const total = STAT_KEYS.reduce((sum, key) => sum + getStatValue(key), 0);
+    const delta = 280 - total;
+    if (delta === 0) {
+      messageEl.textContent = 'Stat allocation total is 280/280.';
+      messageEl.style.color = 'var(--text2)';
+      return;
+    }
+    if (delta > 0) {
+      messageEl.textContent = `Stat allocation total is ${total}/280. Allocate ${delta} more points.`;
+      messageEl.style.color = '#c77900';
+      return;
+    }
+    const excess = Math.abs(delta);
+    messageEl.textContent = `Stat allocation total is ${total}/280. Reduce your stats by ${excess} points.`;
+    messageEl.style.color = '#b42318';
+  }
+
+  function handleStatChange() {
+    updateStatAllocationMessage();
+    updateAdvantagesAvailability();
+  }
+
+  function initialiseDynamicFields(readonly) {
+    updateStatAllocationMessage();
+    updateAdvantagesAvailability();
+    if (readonly) return;
+    STAT_KEYS.forEach((stat) => {
+      const el = document.getElementById(`sf_${stat}`);
+      if (el) el.addEventListener('change', handleStatChange);
+    });
   }
 
   function renderCustomField(cf, i, readonly) {
@@ -326,7 +433,11 @@ const SheetForm = (() => {
       glitch: g('glitch'), backstory: g('backstory'), reputation: g('reputation'),
       portrait: g('portrait'),
       str: g('str'), con: g('con'), dex: g('dex'), int: g('int'), pow: g('pow'),
-      advantages: g('advantages'), disadvantages: g('disadvantages'),
+      advantages: Array.from((document.getElementById('sf_advantages') || {}).selectedOptions || [])
+        .map((opt) => opt.value.trim())
+        .filter(Boolean)
+        .join(', '),
+      disadvantages: g('disadvantages'),
       mandatory_skills, additional_skills,
       mov: g('mov'), luck: g('luck'), carry: g('carry'),
       custom_fields
