@@ -95,17 +95,17 @@ sudo systemctl enable --now folly
 ## Character sheet coverage
 
 - Personal details include **glitch**, **backstory**, and **reputation** notes.
-- Portrait upload is supported directly on the sheet (stored with sheet data and shown in the top-right of the sheet view).
-- Skills include mandatory and additional groups, with inline removal for mandatory entries.
+- Portrait upload is supported directly on the sheet (stored with sheet data and shown in the top-right area of the Personal Info section).
+- Skills include expert and additional groups; expert skills start with two blank entries and support inline removal/addition.
 - Vitals include movement (speed), luck, and everyday carry/essential items.
 - GM session view includes a consolidated table for all assigned players showing character identity, stats (STR/CON/DEX/INT/POW plus speed/luck), skills, and essential items.
-- Rules Library tab lets authenticated users open the bundled Rivers of London rulebook in HTML or Markdown, and run full-text search against the Markdown file.
+- Rules tab directly embeds the bundled HTML Rivers of London rulebook in-app; use browser find (Ctrl/Cmd + F) for text search.
 
 ## Front-end scripts
 
 - `public/js/api.js`: Centralized browser API client used by UI actions (`auth`, `users`, `sessions`, and character sheet endpoints).
-- `public/js/app.js`: Main SPA logic (auth flow, session/account/rules tabs, session rename modal, player assignment, GM/player sheet interactions, GM session overview table, rulebook search UI, and The Domestic solo adventure player with URL step routing and local sheet persistence).
-- `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views, including backstory support, portrait upload/clear behavior, add/remove controls for mandatory skills, and add controls for additional skills/custom fields.
+- `public/js/app.js`: Main SPA logic (auth flow, session/account/rules tabs, session rename modal, player assignment, GM/player sheet interactions, GM session overview table, embedded HTML rulebook viewer, and The Domestic top-nav solo adventure tab with URL step routing and local sheet persistence).
+- `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views, including backstory support, portrait upload/clear behavior, profession dropdown options, expert skill editing controls, and add controls for additional skills/custom fields.
 
 ## Utility scripts
 
@@ -120,12 +120,11 @@ sudo systemctl enable --now folly
 - The server exposes these files at `/rules-files/*`.
 - API endpoints for authenticated users:
   - `GET /api/rules` (returns direct HTML/Markdown file URLs)
-  - `GET /api/rules/search?q=<term>` (searches Markdown lines and returns snippets)
   - `GET /api/adventure/domestic` (returns parsed The Domestic steps with forward actions and traceback links)
 
 ## The Domestic solo adventure in-app
 
-- Open **Rules → Play The Domestic** to use the step-by-step solo adventure inside The Folly app.
+- Open **The Domestic** from the top navigation to use the step-by-step solo adventure inside The Folly app.
 - The current step is written to `?adventureStep=<n>` in the URL so players can bookmark/share their progress point.
 - Forward links are rendered as primary action buttons from the step text's `go to` instructions.
 - Traceback links are rendered as subtle back buttons from the step's parenthesized trace references.
