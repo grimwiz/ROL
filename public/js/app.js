@@ -6,6 +6,8 @@ const State = {
   currentSession: null,
   currentSheetUserId: null,
   rulesFiles: null,
+  domesticAdventure: null,
+  domesticCurrentStep: null,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -44,9 +46,34 @@ function showPage(pageId) {
   if (pg) pg.classList.add('active');
 }
 
+function updateAdventureStepInUrl(step, replace = false) {
+  const url = new URL(window.location.href);
+  if (step) {
+    url.searchParams.set('adventureStep', String(step));
+  } else {
+    url.searchParams.delete('adventureStep');
+  }
+  if (replace) {
+    window.history.replaceState({}, '', url.toString());
+  } else {
+    window.history.pushState({}, '', url.toString());
+  }
+}
+
+function readAdventureStepFromUrl() {
+  const value = parseInt(new URL(window.location.href).searchParams.get('adventureStep'), 10);
+  return Number.isInteger(value) ? value : null;
+}
+
 // ── App init ──────────────────────────────────────────────────────────────────
 async function init() {
   renderLoginPage();
+  window.addEventListener('popstate', () => {
+    const step = readAdventureStepFromUrl();
+    if (step && el('tab-rules') && el('tab-rules').style.display !== 'none') {
+      openDomesticAdventure(step, true);
+    }
+  });
   try {
     State.user = await api.me();
     await renderMain();
@@ -488,6 +515,15 @@ async function loadRulesTab() {
       </div>
     </div>
     <div class="card">
+      <div class="card-title">Solo Adventure: The Domestic</div>
+      <p class="card-sub">Track your current step in the URL, move forward with action buttons, and step back with trace links.</p>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem">
+        <button class="btn btn-primary" onclick="openDomesticAdventure()">Play The Domestic</button>
+        <a class="btn btn-sm" target="_blank" rel="noopener noreferrer" href="/rules-files/The%20Domestic.md">Open source markdown</a>
+      </div>
+    </div>
+    <div id="domestic-adventure-area"></div>
+    <div class="card">
       <div class="form-group" style="margin-bottom:0.5rem">
         <label for="rules-search-input">Search rules</label>
         <input type="text" id="rules-search-input" placeholder="e.g. chase, magic, conditions">
@@ -502,6 +538,11 @@ async function loadRulesTab() {
   searchInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') searchRules();
   });
+
+  const stepFromUrl = readAdventureStepFromUrl();
+  if (stepFromUrl) {
+    openDomesticAdventure(stepFromUrl, true);
+  }
 }
 
 async function searchRules() {
@@ -536,6 +577,108 @@ async function searchRules() {
   }
 }
 window.searchRules = searchRules;
+
+async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
+  const host = el('domestic-adventure-area');
+  if (!host) return;
+  host.innerHTML = '<div class="card"><p style="color:var(--text2)">Loading adventure…</p></div>';
+
+  try {
+    if (!State.domesticAdventure) {
+      State.domesticAdventure = await api.getDomesticAdventure();
+    }
+  } catch (e) {
+    host.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+    return;
+  }
+
+  const adventure = State.domesticAdventure;
+  const requestedStep = stepFromUrl || State.domesticCurrentStep || adventure.startStep;
+  const step = adventure.steps.find((entry) => entry.step === requestedStep) || adventure.steps.find((entry) => entry.step === adventure.startStep);
+  State.domesticCurrentStep = step.step;
+  updateAdventureStepInUrl(step.step, replaceUrl);
+
+  host.innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${esc(adventure.title)} — Step ${step.step}</div>
+          <div class="card-sub">${adventure.totalSteps} total steps. You can bookmark this page to return to this exact step.</div>
+        </div>
+      </div>
+      <div class="adventure-description">${formatAdventureText(step.description)}</div>
+      <div style="margin-top:1rem">
+        <div class="card-sub" style="margin-bottom:0.45rem">Forward actions</div>
+        <div class="adventure-actions">
+          ${step.actions.length === 0
+            ? '<span style="color:var(--text2)">No forward actions parsed for this step.</span>'
+            : step.actions.map((action) => `<button class=\"btn btn-primary\" onclick=\"openDomesticAdventure(${action.target})\">${esc(action.label)}</button>`).join('')}
+        </div>
+      </div>
+      <div style="margin-top:1rem">
+        <div class="card-sub" style="margin-bottom:0.45rem">Earlier trace links</div>
+        <div class="adventure-actions">
+          ${step.tracebacks.length === 0
+            ? '<span style="color:var(--text2)">No prior trace links listed.</span>'
+            : step.tracebacks.map((target) => `<button class=\"btn btn-subtle\" onclick=\"openDomesticAdventure(${target})\">Back to ${target}</button>`).join('')}
+        </div>
+      </div>
+      <div class="card-sub" style="margin-top:1rem">Build and track your character stats below while you play.</div>
+      <div id="domestic-sheet"></div>
+      <div class="sheet-actions">
+        <button class="btn" onclick="resetDomesticSheet()">Reset adventure sheet</button>
+        <span class="save-status" id="domestic-sheet-status"></span>
+      </div>
+    </div>`;
+
+  const sheetHost = el('domestic-sheet');
+  const savedSheet = loadDomesticSheetState();
+  SheetForm.render(sheetHost, savedSheet, false);
+  attachDomesticSheetPersistence(sheetHost);
+}
+window.openDomesticAdventure = openDomesticAdventure;
+
+function formatAdventureText(value) {
+  return esc(value).replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>').replace(/^/, '<p>').replace(/$/, '</p>');
+}
+
+function domesticStorageKey() {
+  return `domestic_sheet_${State.user ? State.user.id : 'anon'}`;
+}
+
+function loadDomesticSheetState() {
+  try {
+    const raw = localStorage.getItem(domesticStorageKey());
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+
+function attachDomesticSheetPersistence(host) {
+  const status = el('domestic-sheet-status');
+  if (!host) return;
+  const onChange = () => {
+    try {
+      const data = SheetForm.collect();
+      localStorage.setItem(domesticStorageKey(), JSON.stringify(data));
+      if (status) status.textContent = 'Adventure sheet saved locally';
+    } catch {
+      if (status) status.textContent = 'Unable to save local adventure sheet';
+    }
+  };
+  host.querySelectorAll('input, textarea, select').forEach((field) => {
+    field.addEventListener('change', onChange);
+    field.addEventListener('input', onChange);
+  });
+}
+
+function resetDomesticSheet() {
+  localStorage.removeItem(domesticStorageKey());
+  openDomesticAdventure(State.domesticCurrentStep, true);
+}
+window.resetDomesticSheet = resetDomesticSheet;
 
 // ── Accounts tab (GM) ─────────────────────────────────────────────────────────
 async function loadUsersTab() {

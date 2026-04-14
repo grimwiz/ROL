@@ -20,6 +20,9 @@ export GM_INITIAL_PASSWORD="your-secure-gm-password"
 
 # Start
 npm start
+
+# Validate The Domestic adventure parsing/reachability
+npm run check:domestic
 ```
 
 The app will be available on `http://localhost:3000` (or your configured port).
@@ -101,8 +104,12 @@ sudo systemctl enable --now folly
 ## Front-end scripts
 
 - `public/js/api.js`: Centralized browser API client used by UI actions (`auth`, `users`, `sessions`, and character sheet endpoints).
-- `public/js/app.js`: Main SPA logic (auth flow, session/account/rules tabs, session rename modal, player assignment, GM/player sheet interactions, GM session overview table, and rulebook search UI).
+- `public/js/app.js`: Main SPA logic (auth flow, session/account/rules tabs, session rename modal, player assignment, GM/player sheet interactions, GM session overview table, rulebook search UI, and The Domestic solo adventure player with URL step routing and local sheet persistence).
 - `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views, including backstory support, portrait upload/clear behavior, add/remove controls for mandatory skills, and add controls for additional skills/custom fields.
+
+## Utility scripts
+
+- `scripts/check-domestic-adventure.js`: Parses `Rivers_of_London/The Domestic.md`, verifies exactly 111 steps are present, and confirms all steps are reachable from the start via parsed links.
 
 ## Rulebook files
 
@@ -114,6 +121,15 @@ sudo systemctl enable --now folly
 - API endpoints for authenticated users:
   - `GET /api/rules` (returns direct HTML/Markdown file URLs)
   - `GET /api/rules/search?q=<term>` (searches Markdown lines and returns snippets)
+  - `GET /api/adventure/domestic` (returns parsed The Domestic steps with forward actions and traceback links)
+
+## The Domestic solo adventure in-app
+
+- Open **Rules → Play The Domestic** to use the step-by-step solo adventure inside The Folly app.
+- The current step is written to `?adventureStep=<n>` in the URL so players can bookmark/share their progress point.
+- Forward links are rendered as primary action buttons from the step text's `go to` instructions.
+- Traceback links are rendered as subtle back buttons from the step's parenthesized trace references.
+- A local character sheet is embedded under each step and autosaved per logged-in user in browser storage.
 
 ## Data
 

@@ -40,5 +40,6 @@ const api = (() => {
     saveSheet: (sessionId, userId, data) => req('PUT', `/sessions/${sessionId}/sheets/${userId}`, { data }),
     getRules: () => req('GET', '/rules'),
     searchRules: (query) => req('GET', `/rules/search?q=${encodeURIComponent(query)}`),
+    getDomesticAdventure: () => req('GET', '/adventure/domestic'),
   };
 })();

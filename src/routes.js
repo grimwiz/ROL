@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const db = require('./db');
 const { signToken, requireAuth, requireGM, COOKIE_NAME, COOKIE_OPTS } = require('./auth');
+const { loadDomesticAdventure } = require('./domesticAdventure');
 
 const router = express.Router();
 
@@ -191,6 +192,15 @@ router.put('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
     ON CONFLICT(session_id, user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
   `).run(sessionId, userId, data);
   res.json({ ok: true });
+});
+
+
+router.get('/adventure/domestic', requireAuth, (req, res) => {
+  const adventure = loadDomesticAdventure();
+  if (!adventure) {
+    return res.status(404).json({ error: 'The Domestic adventure markdown is not available on the server.' });
+  }
+  res.json(adventure);
 });
 
 // ── Rules library ────────────────────────────────────────────────────────────
