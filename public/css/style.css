@@ -142,6 +142,15 @@ button:hover, .btn:hover { background: var(--bg2); border-color: var(--accent); 
 
 .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
 .btn-full { width: 100%; justify-content: center; padding: 0.65rem; }
+.btn-subtle {
+  background: transparent;
+  border-color: #3a3a46;
+  color: var(--text2);
+}
+.btn-subtle:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
 
 /* ── Cards / Tables ──────────────────────────────────────── */
 .card {
@@ -301,6 +310,9 @@ tr:hover td { background: var(--bg3); }
   color: var(--text2);
   font-size: 0.86rem;
 }
+.adventure-description p { margin-bottom: 0.8rem; }
+.adventure-description p:last-child { margin-bottom: 0; }
+.adventure-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
 /* ── Modal ───────────────────────────────────────────────── */
 .modal-backdrop {
