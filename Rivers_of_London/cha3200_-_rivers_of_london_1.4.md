@@ -8,7 +8,7 @@ PAUL FRICKER, LYNNE HARDY, AND FRIENDS
 
 CHAOSIUM INC
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000000_65fa3223d70bdbbddc825d20215d44ff76994c359cd28b03185f6f8b73af0328.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000000_65fa3223d70bdbbddc825d20215d44ff76994c359cd28b03185f6f8b73af0328.png)
 
 ## Authors
 
@@ -61,7 +61,7 @@ Lynne  would  also  like  to  thank  Ben  for  writing  the novels and letting u
 
 The plans of the Folly were developed and realised by Matt Ryan  from  originals  provided  by  Ben  Aaronovitch.  Alyssa Faden designed and developed the map of London in Chapter 7,  while  Anna  Urbanek developed and realised the scenario maps and handouts based on the author's originals. Filler art was  designed  by  Nicholas  Nacario  with  Lynne  Hardy,  and realised  by  Nicholas  Nacario  and  Irene  Cano. The Rivers of London: the Roleplaying Game layout template was designed by Simeon Cogswell. The Rivers of London: the Roleplaying Game character sheets were designed by Matt Ryan and programmed by Max Harrison.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000001_fb6a0024b7a0e6b8b440a8e300c52166317184044cdaa3cb9ac828089cbc3d17.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000001_fb6a0024b7a0e6b8b440a8e300c52166317184044cdaa3cb9ac828089cbc3d17.png)
 
 | Foreword� � � � � � � � � � � � � � � � � �                                                                 | � � � 6        | Other Factors in Combat . . . . . . . . . . .                                                    | .134            |
 |-------------------------------------------------------------------------------------------------------------|----------------|--------------------------------------------------------------------------------------------------|-----------------|
@@ -177,7 +177,7 @@ Magical vs Mundane Investigations  . . . . . . . . . . . . . . . 211
 | Chapter 9: Additional Rules� Advanced Character Creation . . . . . . .                 | 309 .309  | Character Sheets � � � � � � � �                                           | � 384         |
 | Assigning Characteristics Revisited .                                                  | .309      | Contributor Biographies� �                                                 | � 388         |
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000002_173172bb367307f30b6fd4bf2973a3adca3a8febccb88bf696d905fa981ee508.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000002_173172bb367307f30b6fd4bf2973a3adca3a8febccb88bf696d905fa981ee508.png)
 
 ## Foreword
 
@@ -187,9 +187,9 @@ I  wanted  to  create  one  of  those  worlds,  to  make something  so  detailed
 
 I  was  a  terrible  gamemaster,  and,  to  be  fair,  I  was never  particularly  brilliant  as  a  player-I  was  always more interested  in  the  scenarios  than  the  gaming. To this day, I have an insane number of RPG supplements, including a large number of campaign and setting books whose original systems I've never even heard of. I read voraciously  of  intricately  thought-out  fantasy  worlds; Glorantha  was  a  favourite,  but  I've  always  had  a  soft spot  for City  State  of  the  Invincible  Overlord ( Judges Guild) and Pendragon's Albion that never was.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000003_48b690b1013a6b2f0351c6e37cc3b0faaf8985ab3a1737e4e2be2112fa01cb05.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000003_48b690b1013a6b2f0351c6e37cc3b0faaf8985ab3a1737e4e2be2112fa01cb05.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000004_d3f3aebed7c7d5685871a860a3a0f86046db43db076e6ce4bf21eb561a0d094a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000004_d3f3aebed7c7d5685871a860a3a0f86046db43db076e6ce4bf21eb561a0d094a.png)
 
 So, when I started Rivers of London, there was always a seductive voice in the back of my head that said, ' One day, this might be an RPG, too .' Then that one day came when  Lynne  Hardy  approached  me  at  Waterstones in Newcastle and said she represented  Chaosium, legendary  creators  of Call  of  Cthulhu , Pendragon ,  and Elric ,  amongst  others,  and  would  I  like  to  talk  about doing a Rivers of London RPG…
 
@@ -207,9 +207,9 @@ I hope you enjoy your adventures in the world of the Folly. And remember, scient
 
 -Lynne Hardy, 2022
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000005_689336194e8f8fd7eedfcf79d260c2af0f54c9f27925f1afd0e3f9cfe6806576.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000005_689336194e8f8fd7eedfcf79d260c2af0f54c9f27925f1afd0e3f9cfe6806576.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000006_6d8d65e3c8d333147293fb9415a749153abce54f03105a4a100c7fe1c50de8ea.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000006_6d8d65e3c8d333147293fb9415a749153abce54f03105a4a100c7fe1c50de8ea.png)
 
 My introduction to the world of Peter Grant, Beverley Brook, Nightingale, et al., came through Marc Higgins, one of my oldest friends, who recommended the book to my wife, Lucy-my thanks to them both. It's true what they say, books can change your life. Having worked on the Call of Cthulhu roleplaying game, I should know this better than most!
 
@@ -281,9 +281,9 @@ Who, according to that character sheet, travelled the world in the guise of a lo
 
 Molly fetched tea and biscuits-I handed back the character sheets,  adjusted  my  gamesmaster  screen,  and  waited  for everyone to settle down. Which they did, amazingly quickly.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000007_4702b6cd5761c080a5b931f5c3cc5b66e9f0f53d1d21ecf59ff42513c6d7988b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000007_4702b6cd5761c080a5b931f5c3cc5b66e9f0f53d1d21ecf59ff42513c6d7988b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000008_4cfe2b3de373a7a20fdaeb35e08392e2893e1daeec3da1ed2938ad19e9fe2e8f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000008_4cfe2b3de373a7a20fdaeb35e08392e2893e1daeec3da1ed2938ad19e9fe2e8f.png)
 
 I
 
@@ -343,17 +343,17 @@ Rivers of London: the Roleplaying Game ( RoL:RPG ) is a game of mystery and magi
 
 RoL:RPG , like all games, has its own rules. When a player describes what their investigator is trying to do, the GM may call for a dice roll to see if the player is successful. Such dice rolls are usually made because there will be a dramatic effect or  a  twist  in  the  story's  direction  if  the  action  succeeds  or
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000009_21edfed0e681cc7e7f562576703ceb77c54b0bf7fe7027b75732548b074f8fda.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000009_21edfed0e681cc7e7f562576703ceb77c54b0bf7fe7027b75732548b074f8fda.png)
 
 fails-for example, does the investigator catch the criminal they're  chasing  or  does  the  felon  get  away?  The  rules, supported by the dice rolls, help the GM make that decision in a fair and unbiased way.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000010_4883f5a49f65b26752fab1e231b6595b3d1939e48a8f0a44d95a388a33a0b5a6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000010_4883f5a49f65b26752fab1e231b6595b3d1939e48a8f0a44d95a388a33a0b5a6.png)
 
 ## PC, or not PC?
 
 In  some  roleplaying  games,  investigators are known as 'player characters,' abbreviated  to  'PC.'  We  don't  use that abbreviation in RoL:RPG because it's also used for the most junior rank in  the  British  police  service:  Police Constable.  So,  if  you  see  'PC,'  we're talking  about  a  serving  police  officer, not an investigator.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000011_d69060cb5e3205af712a3d238688658e38dab1d1343013a136ad8ceab019063c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000011_d69060cb5e3205af712a3d238688658e38dab1d1343013a136ad8ceab019063c.png)
 
 ## What's In This Book?
 
@@ -379,11 +379,11 @@ With Chapters 1-5 you  have  the  core  of  the  game  and can start running the
 
 Of course, allowing your players to read Chapters 6 and 8 is likely to spoil their fun, as these contain secrets that should only become apparent through playing the game-especially the  case  file  ( Chapter 8 ).  Thus,  only  the  GM  should  read these chapters for now.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000012_9721835fe3010415d015efc379065b6b8c18c8a8d50a3a0b1a86400fa3ae6176.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000012_9721835fe3010415d015efc379065b6b8c18c8a8d50a3a0b1a86400fa3ae6176.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000013_c0f16095290a582e757056a5b3ac99434b88ef1d5bece5a739afb9b77874e091.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000013_c0f16095290a582e757056a5b3ac99434b88ef1d5bece5a739afb9b77874e091.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000014_df737ae8c3e5983858e345eb57759e0f6c48f87e223f783dc14a59221b64c3e5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000014_df737ae8c3e5983858e345eb57759e0f6c48f87e223f783dc14a59221b64c3e5.png)
 
 I
 
@@ -397,7 +397,7 @@ Note that we have tried to avoid the various novels' major plot  spoilers  as  m
 
 Rivers of London: the Roleplaying Game takes place in London in  2016,  shortly  after  the  events  of  the  novel, False  Value . While  for  many  years,  DCI  Thomas  Nightingale  was  the Folly's only active policeman-cum-Newtonian practitioneri.e., magician, he recruited PC Peter Grant as his apprentice in January 2012 to help deal with the threat posed by London's spirit of riot and rebellion 2 . Thanks to the increase in magic in the world, in 2015, Nightingale and Grant realised they needed more help to tackle supernatural mysteries and began
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000015_dfba74fe725a8bab9894f2a500d1f358219adee4c49c748d9c3d4e8664f0a6fd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000015_dfba74fe725a8bab9894f2a500d1f358219adee4c49c748d9c3d4e8664f0a6fd.png)
 
 drafting  the  Folly  Expansion  document 3 ,  which  described how the Special Assessment Unit planned on expanding its ranks-and that's where the investigators come in!
 
@@ -415,15 +415,15 @@ and his father a jazz musician; he doesn't have a university degree and speaks w
 
 The class a person belongs to is defined by several factors, including  their  social  background (i.e.,  where  they  were  raised  and  who their  parents  were),  their  level  of  education, and their profession. Peter Grant grew up on the  Peckwater  Estate;  his  mum  is  a  cleaner
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000016_b9f2cb4d55a656203c4bf980435a723a295e081258112dd3a8df113cc32dd0e1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000016_b9f2cb4d55a656203c4bf980435a723a295e081258112dd3a8df113cc32dd0e1.png)
 
 Which class you're from can have an effect on the way people from other social classes treat you, above and beyond gender and ethnicity. Even today, social elites form networks to  support  and  promote  each  other  at  the expense of those from other, lower classesthe  so-called  'Old  Boy  Networks,'  named after  the  fact  that  many  of  their  members attended the same public (i.e., private) schools together, such as Eton or Harrow.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000017_32ba7013f361ea7ddbfb704b88fab296206a82f3899e418fa682a93440517ec9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000017_32ba7013f361ea7ddbfb704b88fab296206a82f3899e418fa682a93440517ec9.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000018_dc144fc829186498d73be229facd1e4d9a1d4af70c0ce12a8228d9cd28d6fdc6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000018_dc144fc829186498d73be229facd1e4d9a1d4af70c0ce12a8228d9cd28d6fdc6.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000019_3f78fedf3a646d73d852c31c991f923a3e45ee2dca615d424c555971725b4d04.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000019_3f78fedf3a646d73d852c31c991f923a3e45ee2dca615d424c555971725b4d04.png)
 
 All civilian investigators seconded to the Special Assessment Unit are issued with a Folly Consultant's Card (page 60). While it doesn't grant them the exact same powers given by a police officer's Warrant Card (page 211), it does enable them to accompany their police colleagues into places they wouldn't normally be allowed, among other things.
 
@@ -441,7 +441,7 @@ You only need a few things to begin playing Rivers of London: the Roleplaying Ga
 - If playing in person: somewhere quiet to get together, ideally with a table large enough for rolling dice.
 - Two to four hours to play the game. We recommend around two hours for an online game, and up to three to four hours for an in-person game.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000020_f3de47bd16970c8887e46cceb182cd6bfba4d03dcc53ccf3ffd707d9cb2d08c6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000020_f3de47bd16970c8887e46cceb182cd6bfba4d03dcc53ccf3ffd707d9cb2d08c6.png)
 
 ## Roleplaying Dice
 
@@ -459,11 +459,11 @@ Alternatively,  you  could  use  two  units  dice  of  different colours. Read t
 
 ## A Bad Dice Roll
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000021_2a0b036383afcd75a19564d0f32fb7908dc2a842fbc67ce1fe75c09a50402249.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000021_2a0b036383afcd75a19564d0f32fb7908dc2a842fbc67ce1fe75c09a50402249.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000022_2dfa99256fe134b14ff249572033455009e7472cd227b3cce80be55affd473cc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000022_2dfa99256fe134b14ff249572033455009e7472cd227b3cce80be55affd473cc.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000023_3a5960fda1e12c6438e98521965101f7f0ffa33cd40134a980690c208104338b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000023_3a5960fda1e12c6438e98521965101f7f0ffa33cd40134a980690c208104338b.png)
 
 I
 
@@ -661,9 +661,9 @@ NAME
 
 NAME
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000024_c6684b0122002530010798848a939b0825935898b07b4a508187f95c86e25194.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000024_c6684b0122002530010798848a939b0825935898b07b4a508187f95c86e25194.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000025_4231e9d57361891c5a942b18a1de21d22ceac18f4c40b6f630fda6372687ddc3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000025_4231e9d57361891c5a942b18a1de21d22ceac18f4c40b6f630fda6372687ddc3.png)
 
 | Term                   | Definition                                                                                                                                    |
 |------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
@@ -685,9 +685,9 @@ NAME
 
 Table 1: Glossary of Terms
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000026_463321ed4247cbd1340beba1c01452c462471eb938a7aba2c56d127d140d11cf.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000026_463321ed4247cbd1340beba1c01452c462471eb938a7aba2c56d127d140d11cf.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000027_6bdf21f9ef4453a3373bf0632e4e9fe9d9971f5de620765f8c679a073a1cf0fe.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000027_6bdf21f9ef4453a3373bf0632e4e9fe9d9971f5de620765f8c679a073a1cf0fe.png)
 
 ## Start Here
 
@@ -697,15 +697,15 @@ One important note  before  you  dive  in:  don't  read  the  text from start to
 
 Gather the following: a blank character sheet (copy the one in this book or download one from chaosium.com), a pencil and eraser, and two ten-sided percentile dice ( Roleplaying Dice , page 13), or you can also use a dice-rolling app, if you have one. You are now ready to play Rivers of London: the Roleplaying Game ( RoL:RPG ). Go to entry 1 .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000028_096de3eddd0e436a95421c14a8694026585b21ab0e5efa327f0307e71e0d9de5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000028_096de3eddd0e436a95421c14a8694026585b21ab0e5efa327f0307e71e0d9de5.png)
 
 Adapted from the short story by Ben Aaronovitch.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000029_36461c3d1bf5e4ccc614ca23dc3ac737706cf4be5c10a9282cd67606efcda5df.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000029_36461c3d1bf5e4ccc614ca23dc3ac737706cf4be5c10a9282cd67606efcda5df.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000030_9cf35a35eff3fad926b0caaafc5f301e8cbe49ed2d6aa70fea45a70122c733d9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000030_9cf35a35eff3fad926b0caaafc5f301e8cbe49ed2d6aa70fea45a70122c733d9.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000031_6066d80173a811fcec86f1e977a5616b4fd030b6b9898d919d3dafde14544fca.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000031_6066d80173a811fcec86f1e977a5616b4fd030b6b9898d919d3dafde14544fca.png)
 
 1
 
@@ -721,7 +721,7 @@ Now, decide what your job is: If you are a Police Officer, go to 9 . If you are 
 
 (Start)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000032_10947e11b1fceab1535f3cd1f8acc6654b2eb964c8800bbba9531920d5828d73.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000032_10947e11b1fceab1535f3cd1f8acc6654b2eb964c8800bbba9531920d5828d73.png)
 
 2
 
@@ -755,7 +755,7 @@ Wild-eyed, Knuckles grits his teeth as he swings the heavy masonry hammer at you
 
 Knuckles is initiating an attack against you. His 'action' is to try to hit you with his hammer. His Fighting skill is 40/20 (which means Regular 40/Hard 20).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000033_51bb6fb04534088001af0255f9818cd8023d208d2c9a70b5741cf22d0a69e47a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000033_51bb6fb04534088001af0255f9818cd8023d208d2c9a70b5741cf22d0a69e47a.png)
 
 As the target  of  his  attack,  you  get  to  'respond.'  You  may  use  a combat  manoeuvre-a  special  type  of  attack-to  break  his grip  on  the  hammer.  Decide  whether  you  want  to  disarm  your opponent or flee.
 
@@ -809,7 +809,7 @@ To slip around the back, go to 33 .
 
 To  draw  Mrs  Fellaman  out  by  tapping  on  the  window  and hiding, go to 70 .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000034_1a0e1543c2ed70b4453550020788e6e12bd43147c7b0093ef4e77c1aa77ae933.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000034_1a0e1543c2ed70b4453550020788e6e12bd43147c7b0093ef4e77c1aa77ae933.png)
 
 8
 
@@ -875,7 +875,7 @@ Spells  in RoL:RPG are  cast  by  forming  shapes  in  the  mind ( forma ). Firs
 
 If you are a Police Officer, go to 18 .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000035_31fa96d26cb24cf0e10cbef2d675dc3a724d226556cd09ef06644cbb081e0b40.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000035_31fa96d26cb24cf0e10cbef2d675dc3a724d226556cd09ef06644cbb081e0b40.png)
 
 If not, make a Power (POW) roll. If you succeed, go to 22 ; if you fail, go to 27 .
 
@@ -909,7 +909,7 @@ If  you  do  spend  Luck,  don't  forget  to  update  your  current  Luck value 
 
 If you succeed at the Stealth roll, go to 29 . If you fail at the Stealth roll, go to 40 .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000036_608d4d976e7a3d142f6550310ab38cc3885e58cf5754def06a64c939bd68806c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000036_608d4d976e7a3d142f6550310ab38cc3885e58cf5754def06a64c939bd68806c.png)
 
 ## 16
 
@@ -965,9 +965,9 @@ Go to 4 .
 
 (6)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000037_d3fcaada60ebf88dde8d41f5f86e7a02320fa5416ac86fe402c2d6704c2d9aa0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000037_d3fcaada60ebf88dde8d41f5f86e7a02320fa5416ac86fe402c2d6704c2d9aa0.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000038_9388d45a00103a2368e5f3be652193e6d25f167fedce130ccbfc8df25cc25efd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000038_9388d45a00103a2368e5f3be652193e6d25f167fedce130ccbfc8df25cc25efd.png)
 
 ## 20
 
@@ -1057,7 +1057,7 @@ If you succeed, go to 32 . If you fail, go to 56 .
 
 (6)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000039_ef814a7c6370866dbdd771a1cd3b841963c7e1959693a43270e182d87af76b7c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000039_ef814a7c6370866dbdd771a1cd3b841963c7e1959693a43270e182d87af76b7c.png)
 
 ## 27
 
@@ -1125,7 +1125,7 @@ In the second space beside the characteristic name, write down half of that valu
 
 To ask about the bruise on Mrs Fellaman's cheek, go to 50 . To wait patiently for her to invite you in, go to 61 . To ask about the 'two boys,' go to 76 . To insist on looking inside the house, go to 82 .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000040_ba29b37e44c4c7f509e3bab64f539d21cf2f89f47a51decab6598eea01fec890.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000040_ba29b37e44c4c7f509e3bab64f539d21cf2f89f47a51decab6598eea01fec890.png)
 
 ## 32
 
@@ -1199,7 +1199,7 @@ Your successful POW roll increased the spell's effect. Go to 99 .
 
 (32)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000041_e509881a9b367a1e7867d24c0b92d72a9adc9a867685bd81d696069987798193.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000041_e509881a9b367a1e7867d24c0b92d72a9adc9a867685bd81d696069987798193.png)
 
 ## 38
 
@@ -1267,7 +1267,7 @@ Make a Dexterity (DEX) roll.  As  usual,  you  may  spend  Luck to improve your 
 
 You are also good at Languages. Decide on three specialisations and assign those as expert skills at 60%, 30%, and 30%. So, for instance, you might have Languages (Gujerati) 60%, Languages (Arabic) 30%, and Languages (Cantonese) 30%. Write these on your character sheet, too. Your starting skills are ready.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000042_a363ed3eb0ec20a3efbd5e319cc673eaa11d230422a9861566a9bdf64060708b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000042_a363ed3eb0ec20a3efbd5e319cc673eaa11d230422a9861566a9bdf64060708b.png)
 
 Finally, roll your ten-sided 'units' die twice (usually written as 2D10) and add the result to 50. This is your starting Luck. So, if you rolled 1 and 8, your result would be 1+8+50 = 59. Note down your starting  and  current  Luck  in  the  spaces  provided.  For  the moment, these numbers are both the same, but that may change as this adventure continues.
 
@@ -1321,9 +1321,9 @@ To ask about the bruise on Mrs Fellaman's cheek, go to 50 . To wait patiently fo
 
 (3)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000043_13ea54c63eddf9539062864d647e1c80739a2376559d4537b0db6bd953c2722c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000043_13ea54c63eddf9539062864d647e1c80739a2376559d4537b0db6bd953c2722c.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000044_307489725925afe60774db0653784844bd4a8bb56d6590657f65186b83d7ebed.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000044_307489725925afe60774db0653784844bd4a8bb56d6590657f65186b83d7ebed.png)
 
 47
 
@@ -1367,9 +1367,9 @@ Mrs Fellaman turns her head away as you ask about the bruise. She very deliberat
 
 You find a gentle way to say that neither of you believes that. She does not relent. But she doesn't argue with you either.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000045_26c1901337626b30c6d81047fd4516e0a717fd3375870c782458ff2074c8c9be.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000045_26c1901337626b30c6d81047fd4516e0a717fd3375870c782458ff2074c8c9be.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000046_1afb39fb88c3ece99e48f3699375945eb0e151c3431f3479869376760e43148e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000046_1afb39fb88c3ece99e48f3699375945eb0e151c3431f3479869376760e43148e.png)
 
 You have Strength (STR) 60. Write that, and its half value of 30, beside the characteristic name.
 
@@ -1443,7 +1443,7 @@ If you rolled equal to your current Luck value or less, you succeeded at the Luc
 
 (44)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000047_73771e4457c8936bba33993201d1e34ca7644f9e06795dd2f7b70e24f3e1418c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000047_73771e4457c8936bba33993201d1e34ca7644f9e06795dd2f7b70e24f3e1418c.png)
 
 ## 56
 
@@ -1519,7 +1519,7 @@ Continue  the  combat,  but  give  Knuckles  a  penalty  die  for  the remainder
 
 (14, 31, 35, 46)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000048_b73ac25e75c68b769f1eb7dce13006d480506250b8f5c723ce957ebaf375ea81.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000048_b73ac25e75c68b769f1eb7dce13006d480506250b8f5c723ce957ebaf375ea81.png)
 
 ## 62
 
@@ -1597,7 +1597,7 @@ If you lose the opposed roll go to 89 .
 
 (48, 54, 59)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000049_9121d797343f0168e8b1a47c7ef792a0aeed356377371cd094a3ff50f4036fef.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000049_9121d797343f0168e8b1a47c7ef792a0aeed356377371cd094a3ff50f4036fef.png)
 
 ## 68
 
@@ -1657,7 +1657,7 @@ Go to 81 .
 
 (1)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000050_228aef7786901e3295b0679267c545dd0177f759d4806471178ca3230f0965bd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000050_228aef7786901e3295b0679267c545dd0177f759d4806471178ca3230f0965bd.png)
 
 ## 73
 
@@ -1683,9 +1683,9 @@ Otherwise,  make  a Social skill  roll.  Remember,  you  achieve  a Regular succ
 
 (70)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000051_3036cda3cb765bd7a069cba5e4eaffaac62ea5c3d1953650fd563317099d212d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000051_3036cda3cb765bd7a069cba5e4eaffaac62ea5c3d1953650fd563317099d212d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000052_800aeb4fdc596402a1ec105bd3260369e7a8f550db1bfd9ee5ed6678a3599672.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000052_800aeb4fdc596402a1ec105bd3260369e7a8f550db1bfd9ee5ed6678a3599672.png)
 
 ## 75
 
@@ -1761,7 +1761,7 @@ The Ford Escort you are using on this occasion does not have the stock of blank 
 
 The  warden  watches  you  search.  ' It  needs  to  display  the address or it's not valid, ' she comments unnecessarily.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000053_c9e88f9a0de82ecdbc0fce650ac791fb74811255d329e38d9dc7abb0dba923e5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000053_c9e88f9a0de82ecdbc0fce650ac791fb74811255d329e38d9dc7abb0dba923e5.png)
 
 You are going to make a Luck roll. Roll two ten-sided dice again. This time, use both your 'tens' and your 'units' dice. This will give you a number between 01 and 100. So, if the tens die comes up 00, and the units die comes up 4, you have rolled 4-this is known as rolling 1D100 and is the most common roll in RoL:RPG play. A triple zero means 100.
 
@@ -1825,9 +1825,9 @@ Knuckles hauls at the hammer, unable to comprehend the force holding it frozen i
 
 You have successfully disarmed your opponent. Go to 39 .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000054_5bd818860dd11d2311be8dc11259e9790253a5f04f1e42d38b242953d671466d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000054_5bd818860dd11d2311be8dc11259e9790253a5f04f1e42d38b242953d671466d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000055_174dfffaa5405fd3428ae9465be14a452d394ea25c0daae0ba46679bd4783f04.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000055_174dfffaa5405fd3428ae9465be14a452d394ea25c0daae0ba46679bd4783f04.png)
 
 ## 87
 
@@ -1905,7 +1905,7 @@ Go to 106 .
 
 (85)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000056_75c4ce7e4b77b9320570ac5aba2b38ffa972a8b5bc9ae02dbd5273c3dc3e9af3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000056_75c4ce7e4b77b9320570ac5aba2b38ffa972a8b5bc9ae02dbd5273c3dc3e9af3.png)
 
 ## 93
 
@@ -1979,7 +1979,7 @@ You will recover (erasing the mark for Hurt) when you leave the Folly and move t
 
 (77, 85)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000057_f2669e5c3a54b10f859b316f6753986153d8e7edc1039223d2d19e5245a14b09.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000057_f2669e5c3a54b10f859b316f6753986153d8e7edc1039223d2d19e5245a14b09.png)
 
 99
 
@@ -2023,9 +2023,9 @@ Go to 6 .
 
 (51, 63, 93)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000058_04bb87c564b9c1730eb29932a601f1f7ee7595b62718c1b1212d6058dd5b9635.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000058_04bb87c564b9c1730eb29932a601f1f7ee7595b62718c1b1212d6058dd5b9635.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000059_0cc1b2356fabb5a0877d51dad3416b74bb9c297bd2f080ba8d93bb1a401ba806.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000059_0cc1b2356fabb5a0877d51dad3416b74bb9c297bd2f080ba8d93bb1a401ba806.png)
 
 ## 102
 
@@ -2083,9 +2083,9 @@ Go to 99 .
 
 (43)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000060_449dd76bb525800e1777638f711798289c58f82c9fde9f1383dd131c7381b49f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000060_449dd76bb525800e1777638f711798289c58f82c9fde9f1383dd131c7381b49f.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000061_d2076f150234bfb3a947506fa2584c2a46e73bfefe29eda39d9383ddf517912c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000061_d2076f150234bfb3a947506fa2584c2a46e73bfefe29eda39d9383ddf517912c.png)
 
 ## 106
 
@@ -2153,7 +2153,7 @@ Go to 111 .
 
 (78, 84, 95, 99, 103)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000062_1fec8c0c8febddf65c348796a40db3ad93c30dc698d9b3a109c3d39faf426cb1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000062_1fec8c0c8febddf65c348796a40db3ad93c30dc698d9b3a109c3d39faf426cb1.png)
 
 ## 111
 
@@ -2204,9 +2204,9 @@ Now you've finished playing through this adventure, you can find more informatio
 | Werelight          | page 182   |
 | Wounds and Healing | page 144   |
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000063_c3b1e1ca9c38a721ba1e74ba6cb3c1a0c63d6e866d33145fcfa1cdcf766fbba9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000063_c3b1e1ca9c38a721ba1e74ba6cb3c1a0c63d6e866d33145fcfa1cdcf766fbba9.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000064_8bcd680591761f068a9d9e3642110a9f63e6a6d3f33c39ff0f3a750a0d148903.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000064_8bcd680591761f068a9d9e3642110a9f63e6a6d3f33c39ff0f3a750a0d148903.png)
 
 SCIENTIA POTESTAS
 
@@ -2222,7 +2222,7 @@ This chapter provides the rules for creating player characters-called 'investiga
 
 You can use all the following rules for creating nonplayer  characters  (NPCs),  too.  Alternatively,  you could just assign most NPCs the characteristics and skills they need to fulfil the role you have in mind for them and only use these rules for creating the few really important NPCs who will make frequent guest appearances in your game.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000065_399e39eca8161711f34d1903123f4cc5b70555111a7008538b0d7f09bbfe18cf.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000065_399e39eca8161711f34d1903123f4cc5b70555111a7008538b0d7f09bbfe18cf.png)
 
 otherworldly beings, and dangerous magic. As mentioned in the Introduction (page 13), while law enforcement agencies and civilians working cheek by jowl may not be what happens during criminal investigations in the real world-particularly when  it  comes  to  visiting  crime  scenes  and  interviewing witnesses-it gives you far more scope for telling interesting stories together.
 
@@ -2232,11 +2232,11 @@ If you've roleplayed before and want to try something a little different, or wan
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000066_0e40f439b6a1bcd4ab595f440ab8c8c1514b42728a7bfd3e96a82e8fb868d3be.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000066_0e40f439b6a1bcd4ab595f440ab8c8c1514b42728a7bfd3e96a82e8fb868d3be.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000067_4e7d1cbd3324ae974d7c7a038d4093c23f1826a2296d4af1d86c370896188860.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000067_4e7d1cbd3324ae974d7c7a038d4093c23f1826a2296d4af1d86c370896188860.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000068_49d6248092bb81eb1ce0c4520be9edcc637dd48ff86157982f5e04c9b8fdc010.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000068_49d6248092bb81eb1ce0c4520be9edcc637dd48ff86157982f5e04c9b8fdc010.png)
 
 1
 
@@ -2246,7 +2246,7 @@ Some people may arrive at the game with a clear idea about the type of investiga
 
 We  recommend  that  the  Game  Moderator  (GM)  and players  devote  their  first RoL:RPG session  to  discussing the setting, establishing expectations and boundaries ( Considerate Gaming , nearby), and character creation-this is sometimes known as 'Session Zero.' As well as allowing the group to talk about the types of investigators that are the best fit for the setting and giving each player the opportunity to describe the sort of character they might wish to play, a Session Zero makes sure that everyone is on the same page as  far  as  tone  ( Important:  Tone ,  page  123)  and  consent ( Important:  Consent ,  page  190)  are  concerned  (see  also Considerate Gaming , nearby).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000069_fc197fb00991ce26c455446023f0b56e409c6d3e800a362ae61ced4890253b94.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000069_fc197fb00991ce26c455446023f0b56e409c6d3e800a362ae61ced4890253b94.png)
 
 During the first session, the GM should encourage each player to consider not only what type of investigator they're going  to  play,  but  also  how  that  investigator  fits  into  the group  so  that  everyone  has  their  own  unique  role  ( Your Character Concept , page 46). Once everyone has some ideas to  work with, make sure each player has a blank character sheet, a pencil, an eraser, and some scrap paper, so they can build their investigators. A blank character sheet is provided after the Index for you to copy. Alternatively, an electronic version of the character sheet is available from chaosium.com if you're playing online or don't have access to a photocopier. See About  the  Character  Sheet (page  75)  for  details  on using the electronic character sheets.
 
@@ -2260,19 +2260,19 @@ One of the first steps to making sure everyone will be comfortable is for the GM
 
 in  the  group  is  struggling  with  a  particular scene's content. At any point, the GM or a player could call for a timeout to check everyone is ok with  the  game.  If  someone  is  uncomfortable with the content or direction of a scene, it is up to the GM to maintain that player's comfort and engagement by drawing a veil over proceedings or  moving  swiftly  on  without  dwelling  on  the details. A GM knows their group best and should aim  to  handle  the  situation  with  respect  and sensitivity for everyone involved.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000070_ce453bfcd08cd29632fc55a073265cdb7b31c9b5c7aa5000e752383d140da71a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000070_ce453bfcd08cd29632fc55a073265cdb7b31c9b5c7aa5000e752383d140da71a.png)
 
 Groups  may  also  want  to  discuss  the  use of  safety  tools,  such  as  the  'X-Card'  by  John Stavropoulos  or  'lines  and  veils.'  The  TTRPG Safety  Toolkit,  co-curated  by  Lauren  BryantMonk and Kienna Shaw, is available online and provides a quick-reference guide to many of the tools currently available-just search for 'RPG Safety  Tools'  or  'X-Card.'  (See  also Gaming Safety Tools , page 362.)
 
 Some  players  may  not  feel  able  to  express their  concerns  in  front  of  their  peers,  so  we advise the GM to visually assess whether anyone
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000071_00578103a4a5347c37aaca4bb8cbaabc7dc74f9c8b0f8107ef2930d1bd0287dd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000071_00578103a4a5347c37aaca4bb8cbaabc7dc74f9c8b0f8107ef2930d1bd0287dd.png)
 
 Important: no  player  should  be  coerced  or pressured into roleplaying through situations that make them feel uncomfortable or unsafe; that goes for the GM, too.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000072_340a129e7ba5ee9dfb5683786c4935a14677a76ddc74da1f18baef553f4f78e6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000072_340a129e7ba5ee9dfb5683786c4935a14677a76ddc74da1f18baef553f4f78e6.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000073_6c05e1f64946e153b0c3e7759d0f70d2ac1afa90b4bfa4111d2774599a13cd81.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000073_6c05e1f64946e153b0c3e7759d0f70d2ac1afa90b4bfa4111d2774599a13cd81.png)
 
 ## Character Creation Steps
 
@@ -2299,7 +2299,7 @@ Each occupation provides a list of skills your investigator should possess. Most
 
 An occupation shows how a character makes their living, be  it  as  a  doctor,  a  police  officer,  or  a  lowlife  fraudster. Each  occupation  reflects  a  particular  investigator's  field  of expertise.  In  game  terms,  this  translates  to  which  of  their
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000074_4f66fe3e73d216cf8dd3f7532fd34b49a72c4988d1e074b74925a72803bf35aa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000074_4f66fe3e73d216cf8dd3f7532fd34b49a72c4988d1e074b74925a72803bf35aa.png)
 
 We'll come back to sorting out exactly which skills and how much expertise your character has with them later ( Step Four: Determine Skills , page 52). For now, just make a note of the skills listed for the occupation on a piece of scrap paper for later reference.
 
@@ -2337,13 +2337,13 @@ Each of the following occupations and their associated skills are described in t
 - Tradesperson*
 - *Occupations held by characters in the Rivers of London novels.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000075_75ea9899507621fde1869f2ba8ab0e3b6422ba759a19476fe08792f932738fb5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000075_75ea9899507621fde1869f2ba8ab0e3b6422ba759a19476fe08792f932738fb5.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000076_021a0cc423b90268b71163cc46c720fb40a68d1b4e6d6e84cf8c04a14cc43498.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000076_021a0cc423b90268b71163cc46c720fb40a68d1b4e6d6e84cf8c04a14cc43498.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000077_013afbb09f83f6fcc26830be82741dc65fbcd41297377c3dfaf2b3c52568f3ed.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000077_013afbb09f83f6fcc26830be82741dc65fbcd41297377c3dfaf2b3c52568f3ed.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000078_e9ece4fa4f5c2b20f5608f25a32a4514ef0940baa3081a29400ef2ab4c60daa9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000078_e9ece4fa4f5c2b20f5608f25a32a4514ef0940baa3081a29400ef2ab4c60daa9.png)
 
 1
 
@@ -2361,7 +2361,7 @@ As  previously  mentioned  in Creating  Your  Character (page 44), Session Zero 
 
 The  adventures  investigators  go  on  in  roleplaying games  have  many  different  names,  depending  on what  RPG  you're  playing.  In RoL:RPG,  the  official name for them is a case file, but throughout the book, you'll also see them referred to as adventures and scenarios. A series of case files, or a complex case file consisting of many separate investigations-like the ones in the novels-are known as a 'campaign.'
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000079_174e132b9044637859c0679ceed1ea46ebcad03943f7f5c2aee281a66ae966f6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000079_174e132b9044637859c0679ceed1ea46ebcad03943f7f5c2aee281a66ae966f6.png)
 
 ## Step Two: Assign Characteristics
 
@@ -2378,7 +2378,7 @@ Remember, it's not what your character can or can't do, it's how you decide to p
 
 - POW (Power): represents force of will. A high value means a greater aptitude for-and resistance to-magic. POW dictates a character's number of 'magic points.' A character's starting magic points equal one-fifth of their POW ( Investigators with Magic , page 54).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000080_5c8e451bf8ae9a1ae830acd9f346ee2581b1c25eac6693d757e715e02a5a9247.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000080_5c8e451bf8ae9a1ae830acd9f346ee2581b1c25eac6693d757e715e02a5a9247.png)
 
 ## Assigning Characteristic Values
 
@@ -2403,15 +2403,15 @@ When  allocating  your  characteristic  values,  bear  this in mind: in the foll
 - INT 60 or greater is required for the advantages of Magical and The Knowledge.
 - POW 60 or greater is required for the advantages of Magical and Steadfast.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000081_ef90d505c6d9155e073678bf365ac8adc3237e7966013ff9a1831345627445aa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000081_ef90d505c6d9155e073678bf365ac8adc3237e7966013ff9a1831345627445aa.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000082_f7cf3bca2cfcdab253595d92ba283ff8abc7e7dc5d8564392db6064b0f948e4b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000082_f7cf3bca2cfcdab253595d92ba283ff8abc7e7dc5d8564392db6064b0f948e4b.png)
 
 1
 
 ## Strength
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000083_4d5661355ec615fd530d6109a3c5bdf108759a0f98aa470c3a60e574fa3ea1c0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000083_4d5661355ec615fd530d6109a3c5bdf108759a0f98aa470c3a60e574fa3ea1c0.png)
 
 - 0: enfeebled and unable to get out of bed.
 - 10: puny and frail.
@@ -2447,15 +2447,15 @@ When  allocating  your  characteristic  values,  bear  this in mind: in the foll
 - 99: world class athlete; human maximum.
 - 100+: beyond human dexterity (e.g., tiger).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000084_98cad2e08f69ba2035dddc1619f886603e4e62aeb0c4fa2ba8cfc9eedc4c0b4b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000084_98cad2e08f69ba2035dddc1619f886603e4e62aeb0c4fa2ba8cfc9eedc4c0b4b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000085_2c1c08d2a5598c72cc8d692d9c3a6e502cf542b49f282db5456d091643a45f77.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000085_2c1c08d2a5598c72cc8d692d9c3a6e502cf542b49f282db5456d091643a45f77.png)
 
 ## What the Numbers Mean
 
 ## Intelligence
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000086_92cb49a089e8f358ef0fc08773102b862769dd4cc81e5e3915432ebeebf90ee5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000086_92cb49a089e8f358ef0fc08773102b862769dd4cc81e5e3915432ebeebf90ee5.png)
 
 - 0: unable  to  comprehend  the  world  around them or communicate.
 - 10: slow  learner;  able  to  figure  out  only  the most basic maths or read beginner-level books.
@@ -2480,25 +2480,25 @@ When  allocating  your  characteristic  values,  bear  this in mind: in the foll
 
 Note: human POW  can exceed 100, but this is rare.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000087_7390603f2e3d288e5b722cd25943a755b71d35ef6bf282754311a4d15c331a92.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000087_7390603f2e3d288e5b722cd25943a755b71d35ef6bf282754311a4d15c331a92.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000088_9286edf3906f5179b136b3ab1ba85f00cf32c63a0d02992cc7ddc581bc400cf3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000088_9286edf3906f5179b136b3ab1ba85f00cf32c63a0d02992cc7ddc581bc400cf3.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000089_84e54b273d47d6d1c9e39290c66c556aa3a2ade77b478b905247665dfc99e521.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000089_84e54b273d47d6d1c9e39290c66c556aa3a2ade77b478b905247665dfc99e521.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000090_940c4a076800d3a3883b311829bf8dcdb04bc35f5850471fe1fdf60cacc67924.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000090_940c4a076800d3a3883b311829bf8dcdb04bc35f5850471fe1fdf60cacc67924.png)
 
 ## Introducing Nafeesa Jones
 
 To  help  illustrate  the  various  rules  in RoL:RPG,  we  are  pleased  to  introduce you to Nafeesa Jones, a recent recruit to the London Metropolitan Police Service.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000091_633a7398e4da14ce09c9a431652a7d623354bb748304e902a772fa00ad20314d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000091_633a7398e4da14ce09c9a431652a7d623354bb748304e902a772fa00ad20314d.png)
 
 As  we  already  know  Nafeesa's  occupation-Police Officer-it's time to decide  Nafeesa's  characteristics.  The player takes up a sheet of scrap paper and a pencil, and then divides Nafeesa's 280 characteristic points up as follows. They decide Nafeesa is going to be pretty tough and strong, and put 70 points into Strength  (STR).  Nafeesa  is  also  bright, with 60 points in Intelligence (INT). Realising  these  high  values  are  going to  have  to  be  offset  with  at  least  one lower  one,  the  player  gives  Nafeesa  a Dexterity (DEX) of 40, deciding she's a little  clumsy.  This  leaves  110  points,  so these are divided between Constitution (CON) 50,  and  Power  (POW)  60,  which allows Nafeesa  to  take the Magical advantage in the next step ( Advantages , page 50).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000092_999aa192a015f70436669d7212e7108bdd14ba73b61789360d7c806d166e4497.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000092_999aa192a015f70436669d7212e7108bdd14ba73b61789360d7c806d166e4497.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000093_b35d8dfe770d07f85c1f4deab623643991268f668f550ccc3355910e38fd80c4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000093_b35d8dfe770d07f85c1f4deab623643991268f668f550ccc3355910e38fd80c4.png)
 
 ## Half Characteristic Values
 
@@ -2519,7 +2519,7 @@ Example: Nafeesa's  player  rolls  a  4  and  a  6  for  a  total  of  10 to  de
 
 Some  non-player  characters  (NPCs)  have  a  Luck value,  e.g., genii  locorum  and  the  fae,  but,  on  the whole-unless  they're  really  important  story-wise or have been granted a boon by a genius loci  ( The Gift of Luck , page 243)-human NPCs do not have a Luck value.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000094_03d083026d9dfc33b4cf0b585efe76af3e842dadbb0012012f1145e293a83a28.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000094_03d083026d9dfc33b4cf0b585efe76af3e842dadbb0012012f1145e293a83a28.png)
 
 ## Movement Rate (MOV)
 
@@ -2536,7 +2536,7 @@ Half is the only fraction used in relation to characteristics and skills in RoL:
 
 Each player chooses their investigator's age. Most investigators will be adults, but some may begin the game as a  teenager, like Abigail Kamara ( A Rogues' Gallery ,  page 237). The basic rules don't make any distinction based upon age,  although  certain  occupations  cannot  be  chosen  if  an
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000095_e1bf063a69b30e5c2d40af45a38126853025d02b1d04c91a67aa7c2df9de6438.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000095_e1bf063a69b30e5c2d40af45a38126853025d02b1d04c91a67aa7c2df9de6438.png)
 
 - When a 'characteristic roll' is referred to in the text, e.g., a STR roll or a POW roll, this means you use the full value (highest number) as the target number.
 
@@ -2565,13 +2565,13 @@ Your character can pull strings with some powerful people. This could be a gover
 
 In  play,  the  GM  is  encouraged  to  be  generous  when  a player seeks to make use of their connections, and generally they  should  be  able  to  get  what  they  want  without  the need  for  a  Social  skill  roll  ( Skills ,  page  86).  However,  as
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000096_5cc1e5516e939ed143d8075cd1b73aca5348fa0310e12621560caa94582a4dac.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000096_5cc1e5516e939ed143d8075cd1b73aca5348fa0310e12621560caa94582a4dac.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000097_054b2522a761c3adaec9bbcb85b3fad3a6f1a4e9dfdbb2601151627232345f69.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000097_054b2522a761c3adaec9bbcb85b3fad3a6f1a4e9dfdbb2601151627232345f69.png)
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000098_b042955e37c611f5b59fd55e36ecd2f32d397848c1b8e6cb4b159f99bb7b1fdb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000098_b042955e37c611f5b59fd55e36ecd2f32d397848c1b8e6cb4b159f99bb7b1fdb.png)
 
 mentioned, the GM should be equally creative in what the connection  demands  in  return.  The  investigator  may  be asked to copy confidential police files and deliver them to the connection, to pay someone a visit and put the frighteners on  them,  or  whatever  else  the  GM  thinks  might  suit  the connection's agenda.
 
@@ -2631,9 +2631,9 @@ Your character has one particular firearm with which they are extremely familiar
 
 Any investigator  can  choose  to  take  the  Magical  advantage  and,  therefore,  the  Magic  skill-not  just  police  officers with ties to the Folly. In the novels, we initially see the Rivers of London world through Peter Grant's eyes as a result of his recruitment to the Folly, but it soon becomes apparent that he and Nightingale are not the only Newtonian practitioners in existence-let alone the only people who use magic in some form or another. Magic is increasing in the world, meaning those who use magic can-and do-come from all walks of life. The only difference it makes in game terms is whether or not a character is classed as a Newtonian Practitioner (page 15) or a Hedge Wizard (page 171), which in turn affects an investigator's choice of starting spells ( Investigators with Magic , page 54).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000099_345ecdcc39eebcb91405fd8be0a83738d852f99f06295cd79969c2eae10d257a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000099_345ecdcc39eebcb91405fd8be0a83738d852f99f06295cd79969c2eae10d257a.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000100_9f56135bf75f5667051355fb1327d22843cb1eab67f371b4e801c09d7dbc261c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000100_9f56135bf75f5667051355fb1327d22843cb1eab67f371b4e801c09d7dbc261c.png)
 
 1
 
@@ -2698,7 +2698,7 @@ London  taxi  'cabbies'  are  renowned  for  their  ability  to navigate around 
 
 Everyone automatically gets their own language as a free skill,  with  a  starting  percentage  value  equal  to  their  INT or 60% (whichever is higher). If a character was raised in a bilingual household, they receive both relevant languages at the same value if they are equally fluent in them; if they aren't
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000101_24f97ce1c96d9588c09c210436106da92a46306e762bb1c6e030764bf756ade1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000101_24f97ce1c96d9588c09c210436106da92a46306e762bb1c6e030764bf756ade1.png)
 
 as fluent in one of those languages, they receive it at half their INT value or 30% (whichever is higher).
 
@@ -2706,7 +2706,7 @@ Example: Nafeesa's INT is 60, so she receives Language (English) as a free start
 
 Note: it is assumed most investigators will have up to two free starting languages based on their upbringing. If you wish for your character to know more languages beyond these starting ones, you must select the Language skill when determining your character's skill choices.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000102_e53b7349bffcd25e677f34772865dcf4677a05ac9db7491978289f8f0a5c80f4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000102_e53b7349bffcd25e677f34772865dcf4677a05ac9db7491978289f8f0a5c80f4.png)
 
 ## Common Skills
 
@@ -2722,9 +2722,9 @@ Note: it is assumed most investigators will have up to two free starting languag
 
 ## Combat Skills
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000103_c9fe4d5ccd7b4b4de933f7ed48f5e4383e84699fee29a825dabc7910cb63bb50.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000103_c9fe4d5ccd7b4b4de933f7ed48f5e4383e84699fee29a825dabc7910cb63bb50.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000104_f8d68c2fa0a3934618e0276741e583f731c54507f462307d3f7233ac63075a9c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000104_f8d68c2fa0a3934618e0276741e583f731c54507f462307d3f7233ac63075a9c.png)
 
 ## Choosing Your Skills
 
@@ -2745,17 +2745,17 @@ If  you  still  have  some  of  your  six  starting  skills  left to  choose,  l
 
 Once you have selected your character's starting six skills to  boost,  any  other  common  or  combat  skills  start  at  30% and have a half value of 15%. As noted, your character only gains expert skills if they were chosen in your starting six. For more about expert skills, see Chapter 2 .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000105_c5c76faefe8d675f127293bbc7f7c642d26f461de5f3477c6762aae19cf6c43e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000105_c5c76faefe8d675f127293bbc7f7c642d26f461de5f3477c6762aae19cf6c43e.png)
 
 1
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000106_3a6e8a9d9b54f61c58be681e9540c901c2208f0144a23dcb0edf6be7d82bf440.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000106_3a6e8a9d9b54f61c58be681e9540c901c2208f0144a23dcb0edf6be7d82bf440.png)
 
 ## The Firearms Skill
 
 Gun  control  laws  and  access  to  firearms  varies  from  country  to  country and this  may  affect  how  easy  it  is  for players  to  choose  the  Firearms  skill for  their  investigator.  For  example,  in the US, firearms are more common and the  laws  governing  them  depend  on the state you are in. However, in the UK, firearms are rare and most people have never touched one. Legal possession of a  firearm  requires  a  tightly  regulated licence and the weapon must be stored in  a  locked  cabinet  when  not  in  use. Thus, in the UK, people likely to have a firearm might be the following:
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000107_049db8267f26ca23541e4a311b41c1252bbcf05a7b7df8eeaeb15c5a8bd0c4c0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000107_049db8267f26ca23541e4a311b41c1252bbcf05a7b7df8eeaeb15c5a8bd0c4c0.png)
 
 - Farmers are likely to own a shotgun.
 - Wealthy people may use a shotgun or rifle when grouse, pheasant, or clay-pigeon shooting.
@@ -2783,15 +2783,15 @@ Sense Vestigia is a common skill, so characters who do not take the Magic skill 
 
 In  a  London-based  campaign,  practitioners  who  join  the Folly are expected to swear an oath, like the one taken by Peter  Grant 2 .  The  exact  form  of  the  attestation  depends on  whether  the  investigator  is  a  police  officer  or  a  civilian consultant ( The Practitioner's Oath , page 171).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000108_5c5cc5239abdba557e4f3723e41a00fe0dae31ef5022f74ed8a87b002fe27207.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000108_5c5cc5239abdba557e4f3723e41a00fe0dae31ef5022f74ed8a87b002fe27207.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000109_f3856adc4f7e8f6ae3c405071f5da0e7a4058f05f64786b5d17a780e21a1a8c0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000109_f3856adc4f7e8f6ae3c405071f5da0e7a4058f05f64786b5d17a780e21a1a8c0.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000110_93d62fe9d72a94257e83e539e43cc81bae0f8bef25ecadf6c99a8fe5bd54ba37.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000110_93d62fe9d72a94257e83e539e43cc81bae0f8bef25ecadf6c99a8fe5bd54ba37.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000111_0014527abd0b3ea49f8ab45cf536869a1f174f7f5503ecfa605b9811e140d015.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000111_0014527abd0b3ea49f8ab45cf536869a1f174f7f5503ecfa605b9811e140d015.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000112_a74bb533f97b2de66f85b5ee0440f3bd357064052b1b5deb6417f55cd75ea269.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000112_a74bb533f97b2de66f85b5ee0440f3bd357064052b1b5deb6417f55cd75ea269.png)
 
 ## Nafeesa Jones (continued)
 
@@ -2803,7 +2803,7 @@ In  Step  Three,  Nafeesa's  player  chose  the Magical advantage, allowing her 
 
 With these skills, Nafesesa has the makings of a good officer-she has a competent knowledge  of  the  law,  can  diffuse  difficult situations  with  her  Read  Person  and  Social skills, and if anyone resists arrest, her Fighting skill should stand her in good stead. Her other common  skills  remain  at  their  base  value, so Nafeesa has:
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000113_aacbd848693d91690db1fde9d227c1388f6a2646ab6c4730f9cf86e6d8d38004.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000113_aacbd848693d91690db1fde9d227c1388f6a2646ab6c4730f9cf86e6d8d38004.png)
 
 - Law (60%): she has a good understanding of British law.
 - Magic (60%): she is a Newtonian Apprentice (page 170).
@@ -2822,11 +2822,11 @@ Alongside  these,  Nafeesa  has  30%  in  each of  the  remaining  common  and  
 - Stealth (30%): she can maybe creep up on a burglar.
 - Firearms (30%): she can fire a stun gun if needs be.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000114_d8c5814b295230243d9deb600732b3a88f58e35e4f4e45efb0fdf165265f5757.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000114_d8c5814b295230243d9deb600732b3a88f58e35e4f4e45efb0fdf165265f5757.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000115_69e077a1de2ae11f8552492c3d293f96f0208883d1f7cee6d06688c122183fba.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000115_69e077a1de2ae11f8552492c3d293f96f0208883d1f7cee6d06688c122183fba.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000116_4522ef8e31f21b8095c3ea32ec56931032bcf7fd3c223ffedda7896ffcc09a3a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000116_4522ef8e31f21b8095c3ea32ec56931032bcf7fd3c223ffedda7896ffcc09a3a.png)
 
 1
 
@@ -2868,7 +2868,7 @@ Our  childhood  plays  a  strong  role  in  making  each  of  us the  person  we
 
 The Rivers  of  London novels  present  us  with  a  diversity  of characters, from a variety of different cultural backgrounds. We learn very quickly that Peter Grant is of mixed heritage and  that  his  mother  is  from  Sierra  Leone.  We  are  shown how this shapes Peter's character, not least in his preference for spicy food!
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000117_8c180b752c9e2e18f0a50a229186afb6c79a1c70c38a90826cf674d31b519c6f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000117_8c180b752c9e2e18f0a50a229186afb6c79a1c70c38a90826cf674d31b519c6f.png)
 
 The obvious thing for most of us is to play someone from our own culture. If you wish to play someone of a different gender, sexuality, ethnicity, or culture, it should go without saying  that  you  should  aim  to  do  so  sensitively  and  with respect, avoiding simple or offensive stereotypes.
 
@@ -2896,7 +2896,7 @@ Consider the following questions:
 
 An alternative way of finding out how the investigators first came into contact with the supernatural is to run short flashback scenes for each investigator as part of Session Zero ( Creating Your Character , page 44). Another suggestion for how to use flashbacks can be found in Chapter 5 ( Using Flashbacks , page 224).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000118_a1ea48b21fefe5295d0a9f17c3d68ae10e20f22eeb93abab554474d7a2f87a8c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000118_a1ea48b21fefe5295d0a9f17c3d68ae10e20f22eeb93abab554474d7a2f87a8c.png)
 
 ## Affluence Rating
 
@@ -2913,7 +2913,7 @@ These  may  be  difficult  questions  for  anyone  unfamiliar with the Rivers of
 
 The  only  profession  which  demands  a  certain  level  of wealth is Dilettante, which always begins the game as Rich. If  you wish to choose the Dilettante occupation, you must select the Rich advantage during Step Three (page 50).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000119_435b4ae473b60419cd8d9195bf03021f45e33257ab681f7653aba0ce1c6c16b5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000119_435b4ae473b60419cd8d9195bf03021f45e33257ab681f7653aba0ce1c6c16b5.png)
 
 1
 
@@ -2925,7 +2925,7 @@ a different feel to one where the group is staying in a luxury hotel suite. Of c
 
 For instance, in play, accommodation and travel are likely to  feature  primarily  as  background  details  to  the  main story.  The  characters  may  live  in  a  rundown  tower  block or a plush Knightsbridge apartment; they may have an old banger (beater/junker) or a brand-new Italian sports car-as determined by their affluence rating and living standard. In game terms, these things often just add flavour and colour. On the other hand, flavour  and  colour  are  important,  and the story of a group staying in a seedy motel is going to have
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000120_f84a2afc705672499df3bd09b24e8774388c878aef7ed87cd6a5d2ffcc0fd696.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000120_f84a2afc705672499df3bd09b24e8774388c878aef7ed87cd6a5d2ffcc0fd696.png)
 
 Example: Nafeesa begins the game with an affluence rating of average, affording her an average living standard. She may stay in moderately priced hotels, eat out (economically), and take the occasional  taxi.  None  of  this  requires  any  bookkeeping  on  the player's part.
 
@@ -2935,7 +2935,7 @@ Where living standards are likely to have an impact is in major purchases. For u
 
 ## Affluence Rating: Poor
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000121_5372ab8d437234d83ce747d8445f631e65a4062969e1e163cde21d8d8715b527.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000121_5372ab8d437234d83ce747d8445f631e65a4062969e1e163cde21d8d8715b527.png)
 
 ## Affluence Rating: Wealthy
 
@@ -2953,7 +2953,7 @@ A reasonable level of comfort, three meals a day, and occasional treats.
 - Travel: standard forms of travel can be used, but not first class; likely to own a reliable car.
 - Major purchases: one major purchase is possible each year.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000122_1aee2445deb7eda2eb3f9a96cff5f9f9b309dc4aa20b00ef5d934b2935ba7f61.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000122_1aee2445deb7eda2eb3f9a96cff5f9f9b309dc4aa20b00ef5d934b2935ba7f61.png)
 
 This level of wealth affords luxury and comfort.
 
@@ -2969,15 +2969,15 @@ This level of wealth affords great luxury and comfort.
 - Travel: first class or private jet; can own numerous luxury cars, probably chauffeur-driven.
 - Major purchases: there are few limits to what this character can afford.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000123_84a4422a1277bcb265c25a6cc52e1227b68361319d2caddb30a71a444a8dde03.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000123_84a4422a1277bcb265c25a6cc52e1227b68361319d2caddb30a71a444a8dde03.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000124_076799b5f69d1c6ffa9ff2630d2cf2328a9cab6d027f9995188fed86e3d60438.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000124_076799b5f69d1c6ffa9ff2630d2cf2328a9cab6d027f9995188fed86e3d60438.png)
 
 As  we've  already  mentioned,  careful  tracking  of  money isn't  a  part  of  this  game,  so  the  GM  should  use Table 2: Living Standards as a guide to handwaving most spending. If  it  seems  that  an  investigator  is  overreaching  themselves financially, the GM may decide they've run out of credit. This can  also  be  used  to  build  story-perhaps  the  investigators have to beg a loan from a shady contact, pawn an item of value, or lean on a wealthy relative to get the funds they need. Any of these options can be used to introduce an NPC, with their  own  potential  complications  and  demands,  thereby enriching the story.
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000125_fd939451477dba304968ad0be1960ab74f297d5e7f9d1c60b87acc9d133b3eb9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000125_fd939451477dba304968ad0be1960ab74f297d5e7f9d1c60b87acc9d133b3eb9.png)
 
 You are  the  arbiter  of  whether  something  is  within the bounds of an investigator's living standard or if they've  exceeded  their  spending  capability/credit level.  Having  said  that,  one  thing  to  note  is  that membership of the Folly can go a long way towards mitigating  the  problems  of  a  Poor  affluence  rating. The  Folly  can  provide  food  and  rent-free  lodging at  the  drop  of  a  hat.  It  also  has  immense  financial resources based on its vast property portfolio and 80 years of accumulated investments, and these are outside  of  official  Met  budgetary  control.  So,  even those  characters  who  are  not  being  paid  a  salary by  the  Folly  will  be  able  to  bill  it  for  essential purchases-such as successive phones, when their old ones inevitably succumb to magical destruction.
 
@@ -2987,7 +2987,7 @@ The  final  part  of  the  backstory  step  is  for  each  player  to identify  
 
 Each occupation has a short list of suggested contacts-if you are struggling to come up with people, we suggest you take  a  look  at  these  for  inspiration.  Whoever  these  people are,  you  trust  them  and  they  trust  you.  Your  friends  and family are not the same people covered by the Connected advantage  (page  50),  whose  assistance  always  comes  with strings attached.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000126_bfe797418c0c232f9d9e09047adfc98323765a1e8a2103d1e7a2d3593cff2aaf.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000126_bfe797418c0c232f9d9e09047adfc98323765a1e8a2103d1e7a2d3593cff2aaf.png)
 
 ## Step Six: Equip the Character
 
@@ -3011,7 +3011,7 @@ Once you've worked out your investigator's starting equipment, it's time to add 
 
 Remember: items  that  fit  the  profile  of  your  investigator's living  standard  do  not  need  to  be  purchased-they  simply own those, just as they automatically own-or have access to-the equipment that comes with their profession.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000127_38680fb50156ca385f2f285c1f577ac07836dfca554c5f87ae5a8aba1427b952.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000127_38680fb50156ca385f2f285c1f577ac07836dfca554c5f87ae5a8aba1427b952.png)
 
 ## Weapons
 
@@ -3030,9 +3030,9 @@ The Combat section  (page  123)  explains  how  weapons are used in combat and h
 
 For  fire,  explosions,  or  other  types  of  attacks  that  are not  covered  by Table 3 ,  refer  to Table 7: Other Forms of Damage (page 149).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000128_ca39f7ca36b3e6b64b022ae1da74f3a72876e982cab121a56e97c5a6c1d77338.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000128_ca39f7ca36b3e6b64b022ae1da74f3a72876e982cab121a56e97c5a6c1d77338.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000129_64d494bf64cdb1a627aeceaf7dec35911352235bb2bc0148153caaf8e2b95aa9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000129_64d494bf64cdb1a627aeceaf7dec35911352235bb2bc0148153caaf8e2b95aa9.png)
 
 Table 3: Weapons
 
@@ -3073,7 +3073,7 @@ Table 3: Weapons
 
 † Stun Gun: on a successful attack, the target must make a Hard CON roll; if failed, they are stunned for 1D6 rounds and all actions are made with a penalty die. Stun gun attacks do not get a bonus die for Point-Blank Range (page 138).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000130_c61cd9f6ff8b93c8f79879067c35aeb7e62e2344b016fa209551afdd4b9e0da9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000130_c61cd9f6ff8b93c8f79879067c35aeb7e62e2344b016fa209551afdd4b9e0da9.png)
 
 ## Occupations
 
@@ -3081,7 +3081,7 @@ This  section  looks  at Investigator Occupations in  greater detail.  Each  ent
 
 ## ADDITIONAL RULES
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000131_d9d8d96737ca080d25f4940e16c353eae672b2cc81e6a66d786ae4096c25dadf.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000131_d9d8d96737ca080d25f4940e16c353eae672b2cc81e6a66d786ae4096c25dadf.png)
 
 If  a  player  has  their  heart  set  on  an  occupation for  their  investigator  that  isn't  listed  here,  rules for creating new occupations can be found in the Advanced Character Creation section, page 309.
 
@@ -3123,7 +3123,7 @@ Equipment: depends on the discipline, but includes appropriate sports clothing, 
 
 Without  an  author,  there  would  be  no Rivers  of  London novels,  nor  would  there  be  this  book!  Someone  who  takes the Author occupation uses words to define and explore the human condition, especially the range of human emotions, through a range of mediums, including short stories, novels, poetry,  plays,  screenplays,  and  comics.  Their  labours  can often be solitary and the rewards solipsistic: only a relative handful make much money. The work habits of authors vary widely.  Typically,  an  author  might  spend  months  or  years researching in preparation for a book and then withdraw for periods of intense creation. And, as for the hours they keep…
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000132_c595766872fb79358d69e5dcc8548af8467e8f7dc510191ae93cdd0ec5d1c8ea.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000132_c595766872fb79358d69e5dcc8548af8467e8f7dc510191ae93cdd0ec5d1c8ea.png)
 
 Required skills: Art/Craft (Literature), Research.
 
@@ -3151,11 +3151,11 @@ Members of the clergy are the priests or ministers of their faith, responsible f
 
 Where a member of the clergy serves is different between faiths. For example, the hierarchy of the Christian Church usually  assigns  clergy  to  their  respective  parishes  or  sends them on evangelical missions, most often to a foreign country as  a  missionary.  Within  Islam,  the  community  seeks  out  a new imam if a vacancy arises, either from within their own congregation or by invitation.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000133_2bfe81d360b11d1e36d7d357baf6365e1b976256f9e53e90f4a22ce87341325c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000133_2bfe81d360b11d1e36d7d357baf6365e1b976256f9e53e90f4a22ce87341325c.png)
 
 Footnote: 6 Whispers Under Ground
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000134_062b07ce95a8b24c54983b5680ff08c00ebfcad81328111ab272e2e11fbd6474.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000134_062b07ce95a8b24c54983b5680ff08c00ebfcad81328111ab272e2e11fbd6474.png)
 
 1
 
@@ -3185,9 +3185,9 @@ And then we have the computer hacker, who uses computers and computer networks e
 
 Required skills: Computer Use, Tech. Recommended skills: Research.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000135_98508c2a55894a51633d9a884199068225d1a33005ea1760f1f86f53f9258cd7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000135_98508c2a55894a51633d9a884199068225d1a33005ea1760f1f86f53f9258cd7.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000136_63331387c51032e08fc1db7efdb784757d1f446eb8c57a006b8efc155e66e1bc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000136_63331387c51032e08fc1db7efdb784757d1f446eb8c57a006b8efc155e66e1bc.png)
 
 Suggested  contacts: other  IT  workers,  corporate  workers and managers, specialised internet web communities.
 
@@ -3232,7 +3232,7 @@ Enforcers are the muscle of the underworld. Hired to be guards or otherwise the 
 
 Money frees the dilettante to be eccentric and outspoken, occasionally in ways that could be detrimental to other people's well-being 8 . The dilettante has had plenty of time to learn how to be charming and sophisticated; what else has been done with that free time is likely to betray the dilettante's true character and  interests.  Covers  trust  fund  babies,  wealthy  individuals (possibly retired), and dot com millionaires.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000137_ebfe56624f2ae399ba3755a0f808f1581a60f159a9b29b6a9433d389eae97c11.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000137_ebfe56624f2ae399ba3755a0f808f1581a60f159a9b29b6a9433d389eae97c11.png)
 
 1
 
@@ -3274,11 +3274,11 @@ Recommended skills: Navigate, Observation, Read Person, Social.
 
 Suggested contacts: customers, businesses, law enforcement, and general street-level life.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000138_ddf3e11eff776a01e219c68e91c4c0ea57a725a0e30e4534502dad0225133bfe.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000138_ddf3e11eff776a01e219c68e91c4c0ea57a725a0e30e4534502dad0225133bfe.png)
 
 Equipment: vehicle and appropriate licence, mobile phone, satellite navigation device, relevant A-Z Guide (if in the UK) or street maps (physical or virtual) as back up; potentially a credit card reader and/or cash box if receiving money directly from customers.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000139_0548699205a6a8c769794712314c8430200381af46f56d4be7998174c4822fc6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000139_0548699205a6a8c769794712314c8430200381af46f56d4be7998174c4822fc6.png)
 
 ## Entertainer (Rivers)
 
@@ -3304,9 +3304,9 @@ Suggested  contacts: local bank,  local politicians, local rural businesses.
 
 Equipment: farm vehicle, shotgun (licenced), tools (hammer, axe, etc.); other equipment varies depending on whether the farm is arable, pastoral, or mixed-or, indeed, more highlyspecialised, such as a fish farm.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000140_bcc365f5e38488d184a4b662c3a928446491319d4124c261881bd2daa7656802.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000140_bcc365f5e38488d184a4b662c3a928446491319d4124c261881bd2daa7656802.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000141_6834eff7bcbf6fc3d5fc661e090d37f7a07ebc8b41c6d13120aa01f572e3915a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000141_6834eff7bcbf6fc3d5fc661e090d37f7a07ebc8b41c6d13120aa01f572e3915a.png)
 
 1
 
@@ -3360,7 +3360,7 @@ Equipment: press pass, notebook, mobile phone, potentially portable  audio/video
 
 Learned in the law of the country in which they serve, the lawyer acts as an attorney, counsel, or solicitor, able to relate abstract  legal  theories  and  knowledge  to  present  solutions for  their  clients.  May  be  hired  or  appointed  by  a  court  on an individual basis or may be privately retained by a wealthy client or business.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000142_29c58fbfcad3a4f26be719c86cb02fe53418b8ea45c625130027886f87db9283.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000142_29c58fbfcad3a4f26be719c86cb02fe53418b8ea45c625130027886f87db9283.png)
 
 The term 'lawyer' tends to mean an attorney in the US, while in England it loosely refers to a variety of professions including barristers, solicitors, and legal executives. In North America, the state or provincial bar of a particular state or province must sanction one's practise of law. In England and Wales,  the  lawyer  must  be  sanctioned  by  the  appropriate approved regulator (the Solicitors Regulation Authority for solicitors, the Bar Standards Board for barristers, or CILEx Regulation for chartered legal executives).
 
@@ -3416,7 +3416,7 @@ Suggested contacts: hospital workers, physicians, community workers.
 
 Equipment: a nurse's bag containing syringes, dressings and surgical  tape,  saline,  alcohol  gel,  alcohol  wipes,  disposable gloves,  specimen  bottles,  bandage  scissors,  clinical  waste bags, sharps bin, diagnostic equipment (stethoscope, blood pressure monitor, thermometer, etc.), and a small selection of drugs (mostly over-the-counter ones, such as painkillers and cold medication).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000143_34349318ee4c3e8bed5d00212932f92d2283b01263e099ddee017bb3f998354e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000143_34349318ee4c3e8bed5d00212932f92d2283b01263e099ddee017bb3f998354e.png)
 
 1
 
@@ -3450,9 +3450,9 @@ Suggested contacts: universities, parapsychological publications.
 
 Equipment: notebook, pens, flashlight, EMF magnetic field detector, dowsing rods, infrared thermal imager, hand-held recording equipment.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000144_8c9b13529a1763860ae1948252e059b9af3b651de5d0b1de48899b05e5e2dcc2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000144_8c9b13529a1763860ae1948252e059b9af3b651de5d0b1de48899b05e5e2dcc2.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000145_db33fddfb290340c5af8a8185777d2ea00d28d6b3025fb3b34c94ed66d35c89a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000145_db33fddfb290340c5af8a8185777d2ea00d28d6b3025fb3b34c94ed66d35c89a.png)
 
 ## Police Officer/Detective (Rivers)
 
@@ -3470,24 +3470,24 @@ The qualifications required to become a police officer, and subsequently a detec
 
 British  police  officers  are  trained  to de-escalate situations before resorting to physical intervention, using what is known as the 'Four Es' model:
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000146_682788314ad5513da8bfbfc142efaa922e32b6aa7e97cc70afd6427b510453df.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000146_682788314ad5513da8bfbfc142efaa922e32b6aa7e97cc70afd6427b510453df.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000147_e95dd70652c99414cce9738376cc7773869755336b065049d70d34f0d397d751.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000147_e95dd70652c99414cce9738376cc7773869755336b065049d70d34f0d397d751.png)
 
 - Engage: the officer verbally establishes their awareness and understanding of the situation with the other person or persons.
 - Explain: the officer explains the situation to the person or persons involved with dignity and respect.
 - Encourage: the officer encourages reasonable behaviour/compliance, reinforced with further explanation, if required.
 - Enforce: if the previous three steps fail to resolve the situation, the officer must then escalate to physical intervention, which may involve restraint and/or arrest.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000148_e88617bbbeeb3ead4f8258ff3f0f28a504d991735eb94fc2b894fec156b557fe.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000148_e88617bbbeeb3ead4f8258ff3f0f28a504d991735eb94fc2b894fec156b557fe.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000149_7a6c5be2752d596ef5de5f410df08342edcc7b07d66a395c92b58c3e8688922e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000149_7a6c5be2752d596ef5de5f410df08342edcc7b07d66a395c92b58c3e8688922e.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000150_43a9591aa599ab317500b03f38b60df54db1715a90bc1fa614ee013a48a2883a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000150_43a9591aa599ab317500b03f38b60df54db1715a90bc1fa614ee013a48a2883a.png)
 
 Footnotes: 11 Detective Stories , 12 Rivers of London
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000151_f45146f017e99118f7b85b81ef2ed322311b0d6a3bf48add85cb4afd86ea877b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000151_f45146f017e99118f7b85b81ef2ed322311b0d6a3bf48add85cb4afd86ea877b.png)
 
 1
 
@@ -3515,21 +3515,21 @@ Suggested contacts: law enforcement, clients.
 
 Equipment: notebook,  pens,  camera,  covert  surveillance equipment, PI licence, laptop, mobile phone.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000152_b4ae50811f14e5d83dc324f874e7afcd35806d94f7fd552debe4b71b1746953c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000152_b4ae50811f14e5d83dc324f874e7afcd35806d94f7fd552debe4b71b1746953c.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000153_b4a4cb0d9ea670346d6ff7ee416a5c75f19fd466c7004eb93bd11fe1a485a573.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000153_b4a4cb0d9ea670346d6ff7ee416a5c75f19fd466c7004eb93bd11fe1a485a573.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000154_509a1e1f2fffac273ca9a24570146693c668fbcd742c58eb679020895170462f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000154_509a1e1f2fffac273ca9a24570146693c668fbcd742c58eb679020895170462f.png)
 
 ## The National Crime Agency
 
 Founded  in  2013,  the  NCA  heads  the UK's  fight  against  serious  and  organised crime. It is separate to the police but does employ attested constables, among  a  range  of  other  personnel from a wide variety of specialisms and backgrounds.  Not  only  does  it  investigate  serious  crime  and  offer  victim support, but it also provides specialist advice,  support  services,  and  personnel  to  individual  police  forces-such as forensic specialist advisers, as well as hosting several important databases, including the National Injuries Database (page 210). Its personnel are referred to as 'Officers.'
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000155_7ae6e663977a48e664afc9638c354743f24df7184755caf7dd25ccf52f89ef45.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000155_7ae6e663977a48e664afc9638c354743f24df7184755caf7dd25ccf52f89ef45.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000156_46db49be849ff25892951fae6cf7bda84b9fceb82b2d1acc26c77f77e268165d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000156_46db49be849ff25892951fae6cf7bda84b9fceb82b2d1acc26c77f77e268165d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000157_dc627fe1127191c3f27c6b993dea1f308ca5ef2388a8a01411ae2683b2afeb7b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000157_dc627fe1127191c3f27c6b993dea1f308ca5ef2388a8a01411ae2683b2afeb7b.png)
 
 ## Service Member (Rivers)
 
@@ -3567,7 +3567,7 @@ Suggested contacts: families and individuals who have been involved with social 
 
 Equipment: photo  ID  card,  mobile  phone,  case  notes, notebook, pen.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000158_a82f9380ca0e7f2207a2977ea0fbf34ea6ce23a4593f3623c5ab9852698886bd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000158_a82f9380ca0e7f2207a2977ea0fbf34ea6ce23a4593f3623c5ab9852698886bd.png)
 
 1
 
@@ -3597,11 +3597,11 @@ Suggested  contacts: other  tradespeople  in  the  same  or related area of work
 
 Equipment: varies  depending on the trade; for example, a carpenter  would  have  access  to  saws,  planes,  screwdrivers, drills, etc., while a plumber would have wrenches, drain rods, chemicals, sealant, etc.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000159_9b38c2247f51ad506884ebc945c2325edcb89be3c42d331eef2fb4735b8e50e0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000159_9b38c2247f51ad506884ebc945c2325edcb89be3c42d331eef2fb4735b8e50e0.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000160_916c65de9ed992abc41aa4b8e563d9ce0f66c17966a9e20d3755bbc63b052bd8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000160_916c65de9ed992abc41aa4b8e563d9ce0f66c17966a9e20d3755bbc63b052bd8.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000161_8decaae66ea0f91af1f185121880b9081a5c1ed5fcba58b9efdd81aeab0429a4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000161_8decaae66ea0f91af1f185121880b9081a5c1ed5fcba58b9efdd81aeab0429a4.png)
 
 ## About the Character Sheet
 
@@ -3609,23 +3609,23 @@ The RoL:RPG  character sheet has various boxes  for  the  player  to  fill  in  
 
 All  the  information  the  player  needs  to access during the course of a game is located on  the  character  sheet's  front  page  ( A-H ). Characteristics and skills have a space to fill in their full and half values. If you are using a downloaded 'autocalc' sheet from www.chaosium.com, it will automatically calculate half values for you once you type in the full value in the space provided.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000162_4577a04ec915a8f611513ae8e7c20c4523e154a2c138983d29ae0bfd7c58436f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000162_4577a04ec915a8f611513ae8e7c20c4523e154a2c138983d29ae0bfd7c58436f.png)
 
 The Damage box ( F ) contains check boxes for the  different  damage  conditions: Hurt (page 144), Bloodied (page 144), and Down (page 144). It also contains an Impaired check box ( Impairment , page 118). The GM will let a player know when they need to check these boxes during a game as a result of any damage their investigator suffers during combat.
 
 The spaces for Luck and magic points in the Supplemental Info box ( C )  are  a  little  different-they  are  labelled  'Starting'  and  'Current,' rather than 'Full' and 'Half.' The 'Starting'  space  records  the  original  value,  while the 'Current' space records how that changes during  a  game.  When  it  comes  to  Luck,  the 'Starting'  value  should  be  updated  after every session of play ( Recovering Luck Points , page 115). The starting value for magic points should be updated every time an investigator masters a new spell ( Magic Points and Spells, page 172).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000163_c1b2ace90c10ef78a5bba7e4521968d354edadcecbc765236dee838395b8f862.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000163_c1b2ace90c10ef78a5bba7e4521968d354edadcecbc765236dee838395b8f862.png)
 
 The Weapons box ( G ) has space to write in the weapon's name and its associated full and half skill values, the damage it inflicts, and its range (if applicable). The Magic Spells box ( H ) has a space to write down a spell's order and its name. The check box next to a spell should be ticked if it has been mastered. There is also additional space for spells on the back of the character sheet.
 
 The  character  sheet's  back  page  contains boxes  to  record  the  investigator's  name  and occupation  ( I ),  contacts  ( J ), signare  ( K ),  backstory ( L ), equipment ( M ), and case file notes ( N ). The Contacts box is the only one that needs a little more explanation. If the investigator's relationship with a particular contact is good, the player should tick the 'Secure' check box. If, on the other hand, the investigator has done something  to  hurt  their  relationship  ( Contacts, Connections, and the Social Skill , page 86), they should tick the 'Sour' check box.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000164_6e8c837ad34e8d4b1f400debc49d892d656937c3f9e13abeff2ef24546fd7e26.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000164_6e8c837ad34e8d4b1f400debc49d892d656937c3f9e13abeff2ef24546fd7e26.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000165_5ba5b1994ae7878eb1998ca5aff6ef3263496dd263d48550ca1bed59641b6044.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000165_5ba5b1994ae7878eb1998ca5aff6ef3263496dd263d48550ca1bed59641b6044.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000166_97e62f4837cc1893f0c13a70dd3a7d201bb6fcae24666335c6df3f51dbdbf3f7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000166_97e62f4837cc1893f0c13a70dd3a7d201bb6fcae24666335c6df3f51dbdbf3f7.png)
 
 1
 
@@ -3667,7 +3667,7 @@ Boost any chosen expert skills from their starting value of 00% to 60%.
 
 3
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000167_b790e0c19f89e7829207038400f86471a957d5123025ee9983082cb528f5fd17.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000167_b790e0c19f89e7829207038400f86471a957d5123025ee9983082cb528f5fd17.png)
 
 Choose two minor or one major advantage for your investigator (page 50).
 
@@ -3676,9 +3676,9 @@ Choose two minor or one major advantage for your investigator (page 50).
 
 Note: investigators who do not choose the Magical advantage cannot choose Magic as a skill in Step Four .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000168_a1b023a55ff1e2703530702d6a8902d9e0834b5e6db4ce713c2ef0855e81caf8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000168_a1b023a55ff1e2703530702d6a8902d9e0834b5e6db4ce713c2ef0855e81caf8.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000169_8a5fcc96ca470cb1f356874f3d76c2c5f31f137452dcdbdf8ea5e7c0eb229f90.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000169_8a5fcc96ca470cb1f356874f3d76c2c5f31f137452dcdbdf8ea5e7c0eb229f90.png)
 
 4
 
@@ -3690,9 +3690,9 @@ An investigator's own language is a free skill  (the same value as their INT or 
 
 If  you  chose  the  Magical  advantage,  boost  your  Sense Vestigia skill to 60%.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000170_e27c0c6042c0a8bf936ef60bb2b06115594f085b05f6fd9e0e6a3708bd3d744d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000170_e27c0c6042c0a8bf936ef60bb2b06115594f085b05f6fd9e0e6a3708bd3d744d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000171_7f2191942e4aa0dab84efb2e8c9f4e55c4edf6c740dd8ab9f80da342a389c151.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000171_7f2191942e4aa0dab84efb2e8c9f4e55c4edf6c740dd8ab9f80da342a389c151.png)
 
 ## MAGIC
 
@@ -3703,7 +3703,7 @@ If  you  chose  the  Magic  skill  during Step  Four: Determine Skills (page 52)
 
 If you chose the Magic skill and your investigator is a
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000172_1854b6615670b484601cc3296afdfc35a513431616d5aa39908ee710b8704472.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000172_1854b6615670b484601cc3296afdfc35a513431616d5aa39908ee710b8704472.png)
 
 ## MORE MAGIC
 
@@ -3712,7 +3712,7 @@ Look at Table 10: Signare (page 165) and choose one element from each column. Al
 -  Choose two signare to keep and discard the third. Or, just create your own signare .
 - If your investigator is being trained by a character with  a  known signare ,  you  should  incorporate  one aspect from that into your own as a third element.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000173_fc3e9a595f94116b1c666216b61ba91d98cc9833f6a2acb412681b5591462b07.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000173_fc3e9a595f94116b1c666216b61ba91d98cc9833f6a2acb412681b5591462b07.png)
 
 hedge  wizard, c hoose  two  first  order  spells  and  one second order spell from the Spell List (page 179).
 
@@ -3726,7 +3726,7 @@ Now go to the More Magic box.
 
 5
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000174_b0b2e189e9ac7e615cc69a758047b1b4f78f97e1cd7ad722ab820d61c9926114.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000174_b0b2e189e9ac7e615cc69a758047b1b4f78f97e1cd7ad722ab820d61c9926114.png)
 
 Answer the questions about your Childhood (page 56) and The Present (page 57), then write these answers in the space provided.
 
@@ -3742,15 +3742,15 @@ Finally, write down the names of one or more friends or family members your inve
 
 6
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000175_4ae05fe96d1bb7c6659ff644f56186fa45ed6bd9fec51595124401a73171eaf8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000175_4ae05fe96d1bb7c6659ff644f56186fa45ed6bd9fec51595124401a73171eaf8.png)
 
 Determine the equipment your investigator has as part of  their  occupation  (page  59)  and  write  it  on  the character  sheet.  Any w eapons  the  investigator  has should be written down in the Weapons box.
 
 The investigator may purchase other equipment with the  GM's  permission,  as  long  as  it  fits  within  their Living Standard ( Table 2: Living Standards , page 58).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000176_9f1dde6ffabd5fbd0d79fa373750e8dfa0858904527046c32428684bef4aa088.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000176_9f1dde6ffabd5fbd0d79fa373750e8dfa0858904527046c32428684bef4aa088.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000177_4508ab96d7c5261f1ac5fb6765bce70515eb0829319f27e1ac88bb45efd7a94c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000177_4508ab96d7c5261f1ac5fb6765bce70515eb0829319f27e1ac88bb45efd7a94c.png)
 
 THIS CHAPTER LOOKS at skills in Rivers of London: the Roleplaying Game and provides definitions of what each skill is and how they're used within the game.
 
@@ -3760,7 +3760,7 @@ The entries aren't meant to be an in-depth discussion of every possible thing so
 
 ## ADDITIONAL RULES
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000178_b23f77cde5e9ff7902d6cc782358d5c913c0d5a26b8a000193036ea5453f7dd9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000178_b23f77cde5e9ff7902d6cc782358d5c913c0d5a26b8a000193036ea5453f7dd9.png)
 
 ## A Few Notes on Skills
 
@@ -3779,9 +3779,9 @@ As  with  character  occupations,  the  list  of  skills  for RoL:RPG  isn't  ex
 
 Most  skills  are  linked  to  a  character's  occupation  in  some way-they are either required or recommended skills ( Step Four: Determine Skills ,  page  52).  If  an  investigator  increases  their value in a skill unrelated to their occupation over time, their player and GM may wish to discuss switching the investigator to a new occupation that better reflects their areas of new expertise, but it's not a requirement and should really follow from the player wishing to develop their character as the game progresses. Developing a rationale for why the investigator has achieved a high percentile in an unrelated skill helps build more depth to the character and can make an interesting addition to their backstory.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000179_58e0e643affcf1638873883b462d743e80cf25554524efc5b8a1eec9e0b23d8d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000179_58e0e643affcf1638873883b462d743e80cf25554524efc5b8a1eec9e0b23d8d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000180_4a87c7d7b833a243a1de899820f2c7cae60e58bf6bc40ca47cbbb8de51852fb9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000180_4a87c7d7b833a243a1de899820f2c7cae60e58bf6bc40ca47cbbb8de51852fb9.png)
 
 ## Skill Specialisations
 
@@ -3791,7 +3791,7 @@ In play, the player states their goal and may suggest the skill specialisation t
 
 Example: the  characters  are  trying  to  crack  a  numerical  code. This calls for a Science (Cryptography) skill roll. An investigator lacking Science (Cryptography) asks if they can use their Science (Mathematics)  skill  instead.  The  GM  allows  the  roll  at  an increased level of difficulty, as there is a sufficient overlap between the two skills. A Regular success was required when using Science (Cryptography), i.e., a roll equal to or below the full skill value. So,  a  Hard  success-a  roll  equal  to  or  below  half  of  the  skill's value-is required when using Science (Mathematics) in its place.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000181_600532a6ffec3e587cd82025485f52543083f985d4f85f655027784ac784d46a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000181_600532a6ffec3e587cd82025485f52543083f985d4f85f655027784ac784d46a.png)
 
 ## Opposing Skill/Difficulty Level
 
@@ -3812,11 +3812,11 @@ Examples are provided for each skill regarding what might constitute  a  pushed 
 
 Likewise,  the  consequences  of  a  failed  pushed  roll  are best decided by taking inspiration  from  current  game events, the environment, and non-player characters (NPCs). The  examples  merely  provide  ideas  and  it  is  intended  that both players and GMs fashion their own justifications and consequences as appropriate to their games and playing styles.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000182_39eca9b17edd834c5b39b6a9d8338f12498ffeaba0bd7b783c2ac5af8532499b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000182_39eca9b17edd834c5b39b6a9d8338f12498ffeaba0bd7b783c2ac5af8532499b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000183_4f4af6c3df1b3ecedd5ed3f7462f201785944e1aac608fbb7d2e8a5e763e6535.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000183_4f4af6c3df1b3ecedd5ed3f7462f201785944e1aac608fbb7d2e8a5e763e6535.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000184_8baf02eb3b27f250818a7a18c6cbe24a8877090fb4a74d77bd52237af9b02bdb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000184_8baf02eb3b27f250818a7a18c6cbe24a8877090fb4a74d77bd52237af9b02bdb.png)
 
 ## Skill List
 
@@ -3934,13 +3934,13 @@ Fighting
 
 Firearms
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000185_4e502084c8b2332f2f44164a7abc459f46591dffa342b69376c9b99fb0e7519e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000185_4e502084c8b2332f2f44164a7abc459f46591dffa342b69376c9b99fb0e7519e.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000186_97b13429c147f651c0aec4980bdaf656e4c990a7822f17425419718809302db8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000186_97b13429c147f651c0aec4980bdaf656e4c990a7822f17425419718809302db8.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000187_15f71952625afe9f1b3d57cc7edcb4dec1583f72af92ee48b1d02f991fa66f04.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000187_15f71952625afe9f1b3d57cc7edcb4dec1583f72af92ee48b1d02f991fa66f04.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000188_49f983dc96c316a71b88a1724ecfba078111d0dadfe6e422d6bfe3c182563118.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000188_49f983dc96c316a71b88a1724ecfba078111d0dadfe6e422d6bfe3c182563118.png)
 
 2
 
@@ -3970,7 +3970,7 @@ Reassessing  the  task;  taking  a  longer  route;  putting  every ounce of stre
 - If a character tries to leap an abyss and their first roll fails, they cannot have a second attempt-for obvious reasons! Although they do have the option of spending Luck to succeed instead ( Luck , page 113). However, if a character is trapped in a pit and jumping or climbing up to escape, they could have any number of attempts, summarised with one pushed skill roll.
 - Using Athletics to swim: only roll Athletics in times of crisis or danger, or when the GM judges it appropriate. Failing a pushed Athletics roll when swimming may lead to the person being washed away downstream, or even partially or completely drowned ( Table 7: Other Forms of Damage , page 149).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000189_6cd103b1e65891c8aed2cc62cd69aa2c15ba4ac70b459113bfdec35e57348df6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000189_6cd103b1e65891c8aed2cc62cd69aa2c15ba4ac70b459113bfdec35e57348df6.png)
 
 Sample  consequences  of  failing  a  pushed  roll: physical harm, or you drop or break something of value; if swimming, the  current  pulls  you  under  and  you  lose  consciousness, awaking at an unknown location.
 
@@ -3997,7 +3997,7 @@ Allows the user to find their way in clear weather or storms, at  night  or  dur
 - Regular difficulty: keep on the right route and find your destination in your own city.
 - Hard difficulty: to successfully weave through heavy traffic at speed to avoid pursuit.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000190_a1921a39e6e802267b41f4deb9265b4da5de3ab500355cec35ca92d8ccaca974.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000190_a1921a39e6e802267b41f4deb9265b4da5de3ab500355cec35ca92d8ccaca974.png)
 
 83
 
@@ -4053,7 +4053,7 @@ Sample consequences of failing a pushed roll: you somehow reveal  your  own  mot
 
 Covers locating information using the internet, a library, or some other resource. The GM should consider the information sought  and  the  resource  used,  and  specify  a  reasonable
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000191_378c89cc3903eb5b204d56ce320e2f79b70f8ebc37de6700d496b8d32a74805f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000191_378c89cc3903eb5b204d56ce320e2f79b70f8ebc37de6700d496b8d32a74805f.png)
 
 amount of time that the task will take. If the dice roll is equal to or below half the character's Research skill (i.e., a Hard success when only a Regular success was needed), they have found the information in half the time. This skill can locate locked case records or a rare-book special collection, but a Social  skill  roll  or  special  credentials  may  have  to  be  used to get access to the books or information in question. Note that to obtain information from other people uses the Social (page 86) skill, as the Research skill is concerned with nonverbal information gathering.
 
@@ -4099,19 +4099,19 @@ Backing up the use of the Social skill with a bribe, gift, or promise (if you ar
 
 If a character has the Silver-Tongued advantage (page 52), they gain a bonus die on Social rolls when using eloquence and persuasion.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000192_65ea8a91eeea33518345a6d0634ef57b89fd6b5731c8c7929c4d780cafbc8b36.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000192_65ea8a91eeea33518345a6d0634ef57b89fd6b5731c8c7929c4d780cafbc8b36.png)
 
 ## Contacts, Connections, and the Social Skill
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000193_72a134c649b3db5c64aeb91c38594ec8dcbb3f89f97b80fca8676663c051f97c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000193_72a134c649b3db5c64aeb91c38594ec8dcbb3f89f97b80fca8676663c051f97c.png)
 
 Each  occupation  has  a  list  of  contacts.  These  are  people  with  whom the investigator may have established a relationship. Contacts can be really useful in game; for example, when the investigators  need  advice  on  where to  go  next  or  if  they're  lacking  a  particular  area  of  expertise.  Not  every interaction with an investigator's contacts requires a Social roll, but, when it does, that roll is made with a bonus die. Note that if a deal leads to a negative  outcome  for  the  contact,  the GM can decide that the relationship is soured and that individual  cannot  be called upon again.
 
 If the investigator has the advantage Connected (page  50),  they  can  gain favours  without  the  need  for  a  Social skill roll with regard to whomever they are  connected.  Again,  if  the  relationship turns sour for whatever reason, a Hard Social skill roll might be required to repair things, otherwise the connection becomes strained and is no longer of value to the investigator.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000194_6446f1265dd75ef2437a04650de66a6aa0783f7f51809b3736a2be55af30831f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000194_6446f1265dd75ef2437a04650de66a6aa0783f7f51809b3736a2be55af30831f.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000195_26412dab7efddf80eacd3cf64304cd2673160fb347e7b4b04d0b93781c074fe8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000195_26412dab7efddf80eacd3cf64304cd2673160fb347e7b4b04d0b93781c074fe8.png)
 
 ## Opposing Skill/Difficulty Level
 
@@ -4126,9 +4126,9 @@ Overtly  flattering  the  target  with  affection;  building  trust by  impartin
 
 Sample consequences of failing a pushed roll: the  target takes offence and will have nothing further to do with you; the target is associated in some way with your enemies and, while they may play along with you, they also inform on you; if  the  target  was  being  threatened  with  a  weapon,  perhaps actual physical harm is done to the target-e.g., accidentally pulling  the  trigger  of  the  gun  you're  waving  at  the  target; the  target  simply  laughs  in  your  face  and  won't  break  no matter what you do; the target somehow turns the tables and intimidates the intimidator; you inadvertently reveal a secret to the target.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000196_1c1d17def5b06bc74c0d970d3aa18d7551d324e664d9810f0f5ada3d6b943dc9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000196_1c1d17def5b06bc74c0d970d3aa18d7551d324e664d9810f0f5ada3d6b943dc9.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000197_31456de1d5fa766e5ba6954e74c41fec64486516597aa47cdd91fe84733321a3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000197_31456de1d5fa766e5ba6954e74c41fec64486516597aa47cdd91fe84733321a3.png)
 
 ## Stealth
 
@@ -4147,7 +4147,7 @@ Taking  more  time  to  study  the  area;  removing  your  shoes or  changing  y
 
 Sample consequences of failing a pushed roll: unbeknownst to  you,  you  have  been  spotted,  and  your  target(s)  decide to  snoop  on  you,  trap  you,  or  instigate  a  surprise  attack on  you!  The  alarm  is  sounded  and  suddenly  everyone  is looking for you.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000198_5cd4835dd055a3e3447a2ef5e15658d4c3b6e98927a9669b092285b1cd2ce826.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000198_5cd4835dd055a3e3447a2ef5e15658d4c3b6e98927a9669b092285b1cd2ce826.png)
 
 87
 
@@ -4235,7 +4235,7 @@ An Art/Craft specialisation enables the making or repair of an item (which inclu
 
 An Art/Craft specialisation might also be used to make a  duplicate  or  fake  item.  In  such  cases,  the  difficulty  level would  depend  on  the  intricacy  and  distinctiveness  of  the original piece. In the case of faking documentation, a specific specialisation-Forgery-is used.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000199_450075d2aa937945b632ce3a482eb3a9d89555ef33da6382df92b9634de05dbd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000199_450075d2aa937945b632ce3a482eb3a9d89555ef33da6382df92b9634de05dbd.png)
 
 ## Opposing Skill/Difficulty Level
 
@@ -4304,9 +4304,9 @@ There  are  two  distinct  aspects  to  this  skill:  either  you  are trying to
 
 - Regular difficulty: convince strangers that you are who you say you are; for example, to return to the scene of a crime that you perpetrated yesterday and escape notice.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000200_650fe8dd4def55637cf43299142166986587d621860d4a0b772a68facc738c75.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000200_650fe8dd4def55637cf43299142166986587d621860d4a0b772a68facc738c75.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000201_b51ff19ddaeaf09448be4bafcce5ab2494c7a2681aa5b5353c2e801c087f22fd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000201_b51ff19ddaeaf09448be4bafcce5ab2494c7a2681aa5b5353c2e801c087f22fd.png)
 
 - Hard difficulty: convince professionals in a face-to-face meeting that you are who you say you are; for example, to pass as a bank employee to gain access to a bank vault.
 
@@ -4392,13 +4392,13 @@ Taking longer to think through the words you want to say; taking  long  pauses  
 
 Sample consequences of failing a pushed roll: exaggerated or  loud  discussions  between  a  character  and  third  parties alerts  an  enemy  faction  to  that  character's  intentions;  a word or phrase is  misunderstood-perhaps the meaning is reversed; the listener takes offence at an unintentional slur and they either respond with their fists or turn everyone in the neighbourhood against you.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000202_509af47f1455f587c401cea6389a8b8c4e53c5164541cc466f30c013280aced6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000202_509af47f1455f587c401cea6389a8b8c4e53c5164541cc466f30c013280aced6.png)
 
 ## Language Groups
 
 There  are  over  7,000  living  languages, spread across nearly 150 language groups.  Each  group  has  comparable linguistics  and  generally  a  common root language.  Some  common  language  groups  are  as  follows-these are  not  exhaustive  lists  and  are  provided as general examples:
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000203_d5901114ef256e7f8da04d306911b7cfbec9c4444b5b0006f6652bf7bfb8f71e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000203_d5901114ef256e7f8da04d306911b7cfbec9c4444b5b0006f6652bf7bfb8f71e.png)
 
 - Romance languages: Spanish, Italian, Portuguese, French.
 - Germanic languages: German, English, Dutch, Swedish.
@@ -4410,11 +4410,11 @@ There  are  over  7,000  living  languages, spread across nearly 150 language gr
 - Indo-Iranian languages: Bengali, Hindi/Urdu, Pashto, Persian, Punjabi.
 - Algonquian languages: Cheyenne, Cree, Ojibwe, Mohican.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000204_556cda17d4b7b1a9f2cc800f9aa099abb7278e1b6743a79f2a8ec18d2164c28d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000204_556cda17d4b7b1a9f2cc800f9aa099abb7278e1b6743a79f2a8ec18d2164c28d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000205_060eb14d108dc5d52d539932d7086a7c33e39311009aa1ade913a3b0319f77be.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000205_060eb14d108dc5d52d539932d7086a7c33e39311009aa1ade913a3b0319f77be.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000206_6b723d73f98e6c2b2757eca9b23e60d2d486d4794ba62849b4aa9a989ccbb45a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000206_6b723d73f98e6c2b2757eca9b23e60d2d486d4794ba62849b4aa9a989ccbb45a.png)
 
 ## Law
 
@@ -4457,7 +4457,7 @@ Covers the ability to cast spells and to detect spellcasting. Any non-fae  inves
 - Each practitioner has their own magical signature ( Signare , page 164).
 - One needs a clear head to practise magic, and it is very hard to perform while drunk or using recreational drugs ( Casting in Exceptional Circumstances , page 175).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000207_64c1f9374fc4b3b02fb6dc6161f675f138d94c855d8ce389049042a2fc28ecdb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000207_64c1f9374fc4b3b02fb6dc6161f675f138d94c855d8ce389049042a2fc28ecdb.png)
 
 - The use of magical spells destroys silicon chips ( Spells and Technology , page 176).
 - Human beings are very difficult to control with magic. The central nervous system generates its own autonomic magical resistance, making it really tricky to inflict gross changes.
@@ -4478,7 +4478,7 @@ Yelling the forma ; exaggerating your movements; taking more time.
 
 Sample  consequences  of  failing  a  pushed  roll: suffering actual  damage ( Hyperthaumaturgical Degradation ,  page 177) is a hazard for magical practitioners, causing their brains to take on the appearance of a diseased cauliflower.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000208_4268fd66ba6b1104b7e61ceaa2883cfbabe3a53e47db67b93c974f22d8df8f64.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000208_4268fd66ba6b1104b7e61ceaa2883cfbabe3a53e47db67b93c974f22d8df8f64.png)
 
 ## Mechanical Repair
 
@@ -4503,7 +4503,7 @@ Note: everyone in the game is able to perform basic first aid on an injured or i
 
 The Medicine skill can be used to save the life of a character who has suffered a mortal wound ( Medical Aid , page 147). Treatment  using  the  Medicine  skill  must  be  carried  out within one hour of the mortal wound being sustained or the character dies, unless they receive first aid in the interim. The GM may grant an automatic success for medical treatment in a contemporary, well-equipped hospital.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000209_20d5cbf720b9c32b48096fbf209331c7d3e3e67d5b302d5a802b4ae2995d0bc5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000209_20d5cbf720b9c32b48096fbf209331c7d3e3e67d5b302d5a802b4ae2995d0bc5.png)
 
 ## Opposing Skill/Difficulty Level
 
@@ -4548,7 +4548,7 @@ A Pilot Aircraft skill roll is always required for any attempt to land an aircra
 
 Pulling the aircraft up and making a second and final attempt at  landing; pushing the vehicle to its limit; making a risky manoeuvre to lose a pursuer.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000210_a6c1a2ca073ddeb49b7e3e191e5877baeb536fbc50f548cbb453fc471e1ad895.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000210_a6c1a2ca073ddeb49b7e3e191e5877baeb536fbc50f548cbb453fc471e1ad895.png)
 
 Sample consequences of failing a pushed roll: the aircraft is somehow damaged and repairs have to be made before it can fly  again,  which  may prove impossible in remote locations; passengers are injured-in some cases, severely-during the manoeuvre  or  accident;  you  emergency-landed  the  plane in the jungle and awake to find you are being held captive by guerrillas. Reserve burning wrecks for exceptional circumstances, such as when taking a crazy risk at high speed.
 
@@ -4599,7 +4599,7 @@ Besides  being  of  importance  to  deaf  characters,  the  Read Lips skill allo
 - Regular difficulty: riding at speed.
 - Hard difficulty: riding a mount at speed in rough, unfamiliar terrain; holding onto a scared mount.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000211_b5f1f7b1c8d24d10838b974d89bff39928f86f51fe602725f46b219dc421cb42.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000211_b5f1f7b1c8d24d10838b974d89bff39928f86f51fe602725f46b219dc421cb42.png)
 
 ## Pushing Examples
 
@@ -4620,7 +4620,7 @@ Each  specialty  covers  a  particular  discipline  and  the following list is n
 - Regular difficulty: conducting an experiment; analysing an unusual substance; being aware of current scientific theory within your field of specialty.
 - Hard difficulty: conducting a particularly demanding experiment; deciphering disorganised/partial scientific records; working with improvised equipment or limited resources.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000212_0ab9a94af7be07fc54bbd3d568ce41ce00c4d89399d5c94e46a9bfa381037ef9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000212_0ab9a94af7be07fc54bbd3d568ce41ce00c4d89399d5c94e46a9bfa381037ef9.png)
 
 97
 
@@ -4640,9 +4640,9 @@ Biology: the  study  of  life  and  living  organisms,  including cytology, ecol
 
 Botany: the  study  of  plant  life,  including  classification  of species, structure, growth, reproduction, chemical properties, evolutionary principles, diseases, and microscopy.  Subdisciplines of botany include agronomy, forestry, horticulture, and palaeobotany. With this skill, the user might identify the properties of a particular plant-whether poisonous, edible, or psychotropic, for example-and its particular uses.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000213_c115ff7d2798b07521301e8ba3e30e6ecd6bf561372468fcd10506354c727629.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000213_c115ff7d2798b07521301e8ba3e30e6ecd6bf561372468fcd10506354c727629.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000214_30c182ee5f80df720f7a00414a0e862d093920d9713bb1c0e1910133ccd5d8fe.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000214_30c182ee5f80df720f7a00414a0e862d093920d9713bb1c0e1910133ccd5d8fe.png)
 
 Chemistry: a study of the composition of substances and the effects  of  temperature,  energy,  and  pressure  upon  them,  as well as how they interact with one another. With chemistry, the user might create or extract complex chemical compounds, including  simple  explosives,  poisons,  gases,  and  acidsrequiring at least a day or so with the proper equipment and reagents. The user could also potentially analyse an unknown substance to determine its components or purpose.
 
@@ -4734,7 +4734,7 @@ Backtracking  and  taking  more  time  to  study  the  area; walking  in  increa
 
 Sample consequences of failing a  pushed  roll: the  tracks you're  following  lead  directly  into  the  path  of  danger;  you find yourself going round and round in circles, and night is falling as you realise you are now totally lost; you follow the tracks, only to be ambushed or caught in a trap laid by the person/thing you are following.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000215_0ffcd3ed72dcd1d86530f2330b333a4cdcc40bdcfbc579652dacc873ac6e0c0f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000215_0ffcd3ed72dcd1d86530f2330b333a4cdcc40bdcfbc579652dacc873ac6e0c0f.png)
 
 ## Combat Skills
 
@@ -4764,7 +4764,7 @@ If a character has the Signature Firearm advantage (page 51), they gain a bonus 
 
 Note: as a combat skill, Firearms cannot be pushed.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000216_b73ae80feafe047adf4e673a0907d5837bdc0aa52ca9ead539d32818b6df62a6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000216_b73ae80feafe047adf4e673a0907d5837bdc0aa52ca9ead539d32818b6df62a6.png)
 
 ## The Basic Rules
 
@@ -4776,7 +4776,7 @@ The chapter is divided into key rules sections: dice rolling and skill rolls; th
 
 There's a huge amount of fun to be had playing a roleplaying game,  and  a  lot  of  that  fun  comes  from  discussing  your investigator's actions with your fellow players-including the Game Moderator (GM)-without the need to roll any dice whatsoever.  Players  say  what  their  investigators  are  doing, sometimes  even  speaking  'in  character'  to  better  express themselves. The GM states what the non-player characters (NPCs) are doing, as well as describing the world in which the game takes place and how that world is affected by the investigators' actions.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000217_c2b2a3db53af32569f5e28d7abc9f91d8a273034fd2cf9c6edf1acd95f205361.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000217_c2b2a3db53af32569f5e28d7abc9f91d8a273034fd2cf9c6edf1acd95f205361.png)
 
 Likewise,  you  could  simply  say  that  your  investigator manages to climb to the top of St Paul's Cathedral in the pouring  rain  at  midnight-unlikely,  but  possible.  But  if there's no dice roll to test your investigator's skill, there's no tension  or  drama  either-and  both  drama  and  tension  are important in a story.
 
@@ -4787,7 +4787,7 @@ So far, so good. Everyone accepts what everybody else says and together you crea
 - The GM decides if a dice roll is required and what skill is being used. Deciding when a dice roll is needed and when it is not is up to the GM. Some groups may use dice rolls more than others. Published case files (adventures) for RoL:RPG advise the GM on when to call for dice rolls, but the author can't foresee all the tricky situations that the players and their investigators may get themselves into, so the GM may need to call for extra ones.
 - Roll dice when a character is challenged. Don't roll for something that you'd expect an investigator to be able to do with ease. Consider the investigator's skills: a trained demolitions specialist with all the time and necessary equipment is going to be able to set an explosive charge
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000218_e1c25d48ff0852cb70c7edab5d3a486f652a8eebf60e48b02281cb2f6eeb6033.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000218_e1c25d48ff0852cb70c7edab5d3a486f652a8eebf60e48b02281cb2f6eeb6033.png)
 
 3
 
@@ -4817,21 +4817,21 @@ As we've already mentioned, a player should be clear about what they want their 
 
 Example: Nafeesa Jones wants to force a door open. Unless told otherwise, the GM might automatically assume that she is simply bashing into the door and creating a loud noise in the process. If Nafeesa wants to force open the door quietly, she needs to state this as her goal. 'Break the door down' and 'lever the door open quietly' are two different goals with potentially different consequences for Nafeesa and the story, and ones the GM needs to consider when setting a difficulty level for the roll.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000219_5c17bf7fc1ea7e5eeb01ec1d7609e191fc8a14efcbc252f14237d1ac327c6ff3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000219_5c17bf7fc1ea7e5eeb01ec1d7609e191fc8a14efcbc252f14237d1ac327c6ff3.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000220_5269b8a38a6021513e562eecdf2f873948a96a49de6acea41d7cf3cc293e1748.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000220_5269b8a38a6021513e562eecdf2f873948a96a49de6acea41d7cf3cc293e1748.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000221_2ce019045c8ff246c1ac51aa9826f4bbb4b5f6b14ca5884061319e1d02375cfa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000221_2ce019045c8ff246c1ac51aa9826f4bbb4b5f6b14ca5884061319e1d02375cfa.png)
 
 ## The GM's Decision is Final
 
 While the rules are designed to be as clear  and  flexible  as  possible,  from time to time you may encounter a situation where they do not provide a clear solution.  In  such  circumstances,  the GM's decision is final. While players are encouraged  to  offer  suggestions  and ideas,  they  should  respect  the  GM's decision  and  move  on  with  the  game once the GM's decision has been made.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000222_70aa58716605d0b9386a09503929dc1b0ff67444117d5f9c04251f58178745f4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000222_70aa58716605d0b9386a09503929dc1b0ff67444117d5f9c04251f58178745f4.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000223_3d5e90497a8f0629d3393e01f7ec610d9630b35bd0932fa5efc8d2509d8f876f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000223_3d5e90497a8f0629d3393e01f7ec610d9630b35bd0932fa5efc8d2509d8f876f.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000224_d405405183b79ff914e91ccadcebfdfd669007605a2a667c7b4210db69f539b2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000224_d405405183b79ff914e91ccadcebfdfd669007605a2a667c7b4210db69f539b2.png)
 
 ## Skill Rolls: Determining the Difficulty Level
 
@@ -4850,7 +4850,7 @@ Example: Nafeesa  is  trying  to  get  information  out  of  a  street criminal 
 
 Using an NPC opponent's skill level to set a difficulty level prioritises speed of play over statistical balance. Using an opposed roll is statistically more balanced, but takes slightly longer.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000225_4cef5d8978f5488d43bc66279c7697e8ce13054a36edc57da75a3ed1a281a111.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000225_4cef5d8978f5488d43bc66279c7697e8ce13054a36edc57da75a3ed1a281a111.png)
 
 In the case of non-living opponents, such as a locked door, the GM must weigh up all the pertinent factors and make a  judgement.  A  standard  challenge  would  be  of  Regular difficulty.  Where  the  GM  judges  the  challenge  is  truly exceptional,  they  may  use  the  Hard  difficulty  level.  This method is also used for Firearms (page 101), where hitting a  target  within  standard  range  is  Regular  difficulty,  and hitting a target at longer range is Hard difficulty.
 
@@ -4868,7 +4868,7 @@ There are five different outcomes when a dice roll is madefurther details on eac
 - Hard success: the dice roll is equal to or below half of the character's skill or characteristic value.
 - If the opponent's skill or characteristic is equal to or above 70, the difficulty level is Hard.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000226_e6da4610776e851d16f9efed78d4ca5c57990213d87b66d2f68e8d979d222280.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000226_e6da4610776e851d16f9efed78d4ca5c57990213d87b66d2f68e8d979d222280.png)
 
 3
 
@@ -4907,7 +4907,7 @@ A roll that is above the specified skill or characteristic value usually indicat
 
 - In combat, a Critical success on an attack roll gains the attacker a bonus die on their damage roll ( The Damage Roll , page 132).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000227_0bd1754db60bb97f13c0800044f00e5b4963723d70c29e1af905f3bba6faf6be.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000227_0bd1754db60bb97f13c0800044f00e5b4963723d70c29e1af905f3bba6faf6be.png)
 
 doesn't stall because of it-keep it going, just with some juicy complications!
 
@@ -4927,9 +4927,9 @@ If the dice read 100-remember, that's 00 on your 'tens' die and 0 on your 'units
 - When fumbling a Drive roll, this may mean an engine breakdown, a brakes failure, or a blowout.
 - If using a firearm, a fumble may indicate a malfunction, causing the gun to jam or misfire.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000228_2f384f9d8e2726fa501ff3df2b37becc253b77c0cca2720d22a7571fdba90c31.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000228_2f384f9d8e2726fa501ff3df2b37becc253b77c0cca2720d22a7571fdba90c31.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000229_9cb3d6eab350a32e4b2b774084b0ea94c8d1c8d0ac95371826119b37819c6945.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000229_9cb3d6eab350a32e4b2b774084b0ea94c8d1c8d0ac95371826119b37819c6945.png)
 
 3
 
@@ -4937,7 +4937,7 @@ Example: consider what would happen if, instead of rolling a 01 when investigati
 
 The chance of achieving a fumble with the dice is 1 in 100, but this is increased to any roll of 90 or above if the character is impaired ( Impairment, page 118).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000230_649fdc0b53e7e7cde123a0479ddfd83ef22d7b475364bcd2748dd8badefeeb11.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000230_649fdc0b53e7e7cde123a0479ddfd83ef22d7b475364bcd2748dd8badefeeb11.png)
 
 ## Involuntary Actions
 
@@ -4956,9 +4956,9 @@ When a player rolls a fumble (or fails a  POW roll to see if they're impaired; I
 9.  Confesses something, or begs for mercy and forgiveness.
 10.  Becomes enraged, lashes out, and breaks something.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000231_c61007de22275c94950393c1d244b35f66a33bbfbbd338bf0e8a53e3fa13b606.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000231_c61007de22275c94950393c1d244b35f66a33bbfbbd338bf0e8a53e3fa13b606.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000232_ce907e46a92943c5d4e7e42ffd5e8e81e1beebebaf0a1b9ec7068317b012a9b7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000232_ce907e46a92943c5d4e7e42ffd5e8e81e1beebebaf0a1b9ec7068317b012a9b7.png)
 
 ## Pushing the Roll
 
@@ -4973,9 +4973,9 @@ By  making  a  pushed  roll,  the  player  is  upping  the  ante and giving the 
 - If you are picking a lock, pushing the roll may mean using a little too much force; failing the pushed roll might mean you break your lock picks-or even the lock. How are you going to get that door open now?
 - If casting a spell, pushing the roll may mean channelling every ounce of your willpower into the spell, forcing
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000233_70e9e80da927e69799876ac2202d17a733aff989761476f00aaa5fb16e931d8c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000233_70e9e80da927e69799876ac2202d17a733aff989761476f00aaa5fb16e931d8c.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000234_8ba1720333dcf6f403d4a6e5e86ada62cded595f03dc96dd076b243c9302f607.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000234_8ba1720333dcf6f403d4a6e5e86ada62cded595f03dc96dd076b243c9302f607.png)
 
 the formae to line up properly; failing the pushed roll risks severely overreaching your abilities and causing yourself lasting harm ( Hyperthaumaturgical Degradation , page 177).
 
@@ -4987,7 +4987,7 @@ When making a pushed roll, the goal must be achievable. The skill and difficulty
 
 A  pushed  roll  is  not  simply  a  re-roll;  time  always passes between the attempts (rolls). How much time depends on what the investigator is doing to justify the pushed roll-it may be seconds or even hours. Only skill  and  characteristic  rolls  can  be  pushed; Luck, opposed, and combat rolls cannot be pushed.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000235_ec1e9aec2ec0160f49a8ca82531610aa608ab2e27690d123c434997975370489.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000235_ec1e9aec2ec0160f49a8ca82531610aa608ab2e27690d123c434997975370489.png)
 
 ## Foreshadowing Failure
 
@@ -5020,7 +5020,7 @@ Example: in  the  previous  example,  instead  of  succeeding  in the pushed Ste
 
 3
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000236_56e6183120106f8ac819dfe646374ec15fbb297023def5c335c77c85ece3d4bf.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000236_56e6183120106f8ac819dfe646374ec15fbb297023def5c335c77c85ece3d4bf.png)
 
 ## Can Multiple Players Roll Dice for a Skill Roll?
 
@@ -5036,19 +5036,19 @@ Sometimes,  a  scene  comes  to  a  point  when two or more characters want to w
 - Determining if someone is withholding information: everyone who can observe the subject may roll Read Person. Only one successful roll is required to figure out what the subject's intentions are, or, for example, realise whether or not they are lying.
 - Sneaking past a guard: the player with the lowest Stealth skill should be asked to roll; on a failure, the guard is alerted to their presence-the GM should decide if everyone has been detected or whether it's just the person who failed the roll.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000237_4f4d21c9072d14a1a065e6e4de696d31d9f4654f62660dcb2641c7a1f168d3af.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000237_4f4d21c9072d14a1a065e6e4de696d31d9f4654f62660dcb2641c7a1f168d3af.png)
 
 The examples above are intended as guidelines. For tasks in which the number of participants is restricted, like reading a single copy of a book or attempting to pick a lock, further attempts  may  be  made  by  other  characters, but  such  attempts  always  require  additional time.  It  may  not  be  apparent  in  some  situations  whether  another  skill  roll  should  be allowed or if a player is required to push a skill roll-that's for the GM to decide. In general, when an investigator  is  attempting  the  same goal a second time, ask for a pushed roll.
 
 Example: two  players  wish  to  interrogate  a suspect  and  decide  to  use  the  classic  good cop,  bad  cop  routine.  Both  use  their  Social skill, with one aiming to intimidate, the other to befriend. They take it in turns to play their roles, each rolling against their Social skill to see if the suspect cracks. Once the characters have both failed one dice roll, they must either give up, or one of them must push the roll.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000238_5e5e89842b03825c28fea46814ed632b15406cc38cec8252260d8473a8f37442.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000238_5e5e89842b03825c28fea46814ed632b15406cc38cec8252260d8473a8f37442.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000239_0b3b7927f89d399ec46c41d9ef0f1c37b595d2c0f2ddfba7844f785e6e93caa4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000239_0b3b7927f89d399ec46c41d9ef0f1c37b595d2c0f2ddfba7844f785e6e93caa4.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000240_593c042955dd46604caeacc560a2f201f5e7985b4d89b680d2ffd51a8d556995.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000240_593c042955dd46604caeacc560a2f201f5e7985b4d89b680d2ffd51a8d556995.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000241_c06e09751ded74c4a1607c60784741cb91513bf7a42450b4261ca9b4f322e5b7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000241_c06e09751ded74c4a1607c60784741cb91513bf7a42450b4261ca9b4f322e5b7.png)
 
 ## Failed Dice Rolls and Sudden Endings
 
@@ -5073,7 +5073,7 @@ applied to a skill or characteristic roll. For more details, see Multiple Bonus 
 
 The alternative character creation rules permit your players  to  start  with  more  experienced  investigators;  however,  an  experienced  investigator  must start play with a Disadvantage (page 311).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000242_20e1b719bab277f11b36086825856d4d96a5320f403daedbe5c153f1067f40aa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000242_20e1b719bab277f11b36086825856d4d96a5320f403daedbe5c153f1067f40aa.png)
 
 ## Rolling a Bonus/Penalty Die
 
@@ -5085,31 +5085,31 @@ Example: Nafeesa  is  in  Jimmy  Four-Fingers' apartment and wants to search the
 
 20
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000243_99289511fafdf74e35a0316af144ec95774b96f35afe18e4660b713d88c35e5b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000243_99289511fafdf74e35a0316af144ec95774b96f35afe18e4660b713d88c35e5b.png)
 
 - If you incur a penalty die: use the tens die that yields the worse (highest) result.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000244_6617606fcecf3c1efe0a07dfcb733feec509349ad2a8be25c3a5c16a68b964e8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000244_6617606fcecf3c1efe0a07dfcb733feec509349ad2a8be25c3a5c16a68b964e8.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000245_93250f4429d97fb99093a7445c656c09d525004e283601f875a009d8bc25f1ae.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000245_93250f4429d97fb99093a7445c656c09d525004e283601f875a009d8bc25f1ae.png)
 
 Example: Nafeesa pays Jimmy Four-Fingers a visit  at  his  apartment.  While  she's  there,  he gets a phone call and steps into another room to speak privately. Nafeesa uses the time to do a hasty search of the room. The GM calls for an Observation roll, but says it incurs a penalty die because time is short and Nafeesa  is  rushing.  The  player  rolls  a 20 and 60 on the two tens dice and a 4 on the units die, which can be combined to  read  24  or  64.  As  the  extra  die  was  a 20
 
 Note that bonus dice and penalty dice do not stack. You can only have a maximum of one bonus die or one penalty die penalty  die,  the  player  must  take  the  higher  result-a  failure! Nafeesa hears Jimmy ending his call and nonchalantly returns to her seat, having found nothing.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000246_c28dd459632808f1338728a74f7181f615ccb2941730fd431084b8ae2ae9ee12.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000246_c28dd459632808f1338728a74f7181f615ccb2941730fd431084b8ae2ae9ee12.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000247_492440d3463b1096daf9bdcd3e290942a33a8e414d598a5acc42c25d4d682e83.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000247_492440d3463b1096daf9bdcd3e290942a33a8e414d598a5acc42c25d4d682e83.png)
 
 Where the result of a penalty die means the roll is failed, the player could spend Luck points to turn that  failure  into  a  success,  but  we'll  talk  more about that in the Spending Luck section (page 113).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000248_121b29bf102844ab8815aae317f7ec24b6bf395f9450cb5c3da38705dfe934e1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000248_121b29bf102844ab8815aae317f7ec24b6bf395f9450cb5c3da38705dfe934e1.png)
 
 ## GM ADVICE
 
 ## Difficulty Levels vs Bonus &amp; Penalty Dice
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000249_dce0fc2bce1bbf701505cf76ef72ea08501959c7fe9bf6c8f6678ec32ba81ef3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000249_dce0fc2bce1bbf701505cf76ef72ea08501959c7fe9bf6c8f6678ec32ba81ef3.png)
 
 If  you're  unsure  whether  to  change the  difficulty  level  of  a  roll  or  apply a  bonus  or  penalty  die,  think  about what's happening in the scene. Is it the circumstances  around  the  task  that are  affecting  the  investigator's  ability to  perform  it,  or  is  it  the  task  itself that's posing the challenge? If it's the task, change the difficulty level. If it's the circumstances, allocate a bonus or penalty die. Sometimes there may not be a clear answer, so go with what feels right for that situation.
 
@@ -5130,15 +5130,15 @@ A  character  can  seek  help  in  achieving  tasks  that  are beyond  their  hu
 
 When it's a heavy inanimate object, like a car, rather than a person or creature, the GM should judge how many people they think could feasibly attempt to move the object and how hard they think it would be to do so.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000250_d74da78ceadb275961064858e31e089457983b41e01630a7dbc5f864c2e89677.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000250_d74da78ceadb275961064858e31e089457983b41e01630a7dbc5f864c2e89677.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000251_e29a7cc33686df5d2987929cb3a143fa1180f7a150f3133f177482557b5d43ba.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000251_e29a7cc33686df5d2987929cb3a143fa1180f7a150f3133f177482557b5d43ba.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000252_246ed31aa1610cd4ddb406b41ecf9087fd57f1fdc2a2a97dea5893cb5e457503.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000252_246ed31aa1610cd4ddb406b41ecf9087fd57f1fdc2a2a97dea5893cb5e457503.png)
 
 Example: Nafeesa calls on her colleague Eli Venturini (STR 50) to help move an unconscious person to safety. The GM judges that, even with two reasonably strong people like Nafeesa and Eli, this is still going to be a tricky thing to do because the unconscious person is very large, and so decides to set the difficulty level at Hard. Both Nafeesa and Eli's players must now make a Hard STR roll to see if they can move the person. Nafeesa has the higher STR of 70, and
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000253_468b4ee08e0479200ea09b0c3cf93c1ccfd7c7ffc0a275b99de089d40a362a79.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000253_468b4ee08e0479200ea09b0c3cf93c1ccfd7c7ffc0a275b99de089d40a362a79.png)
 
 so she must roll equal to or below 35. As long as Eli doesn't fumble, they succeed in moving the person to safety.
 
@@ -5148,7 +5148,7 @@ However, if Jordan Schneider (STR 70) and Mina Patel (STR 40) also lend a hand, 
 
 While the temptation may be to let as many people help  as  possible,  there  may  be  a  limit  on  how many  people  could  realistically  do  so-in  terms of  accessibility,  if  nothing  else-if  space  is  limited or the target object is reasonably small. And don't forget:  the  more  people  who  are  involved,  the higher the chances are (statistically) that someone is going to fumble!
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000254_4f1345835a20983aa7a77a40db720fbcecbbb5face5e9a5f1b6210ec4449a5c2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000254_4f1345835a20983aa7a77a40db720fbcecbbb5face5e9a5f1b6210ec4449a5c2.png)
 
 ## Intelligence Rolls
 
@@ -5185,7 +5185,7 @@ An investigator's Luck value is also a pool of Luck points. After the player has
 
 - A player can use Luck points to alter a roll on a onefor-one basis, i.e., for every point of Luck spent, the dice result is reduced by one. For example, aiming for
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000255_a68aa6a467e39049a6e83788c386403ba239de3c0180a012b7b2e39a94fe72c6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000255_a68aa6a467e39049a6e83788c386403ba239de3c0180a012b7b2e39a94fe72c6.png)
 
 3
 
@@ -5210,7 +5210,7 @@ Example: Nafeesa attempts to sneak past Jimmy Four-Fingers. The GM uses Jimmy's 
 
 Remember,  when  an  unopposed  skill  roll  is  failed, the  player  usually  has  the  option  to  push  the  roll or spend Luck points; the choice is theirs. However, when an opposed skill roll is failed, the player only has the option to spend Luck to change the result, as you can't push opposed rolls-the same goes for combat rolls ( Pushing the Roll , page 108).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000256_0edb1a4bab3a5b63a283e5afdd32609f0d1408c1ab10dc10212fd6d64d1e7e45.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000256_0edb1a4bab3a5b63a283e5afdd32609f0d1408c1ab10dc10212fd6d64d1e7e45.png)
 
 ## What Can't I Spend Luck On?
 
@@ -5231,9 +5231,9 @@ If an investigator makes a successful use of an expert skill through the Trying 
 
 Rather than thinking of this as the investigator spontaneously  acquiring  the  skill,  think  of  it  as  revealing (through play) something they already knew. This also means that the investigator is the only one in the group who's got that expert skill, so whenever it's required, people are going to look to them. There is no limit on how often a character can  use  Trying  Your  Luck  to  make  skill  rolls,  but  each investigator may not acquire more than one new expert skill per game session through this method. Note that the only
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000257_69419e71c6b51db904edc4ffc1b41ce5a7328d7dee2e8837826f73736523a4de.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000257_69419e71c6b51db904edc4ffc1b41ce5a7328d7dee2e8837826f73736523a4de.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000258_590b2f9327d380c7b412228d4c41d9bb133df12206f99aaf587914dbb91155e5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000258_590b2f9327d380c7b412228d4c41d9bb133df12206f99aaf587914dbb91155e5.png)
 
 ## To Spend or Not to Spend?
 
@@ -5247,7 +5247,7 @@ Encourage your players to spend Luck points when  they  really  want  to  achiev
 
 Never  be  afraid  to  check  with  the  GM  to see  if  a  roll  is  worth  spending  Luck  points
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000259_c36812b348e6caecbd6a11c24aee1a0b9033357da35701b3af205bc0b5310f4f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000259_c36812b348e6caecbd6a11c24aee1a0b9033357da35701b3af205bc0b5310f4f.png)
 
 skill this doesn't apply to is Magic, as an investigator must first have the Magical advantage to acquire this skill.
 
@@ -5257,7 +5257,7 @@ After every session of play, each player makes an improvement check for their in
 
 Once during each case file, each investigator may choose to take some rest and relaxation (R&amp;R) and gain an automatic increase  of  1D10  Luck  points.  The  player  should  describe what  their  character  is  doing  for  their  R&amp;R,  and  they're encouraged to tie this into the elements of their backstory. We're not talking about a five-minute breather here, though-it  should  be  a  morning,  afternoon,  or  evening's worth of restful  activity,  like  settling  down  on  the  sofa  to watch the rugby, reading a book, or going for a nice long walk to clear your head.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000260_9ec6783e625be8c1e3211c62e806fb6efb8240b49e5855050438017e4e98edb7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000260_9ec6783e625be8c1e3211c62e806fb6efb8240b49e5855050438017e4e98edb7.png)
 
 on. A player can always ask the GM if spending  Luck  points  is  worth  it  in  the  situation at  hand.  The  GM  should  be  honest  and  say whether it is or not.
 
@@ -5265,7 +5265,7 @@ Timing  is  important.  If  it's  early  in  a  game session, players may not wa
 
 Remember,  an  investigator's  Luck  points are the player's resource, so they get to use them in a way that best supports their enjoyment of the game. Some players like to make their investigators' lives difficult-sorry, more interesting-so they always have the option of not spending Luck points. If a player feels that it's more dramatic for their investigator not to succeed at everything they do, then that's fine. But, hey, there's also a good case for if you've got it, flaunt it…
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000261_6d6351bd2f3f831af504f29a5dbe04fe0c21cbf383d992b07adf9348d42f7a6d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000261_6d6351bd2f3f831af504f29a5dbe04fe0c21cbf383d992b07adf9348d42f7a6d.png)
 
 - If the result is less than or equal to their investigator's current Luck value, their Luck remains unchanged. If the result exceeds their investigator's current Luck value, their Luck is raised to be equal to the higher value.
 
@@ -5275,11 +5275,11 @@ At the start of every new case file, each player rolls 2D10+50 and compares it t
 
 Example: Nafeesa is pursuing a suspect into  the  London Underground.  They  both  skip  the  barriers  and  race  down  the escalator. A tube train is just leaving. The GM asks for a DEX roll  to  see  if  Nafeesa  can  board  the  train  before  the  doors  close. Nafeesa has DEX 40 and rolls 46-she isn't going to make it! Nafeesa's  Luck  is  at  57,  and  the  player  chooses  to  spend  6  Luck
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000262_431e16d2eb0a068c986111dddfb19c606bb542928c788629a1e974e79cf727d6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000262_431e16d2eb0a068c986111dddfb19c606bb542928c788629a1e974e79cf727d6.png)
 
 3
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000263_897124b99e0fa35b37c60f63bd2cf771ba6abaf9479e657d87a418e57fccf47e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000263_897124b99e0fa35b37c60f63bd2cf771ba6abaf9479e657d87a418e57fccf47e.png)
 
 points, reducing her result by 6 down to 40, just making it aboard the train as the doors close behind her.
 
@@ -5301,9 +5301,9 @@ Critical Success &gt; Hard Success &gt; Regular Success &gt; Failure (or Weak Su
 
 Best result                                                                                                      Worst result
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000264_885efe174c57c0ae677b6de44e15549e11b37837c15e91427a52d2efed9b3d38.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000264_885efe174c57c0ae677b6de44e15549e11b37837c15e91427a52d2efed9b3d38.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000265_958b237d2c3105cd2778252ac3bfa951c4b24522cae85a709943cfee1dd4e2ca.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000265_958b237d2c3105cd2778252ac3bfa951c4b24522cae85a709943cfee1dd4e2ca.png)
 
 ## Table 4: Which Characteristic Should I Use?
 
@@ -5324,13 +5324,13 @@ When Trying Your Luck, refer to the chosen expert skill below to find the relate
 | Law             | INT              | Tech              | DEX or INT  |
 | Locksmith       | DEX              | Track             | INT         |
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000266_7a929031bc6db8902146fe460ed64b28d91d703fdefb2c4cf9fe9f0fa79a145d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000266_7a929031bc6db8902146fe460ed64b28d91d703fdefb2c4cf9fe9f0fa79a145d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000267_e26711b615d4555b70c8bbd6b08697e8c8372ade78f2d83be84cbfbd046600dd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000267_e26711b615d4555b70c8bbd6b08697e8c8372ade78f2d83be84cbfbd046600dd.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000268_815e1b758daf8f54318949c7a0b56d1e2f8784a8e1f3b70be32cf73719841730.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000268_815e1b758daf8f54318949c7a0b56d1e2f8784a8e1f3b70be32cf73719841730.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000269_f1adbebfb2b14b6b56f099f2af3d979501ef4743513d334127be8a168b9cbbfa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000269_f1adbebfb2b14b6b56f099f2af3d979501ef4743513d334127be8a168b9cbbfa.png)
 
 3
 
@@ -5377,9 +5377,9 @@ Example: Nafeesa comes under gunfire for the first time, and the GM asks for a P
 
 An investigator with the Steadfast advantage ( Advantages ,  page  50)  doesn't have to make a POW roll  for  impairment under certain conditions. They may still suffer impairment if they are taken down or  receive  a  mortal  wound,  though  ( Wounds and Healing , page 144).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000270_360483642f87928f4b0434b6c953c1b10b898148ec4dd299f4a92fb436ec3518.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000270_360483642f87928f4b0434b6c953c1b10b898148ec4dd299f4a92fb436ec3518.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000271_dd1e81796034ca3461ab6e15350f6bdaffc2fe082edd467c03d3e9d2cb67f573.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000271_dd1e81796034ca3461ab6e15350f6bdaffc2fe082edd467c03d3e9d2cb67f573.png)
 
 ## Some  situations  where  the  GM  may  wish  to  check  for impairment are:
 
@@ -5401,7 +5401,7 @@ There is no hard and fast rule as to whether something causes an impairment chec
 
 And remember, an investigator is either impaired or they are not. Once they are impaired, an investigator can't suffer from further impairment until they've recovered ( Impairment and Recovery , nearby).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000272_2c0574e461b249cbe27e8eeafb5ae87d8c0fd7ead787561211cd4a2a712238d3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000272_2c0574e461b249cbe27e8eeafb5ae87d8c0fd7ead787561211cd4a2a712238d3.png)
 
 119
 
@@ -5455,7 +5455,7 @@ A GM may wish to alter the number of development points awarded. For example, aw
 
 For  what  this  means  in  terms  of  the  speed  of investigator advancement, see Slow vs Rapid Advancement on page 121.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000273_ab6e1719e955019fd3979a60701f79c5255fed5623f5136e8c7016b57bd777d3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000273_ab6e1719e955019fd3979a60701f79c5255fed5623f5136e8c7016b57bd777d3.png)
 
 ## Spending Development Points
 
@@ -5478,15 +5478,15 @@ Note: the more frequently a group plays, the more development points they are go
 
 An  investigator  can  also  spend  1  development  point  to acquire a new skill. The chosen skill starts at a value equal to half of the associated characteristic value-refer to Table 4: Which Characteristic Should I Use? , page 117, for the list of skills and their associated characteristics.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000274_6e3df3e8be0e1f54a0c08ea0e9332a375ef14730da111d8bbf73f18a973ef1a7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000274_6e3df3e8be0e1f54a0c08ea0e9332a375ef14730da111d8bbf73f18a973ef1a7.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000275_0370d3a50670b105e9d09786446ab876e9d25d133dd6a2a11f3a6166c32b7f82.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000275_0370d3a50670b105e9d09786446ab876e9d25d133dd6a2a11f3a6166c32b7f82.png)
 
 ## Learning and Mastering Spells
 
 Skill  progression  is  limited  during  a  development phase. Thus, if a character has 2 development points to  spend,  they  may  not  increase  a  single  skill  by more than 10% (or 5% if rated at 80% of higher, and so on). This restriction is designed to stop characters advancing too rapidly. The GM could ignore this rule and allow the same skill(s) to be increased multiple times  in  a  single  development  phase  (e.g.,  spend  2 development points to increase a single skill by 20%, and  so  on),  but  this  does  mean  investigators  will quickly  become  highly  proficient  in  certain  skills, and does not mirror the progression of characters as seen in the Rivers of London novels.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000276_d476ab19b23691a4f10f97df2d25f488aad43736319e375d3eb1cefd9496fc14.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000276_d476ab19b23691a4f10f97df2d25f488aad43736319e375d3eb1cefd9496fc14.png)
 
 During an investigator development phase, any practitioner investigators can spend 1 development point to either learn a new spell ( Learning More Spells , page 172) or mark one spell as mastered ( Mastering a Spell , page 171). Thus, during a single investigator development phase, if a character has 2 points  to  spend,  they  may  learn  a  new  spell  (1  point)  and master a spell (1 point). If they had 3 development points, they could not learn two or three spells, nor could they master more than one spell, as characters are limited to learning one new and/or mastering one spell per development phase.
 
@@ -5504,7 +5504,7 @@ The  number  of  development  points  awarded over the course of a game has an i
 - If they're a practitioner, learn a new spell or master an existing one.
 - Save their development point until they have enough to buy either a regular or major advantage-they'll just get there a bit more slowly.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000277_b135ceb3f57caa2a2ed2e53bdf9d009da8e2f85b77f28ccb81da4cd84ef2e8da.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000277_b135ceb3f57caa2a2ed2e53bdf9d009da8e2f85b77f28ccb81da4cd84ef2e8da.png)
 
 As you can see from this example, the more development  points  a  GM  awards,  the  more rapidly the investigators advance. If the GM is generous  in  awarding  development  points  at the end of every case file or campaign chapter, the  players  can  soon  end  up  with  powerful, highly skilled investigators. If that's what the group  wants,  that's  great!  But  if  it  isn't,  the GM should stick with the slow burn option of awarding  a  smaller  number  of  development points at the end of a scenario. Thus, gaining lots  of  skills,  spells,  and  advantages  would take longer.
 
@@ -5512,11 +5512,11 @@ But what if the GM had instead decided to award just 1 development point per cas
 
 Remember: although development points may be awarded at the end of every session, they can only be spent during an investigator development phase at the end of every case file or campaign chapter.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000278_b8857d999292bec1570b512947f22f076a3a8c88519078f7ef55810c0db1d813.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000278_b8857d999292bec1570b512947f22f076a3a8c88519078f7ef55810c0db1d813.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000279_106fae5ada206ee9dab86a39feaeb1895b1057fef3635d71b47236228db75e53.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000279_106fae5ada206ee9dab86a39feaeb1895b1057fef3635d71b47236228db75e53.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000280_2e1f65a64724171f72b25a2fabe87a0c32eac8bfcad96afd6b8b2f1a710c86fa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000280_2e1f65a64724171f72b25a2fabe87a0c32eac8bfcad96afd6b8b2f1a710c86fa.png)
 
 ## GM ADVICE
 
@@ -5537,7 +5537,7 @@ Depending  on  how  many  development  points  the  GM awards per session (and a
 
 It's not just the investigators who are likely to be affected by their exposure to magic and the world of the demi-mondetheir  entire  lives  could  be  turned  upside  down  because  of their  experiences.  So,  during  an  investigator  development phase, each player may alter or add backstory entries on their character  sheet  whenever  they  feel  it  is  appropriate  to  do so.  They  should  always  discuss  any  changes  with  the  GM, who  has  the  right  to  veto  anything  they  feel  could  derail the rest of the game. A GM may also suggest changes to an investigator's  backstory  based  on  what's  happened  to  them and/or their friends and family during a case file.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000281_78a15e8895aeef31b65fedfa5670d51e929061858d6bc07719d0c5610d724d85.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000281_78a15e8895aeef31b65fedfa5670d51e929061858d6bc07719d0c5610d724d85.png)
 
 ## Reviewing Employment and Affluence Rating
 
@@ -5555,7 +5555,7 @@ To provide a sense of game balance and gradual improvement,  GMs  are  advised  
 
 Example: Nafeesa  finishes  a  case,  so  her  player  works  through an investigator development phase. There is at least three months of game time before the investigators pick up their next case, and the player suggests Nafeesa might get some driving experience in that time, perhaps the equivalent of a one-week intensive training course. The GM agrees, and awards Nafeesa 1 development point to spend on increasing Nafeesa's Drive skill from 30% to 40%.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000282_63b6360463c99303227273fb0ffcb86b1297a75b866de550c26241d6fe7eba9a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000282_63b6360463c99303227273fb0ffcb86b1297a75b866de550c26241d6fe7eba9a.png)
 
 ## Combat
 
@@ -5574,21 +5574,21 @@ Combat is divided into rounds ( The Combat Round ,  page 124). The GM should fol
 3. Incorporate the outcome of the rolls back into the story ( Narration , page 133).
 4. Move onto the next character ( Next Player's Turn , page 133).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000283_f4737cab620dfb8b54d61230db77c33961eed034db18ea915e7fbf03f695f857.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000283_f4737cab620dfb8b54d61230db77c33961eed034db18ea915e7fbf03f695f857.png)
 
 ## Important: T one
 
 Some players love to wallow in grisly and gory fight descriptions, while others prefer to gloss over the unpleasant details. Is  everyone happy with 18-certificate (R-rated) level violence or would they prefer it to be more family friendly (PG-13)? It's important to talk as a group and agree on a tone that is acceptable to everyone, then stick with it. This is a topic you might discuss and agree upon upfront when creating characters  for  a  new  game  ( Considerate Gaming , page 44).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000284_244ed02f17b8edf8784c87dfd4f881c353bbb45f802ac139216e61133e1f5ca3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000284_244ed02f17b8edf8784c87dfd4f881c353bbb45f802ac139216e61133e1f5ca3.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000285_5bd508fb662836a21a87be9687059dde819a7775f56772a7e008c31c0e9d3901.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000285_5bd508fb662836a21a87be9687059dde819a7775f56772a7e008c31c0e9d3901.png)
 
 ## Setting Combat Expectations in Rivers of London
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000286_952fd9ee483d28df4f4ce0732683cb71b7d01f5461c659e00ef8ea0e80591efd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000286_952fd9ee483d28df4f4ce0732683cb71b7d01f5461c659e00ef8ea0e80591efd.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000287_589e64ced48a9fa5b36c3c611fbce3e50222527c1a36efd45afb11606652cb86.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000287_589e64ced48a9fa5b36c3c611fbce3e50222527c1a36efd45afb11606652cb86.png)
 
 Combat is only one potential element in the story of an RoL:RPG game, not its focus. As a result, combat scenes play out  quicker  than  in  some  other  roleplaying  games,  and  player  character death is quite rare.
 
@@ -5596,13 +5596,13 @@ Combat is only one potential element in the story of an RoL:RPG game, not its fo
 - Investigators have an edge: investigators are not necessarily any tougher than anyone else, but they (unlike some other characters) have Luck points to spend. This doesn't mean they'll win every fight, but it does give them an edge, and players should be encouraged to make use of the Luck spending rules ( Spending Luck , page 113).
 - Defeat rarely means death: it's almost impossible to be killed in a melee fight. An accumulation of minor blows won't kill someone-it takes a very powerful attack to inflict a fatal blow, such as a Critical success on a damage roll with a shotgun ( The Damage Roll , page 132). Losing a fight usually means a character has been knocked down and temporarily incapacitated, and investigators recover quickly from such things ( Wounds and Healing , page 144).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000288_8d8cd16c671a968b126af10cac9d6f2c0efc131634215f535cc88d1a0d7a03a1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000288_8d8cd16c671a968b126af10cac9d6f2c0efc131634215f535cc88d1a0d7a03a1.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000289_ff09c1ba70a14d8a8f86ed31f83b4323c21d5c5860f637147e8e7252343bae84.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000289_ff09c1ba70a14d8a8f86ed31f83b4323c21d5c5860f637147e8e7252343bae84.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000290_e5fcef8a38da1b7748031cda1d9a139926f11cf3a2d5d828fe3a4d1081236507.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000290_e5fcef8a38da1b7748031cda1d9a139926f11cf3a2d5d828fe3a4d1081236507.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000291_0fb5cb2987713647b7c358447539b16c2caf06c958db7ab1f381731945333e82.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000291_0fb5cb2987713647b7c358447539b16c2caf06c958db7ab1f381731945333e82.png)
 
 3
 
@@ -5660,13 +5660,13 @@ In  the  third  example,  the  player  is  trying  to  restrain  a fellow charac
 
 Alternatively,  if  Jimmy  had  not  made  any  move  to  raise  his arm, and Nafeesa just decided to restrain him, the player would clearly  be  initiating  combat  and  Nafeesa  would  act  first  in  the combat round.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000292_8410efe6dea4a84eb782eb71856438fbc40e5b5346105cdbc66aabcdf5546818.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000292_8410efe6dea4a84eb782eb71856438fbc40e5b5346105cdbc66aabcdf5546818.png)
 
 ## GM ADVICE
 
 Because  melee  combat  uses  opposed  rolls,  the character acting first doesn't necessarily get to  inflict  damage  first.  Quite  the  opposite  may happen-the  person initiating combat may be the first one to suffer damage if the opposed roll doesn't go their way!
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000293_23993933b24b9c60ff23a2ffb9c6f36a571b6e5a8f0fa12e6728f806724d5de0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000293_23993933b24b9c60ff23a2ffb9c6f36a571b6e5a8f0fa12e6728f806724d5de0.png)
 
 ## Who Goes Next?
 
@@ -5680,11 +5680,11 @@ When playing through a combat scene, the order of play is intended to mirror the
 
 Of course, you may not be playing around a table-you may be playing the game online, in which case the GM should use  their  on-screen  view  of  the  players  at  the  start  of  the combat  to  place  everyone  in  a  set  order.  This  could  be  as simple as writing down people's names in a list on a piece of paper, starting with the person in the top left of the screen and  working  down  to  whomever  is  in  the  bottom  right. The important thing is that the GM manages the order of play and ensures that each player is aware of their place in the turn order.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000294_3c2c2276c8f9b03b0a30faaf0126f759aa81f5d36122f03edd9df098f8aeb477.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000294_3c2c2276c8f9b03b0a30faaf0126f759aa81f5d36122f03edd9df098f8aeb477.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000295_cf8120c560f6afcb6fbbdaed64d5bf6fd4c18145c280273a532ebec2eb4b6513.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000295_cf8120c560f6afcb6fbbdaed64d5bf6fd4c18145c280273a532ebec2eb4b6513.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000296_35dba6e758da8a8d7fe574231309e615427d3fa00ff538aefc6e6d75a92dfdc6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000296_35dba6e758da8a8d7fe574231309e615427d3fa00ff538aefc6e6d75a92dfdc6.png)
 
 ## GM ADVICE
 
@@ -5698,13 +5698,13 @@ Diagram A: with four NPCs-Annie, Celia, Ella, and Frank-let's say that Annie is 
 
 ## Diagram A
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000297_6c5e8ecc367fd42325a0009ef2dc62b3e26a3e2fbeb238609e0267bd90bb9230.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000297_6c5e8ecc367fd42325a0009ef2dc62b3e26a3e2fbeb238609e0267bd90bb9230.png)
 
 Diagram  B: the  investigators  start  a  fight.  Jordan  initiates the  combat,  so  his  player  becomes  Player  1.  Play  then  passes  to Player 2, and then to the GM, who decides to play their NPCs in a slightly different order this time-Ella, Annie, Celia, then Frank. Finally, it's Player 3's turn, meaning Nafeesa gets to go last this round.
 
 ## Diagram B
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000298_ba68c19358eca027c9ca9347f52d96eb2b75bed426bf60c51fc013e55c4557e7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000298_ba68c19358eca027c9ca9347f52d96eb2b75bed426bf60c51fc013e55c4557e7.png)
 
 ## Actions in a Combat Round
 
@@ -5716,7 +5716,7 @@ On their turn in a combat round, the player decides on one action  they  want  t
 - Flee-this may require an opposed roll to break free of the fight, if already engaged in combat.
 - Perform some other action requiring time and perhaps a dice roll, such as picking a lock while others fight. Note that simple actions-like speaking-don't 'use up' a character's turn, but moving anything more than a short distance may ( Distances in Combat , page 127).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000299_40e7e724ab5ba6d6e1c598c2eede720937751e54e1654496c5c7e0ef73b9720a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000299_40e7e724ab5ba6d6e1c598c2eede720937751e54e1654496c5c7e0ef73b9720a.png)
 
 A character may wish to draw a weapon on their turn. For ease of play, under most circumstances, drawing a weapon counts as a 'free' action. The only exception to this is where it's  clear  that  the  weapon  is  somehow  difficult  to  accesssuch as a handgun carried in a briefcase, for example-which takes one action (one turn) to extract the weapon, ready for use in the following round.
 
@@ -5732,7 +5732,7 @@ When playing through a combat scene it's important that everyone keeps track of 
 
 Some players may struggle to visualise what's going on in combat without the use of maps, tokens, and/ or miniatures. Always use what makes the game as accessible as possible for your group.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000300_6b3851870128f491fd5321fbbd2b629c91d31294fa4c6bf93c207417f5cbf4bc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000300_6b3851870128f491fd5321fbbd2b629c91d31294fa4c6bf93c207417f5cbf4bc.png)
 
 In combat, you can use a character's MOV to determine whether  movement  takes  up  their  entire  turn  or  not.  A character  can  move  a  number  of  metres/yards  up  to  their MOV rating and take another action on their turn. If they wish, they can move further than this, moving up to five times their MOV (in metres/yards), but this counts as their entire action (turn) for that combat round. For example, a character with MOV 8 can use their turn in a combat round to:
 
@@ -5792,9 +5792,9 @@ The  GM  should  consider  how  the  target  is  responding and fit it into one 
 
 While a character can (usually) only 'fight back'  in response once per combat round, they may respond with dodges multiple times in the same round and can keep running away or doing nothing if they like, too (see also Outnumbered , page 135).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000301_ddbd2adcf0d9835d78363dbec48875e34857e9f5bccdac7b48df0409ef526e02.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000301_ddbd2adcf0d9835d78363dbec48875e34857e9f5bccdac7b48df0409ef526e02.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000302_58afcd3391dada1f195f2821a38f83134f22c1a90998f1a854b89bcd3b31c6b7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000302_58afcd3391dada1f195f2821a38f83134f22c1a90998f1a854b89bcd3b31c6b7.png)
 
 ## Important: Attack vs Response
 
@@ -5812,7 +5812,7 @@ Whether  the  attacker  needs  to  roll  dice  depends  on  the nature of the at
 
 For those wanting more complexity, rules for surprise attacks can be found on page 327.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000303_48ab05bd25d9a8b8b7c5906ddb46db76c8dc50606b174f4c90c1f1f42c590dcd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000303_48ab05bd25d9a8b8b7c5906ddb46db76c8dc50606b174f4c90c1f1f42c590dcd.png)
 
 ## Response 2: Dodge
 
@@ -5821,25 +5821,25 @@ There  are  two  different  types  of  dodging  a  character  can do-depending  
 - Dodging in Melee: if you choose to dodge a melee attack, you roll your Fighting skill in an opposed roll against your attacker as part of Step 3 (page 130). This includes dodging items that are thrown at you with the Athletics skill.
 - Dive for Cover: you can't dodge bullets or fireballs! But you do have the option to dive for cover, which is the next best thing to dodging, under the circumstances. Diving for cover may mean jumping behind a physical barrier, throwing yourself to the floor, or ducking and diving to present a more challenging target.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000304_4f5b6487014dcf89bef9a8d90b24b7b0c4a59a9381ca2a067dad4da282f29eae.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000304_4f5b6487014dcf89bef9a8d90b24b7b0c4a59a9381ca2a067dad4da282f29eae.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000305_91dc5585a0c6db3b179ddbd1aa969ffdf334c2afe6bb61a1d852ee3fb7e04b90.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000305_91dc5585a0c6db3b179ddbd1aa969ffdf334c2afe6bb61a1d852ee3fb7e04b90.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000306_6632140ba64f023ee9dd9022ff3bf2a9d38be26bfb452e86606acd4e3e1ffff6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000306_6632140ba64f023ee9dd9022ff3bf2a9d38be26bfb452e86606acd4e3e1ffff6.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000307_8e2bd937295d843f35581a3c907fc7e9e12b268240f832a861447bfa80f756ae.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000307_8e2bd937295d843f35581a3c907fc7e9e12b268240f832a861447bfa80f756ae.png)
 
 When diving for cover,  the  target  has  made  themselves harder to hit, and in Step 3 (page 130), the attacker incurs a  penalty  die  on  their  unopposed  Firearms  or  Magic  roll ( Bonus Dice and Penalty Dice , page 111). Diving for cover is a desperate response to a desperate situation. A character who  dives  for  cover  must  forgo  their  next  action  when  it comes to their turn in the combat round. If they have already had their turn this round, they must forgo their turn in the following round.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000308_ae06519d330751d549e4715656594e8548eb96843a132457b5ca6faf4f7896c4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000308_ae06519d330751d549e4715656594e8548eb96843a132457b5ca6faf4f7896c4.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000309_14ffd1d2798e29aecb590b6aec38da3660ac0a01019fe71f3d90ee77925445b4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000309_14ffd1d2798e29aecb590b6aec38da3660ac0a01019fe71f3d90ee77925445b4.png)
 
 ## Diving for Cover Example
 
 Nafeesa: DEX 40, Fighting 60/30 . Izzy: DEX 70, Fighting 60/30, Firearms 30/15.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000310_b1abd7ef364e1bdd7eb88ee0bb690dfb3550527ff70a31f9c0afd6f931dfccd8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000310_b1abd7ef364e1bdd7eb88ee0bb690dfb3550527ff70a31f9c0afd6f931dfccd8.png)
 
 Step 1: Set Your Goal: Izzy is shooting Nafeesa with a handgun.
 
@@ -5851,15 +5851,15 @@ Step 4: Damage: the  missed  shot  inflicts  no  damage.
 
 Step  5:  Narration: the  player  describes  how Nafeesa leaps behind a car and avoids being shot.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000311_41d53317e098aef057dcbdb0ac20b1872e8ed4068473d429e35312eec39830c1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000311_41d53317e098aef057dcbdb0ac20b1872e8ed4068473d429e35312eec39830c1.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000312_1bd81319e218032ad9d2c56a083bffb46960cf58d0112d7be5c73bfb12d55eb8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000312_1bd81319e218032ad9d2c56a083bffb46960cf58d0112d7be5c73bfb12d55eb8.png)
 
 ## ADDITIONAL RULES
 
 Rules for investigators who wish to take a bullet for their  companions  can  be  found  in Holding  Your Action on page 328.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000313_d132fac77437a39f41001b7326c276fb4ca97ba548d512e40c7e2d8df0d9a2b6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000313_d132fac77437a39f41001b7326c276fb4ca97ba548d512e40c7e2d8df0d9a2b6.png)
 
 ## Response 3: Fight Back
 
@@ -5895,7 +5895,7 @@ To  cast  your  spell,  make  a  Magic  roll,  including  any relevant  modifier
 
 Not all spells are designed to inflict harm, though. If the aim of the spell is to distract your attacker, the target is required to make a POW roll to test whether they can maintain their concentration.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000314_bbcfe26a5d64823b46d4148dfa2de9a0a7da47b3e0429219d32d90d0547b3fd2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000314_bbcfe26a5d64823b46d4148dfa2de9a0a7da47b3e0429219d32d90d0547b3fd2.png)
 
 3
 
@@ -5938,9 +5938,9 @@ A character opting to flee in combat must forgo their next action when it comes 
 
 In most  cases, both opponents  roll percentile dice to determine what happens in a fight-an opposed combat roll. In  the  case  of  ranged  attacks  (both  Firearms  and  Magic), only  the  attacker  rolls  dice-an  unopposed  combat  rollunless the target has chosen to fight back ( Response 3: Fight Back , page 129).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000315_1318fd07214029d8bb1d9e2ebd6727208a0793453501782ef83c4ebc7d35ffae.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000315_1318fd07214029d8bb1d9e2ebd6727208a0793453501782ef83c4ebc7d35ffae.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000316_4d6d018811afd20255685c250c4e78319a8b170eba5f773d25ed41f595e17cc2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000316_4d6d018811afd20255685c250c4e78319a8b170eba5f773d25ed41f595e17cc2.png)
 
 ## Opposed Combat Rolls
 
@@ -5953,13 +5953,13 @@ best  result worst result
 - Regular success : a dice roll equal to or below the character's full skill value.
 - Fumble : a dice roll of 100 is a fumble (or 90 or above if they are impaired).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000317_69b1e99361e7fd01759967fab2da7b2691bc8f05d0c8e287461a54e2a9fbd929.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000317_69b1e99361e7fd01759967fab2da7b2691bc8f05d0c8e287461a54e2a9fbd929.png)
 
 In opposed rolls, the side with the higher level of success is  the  winner.  A  Critical  success  beats  a  Hard  success,  a Hard  success  beats  a  Regular  success,  and  so  on.  If  both sides  achieve  the  same  level  of  success,  they  each  have  the option of spending Luck points to raise their level of success ( Spending Luck , page 113), whether they initiated the attack or are responding to it; but ultimately, if they are still tied, the character whose turn it is in the round wins the tie.
 
 *Weak  Success: normally,  rolling  over  your  skill  value  is considered  a  failure,  but,  in  combat-as  in  other  opposed rolls-we call it a Weak Success (page 106). Consider two rank  amateurs  playing  chess:  someone's  still  going  to  win, and  it's  the  same  with  a  fight-even  when  both  sides  are inept, one is still going to beat the other.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000318_0f92a4c34bf1900379467e25907ab8aa2c658b68ea545f2f0f8e2b928775fb6e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000318_0f92a4c34bf1900379467e25907ab8aa2c658b68ea545f2f0f8e2b928775fb6e.png)
 
 ## Which Skill to Use in Combat
 
@@ -5969,15 +5969,15 @@ In opposed rolls, the side with the higher level of success is  the  winner.  A 
 -  If casting a spell, use the Magic skill.
 - Weak success* : a dice roll above the character's full skill value.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000319_62131b4c7658cfe614da02d9f8b4e9e2ec96cbb48e1908dacc7bcbccac53a57d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000319_62131b4c7658cfe614da02d9f8b4e9e2ec96cbb48e1908dacc7bcbccac53a57d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000320_3d0b036ebae6fa44af40a883760b948b3132ec034d709a6ae02c2bfe18dc5c27.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000320_3d0b036ebae6fa44af40a883760b948b3132ec034d709a6ae02c2bfe18dc5c27.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000321_007feb8d0583a5c53aeff8befbdb46653f71e79caa8c31a2425f209a4dde7426.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000321_007feb8d0583a5c53aeff8befbdb46653f71e79caa8c31a2425f209a4dde7426.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000322_df76c95019da37a22ac37d49b7cc226fd9ec630d48ff989c9ae768641d5cdf33.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000322_df76c95019da37a22ac37d49b7cc226fd9ec630d48ff989c9ae768641d5cdf33.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000323_43f711c33f3e40b1b3b4b54278f16b12162609dbc8a71d99b479b129943ceff6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000323_43f711c33f3e40b1b3b4b54278f16b12162609dbc8a71d99b479b129943ceff6.png)
 
 3
 
@@ -6012,7 +6012,7 @@ To determine the amount of damage inflicted, make a 'damage roll' and add the we
 
 *Rifle: the maximum effective range can be doubled to 600 metres/yards with effective bracing and use of a telescopic sight.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000324_0d8d03ae0cef3d6e65fb8038525d1a9ca81dea937266e4cc1160575808896ec2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000324_0d8d03ae0cef3d6e65fb8038525d1a9ca81dea937266e4cc1160575808896ec2.png)
 
 ## The Damage Roll
 
@@ -6081,15 +6081,15 @@ Step 5: Narration.
 
 Step 6: Next Player's Turn.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000325_5e0b9af6fb45896c59059906043901b489d348c99f59fb497bf88d6774e61fa2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000325_5e0b9af6fb45896c59059906043901b489d348c99f59fb497bf88d6774e61fa2.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000326_739a532a918f218a77dedb9bdbe0588686e80360da34ae89e907a7fdf59bc9fc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000326_739a532a918f218a77dedb9bdbe0588686e80360da34ae89e907a7fdf59bc9fc.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000327_bab0c1b7957169bfb402a2a1e9933a64c397721df29c9aa430895587138dea40.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000327_bab0c1b7957169bfb402a2a1e9933a64c397721df29c9aa430895587138dea40.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000328_e2a2fed09133d612228e895e341a805a289a8496bb7a22b7b9233e1cf62b62e5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000328_e2a2fed09133d612228e895e341a805a289a8496bb7a22b7b9233e1cf62b62e5.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000329_488dcaa732a7f03e180de19a0aec2d631ebf31194563263fdaba7c788328ccb8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000329_488dcaa732a7f03e180de19a0aec2d631ebf31194563263fdaba7c788328ccb8.png)
 
 ## Other Factors in Combat
 
@@ -6097,7 +6097,7 @@ The  previous  section  covers  the  format  for  all  combats but  makes  refer
 
 ## ADDITIONAL RULES
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000330_623914d316c8bc20d874e31a5abf1ba4aa09a7838dc98e71274d18543b7902ef.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000330_623914d316c8bc20d874e31a5abf1ba4aa09a7838dc98e71274d18543b7902ef.png)
 
 Optional combat rules are presented in the Additional Rules chapter, starting on page 327.
 
@@ -6117,25 +6117,25 @@ Although a combat manoeuvre is different to most other forms  of  attack-in  tha
 
 There  is  a  limitation  on  combat  manoeuvres.  If  the opponent's STR exceeds that of the character attempting the manoeuvre by 50 or more points, the combat manoeuvre is ineffective and automatically fails. A character might be able to grab hold of their opponent, but if that opponent is much stronger than them, there's little they can realistically achieve.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000331_d61f8e3901b65de4c1af48ee0682deab46172706f03a6024097ec8310b7117b0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000331_d61f8e3901b65de4c1af48ee0682deab46172706f03a6024097ec8310b7117b0.png)
 
 ## Police Training
 
 In the UK, the police receive extensive training  on  how  to  de-escalate  confrontations so they can avoid having to engage in melee combat. As a result, a police  officer  character's  first  line  of action in combat should be to try and talk  their  opponent  down,  using  an opposed Social skill roll. Depending on what they say to their target, the target might oppose with Read Person to see if they believe what the officer is saying, or POW, if the target is all riled up and spoiling for a fight. Don't forget that, if the officer is in uniform or shows their warrant card, they get a bonus die on the  Social  skill  roll  ( Police  Officer/ Detective , page 71).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000332_2f1b0dea2c0264c0bc512a213204e792edffbdafc5f60b88d7765561982f3a10.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000332_2f1b0dea2c0264c0bc512a213204e792edffbdafc5f60b88d7765561982f3a10.png)
 
 Even if the officer character fails to dissuade their target from getting physical, their training dictates that they'll first  attempt  to  restrain  an  opponent rather  than  try  to  cause  them  harm. (See also The Four Es , page 71).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000333_19d00cc8561f317cef60a13254ff48636887c419bd9e6e527c84af98d9a75826.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000333_19d00cc8561f317cef60a13254ff48636887c419bd9e6e527c84af98d9a75826.png)
 
 ## Improvised Weapons
 
 In  games,  everyone  is  encouraged  to  make  use  of  the environment  in  their  fight  narrations.  Doing  so  adds  a unique  feel  to  each  combat  and  helps  to  bring  the  setting to  life.  Picture  the  scene  and  grab  what  comes to mind. If the fight takes place in a bar, you should be swinging pool cues, throwing bottles, and hitting each other with barstools. Fire  pokers,  hat  stands,  and  ornamental  swords  may  be  at hand inside  a  mansion.  Computer  monitors,  power  cables,
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000334_29ab26e4c6bccc33edfba73a0752aa2fab56b63080672383b4afc754bba37e87.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000334_29ab26e4c6bccc33edfba73a0752aa2fab56b63080672383b4afc754bba37e87.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000335_54a3528ce93ccc155b2e950bbf949cba3ab8ba447e366a81a1f416d683ac6e2a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000335_54a3528ce93ccc155b2e950bbf949cba3ab8ba447e366a81a1f416d683ac6e2a.png)
 
 and scissors could all be deadly in an office. The GM should encourage the players to improvise and try not to block their ideas  without  good  reason.  If  you  want  to  introduce  the fickle hand of fate to determine whether a handy improvised weapon is present, call for a Luck Roll (page 113). If the roll is successful, there it is!
 
@@ -6169,7 +6169,7 @@ Armour cannot help against poison damage, drowning, or certain magical attacks (
 
 The  damage  reduction  provided  by  all  three types of armour stacks with that from the Shield spell (page 185).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000336_6a1fc01a624c9a7a407f62fea8554d9ef7a69d642085e169bf42e41c9a3a4fa3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000336_6a1fc01a624c9a7a407f62fea8554d9ef7a69d642085e169bf42e41c9a3a4fa3.png)
 
 ## An Extended Combat Example
 
@@ -6213,9 +6213,9 @@ Step 6: Next Player's Turn.
 
 Jimmy: STR 70, DEX 60, Fighting 40/20. Nafeesa: STR 70, DEX 40, Fighting 60/30 (Hurt). Izzy: STR 40, DEX 70, Stealth 30/15, Fighting 60/30.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000337_dd7d4ef9b11f29a96c3847eb873de70a2cab6372898b5ae2797a0ccd60622b55.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000337_dd7d4ef9b11f29a96c3847eb873de70a2cab6372898b5ae2797a0ccd60622b55.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000338_b36dc07a8fb8ee712590b75e22b7e85173cb6272d070d49c778bc8e4449a5994.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000338_b36dc07a8fb8ee712590b75e22b7e85173cb6272d070d49c778bc8e4449a5994.png)
 
 Up to this point, it was just Jimmy and Nafeesa in the fight, but unbeknownst to Nafeesa, Jimmy has a friend-Izzy-hiding in the cupboard. It's the GM's turn again as Nafeesa has taken her turn, and the GM decides to have Izzy act rather than stay in hiding. While Nafeesa and Jimmy were fighting, Izzy exited the cupboard and now makes her attack.
 
@@ -6251,9 +6251,9 @@ Had  the  player  chosen  restraint  instead  of  disarming,  Jimmy would now ha
 
 Step 6: Next Player's Turn.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000339_9c78455b2de03025f73bfd8d185695d2895404842174f8636a09d257ccfcaa9a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000339_9c78455b2de03025f73bfd8d185695d2895404842174f8636a09d257ccfcaa9a.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000340_2f2cd7b99c321250520e260a7d45a857e3aa13e91592b0ef77bf64a63d625fb2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000340_2f2cd7b99c321250520e260a7d45a857e3aa13e91592b0ef77bf64a63d625fb2.png)
 
 ## Nafeesa's turn:
 
@@ -6271,7 +6271,7 @@ Step 5: Narration: the player describes how Nafeesa manages to sidestep Jimmy as
 
 Step  6:  Next  Player's  Turn: the  GM  decides  that  Jimmy  isn't giving pursuit, so the combat ends here.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000341_c83c7b9321ca03fc4c70d14e63962c775df746cd0d5587b6ce84a5147c575a9c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000341_c83c7b9321ca03fc4c70d14e63962c775df746cd0d5587b6ce84a5147c575a9c.png)
 
 ## An Extended Combat Example (Continued)
 
@@ -6295,11 +6295,11 @@ Step 5: Narration: the tin of baked beans whistles past Nafeesa's head as she du
 
 Step 6: Next Player's Turn: perhaps  Nafeesa  decides  to  pursue Izzy,  initiating  a  chase.  So,  for  the  moment,  we'll  leave  this example here…
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000342_1a4a990332013b122e993615cace57f60234e3c1e5055f5c53679df9844616b7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000342_1a4a990332013b122e993615cace57f60234e3c1e5055f5c53679df9844616b7.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000343_306ee0309050d59dee27626217695c9e4535bf4eece98db52f6efa8b06de5be0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000343_306ee0309050d59dee27626217695c9e4535bf4eece98db52f6efa8b06de5be0.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000344_784a6232456ebec6d0c868df7a242a659cf49a503cbb4b9c55a547591a85d623.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000344_784a6232456ebec6d0c868df7a242a659cf49a503cbb4b9c55a547591a85d623.png)
 
 3
 
@@ -6317,7 +6317,7 @@ Common sense dictates  that,  if  the  shooter  can't  see  their target, it's g
 
 Example: Nafeesa is using the cover of a plywood crate, but her opponent's rifle shot still hits the mark (even with a penalty die), passing  through  the  wood  and  into  Nafeesa.  The  shot  inflicts  2 damage but this is decreased by the 'armour' provided by the crate. In this case, 2 damage is reduced to 1 damage.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000345_add265f232d657d838359155a9f9ed1ea1117e7bfe319e7965acb84b85b011d8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000345_add265f232d657d838359155a9f9ed1ea1117e7bfe319e7965acb84b85b011d8.png)
 
 ## Table 6: Cover Protection
 
@@ -6343,15 +6343,15 @@ Spending a combat round aiming improves the attacker's chance  of  hitting  thei
 
 A target moving at full speed (MOV 8 or more) is harder to hit.  Apply one penalty die to the skill roll. This counts for both spells and firearms attacks alike.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000346_000fc200fda35f76d475f815af281ab2222a430817fb4eeca4d8ae8ca2927e54.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000346_000fc200fda35f76d475f815af281ab2222a430817fb4eeca4d8ae8ca2927e54.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000347_1f5cffe6a2e408180f06494123aa8b4e681bfa256c383a226dcac53a8cfce072.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000347_1f5cffe6a2e408180f06494123aa8b4e681bfa256c383a226dcac53a8cfce072.png)
 
 ## Point - Blank Range Example
 
 Nafeesa : Magic 60/30. Jimmy: DEX 60, Fighting 40/20.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000348_38e7dffa48c75f840e255141dbc4d1b589ccf808491a1dd02f4409aaf13bd960.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000348_38e7dffa48c75f840e255141dbc4d1b589ccf808491a1dd02f4409aaf13bd960.png)
 
 Step 1: Set Your Goal: Nafeesa is casting Fireball at Jimmy Four-Fingers.
 
@@ -6365,9 +6365,9 @@ Step  5:  Narration: the  player  describes  how the  fireball  hits  Jimmy  in 
 
 Step 6: Next Player's Turn.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000349_5c55d8fa356e20f067de25681742b54ac5fc32f6f2aa0556d836b1cb438545fd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000349_5c55d8fa356e20f067de25681742b54ac5fc32f6f2aa0556d836b1cb438545fd.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000350_f74585c45bfa777624994db1ec9cd0fc251cf8bb0aceac297557da5e5f5e9adb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000350_f74585c45bfa777624994db1ec9cd0fc251cf8bb0aceac297557da5e5f5e9adb.png)
 
 ## Target Size (Bonus or Penalty Die)
 
@@ -6394,7 +6394,7 @@ In RoL:RPG, 'multiple shots' like the ones described in this section are always 
 
 On the other hand, larger targets are easier to hit. If the target is the size of a Ford Asbo (standard car or larger), apply one bonus die to the skill roll.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000351_9a82edd35759bcff29a90e0d6d4f6f6c9170096aeb1ed5be7515c9efab3ccfce.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000351_9a82edd35759bcff29a90e0d6d4f6f6c9170096aeb1ed5be7515c9efab3ccfce.png)
 
 ## ADDITIONAL RULES
 
@@ -6402,7 +6402,7 @@ For rules covering shooting at multiple targets with semi- and fully-automatic w
 
 3
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000352_b8e4239e2c6b7d2036299ad550f101ca9d2b40054986264f6d9488cb9576e075.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000352_b8e4239e2c6b7d2036299ad550f101ca9d2b40054986264f6d9488cb9576e075.png)
 
 ## Multiple Shots Examples
 
@@ -6426,11 +6426,11 @@ Step 5: Narration: the GM describes how Izzy fires off 3 rapid shots, one of whi
 
 Step 6: Next Player's Turn.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000353_822619ef1d4390c7233edf72d9f159e7bed0409891e8455038b235604257f777.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000353_822619ef1d4390c7233edf72d9f159e7bed0409891e8455038b235604257f777.png)
 
 ## Shooting into Melee Combat
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000354_ad7d5b12be13102b67435ea2c80a70cf63167cbb227319e79a17fb2877b12959.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000354_ad7d5b12be13102b67435ea2c80a70cf63167cbb227319e79a17fb2877b12959.png)
 
 ## Ranged and Thrown Weapons
 
@@ -6440,11 +6440,11 @@ Ranged missile attacks (such as crossbows) are treated like firearms  attacks.  
 
 Thrown weapons attacks are resolved in the same way as melee  Fighting  attacks  but  use  the  Athletics  skill  instead of the Fighting skill. If the attack is made beyond standard range, the attacker must roll with a penalty die.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000355_38d407e4aeff2e4392faa6bd9871798a64665fb7193f2797207bec59906a35f0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000355_38d407e4aeff2e4392faa6bd9871798a64665fb7193f2797207bec59906a35f0.png)
 
 Now let's replay that with the increased damage option.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000356_488ada8cd2d4ee3dc9375ecd93560b02182a44f1ab50bb42d30b41e3e31d006b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000356_488ada8cd2d4ee3dc9375ecd93560b02182a44f1ab50bb42d30b41e3e31d006b.png)
 
 Izzy:
 
@@ -6496,9 +6496,9 @@ If someone tries to hit you with a punch or a weapon, such as a knife, you can:
 - Attempt to avoid their blow and move your attacker using a Combat Manoeuvre (page 134). This could be to knock them to the floor or push them away, or, if you're on top of a building, it might be to push them off!
 - Attempt to avoid their blow and restrain your attacker using a Combat Manoeuvre (page 134).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000357_1697ce39fc2f96de06051445e765cf9f6ffcad2b30d3507fa10a317ba6458823.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000357_1697ce39fc2f96de06051445e765cf9f6ffcad2b30d3507fa10a317ba6458823.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000358_9316b1872e20b66fd5eff3d1cd5a5a0c1745421ef4c5746a5a68bd4573b8aa61.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000358_9316b1872e20b66fd5eff3d1cd5a5a0c1745421ef4c5746a5a68bd4573b8aa61.png)
 
 3
 
@@ -6519,9 +6519,9 @@ In addition, if being shot at from within arm's reach, you can fight  back  usin
 - Attempt to disarm the attacker. Use your Fighting skill to oppose your attacker's Firearms roll ( Combat Manoeuvre , page 134). This could allow you to knock the firearm to the floor or perhaps wrest possession of it from your opponent.
 - Attempt to avoid their shot and move your attacker using a Combat Manoeuvre (page 134). This could be to knock them to the floor, or push them away, or, if you're on top of a building, it might be to push them off!
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000359_096887fccbb0610309570c58438b0efa7a5a59c462b216c09e7336f936a24e9e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000359_096887fccbb0610309570c58438b0efa7a5a59c462b216c09e7336f936a24e9e.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000360_6d26fdca84fd4c2d8a5502aafd662fe117bb583a91302e77ba180e71b0fe63d0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000360_6d26fdca84fd4c2d8a5502aafd662fe117bb583a91302e77ba180e71b0fe63d0.png)
 
 ## What Are My Options When Someone Casts a Spell at Me?
 
@@ -6624,11 +6624,11 @@ When a character suffers 5 damage from a single attack it is a  fatal  blow  and
 
 If a downed character wants to stay in the fight, see Spending  Luck to  Resist  Incapacitation (page  333) for  an  advanced  optional  method  to  keep  them in the action.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000361_f3392107a78f313ace75ba25d6d54987f8886eed8eb35fa870ac366db070d44c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000361_f3392107a78f313ace75ba25d6d54987f8886eed8eb35fa870ac366db070d44c.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000362_d1c01308ddffd578f5c8f367f69361f99352d6b8f726dcb69ceb174f72425a97.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000362_d1c01308ddffd578f5c8f367f69361f99352d6b8f726dcb69ceb174f72425a97.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000363_9916242239da6e1d5f5da1c171065a2d80ca1d345678d7a30a45388298eb36de.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000363_9916242239da6e1d5f5da1c171065a2d80ca1d345678d7a30a45388298eb36de.png)
 
 purposefully declare they are murdering them. For example, if the character is down already and someone states they are strangling  them  or  putting  a  bullet  in  their  head  at  close range-clearly with the goal of murdering them-then the target is well and truly dead.
 
@@ -6652,7 +6652,7 @@ If the character was impaired because of being bloodied, they lose the impairmen
 
 Anyone who was down at  the  end of the fight soon makes a partial recovery. As with bloodied, it should be noted that they  may  now  look  terrible:  ruffled,  torn,  dirty,  or  bloodstained clothes; grazed knuckles, a split lip, or a black eye;
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000364_8db03238d5c03a08049615e51983e85b403ddaf84f930c94ba36ce86fd079d9e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000364_8db03238d5c03a08049615e51983e85b403ddaf84f930c94ba36ce86fd079d9e.png)
 
 Footnote:
 
@@ -6681,9 +6681,9 @@ It  is  assumed  that  all  characters  can  provide  some  level  of first aid.
 
 - With a success, the time it takes a mortally wounded character to die extends from 'within an hour' to 'within
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000365_b935cb6e8b999eaba46e644c87648749d1825db6cb56b64d6c6a003f73402fe0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000365_b935cb6e8b999eaba46e644c87648749d1825db6cb56b64d6c6a003f73402fe0.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000366_2d3eccee5dce080ec2c4135156e524b34858010e5ec1f79a3a8a1c0968f8e0f9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000366_2d3eccee5dce080ec2c4135156e524b34858010e5ec1f79a3a8a1c0968f8e0f9.png)
 
 two hours,' granting more time to benefit from proper medical treatment and/or for an ambulance to arrive.
 
@@ -6694,7 +6694,7 @@ two hours,' granting more time to benefit from proper medical treatment and/or f
 
 Luck points can be spent on the INT roll for administering  first  aid  ( Spending  Luck , page  113). Alternatively, a player has the option of pushing the roll,  but  failure  means  they  haven't  extended  the injured party's time to receive medical treatment before they die.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000367_5047918462d0202b317161509c446ac43856fec50feeb2980afd40f2d1df1d65.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000367_5047918462d0202b317161509c446ac43856fec50feeb2980afd40f2d1df1d65.png)
 
 ## Medical Aid
 
@@ -6752,9 +6752,9 @@ A  player  can  choose  this  option  only  once  for  their investigator. The d
 
 Example: Nafeesa is in another fight and is downed by opponents wielding knives, suffering 4 damage. The player has marked the boxes for Hurt, Bloodied (plus ticked the Impaired box), and Down. After the fight, Nafeesa gets medical aid, and so the player decides to take Luck Loss-losing 20 points of Luck-and Disfigurement-writing on her character sheet that Nafeesa now has a large scar running down the side of her face. The disfigurement is a lasting reminder of the fight and something that other people are going to notice.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000368_b678fd30ba1a498a7cdc4facc909db2143bca7bbc12d5066671690f025f35d8a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000368_b678fd30ba1a498a7cdc4facc909db2143bca7bbc12d5066671690f025f35d8a.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000369_0f29a77c2fe3083beca29aee46b4946a31004daa20b0672947b02a476be72281.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000369_0f29a77c2fe3083beca29aee46b4946a31004daa20b0672947b02a476be72281.png)
 
 ## Other Forms of Damage
 
@@ -6785,7 +6785,7 @@ Example: Nafeesa  fails  a  pushed  Stealth  roll  while  attempting to follow s
 
 Forms  of  Damage .  For  example:  with  a  successful CON  roll,  a  lethal  poison  is  treated  as  a  strong poison  (Deadly  rather  than  Terminal);  with  a  Hard success,  move  up  two  levels  on Table  7: Other Forms  of  Damage .  Poisons  may  cause  a  variety  of additional symptoms including: stomach pains, vomiting, diarrhoea, chills, sweats, cramps, jaundice, altered  heart  rate,  impaired  vision,  convulsions, unconsciousness,  and  paralysis-it's  up  to  the  GM whether the symptoms permit the victim to act or not, act with a penalty die, or with an increased level of difficulty. At the GM's discretion, they may allow a poison's effects to be shaken off completely if the CON roll is a Critical success.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000370_f8316f81d8c9b2f9fbdfa107403f9cc3907f870e62a0c6136f10526725efc91f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000370_f8316f81d8c9b2f9fbdfa107403f9cc3907f870e62a0c6136f10526725efc91f.png)
 
 3
 
@@ -6809,23 +6809,23 @@ Once the first player's turn has been resolved, that player rolls a die: if an e
 
 Unlike combat, though, where the GM may have NPCs acting at the start and end of each combat round ( Handling NPCs , page 126), in a chase round, the GM gets only one turn in which all of their NPCs act. Also, the GM does not make chase rolls. They only need to roll dice if an NPC makes an attack; it's important
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000371_c5f8657cc10a93808986ba0dadfb07e6254856829cf610d9c8e88a757157b806.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000371_c5f8657cc10a93808986ba0dadfb07e6254856829cf610d9c8e88a757157b806.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000372_6c2c744ee3e45755352b203169a571f604c7bb0e91d4febb4eb28d070bdbb03f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000372_6c2c744ee3e45755352b203169a571f604c7bb0e91d4febb4eb28d070bdbb03f.png)
 
 ## How Big is Each Location?
 
 The distance covered in one chase round is not defined and is intentionally elastic. Think of it like a chase scene in a movie, where the camera often cuts from one location to the next-our hero is in their hotel room, someone is banging on the door-cut-our hero is exiting the window  and  climbing  down  the  drainpipe to the street below-cut-the pursuer is looking out the same window-cutour  hero  is  running  down  the  streetcut-the  pursuer  is  exiting  the  hotel entrance and giving pursuit, and so on. One location can encompass the hotel room to the street below, while another location can be the street alongside an entire  city  block,  or  just  a  section  of busy road the investigators are crossing.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000373_027f9ffcbe4009a0b82fd3366c4724a2b8da7003867f48e82b0467106372c251.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000373_027f9ffcbe4009a0b82fd3366c4724a2b8da7003867f48e82b0467106372c251.png)
 
 Consider  each  location  as  presenting one type of challenge for those involved in  the  chase.  Thus,  each  location is  tied to a predominant style of movement: for example, getting from the hotel room to the street requires climbing down a drainpipe; the city block is an all-out run; and crossing the busy road requires the person to dodge through traffic, and so on.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000374_8643a77633079b297b6e96b4c2fca25b9d306576877eb192fa26f0eb3dc63f9d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000374_8643a77633079b297b6e96b4c2fca25b9d306576877eb192fa26f0eb3dc63f9d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000375_12725ebc203cc8cf5154cb9b5bcbaa26a5b26abe664fcfbcc79cba7fc9732550.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000375_12725ebc203cc8cf5154cb9b5bcbaa26a5b26abe664fcfbcc79cba7fc9732550.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000376_bf31c97b00a82c853acb34104d424f8dec637d7379841f1742881625de98b410.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000376_bf31c97b00a82c853acb34104d424f8dec637d7379841f1742881625de98b410.png)
 
 for players to keep track of when the GM's turn occurs in the chase round so they know when an attack might be imminent.
 
@@ -6893,7 +6893,7 @@ If the investigator succeeds with their Athletics roll, they gain a chase succes
 
 If the player fails the chase roll (either DEX or Athletics), they might decide to accept a chase failure this round. Alternatively, they could spend Luck points to turn the result into a success
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000377_2e8bb1ac87afc2bc86699347397a280bed638e2f6d10fcf6ec9edd4dec7a8be9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000377_2e8bb1ac87afc2bc86699347397a280bed638e2f6d10fcf6ec9edd4dec7a8be9.png)
 
 ( Spending Luck , page 113), or attempt to push the roll ( Pushing the Roll ,  page 108). Failing a pushed roll always means something bad happens and, in a chase, the default outcome includes losing the chase, thus being caught by their pursuer.
 
@@ -6917,15 +6917,15 @@ Alternatively, if the investigators are pursuing a group of NPCs ( You Want to C
 - If they choose one specific target, the rest can be ignored, and everyone can focus on that one NPC; assume the others get away.
 - On the other hand, if the investigators would be happy to catch any one of a group of NPCs, then just deal with the slowest NPC in the group. Again, the other NPCs can get away. Either way, you're then managing only one NPC.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000378_bd26945c9af115415c8ff9b50e47cb6be09fd871804d87b3c6793e49ba89aa0a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000378_bd26945c9af115415c8ff9b50e47cb6be09fd871804d87b3c6793e49ba89aa0a.png)
 
 If  the  investigators  decide  to  split  up  and each  follow  a  different  NPC,  then  you  have multiple chases to track. This may happen, but it's  likely  to  be  very  rare.  Depending on your confidence, you can either run out each of the chases  to  their  conclusion  in  turn  or  switch backwards and forwards between them. The former option is probably the best if you're all still learning the rules, but it does mean some players will have to wait a while for their turn (perhaps it's a good time for them to go and take  a  break).  The  latter  option  means  more excitement for everyone and ensures no one is sitting around for too long waiting for their investigator to do something.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000379_a92ba98c672d4add7c05dd3b0bd4436a722a9cdc4d9cba1c49b7f5946b98d2c9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000379_a92ba98c672d4add7c05dd3b0bd4436a722a9cdc4d9cba1c49b7f5946b98d2c9.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000380_8a96df97caee2cd44d068c5c9e9360ea8a39d894e5777dfcde86a9659cd60efe.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000380_8a96df97caee2cd44d068c5c9e9360ea8a39d894e5777dfcde86a9659cd60efe.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000381_22beee2ac2bbb7c069f0ebf78f363e3229fd487a50486a0f14aec8ee108771f9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000381_22beee2ac2bbb7c069f0ebf78f363e3229fd487a50486a0f14aec8ee108771f9.png)
 
 ## Losing the Chase
 
@@ -6956,9 +6956,9 @@ If the investigator incurs two chase failures before they gain two chase success
 
 If  the  GM  decides  that  the  NPC  is  going  to  attack  the investigator,  then  play  through  the  six  steps  of  combat ( Running  Combat  Encounters ,  page  127).  Remember, though,  that  the  fleeing  investigator  has  their  back  to their  attacker,  and  both  are  moving  at  speed.  The  fleeing investigator  can't  'fight  back'  without  stopping.  For  the purposes of combat within a chase, because both the attacker (the  NPC)  and  their  fleeing  target  (the  investigator)  are
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000382_cdf6250a02ad57acab27b63fd531a39cf1133cc403bf0df66d16cc88f88f907b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000382_cdf6250a02ad57acab27b63fd531a39cf1133cc403bf0df66d16cc88f88f907b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000383_a2c699ed299685f796a01be60f3b14ba85806092e34d027ba56803878839bf4d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000383_a2c699ed299685f796a01be60f3b14ba85806092e34d027ba56803878839bf4d.png)
 
 3
 
@@ -7016,9 +7016,9 @@ As  mentioned  in  the  previous  section,  if  the  investigator gains two chas
 
 Depending on what the investigator does, it may be time to switch from the chase rules to play through the six steps of  combat ( Running Combat Encounters ,  page  127).  The
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000384_c63a3f613cb1524fecfa74679f13de6c7c199953964fb0618fc7e7361d0f0db4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000384_c63a3f613cb1524fecfa74679f13de6c7c199953964fb0618fc7e7361d0f0db4.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000385_e75a240df496001d19f324d1ad123d5310c478071983ec84408cb2beb15628e8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000385_e75a240df496001d19f324d1ad123d5310c478071983ec84408cb2beb15628e8.png)
 
 ## Chase Example
 
@@ -7072,7 +7072,7 @@ Her player asks what she can see. The GM replies that there's lots of people and
 
 Step 1: Establish the Location: the  player  asks  if  there's  a  bus that Nafeesa might leap onto. The GM asks for a Luck roll, which the player fails. There's no option but to keep running, so Nafeesa heads into the Tube station.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000386_84f2814f79f7c3a9611c102feef7a2ca56fb6a3ebc3422fb1e565e846022c35f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000386_84f2814f79f7c3a9611c102feef7a2ca56fb6a3ebc3422fb1e565e846022c35f.png)
 
 Step  2:  Chase  Roll: this is  another  burst  of  speed,  which means  another  automatic  chase  failure  (as  Greg's  MOV  is  9  to Nafeesa's MOV 8).
 
@@ -7112,11 +7112,11 @@ Step 4: Next Player's Turn.
 
 GM's Turn Part 1: Move Forward: Greg gets on board the Tube train just as the doors close. The GM and player agree the chase is over, with them shut in a train carriage to who knows where…
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000387_4e6a42f58263ddf313c519a6dd3cdec7d440efdc6d443e721b076c524b5c878b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000387_4e6a42f58263ddf313c519a6dd3cdec7d440efdc6d443e721b076c524b5c878b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000388_246d2f8d7c8b10c90b94d4b2d811db62930f01589092a882c938e657a0e687c0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000388_246d2f8d7c8b10c90b94d4b2d811db62930f01589092a882c938e657a0e687c0.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000389_f0658c15c3d9bf232108100506ae4800c566d06781de147396ab38779dc2dff5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000389_f0658c15c3d9bf232108100506ae4800c566d06781de147396ab38779dc2dff5.png)
 
 fleeing  NPC  can't  'fight  back'  without  stopping.  For  the purposes of combat within a chase, because both the attacker (the  investigator)  and  their  fleeing  target  (the  NPC)  are moving at speed, the fleeing target is automatically treated as dodging ( Response 2: Dodge, page 128).
 
@@ -7145,9 +7145,9 @@ Each  character,  following  their  chase  roll  (if  they  have  to make one), 
 - If the character moved forward in the chase this round, their Firearms or Magic roll incurs a penalty die because they are attacking on the move ( Bonus Dice and Penalty Dice , page 111).
 - GM's Turn Part 2: Combat or Next Player's Turn .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000390_e9c9db884f680150634cb2fcd534d13a3bc07acca60be90af4b568db5c3a6233.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000390_e9c9db884f680150634cb2fcd534d13a3bc07acca60be90af4b568db5c3a6233.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000391_21cc5ddc611710a5e3774ae272afa89d2fc5ffa05ee3f69f3266a1770574dba6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000391_21cc5ddc611710a5e3774ae272afa89d2fc5ffa05ee3f69f3266a1770574dba6.png)
 
 - If an investigator stops moving to make a ranged attack, they can do so without incurring the penalty die, but their progress in the chase for that round is treated as an automatic chase failure.
 - If an NPC stops moving to make a ranged attack, they can do so without incurring the penalty die. If this is the only NPC in the chase, immediately following the GM's turn, all players gain one additional chase success. If there are multiple NPCs and some stop and some continue to move, refer to Handling Chases with Multiple NPCs (page 152).
@@ -7175,17 +7175,17 @@ Drivers  may  use  their  vehicles  to  'combat'  other  vehicles, mirroring the
 
 All  the  best  action  movies  have  their goodies  and  baddies  shooting  at  each others' vehicles with a wide variety of firearms.  However,  vehicle  damage  is on a different scale to character damage. To take out a vehicle, a character with a firearm could either target the driver or the tyres.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000392_e2a0b2b799f6ed26f55ef654c6b13ef5942d341c0e624052af638411f552e367.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000392_e2a0b2b799f6ed26f55ef654c6b13ef5942d341c0e624052af638411f552e367.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000393_211198fa6edc85025c7c2c26e555874d11dfd357f45a699d2d8ea61d3b7af592.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000393_211198fa6edc85025c7c2c26e555874d11dfd357f45a699d2d8ea61d3b7af592.png)
 
 Tyres are small targets and so incur one  penalty  die  to  the  Firearms  roll. Plus,  a  penalty  die  may  be  imposed if  the  vehicle  is  moving  at  high  speed ( Bonus Dice and Penalty Dice , page 111; Target  Size ,  page  139; Fast-Moving  Targets ,  page  138; Multiple Bonus or Penalty  Dice ,  page  143).  Damage  rolls  are made as for regular combat; 1 damage to a tyre is enough to puncture it. Drive rolls  for  a  vehicle  with  one  or  more burst tyres are made with a penalty die.
 
 The  same  conditions  apply  if  the attacker is trying to shoot the driverordinarily, a person wouldn't count as a small target, but they most definitely are if you consider how little of them can be seen over a steering wheel.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000394_4bfb4d95e86cc4ca731a29a120b0b1027c950f328e995c97881fdece59bec5d2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000394_4bfb4d95e86cc4ca731a29a120b0b1027c950f328e995c97881fdece59bec5d2.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000395_4b43878beafc9b2f69d32f3dcac05ff30e819601f05fbd4274da498f09e42a41.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000395_4b43878beafc9b2f69d32f3dcac05ff30e819601f05fbd4274da498f09e42a41.png)
 
 Steps 1 and 2 remain much the same as in the Running Combat  Encounters section  (page  127).  In Step  3:  Dice Rolls ,  the  two  drivers  make  an  opposed  combat roll using their Drive skills. Determine the winner by the usual method ( Opposed Combat Rolls , page 131).
 
@@ -7198,7 +7198,7 @@ Next comes Step 4: Damage , in which you figure out any damage or other effects.
 - Step 5: Narration: the winner describes what happens.
 - If the vehicle's Build is greater than the other's-up to double its Build-the one with the higher Build suffers 1 damage, and the one with the lower Build suffers 2 damage.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000396_421c8055e1ec8ac3a4e453ed1df444908d1681b306e66bfee6ae86ceeed92d57.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000396_421c8055e1ec8ac3a4e453ed1df444908d1681b306e66bfee6ae86ceeed92d57.png)
 
 3
 
@@ -7236,9 +7236,9 @@ After a vehicular combat, if enough time and money is spent on the vehicle, pret
 
 - Bicycles and motorcycles involved in a collision always incur a penalty die on any Drive roll made to maintain control.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000397_3d570eb0d27a60f4d83b7a57d3bc6bd542a00684f38ee7be75e8e223c71ca678.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000397_3d570eb0d27a60f4d83b7a57d3bc6bd542a00684f38ee7be75e8e223c71ca678.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000398_e65004043d5e67296af96e9932567673a8554fe97ef24a1742ac389c2442c74e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000398_e65004043d5e67296af96e9932567673a8554fe97ef24a1742ac389c2442c74e.png)
 
 ## Table 8: Vehicles
 
@@ -7268,15 +7268,15 @@ rating of the strength and size of the vehicle.
 
 Passengers: the number of people that can be accommodated.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000399_16551b8aebe683f986ca34ed97caa121e3514c2e51055e6d2865f249d7c5672b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000399_16551b8aebe683f986ca34ed97caa121e3514c2e51055e6d2865f249d7c5672b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000400_3443b85be93a63c967491e09d2eba9fb7cd050729db8ac235a8bcae9f7009cb8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000400_3443b85be93a63c967491e09d2eba9fb7cd050729db8ac235a8bcae9f7009cb8.png)
 
 AV
 
 U
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000401_1dbfe58700e3529b60a42f90c0e5cde06e62b5ff29f5e0eabb022ea6895f9e62.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000401_1dbfe58700e3529b60a42f90c0e5cde06e62b5ff29f5e0eabb022ea6895f9e62.png)
 
 MAGIC IS FUNDAMENTAL in the world of Rivers of London -without it, there would be no Folly, no Nightingale, and no Peter Grant. At least, not in the way that we have come to know them over the course of the novels. As you might expect, magic is also important in Rivers of London: the Roleplaying Game , so this chapter discusses the nature of spells, how spells are learned, how they are cast, and what they actually do. But first, we're going to look at two other important side effects of magic: vestigia and signare .
 
@@ -7304,9 +7304,9 @@ As well as being able to sense vestigia , some creatures and beings,  such  as  
 
 Really  strong  negative  emotions  can  leave  a  stain  on  the environment.  Places  such  as  massacre  sites  can  be  saturated with powerful and unpleasant extremely strong vestigia , which can develop into a hostile force (known as either a despair or a  malignancy,  depending on its behaviour) 1 .  Even  those  who haven't honed their senses can be well aware that something bad happened in places  like  that.  Very  powerful  magic  used  against  (or
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000402_13bc7e14b2bc433f38f36bd422d61fdce0836cba8da08efbb4d642541c11224c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000402_13bc7e14b2bc433f38f36bd422d61fdce0836cba8da08efbb4d642541c11224c.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000403_e88f12ee95e1d684b62955f9b0852d72eadbe2e15f454be4bfb332fe7ba92a41.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000403_e88f12ee95e1d684b62955f9b0852d72eadbe2e15f454be4bfb332fe7ba92a41.png)
 
 4
 
@@ -7339,7 +7339,7 @@ When in the presence of vestigia , the GM may ask a player for a Sense Vestigia 
 
 Table 9: Example Clues from Vestigia
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000404_9749537e786edad6c8c33df1cd88ecd716bc750bfbb8d25e7f9a6bf0f07ec8c2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000404_9749537e786edad6c8c33df1cd88ecd716bc750bfbb8d25e7f9a6bf0f07ec8c2.png)
 
 ## For weak vestigia :
 
@@ -7354,7 +7354,7 @@ The vestigia sensed  in  a  particular  location  or  attached to  a  particular
 
 Don't  forget,  members  of  the  Folly  are  trained to  carry  out  an  Initial  Vestigium  Assessment  (IVA) the  moment  they  arrive  at  the  scene  of  a  crime to  determine  if  there's  any  magical  involvement ( Types of Evidence , page 204).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000405_e86c66ed6bc5f17e367da677e3854bbaf2e916c19a8a579a63d753ae8c7af56f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000405_e86c66ed6bc5f17e367da677e3854bbaf2e916c19a8a579a63d753ae8c7af56f.png)
 
 Sometimes,  the  sensations  derived  from vestigia only make sense in hindsight-they are often subtle clues, quite tangential or obscure, that give an inkling of the truth rather than concrete evidence you could produce in court. It could be just enough to let the investigators know that something is  'off'  about a crime scene, or it might point them in the right  direction  to  look  for  physical  clues  or  further  leads. For example, the song Peter Grant hears when investigating the death of Cyrus Wilkinson 2 leads him to the dead man's connection to jazz, and so on.
 
@@ -7365,9 +7365,9 @@ Sometimes,  the  sensations  derived  from vestigia only make sense in hindsight
 
 Some  materials  hold vestigia  longer than others.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000406_5a300c7566567f1d833fcc5bb6d3fcf62361288b6e709ffc16cf2c8324bbec74.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000406_5a300c7566567f1d833fcc5bb6d3fcf62361288b6e709ffc16cf2c8324bbec74.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000407_784121888e0be38bc24b4dc4ede7c55faebbec18081ea0ad81f2895013f4078b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000407_784121888e0be38bc24b4dc4ede7c55faebbec18081ea0ad81f2895013f4078b.png)
 
 - Stone: soaks up everything around it, meaning some old houses are positively dripping with vestigia.
 - Concrete: almost as good at storing vestigia as stone.
@@ -7376,17 +7376,17 @@ Some  materials  hold vestigia  longer than others.
 - Plastics: some types of plastic, e.g., PVC, retain vestigia very well, some better than metals.
 - Corpses: the human body is terrible at retaining vestigia. Magic strong enough to kill a person results in some vestigia, but even then, it might only last a few days.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000408_8ddef25178f5a69d7cce8b975e37c13d8c03f62915118142a815adfe5ae43044.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000408_8ddef25178f5a69d7cce8b975e37c13d8c03f62915118142a815adfe5ae43044.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000409_0e7a46bd844cf852e6bd4b90e2339ef60ae46d8159648433b17d706a2a4dc68b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000409_0e7a46bd844cf852e6bd4b90e2339ef60ae46d8159648433b17d706a2a4dc68b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000410_0b3735f7cc8b34af62c36f3ed199cfc92e5c71f7c8d0f26bb8b35771ba63ba66.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000410_0b3735f7cc8b34af62c36f3ed199cfc92e5c71f7c8d0f26bb8b35771ba63ba66.png)
 
 Footnote:
 
 2 Moon Over Soho
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000411_ff28ba4fc802801570b1a097b847b0fb6d31bc74a5e2e00cfd2c5dc941d315ab.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000411_ff28ba4fc802801570b1a097b847b0fb6d31bc74a5e2e00cfd2c5dc941d315ab.png)
 
 4
 
@@ -7408,7 +7408,7 @@ As signare and vestigia are  related, signare are  detected in  exactly  the  sa
 
 Fae investigators ( Playing Fae Investigators , page 318) don't  generally  have  signare-anyone  successfully using  Sense  Vestigia  on  a  fae  investigator  simply becomes aware of something strange and otherworldly about them (the same as they would for any other fae character).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000412_191d91d4c168df740f3258d7d9ff424ff9cdd460d35cd21a33d40bf97038d6f2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000412_191d91d4c168df740f3258d7d9ff424ff9cdd460d35cd21a33d40bf97038d6f2.png)
 
 ## Creating an Investigator's Signare
 
@@ -7418,9 +7418,9 @@ To create a signare for your investigator, either choose one sound, one smell, a
 
 For example: Nafeesa's player isn't sure which signare to choose, so  they  decide  to  roll  randomly.  They  roll  1D100  for  a  sound, getting 01-the song of a blackbird. This is followed by a 77 for smells-menthol rub. Finally, a 07 for other sensations-the taste of fresh apple. Nafeesa's player decides to keep the sound and the taste  of  apple  because  they  suggest  a  garden  theme,  which  quite appeals to the player. If Nafeesa is being trained by Nightingale, it would make sense for her to have his tick-tock element as well. So, Nafeesa's final signare is: the song of a blackbird, the taste of fresh apple, and a tick-tock sound.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000413_c71f58b2e9b944447ec9a374712f34c89988ace4b2078dba6302acc08b742388.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000413_c71f58b2e9b944447ec9a374712f34c89988ace4b2078dba6302acc08b742388.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000414_937c7f1c3768b7de30ee41ad0bce908cb5b73c16f519f702edb4b29df90bf667.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000414_937c7f1c3768b7de30ee41ad0bce908cb5b73c16f519f702edb4b29df90bf667.png)
 
 ## Table 10: Signare
 
@@ -7447,7 +7447,7 @@ For example: Nafeesa's player isn't sure which signare to choose, so  they  deci
 | A child crying                                     | Burnt earth                             | A burst of heat, like stepping out into the hot sun                 |                 19 |
 | Chisels on stone                                   | Carbolic soap                           | Children bouncing up and down in excitement                         |                 20 |
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000415_d3f8976417561352df4625634e564d66223bf338746074c3e39a5cac79f2e373.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000415_d3f8976417561352df4625634e564d66223bf338746074c3e39a5cac79f2e373.png)
 
 4
 
@@ -7474,7 +7474,7 @@ For example: Nafeesa's player isn't sure which signare to choose, so  they  deci
 | Ringing silence                                                                    | The sea           | A hot summer afternoon                             |                 39 |
 | Shouting                                                                           | Formaldehyde      | A hungry dog/wolf                                  |                 40 |
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000416_9d0dc0e7cec6109e56213f49c9c1c42c2bd181416d63a9c79a83dacec00bc571.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000416_9d0dc0e7cec6109e56213f49c9c1c42c2bd181416d63a9c79a83dacec00bc571.png)
 
 | Dice Roll (1D100)                                                    | Sound                | Smell                                                                              |   Other Sensations |
 |----------------------------------------------------------------------|----------------------|------------------------------------------------------------------------------------|--------------------|
@@ -7499,7 +7499,7 @@ For example: Nafeesa's player isn't sure which signare to choose, so  they  deci
 | Sheep bleating                                                       | Pepper               | Terror                                                                             |                 59 |
 | Water babbling over stones                                           | Petrol (gasoline)    | A lover's kiss                                                                     |                 60 |
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000417_0a00d3948d91737e7dfad96ad466ab31dc96151442160860c8736ae76bdd3659.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000417_0a00d3948d91737e7dfad96ad466ab31dc96151442160860c8736ae76bdd3659.png)
 
 4
 
@@ -7526,7 +7526,7 @@ For example: Nafeesa's player isn't sure which signare to choose, so  they  deci
 | Loud rock music                                    | Newly washed cars  | The soft caress of silk                                 |                 79 |
 | The hoot of an owl                                 | Wet pavement       | A tightness in the chest                                |                 80 |
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000418_d366b8cade8278000c3b8eec7ded4881e650f4a18c4cef5063491cedeb7c8964.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000418_d366b8cade8278000c3b8eec7ded4881e650f4a18c4cef5063491cedeb7c8964.png)
 
 | Dice Roll (1D100)                        | Sound               | Smell                                  |   Other Sensations |
 |------------------------------------------|---------------------|----------------------------------------|--------------------|
@@ -7551,7 +7551,7 @@ For example: Nafeesa's player isn't sure which signare to choose, so  they  deci
 | An ice cream van's chime                 | Old books           | Snow falling on your tongue            |                 99 |
 | Gunfire                                  | Coconut             | The taste of your favourite food       |                100 |
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000419_091995dedcc26dbf702eb92a263d3c0d2b26f2b666e3b177b684eab94444a1ab.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000419_091995dedcc26dbf702eb92a263d3c0d2b26f2b666e3b177b684eab94444a1ab.png)
 
 4
 
@@ -7581,11 +7581,11 @@ Why so few spells? Well, the investigators in a standard Rivers  of  London  gam
 
 ## ADDITIONAL RULES
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000420_8647f534421d9bb923b17b035f2aabd92d97d318f2b0f1725485d438ab71040e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000420_8647f534421d9bb923b17b035f2aabd92d97d318f2b0f1725485d438ab71040e.png)
 
 If you want your investigators to begin the game with more spells, allow your players to make use of the optional Spellcaster Experience  Package during character  creation-see Investigator  Experience Packages , page 309, for more details.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000421_02a97e539d5b650c7196e35819a309dc1569586cb16f0a7a1c43f86b764eab94.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000421_02a97e539d5b650c7196e35819a309dc1569586cb16f0a7a1c43f86b764eab94.png)
 
 ## Newtonian Apprentices
 
@@ -7602,15 +7602,15 @@ Some spells, particularly those from higher orders, have prerequisites  for  lea
 
 If  an  investigator  already  knows  how  to  cast  spells before  they  join  the  Folly,  they  are  classed  as  a Hedge Wizard (following), though Nightingale and Varvara will  undoubtedly  be  responsible  for  any  further  training they receive.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000422_ab0fd2319f6f1ab28a0884a625a9d2934c84c1b3efbecb84a864d2cb38827a98.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000422_ab0fd2319f6f1ab28a0884a625a9d2934c84c1b3efbecb84a864d2cb38827a98.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000423_510989aa83e358ef9811e6e2e90a8da7d73cb94fa24a191546c94e41cd636632.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000423_510989aa83e358ef9811e6e2e90a8da7d73cb94fa24a191546c94e41cd636632.png)
 
 ## The Practitioner's Oath
 
 Investigators who are also practitioners are  expected  to  swear  an  oath  upon joining  the  Folly  ( By  My  Troth ,  page 54),  whether  they  are  police  officers or civilians. Police officer practitioners do  so  in  front  of  the  Commissioner and DCI Nightingale, promising to keep secret what they're taught,  among other things (for the oath's exact wording, see Game Moderator Advice , page 217).  The  civilian  oath  is  nearer  to  the one taken by Patrick Gale and his associates  ( The  City  of  London ,  page  275), and is  likewise  accompanied by a suitably binding non-disclosure agreement, separate  to  the  one  required  for  the Folly consultant's card.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000424_061a43d4861cdb16ca8769be5dee51711b56e850f9b2624a2a72323da4a594ab.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000424_061a43d4861cdb16ca8769be5dee51711b56e850f9b2624a2a72323da4a594ab.png)
 
 ## Hedge Wizards
 
@@ -7640,15 +7640,15 @@ Example: Nafeesa is an apprentice Newtonian practitioner and so automatically st
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000425_888a36d6ba5f38fc660db819f5a1706914d1fb3d4209a01acf506d6477963cfd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000425_888a36d6ba5f38fc660db819f5a1706914d1fb3d4209a01acf506d6477963cfd.png)
 
 A  player  can  spend  a  maximum  of  1  development point to master an existing spell or learn a new  spell;  they  cannot  do  both  in  the  same development phase if they have only 1 development point  available  (as  learning  a  spell  and  mastering one requires 2 points), nor can they learn or master multiple spells at a time. This restriction reflects that learning and mastering spells requires considerable  effort  to achieve  ( Learning and Mastering Spells , page 121).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000426_03013463404a27f7f0755476274281d3920de808bab0cc52520d77cf7a16cc13.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000426_03013463404a27f7f0755476274281d3920de808bab0cc52520d77cf7a16cc13.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000427_a952407b24d3a53831ab11ee2ac62aff6d489bcf4f043d1831af96078caafaaa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000427_a952407b24d3a53831ab11ee2ac62aff6d489bcf4f043d1831af96078caafaaa.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000428_1f499c5ea179835135afa479512be9f5bc0a95241fc1fc13d5f6eadacff9f8e5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000428_1f499c5ea179835135afa479512be9f5bc0a95241fc1fc13d5f6eadacff9f8e5.png)
 
 ## Learning More Spells
 
@@ -7664,7 +7664,7 @@ During each Investigator Development Phase (page 120), a player has the option o
 
 An investigator can spend only 1 development point to learn one new spell during an investigator development phase ( Learning and Mastering Spells , page 121).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000429_eccdcb3abce16f60c4f9bea0c1771c75a92fbf886b4243bbccb3b6198f4bf22d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000429_eccdcb3abce16f60c4f9bea0c1771c75a92fbf886b4243bbccb3b6198f4bf22d.png)
 
 Example: Nafeesa  knows  two  first  order  spells,  Werelight  and Impello ,  and  one  second  order  spell,  Fireball.  During  her  first investigator development phase, she has 1 development point to spend.  She  could  mark Impello as  mastered,  learn  a  new  first order spell, or learn a new second order spell. She opts to master Impello .  If  she  had  2  development  points  to  spend,  she  could invest that second point to also learn a new spell or use it to also increase her Magic skill, but if she had 3 or more points to spend, she  couldn't  spend  any  further  points  to  buy  more  new  spells  or master other ones until her next investigator development phase.
 
@@ -7694,17 +7694,17 @@ Example: Nafeesa  has  mastered  Werelight.  When  casting  this spell, she can 
 - It takes one combat round (or the narrative equivalent) to cast a spell-the same amount of time it takes to throw a punch or fire a gun in combat, i.e., it takes up the caster's turn in a combat round ( The Combat Round , page 124).
 - Each spell requires a certain number of magic points to be spent before it can be cast ( Magic Points and Spells , following).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000430_110cbeecb1cb5510f087ff51554869f74640b234ac108bc57ec6f96e09fa1564.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000430_110cbeecb1cb5510f087ff51554869f74640b234ac108bc57ec6f96e09fa1564.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000431_db0e9b7e6d272fb9cd3ecd9ce222f541076ae3115e59f31103650bc3ef949b98.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000431_db0e9b7e6d272fb9cd3ecd9ce222f541076ae3115e59f31103650bc3ef949b98.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000432_33982617f4b4e0251ca4cf8efac7682badd36221d2c46b36eb31a7812e3c8741.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000432_33982617f4b4e0251ca4cf8efac7682badd36221d2c46b36eb31a7812e3c8741.png)
 
 ## The Next Scene
 
 The phrase 'the next scene' is used to indicate  the  passing  of  time  between one scene and the next, and its nature is  elastic.  It  is  necessary  that  a  short period  of  time  (approximately  30  minutes  or  so)  passes  between  scenes: moving from one room of a house to the next is not sufficient time, whereas driving  across  London  from  one  location to another is. If in doubt, the GM decides whether enough time has passed for a character to refresh their magic points.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000433_f09e11dba884ce67ceeac47cfdf7274e7b2572d54886c134d50da0ace2bba5d7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000433_f09e11dba884ce67ceeac47cfdf7274e7b2572d54886c134d50da0ace2bba5d7.png)
 
 Example: while exploring an abandoned underground  station,  Nafeesa  casts  Werelight, costing her 1 magic  point.  While  there,  she defends herself using Fireball, costing her 2 magic  points.  She  has  spent  a  total  of  3  magic points,  reducing  her  available  magic  points  to 10. By the time she arrives back at the Folly (at least  30  minutes  later),  she  has  recovered  her lost  magic points and her total is back up to 13.
 
@@ -7720,13 +7720,13 @@ To make a spellcasting roll, the player should roll percentile dice and compare 
 
 Example: Nafeesa's attempt to cast Werelight in the underground station requires a spellcasting roll. As she has mastered Werelight, the Magic roll gains a bonus die. Nafeesa's player rolls 22 and 62, and takes the best result: 22-a Hard success. Nafeesa's werelight pops into being, illuminating her surroundings. Nafeesa decides to cast another spell-Fireball. She must make a new Magic roll to see if she successfully casts it, but, as she hasn't mastered that spell, she doesn't gain a bonus die on the roll this time. Nafeesa's player rolls 08, another Hard success! A ball of fire flies at her target…
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000434_971f704e30ab45f1ab6fb026cc68898a8717a6578946e20300dc5c183271c1ec.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000434_971f704e30ab45f1ab6fb026cc68898a8717a6578946e20300dc5c183271c1ec.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000435_33eb9342fa800b4f503200d459f3d9cc66809c9e04ba8b04ef3c320cb692e6d9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000435_33eb9342fa800b4f503200d459f3d9cc66809c9e04ba8b04ef3c320cb692e6d9.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000436_824ff812b58fd74016a0f44192c3cab446c033dbac6aa8e73d191d8c3436cd85.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000436_824ff812b58fd74016a0f44192c3cab446c033dbac6aa8e73d191d8c3436cd85.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000437_2d83c93153930b188702d3a9c6cc44996b8c1921bfa455e93b13063a2d62aeb2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000437_2d83c93153930b188702d3a9c6cc44996b8c1921bfa455e93b13063a2d62aeb2.png)
 
 4
 
@@ -7740,7 +7740,7 @@ Example: Nafeesa  is  practising  casting  Fireball  in  one  of  the teaching l
 
 Luck  points  can  be  spent  to  turn  a  casting  failure into  a  success,  but  as  usual  they  cannot  be  used to  buy  off  a  fumble  ( Spending  Luck ,  page  113).  If the  casting  roll  is  made  outside  of  combat,  there is  also  the  option  to  push  the  Magic  roll  ( Pushing a  Spellcasting Roll ,  page 175). Remember: combat rolls  cannot  be  pushed  ( Can  I  Push  My  Combat Roll? , page 141).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000438_0f4fa2f0c55881f2af3df1c23600580a4e0d82bdb8b206778524affb57ad4c7e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000438_0f4fa2f0c55881f2af3df1c23600580a4e0d82bdb8b206778524affb57ad4c7e.png)
 
 ## Table 11: Mastered vs Unmastered Spells
 
@@ -7751,7 +7751,7 @@ The following table summarises the differences between a mastered and an unmaste
 | Mastered     | Yes                      | Bonus die to spellcasting roll | Bonus die to spellcasting roll cancels out penalty die due to exceptional circumstances | Bonus die to spellcasting roll cancels out any one penalty die incurred as a result of combat situation (e.g., if target is diving for cover)* |
 | Unmastered   | No                       | -                              | Penalty die to spellcasting roll                                                        | Bonus or penalty die to spellcasting roll based on combat situation (e.g., if target is diving for cover)*                                     |
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000439_9ba4d9d2060e20fbc6e1950b5ccbbe1ed1af46c6f5755ae2255bf93b2a1f7c43.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000439_9ba4d9d2060e20fbc6e1950b5ccbbe1ed1af46c6f5755ae2255bf93b2a1f7c43.png)
 
 or  not-it's  clear  that  at  some  point,  she  will  succeed.  The  GM instead asks Nafeesa's player to roll 1D100 to see how long it takes her. The result is 52, so 52 minutes later Nafeesa finally manages to throw out a perfect fireball.
 
@@ -7805,7 +7805,7 @@ It's  also  worth  pointing  out  that  magic  and  alcohol/ recreational drugs 
 
 Most  people  would  struggle  to  even  think  about casting  a  spell  when  the  pressure's  on,  but  magicwielding  investigators  in RoL:RPG  are  exceptional. They can broadly do what Peter Grant does, which includes having the wherewithal to attempt spellcasting in exceptional circumstances and during combat.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000440_a16f71bb5dd45856e6d31dd556564a5841da206d451c64c44214c08882f33763.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000440_a16f71bb5dd45856e6d31dd556564a5841da206d451c64c44214c08882f33763.png)
 
 4
 
@@ -7821,7 +7821,7 @@ The number of magic points a practitioner can spend to boost  any  single  spell
 
 Example: Nafeesa casts Werelight, one of her mastered spells. The spell is first order, so costs 1 magic point to cast. Nafeesa elects to spend a second magic point to boost the spell. Her Magic skill roll is successful, creating a ball of intensely bright light, for a total cost of 2 magic points.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000441_4edb4b79d8b709d7b6ddedf14455cf2491c161a57426be502c0c12d8833a834c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000441_4edb4b79d8b709d7b6ddedf14455cf2491c161a57426be502c0c12d8833a834c.png)
 
 ## Sensing a Spell Being Cast
 
@@ -7847,7 +7847,7 @@ I  pulled  my  phone  and  gave  it  a  shake-it  made  the  sandy the rainmaker
 
 As a rule, magic and microprocessors do not get on. Casting a spell around any form of electronic device while it's connected to a battery or other power supply can be disastrous for the item involved, so much so that the Folly equips its recruits with mobile phones that have jury-rigged physical switches to disconnect the battery-far less laborious than having to constantly pop the battery in and out every time you might be in the vicinity of a magical discharge. Recruits are also encouraged to carry a spare phone (battery separate), just in case they need to cast a spell quickly, thereby accidentally disabling their main phone.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000442_6b9b1434872ea464b7af59cb73b5ef9dc4d1cc09204b6ea700f868ff5d9e209f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000442_6b9b1434872ea464b7af59cb73b5ef9dc4d1cc09204b6ea700f868ff5d9e209f.png)
 
 As long  as  the  microprocessor  isn't  attached  to  a  power source,  it's  safe.  If  it  is  attached  to  a  power  source,  the silicon in its chip is highly likely to be turned into fine sand, rendering the device useless (known as 'sanding'). Whether an electronic device survives or not is related to how far it is from the source of the magical discharge. In game terms, use the following guidelines:
 
@@ -7861,7 +7861,7 @@ Anything without a microprocessor is, as far as we can tell, immune to the damag
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000443_0599580171954498c4159a7992286ed5de2e454ca966818d2f79bac770a1cc4d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000443_0599580171954498c4159a7992286ed5de2e454ca966818d2f79bac770a1cc4d.png)
 
 ## Hyperthaumaturgical Degradation (HTD)
 
@@ -7883,7 +7883,7 @@ Footnote:
 
 Example: Nafeesa's player rolls 86 on a pushed Magic roll: a failure. Nafeesa  reduces  her  magic  points  to  zero  and  her  player  makes  a POW roll for HTD, achieving a Regular success. This means Nafeesa suffers 2 damage. As she's currently uninjured, her player marks off the Hurt and Bloodied boxes on Nafeesa's character sheet, along with the Impaired box ( Bloodied: In Serious Trouble , page 144). Despite the damage, the pushed spell works ( Pushing a Spellcasting Roll ,  page 175), although the cost to Nafeesa was significant.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000444_1488c25b75298bf3d49c9129fba7a42f0e1c031c9c404a01b1edcf9dd140b30c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000444_1488c25b75298bf3d49c9129fba7a42f0e1c031c9c404a01b1edcf9dd140b30c.png)
 
 ## Spells
 
@@ -7915,7 +7915,7 @@ It's a lot like lux in that you shape the forma in your mind, open your palm and
 
 ## Prerequisite: none.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000445_e40536b5ae7a9e9e7239edee97a9515217dd547ebc1339b3c44887434bd0287b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000445_e40536b5ae7a9e9e7239edee97a9515217dd547ebc1339b3c44887434bd0287b.png)
 
 Formerly known as fulge ,  this spell creates a bright flash of light.  Can  be  used  as  a  distraction  or  to  temporarily  blind someone. When cast in front of someone, the target must make a POW roll: if failed, they are stunned and partially blinded for 1D10 rounds. Targets blinded in this way lose their next action, and any actions that require sight are made with a penalty die while stunned.
 
@@ -7929,11 +7929,11 @@ Impello is a forma used to push, pull, or levitate objects. This is  usually  th
 
 The  effect  of Impello is  comparable  to  an  invisible  hand that can be used to push, pull, or lift a target. In a situation where the GM would call for a STR roll to test whether the character is strong enough to move an object, the GM should instead call for a POW roll. Impello could easily levitate an apple with no POW roll required, but if lifting or pushing something  heavier,  the  GM  should  call  for  a  POW  roll. The  difficulty  level  of  the  POW  roll  should  be  set  by  the
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000446_356201de498462d70bc871d12e533d893edda79b7bb892b11c96cc0f5c37ce1a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000446_356201de498462d70bc871d12e533d893edda79b7bb892b11c96cc0f5c37ce1a.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000447_a8de538cfefb7487f14dab61e34e751ff572180fcc0ebe5eb9ab25d8aaaaa01a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000447_a8de538cfefb7487f14dab61e34e751ff572180fcc0ebe5eb9ab25d8aaaaa01a.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000448_137d87c3d2fbc8f4e6d4bbd206d4c8557f86a2c047b6afe54af8bafbaffcd6cc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000448_137d87c3d2fbc8f4e6d4bbd206d4c8557f86a2c047b6afe54af8bafbaffcd6cc.png)
 
 179
 
@@ -7971,13 +7971,13 @@ Prerequisite: none.
 
 The effect of Scindere is comparable to an invisible hand used to hold an object stationary. Scindere can hold something up to  the  size  of  a  large  watermelon  (approx.  10kg/22lbs).  An opposed STR vs POW (of the caster) roll would be required if someone was attempting to move something held in place with Scindere .  If  someone  wishes  to  use  magic  to  move  an object held by Scindere (such as using Impello vs Scindere ), the GM should call for an opposed POW roll between the two spellcasters to determine who triumphs ( Impello , page 178).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000449_e306ecf5dc32a7e6f8d7035c8bfa31c68dac672bbb452973ac72472547d55bcb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000449_e306ecf5dc32a7e6f8d7035c8bfa31c68dac672bbb452973ac72472547d55bcb.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000450_8f2fc14a70eef394aa75236510070fbd3161ae68d9e410b2bf048d023dde9399.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000450_8f2fc14a70eef394aa75236510070fbd3161ae68d9e410b2bf048d023dde9399.png)
 
 ## ImpelloSpell Tree e
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000451_dc5fe06edf23486aa681d5bd2bd644fd33642191ffbc6b6fe4c2dccda399476d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000451_dc5fe06edf23486aa681d5bd2bd644fd33642191ffbc6b6fe4c2dccda399476d.png)
 
 4
 
@@ -8010,9 +8010,9 @@ Boost: spending  more  magic  points  increases  the  amount of earth or rock ge
 
 It [aqua] used to form the empedoclean along with lux , aer and terra -two of which went out of fashion when the four-element theory of matter failed to survive the age of Enlightenment. -Broken Homes
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000452_cc14cc97b76c18a0f370454e3a1ccfd6a072dc8729fcf4dc91afdf8bf1b1d0be.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000452_cc14cc97b76c18a0f370454e3a1ccfd6a072dc8729fcf4dc91afdf8bf1b1d0be.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000453_26ea0b1533931533fa9c3cc6893b8b31bd6c06318a6d3ff806baa92897bea3ec.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000453_26ea0b1533931533fa9c3cc6893b8b31bd6c06318a6d3ff806baa92897bea3ec.png)
 
 ## Werelight
 
@@ -8080,7 +8080,7 @@ If  used  in  combat,  the  spell  is  an  attack  and  is  resolved exactly  th
 
 Boost: additional magic points can turn the invisible force into  a  temporary  barrier  that  lasts  as  long  as  the  caster maintains their concentration or 5 minutes, whichever occurs first. There are two ways another person may attempt to push through the invisible barrier:
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000454_e5019d91f35f9ad1b86658604ea7e7a5a3211455e371e56af7ff21fa2b3bc296.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000454_e5019d91f35f9ad1b86658604ea7e7a5a3211455e371e56af7ff21fa2b3bc296.png)
 
 4
 
@@ -8129,7 +8129,7 @@ To collapse a structure where the spell has been targeted with  a  successful  I
 
 Boost: each additional magic point spent allows the caster to increase either the size or the brightness of the light created. Prior to the end of the spell's duration, 1 additional magic point can be spent to sustain the spell for another 5 minutes.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000455_d8aa745739807bc712bd9c434ef20fa6cf99dfe599d77d48505a764a6ef3319e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000455_d8aa745739807bc712bd9c434ef20fa6cf99dfe599d77d48505a764a6ef3319e.png)
 
 Note: if the caster wishes to fix the werelight in a position they cannot  physically  reach,  they  must  combine  this  spell  with Impello (page 178) to manoeuvre the werelight into position. This combined version of the spell is third order and has a base cost of 3 magic points; it can be boosted as described above.
 
@@ -8182,9 +8182,9 @@ I cast a simple lux impello combo which put a yellowish werelight about two metr
 
 ## Shield, Spell ITree
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000456_87460e910b07b57c9394c188befd8530fc83944942460ae04e7353c907f77932.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000456_87460e910b07b57c9394c188befd8530fc83944942460ae04e7353c907f77932.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000457_eaa8756a931a20a9d98a3dee215bbc5dea4cfad8499e85a04c2b3dedaa9f90e7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000457_eaa8756a931a20a9d98a3dee215bbc5dea4cfad8499e85a04c2b3dedaa9f90e7.png)
 
 4
 
@@ -8255,7 +8255,7 @@ Generates  a  golf-ball-sized  orangey-red  sphere  that  flies about  erratical
 
 While not intended for deployment against the living, if the spell is used against people or creatures, they are picked up  and  flung  with  considerable  force  a  number  of  metres/ yards  equal  to  the  caster's  POW;  refer  to Table 7:  Other Forms of  Damage (page  149).  The  standard  spell  inflicts Severe damage.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000458_78ed770819b5a06dd561d945fc769e77f6e1017a5fb6464f0c6a56609994b686.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000458_78ed770819b5a06dd561d945fc769e77f6e1017a5fb6464f0c6a56609994b686.png)
 
 Boost: each additional magic point spent increases the size of object that can be damaged or rolled by this spell.
 
@@ -8311,9 +8311,9 @@ Boost: spending 1 additional magic point allows the caster to create sounds othe
 
 I noticed then that Nightingale's Jag, which I swore I'd heard pull up in front of the barn, was nowhere to be seen. -Broken Homes
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000459_8ed71ed347ad7a35af02842bf7b2f69c3f82998eb3fdddde93f8f754c2159e8a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000459_8ed71ed347ad7a35af02842bf7b2f69c3f82998eb3fdddde93f8f754c2159e8a.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000460_8bc896e963fbb728400c41e30cad2d7a98554ccb355355b0aec58166e85f5145.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000460_8bc896e963fbb728400c41e30cad2d7a98554ccb355355b0aec58166e85f5145.png)
 
 4
 
@@ -8343,9 +8343,9 @@ Prerequisites: Glitter Bomb or Ice Blast.
 
 Creates a large disk,  3  metres/yards  across,  that  spins  like a circular saw blade or drill head. The blade moves at speed through the air, slicing through whatever it contacts. As it moves,  it  emits  a  loud  humming  sound.  The  disk  inflicts damage on anything it hits. It lasts for one round and can be used to attack 3 separate targets, as long as they are within 10 metres/yards of each other.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000461_5f8e680dd570da922f097ce1ba12c2fe14d24fed420a1d0364c39ec2f2410d20.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000461_5f8e680dd570da922f097ce1ba12c2fe14d24fed420a1d0364c39ec2f2410d20.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000462_dec1dfd03d28b6485504f714e84e61c27f29b8950bbb4dfc33842731cceaf3e4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000462_dec1dfd03d28b6485504f714e84e61c27f29b8950bbb4dfc33842731cceaf3e4.png)
 
 The spell's attack is resolved exactly the same as a firearms attack ( Combat ,  page 123), with the attack roll (Firearms) replaced  by  the  spellcasting  roll  (Magic).  A  damage  roll should  be  made  using  the  caster's  DEX.  The  basic  spell inflicts  2  weapon  damage,  which  is  added  to  the  result  of the damage roll, if applicable ( The Damage Roll , page 132).
 
@@ -8389,9 +8389,9 @@ Then the front of the barn literally unzipped-bricks fountaining up and away in 
 
 Using the 'rope' for climbing is a challenge as it is shortlived and must be affixed to something. Depending on the situation,  the  GM  may  call  for  a  DEX  roll  to  anchor  the 'rope,' followed by a Hard Athletics roll to scale the 'rope' before it dissipates.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000463_cd42938047d3c9c96091ce508652c4a0289a68ae61375aadd02423bc34faeaf1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000463_cd42938047d3c9c96091ce508652c4a0289a68ae61375aadd02423bc34faeaf1.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000464_855e48b8cbb82d7e9969d11f66b24e6aeac5bce7b10240663d464ba96c404e76.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000464_855e48b8cbb82d7e9969d11f66b24e6aeac5bce7b10240663d464ba96c404e76.png)
 
 4
 
@@ -8425,19 +8425,19 @@ When Seducere is  used upon a target, they are permitted a POW roll to resist it
 
 Whether the target is aware of the spell or not, if it's an investigator, they can spend Luck to overcome a failed POW roll ( Spending Luck , page 113). The player could also choose to push the roll-represented by them  struggling  to  maintain  their  self-control  and resist the compulsion, just as Peter Grant does when facing Lady Ty's actual glamour 4 -though a second failure would leave the investigator completely at the caster's mercy.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000465_897b1e395c309c0dca502d41c40a50bbc991bb372f733c3969a7a60e2eaaf315.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000465_897b1e395c309c0dca502d41c40a50bbc991bb372f733c3969a7a60e2eaaf315.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000466_d68f898e96eedc001e9bb1372ee5d697baf79aaf0cfa2bd1a29c1aec0a523424.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000466_d68f898e96eedc001e9bb1372ee5d697baf79aaf0cfa2bd1a29c1aec0a523424.png)
 
 ## Important: Consent
 
 Certain  spells,  such  as  Seducere  and Vox  imperante  involve  compelling  a character  to  behave  in  a  certain  way if they fail to resist the spell's effects. The  GM  and  players  should  discuss the boundaries of what that entails for their  group  and  set  limits  accordingly to ensure that no one is ever made to feel  uncomfortable  or  unsafe  out  of character through those spells' usage.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000467_283222028dd8137483fb45e365a0a18be7bf2539ac9c44ba48259308931c23e2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000467_283222028dd8137483fb45e365a0a18be7bf2539ac9c44ba48259308931c23e2.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000468_842b9a67979e96b64ed94befe36efb52a52fa3c6dbcf78e2dc9f45fff451f91a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000468_842b9a67979e96b64ed94befe36efb52a52fa3c6dbcf78e2dc9f45fff451f91a.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000469_c17b0ff4e80c09f98a957a375cee1c5d6655bc7ae6d74b4f0d5a33573d1a1373.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000469_c17b0ff4e80c09f98a957a375cee1c5d6655bc7ae6d74b4f0d5a33573d1a1373.png)
 
 Whereas, if targeting a practitioner or someone aware of the glamour, the outcomes of the POW roll are as follows:
 
@@ -8453,7 +8453,7 @@ Seducere ,'  he  said.  'The  Compulsion,  or,  as  the  Scots  say,  'the Glamo
 
 - -Rivers of London
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000470_53e1999c5ac9e69eac41d1e1f8c5c3f14ff4867abf40d38dd48122cf84097ce0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000470_53e1999c5ac9e69eac41d1e1f8c5c3f14ff4867abf40d38dd48122cf84097ce0.png)
 
 ## Sīphōnem
 
@@ -8469,9 +8469,9 @@ To do sīphōnem you have to run through each of the formae in turn, in the righ
 
 -False Value
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000471_e0691b994cd56bce3bad962827bb3ee1b2090e583cc13206045db926e3a743f0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000471_e0691b994cd56bce3bad962827bb3ee1b2090e583cc13206045db926e3a743f0.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000472_1837215fb13b14e5483dc0b91ed8e0778bba199e8def8a249bb59782fb19bfad.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000472_1837215fb13b14e5483dc0b91ed8e0778bba199e8def8a249bb59782fb19bfad.png)
 
 ## Vultus Occulto
 
@@ -8510,9 +8510,9 @@ Human beings are really difficult  to  directly  control  by  magicDr Walid has 
 
 - -False Value
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000473_91df716b3962b7967a8bfe1204b4508961808379c30929f48870d04b2698eba8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000473_91df716b3962b7967a8bfe1204b4508961808379c30929f48870d04b2698eba8.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000474_555e35a4a0ff2b474910dae3eb0ad0f920f81691140396c70d41ea93f006be85.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000474_555e35a4a0ff2b474910dae3eb0ad0f920f81691140396c70d41ea93f006be85.png)
 
 ## Vox Imperante
 
@@ -8542,7 +8542,7 @@ Whereas,  if  targeting  a  practitioner  who  is  a  named character or investi
 - Any level of success: they are aware of the use of Vox imperante but are not compelled to act upon it.
 - Failure: they begin to act as requested, but then recover their self-control. They are aware of the use of the spell.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000475_1a975176802ee48aa1155cf3fe25bac2a81ffa7ede8b406adf31a9529bdc21e9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000475_1a975176802ee48aa1155cf3fe25bac2a81ffa7ede8b406adf31a9529bdc21e9.png)
 
 Boost: by increasing the magic point spend, the effect can be increased:
 
@@ -8560,9 +8560,9 @@ The phrase 'named NPC' is used to refer to key nonplayer characters in the game,
 
 As with Seducere (page 190), if an investigator is the target of the spell, they can spend Luck to overcome a failed POW roll ( Spending Luck , page 113). The player could  also  choose  to  push  the  roll-represented by  them  struggling  to  maintain  their  self-control and resist the command-though a second failure would  leave  the  investigator  completely  at  the caster's mercy.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000476_82fe7087ab4670c2d67044fbba8e1e7876d2b0f80251816d2ba415b332613ab3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000476_82fe7087ab4670c2d67044fbba8e1e7876d2b0f80251816d2ba415b332613ab3.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000477_953ab032f8294005224e22633c60ba540ee5c5c8b59adbae28bb1c9c1b270169.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000477_953ab032f8294005224e22633c60ba540ee5c5c8b59adbae28bb1c9c1b270169.png)
 
 Artemis Dante no
 
@@ -8572,7 +8572,7 @@ REFUNDS!
 
 KHOCK
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000478_5639ec675d47735a404aee4797761fd8048f20a4aa57a975889f73d8d25c7208.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000478_5639ec675d47735a404aee4797761fd8048f20a4aa57a975889f73d8d25c7208.png)
 
 ## Bringing the Rivers of London to Life
 
@@ -8584,7 +8584,7 @@ The  second  half  of  this  chapter  is  full  of  hints  and  tips for GMs, in
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000479_945dded08ec74682e7e4c461ba28bace2ffb7715599dfe64eacc91147ba1dbe3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000479_945dded08ec74682e7e4c461ba28bace2ffb7715599dfe64eacc91147ba1dbe3.png)
 
 ## Law Enforcement in London
 
@@ -8600,17 +8600,17 @@ While  the  information  provided  in  the  first  half  of this  chapter  is  m
 
 Something  to  bear  in  mind  is  that RoL:RPG  is  set around  the  time  of  False  Value  (2016).  If  you  want to  run  a  more  contemporary  game,  be  aware  that the Met has undergone massive infrastructure rearrangements  since  2017  and  that  some  of  the departments and organisations mentioned in this book may no longer exist.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000480_0d39041121641e585099533766fc85f292bd8a45a6784087d6080ffb575f9a44.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000480_0d39041121641e585099533766fc85f292bd8a45a6784087d6080ffb575f9a44.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000481_c8662767223e8ea4db6f8cfce75853e8106e72b8041ea222528a76008ebe6dff.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000481_c8662767223e8ea4db6f8cfce75853e8106e72b8041ea222528a76008ebe6dff.png)
 
 5
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000482_256a222493103edc2282af8f50637ee1c4761014f5278298107c532d1f4d15ef.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000482_256a222493103edc2282af8f50637ee1c4761014f5278298107c532d1f4d15ef.png)
 
 ## Policing Issues
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000483_29bc80f275a8c53406d8a13736869c3d627afd18b25518c46ea4ba48471ac48f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000483_29bc80f275a8c53406d8a13736869c3d627afd18b25518c46ea4ba48471ac48f.png)
 
 In  an  ideal  world,  all  police  officers would  be  infallible  upholders  of  the law  for  every  section  of  society,  but in the real world this has proven time and  again  not  to  be  the  case.  While there  has  long  been  official  scrutiny regarding the actions of its officers, the state  of  British  law  enforcement  was acknowledged  to  be  deeply  problematical  by  the  1970s  and  1980s.  A  huge push  was  made  to  address  problems and improve  professionalism  within the force as a whole, but there are still ongoing  issues  with  regard  to  institutionalised  racism,  discrimination,  and wrongdoing.
 
@@ -8626,17 +8626,17 @@ Peel's  Met  was  a  full-time,  centrally-organised  police force responsible f
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000484_84f4a80bf47758c4ecc782c9256b55bfcc33add71710a558060aba0ff5c9cf6a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000484_84f4a80bf47758c4ecc782c9256b55bfcc33add71710a558060aba0ff5c9cf6a.png)
 
 As  odd  as  it  may  sound,  the  City  of  London,  the so-called  'Square  Mile,'  has  its  own  police  force, founded  in  1839.  It  is  separate  from,  but  works alongside, the Met. Then there's the British Transport Police  (BTP),  a  national  force  founded  in  1949-and the law enforcement agency Sgt Jaget Kumar works for.  The  BTP  has  jurisdiction  over  the  national  rail network,  and  within  the  capital  is  responsible  for policing the London Underground and all the city's overground rail services.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000485_9ce0fab9422623e6ad8ffc9368d8435a88e80c4f53b956f98948e0a048ecd3af.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000485_9ce0fab9422623e6ad8ffc9368d8435a88e80c4f53b956f98948e0a048ecd3af.png)
 
 In  2016,  there  are  over  40,000  members  of  the  MPS, from constables to support officers and police staff (civilian workers), who work within the boroughs of London to keep the city and its people safe from harm-both mundane and magical, when it come to the Rivers of London .  Its  current headquarters  in  New  Scotland  Yard,  near  the  Victoria Embankment, act as both the bastion of professional British policing and as a museum of crime memorabilia.
 
 The bulk of the Met at the time of Lies Sleeping and False Value is  divided  into  units  called  Borough  Operational Command  Units  (BOCU),  with  one  for  each  of  the  32 London Boroughs. Each unit has its own Met force, working within their respective borough under a Chief Superintendent. Boroughs can request help from one another when it comes
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000486_d7679bc599897518691f464aa2dce0442e32556d37e95d145470a355b4af42f4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000486_d7679bc599897518691f464aa2dce0442e32556d37e95d145470a355b4af42f4.png)
 
 to serious crimes such as murder, and the location where a crime takes place determines which BOCU has jurisdiction over the resulting investigation.
 
@@ -8644,7 +8644,7 @@ The  Met's  specialised  units  include  the  Dog  Support Unit  and  the  Mount
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000487_55cb37bc75f8b7320f3cecaa0715c87bc2855c6626769f0cdd43cedadcc0538b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000487_55cb37bc75f8b7320f3cecaa0715c87bc2855c6626769f0cdd43cedadcc0538b.png)
 
 From 2017, the 32 BOCUs are reorganised into 12 BCUs (Basic  Command  Units),  each  containing  from  two to four boroughs each. There's a lot of cooperation between  the  BOCUs/BCUs  and  the  specialist  units when it  comes  to  crime,  and  officers  who  are  part of the Special Assessment Unit can go pretty much anywhere they need to while pursuing a case. Given how small the Folly's police team is, your investigators will  be  cooperating  with  other  units  as  a  matter  of course. This is rather handy, as it means you can leave all the drudgery of police work-the paperwork, the routine inquiries, and so on-offscreen in the hands of  uniforms  or  specialists  so  that  it  doesn't  bog down the action of the game.
 
@@ -8664,7 +8664,7 @@ A  constable  answers  to  a  sergeant  or  directly  to  an inspector,  dependi
 
 Slightly  confusingly,  every  attested  police  officer is  classed  as  a  'constable'  in  the  eyes  of  the  law, regardless  of  whatever  other  rank  they  hold.  This is because it's the constable's attestation that gives police  officers  the  powers  of  search  and  arrest mandated  by  the  Police  and  Criminal  Evidence Act  1984  (PACE),  i.e.,  their  ability  to  uphold  the Queen's Peace.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000488_56028b97ebb25c74a5f3b5cc8175f08c830053b69c208007e2145de1b697cbb3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000488_56028b97ebb25c74a5f3b5cc8175f08c830053b69c208007e2145de1b697cbb3.png)
 
 ## Sergeant
 
@@ -8678,7 +8678,7 @@ Abbreviation: Insp (uniformed) or DI (Detective Inspector). Examples: Insp Franc
 
 The  second  supervisory  rank,  inspectors  are  on  call  24/7. Uniformed  inspectors  are,  like  their  sergeants,  involved in  organising  and  overseeing  operational  policing,  while Detective Inspectors are often the ones portrayed as 'police detectives' in crime fiction, e.g., Miriam Stephanopoulos (page  238).  DIs  are  authorised  to  conduct  and  manage investigations into serious criminal activity and, within the Met, are usually tied to a specific department dealing with a particular type of crime. Detective Inspector is the lowest rank that can become a Senior Investigating Officer (SIO), though for crimes such as murder, the SIO is likely to be of a higher rank, such as a Detective Chief Inspector. DIs and above can also use their own cars for work purposes, rather than one from the police pool.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000489_66c560777bdeaeb1eb01db4f90e208174486a96d566283d16d929ed3a36931d6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000489_66c560777bdeaeb1eb01db4f90e208174486a96d566283d16d929ed3a36931d6.png)
 
 ## Chief Inspector
 
@@ -8694,7 +8694,7 @@ A Chief Inspector is usually the leader of a team of police officers.  In  the  
 
 Keep  in  mind  that,  while  other  Chief  Inspectors exist  within  the  Met  (around  300  of  them),  your investigators will mostly be dealing with DCI Nightingale. Any other DCIs they meet depends on the types of cases on which they consult.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000490_155c6449891e7c6a628daf7b96b506fd2396b2c9f2f5e2d0665db61268d76397.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000490_155c6449891e7c6a628daf7b96b506fd2396b2c9f2f5e2d0665db61268d76397.png)
 
 ## Superintendent
 
@@ -8720,24 +8720,24 @@ There are four levels of commissioner with the Met: Deputy Assistant  Commission
 
 When Peter Grant is called to investigate the goings-on at the New Bloomberg building, he liaises with Special Constable Geneviève Nguyên of the City of London Police 1 . SCs, also just known as 'Specials,' are the part-time voluntary branch of British policing, including the Met. They have the same powers  as  full-time  police  officers  but  their  own  ranking system.  They  undergo  some  of  the  same  training  as  fulltime officers, and are there to support their paid colleagues when it comes to 'frontline' policing within their assigned community:  road  safety  and  anti-crime  initiatives,  high visibility  foot  patrols,  providing  security  at  public  events and incident scenes, responding to 999 calls, house-to-house inquiries, etc.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000491_20a76a1fa8392158ff54a5c54f02ead63752bc52a60f3d077a33e732be558b44.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000491_20a76a1fa8392158ff54a5c54f02ead63752bc52a60f3d077a33e732be558b44.png)
 
 ## Short - T erm Ranks
 
 People who have been temporarily promoted to a rank by someone higher up the chain of command may have one of two prefixes attached to their new rank.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000492_730c70465d3f88528412dabb53bd551c0a4c83b8ad79ed35ac7c008d936406ec.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000492_730c70465d3f88528412dabb53bd551c0a4c83b8ad79ed35ac7c008d936406ec.png)
 
 - If the promotion is for a short period (usually six months), they use the Temporary prefix, e.g., Temporary Detective Sergeant.
 - If the promotion is to replace an officer on leave or when certain information may be required from that person (such as knowledge of magic in a murder case), they use the Acting prefix, e.g., Acting Detective Sergeant.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000493_e18324f055f45c96df1120362a0ae6223239ec48919cbabe59da5e70ed6baeda.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000493_e18324f055f45c96df1120362a0ae6223239ec48919cbabe59da5e70ed6baeda.png)
 
 1 Lies Sleeping
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000494_2a13a90870140dc5db6b73e8a47de48796f1760cb8e3e9f6ff06a9c5df1b753b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000494_2a13a90870140dc5db6b73e8a47de48796f1760cb8e3e9f6ff06a9c5df1b753b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000495_4d9076c5fa405349d7f179645394c7f8580949777e8f12e77fdcb259044bf2d0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000495_4d9076c5fa405349d7f179645394c7f8580949777e8f12e77fdcb259044bf2d0.png)
 
 ## Police Community Support Officers (PCSOs)
 
@@ -8755,11 +8755,11 @@ As  long  as  an  applicant  passes  the  vetting  procedure,  there aren't too 
 
 One way to use a non-player character PCSO is as the first point of contact between the investigators and  the  PCSO's  community,  whether  it  be  of  the magical or mundane variety. Some can even act as temporary translators, if the need arises.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000496_6612affcb9a39eda1103b4632af82a6c975663a151a0628bbd5c56ef55fe214c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000496_6612affcb9a39eda1103b4632af82a6c975663a151a0628bbd5c56ef55fe214c.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000497_76fb5134fff341270844d739c76f81bf13baa1e21082726de026b2658b373295.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000497_76fb5134fff341270844d739c76f81bf13baa1e21082726de026b2658b373295.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000498_ce46a3cd2358f57a8b86ecd68a8ae983579417328333fe78f08a294021399c3e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000498_ce46a3cd2358f57a8b86ecd68a8ae983579417328333fe78f08a294021399c3e.png)
 
 5
 
@@ -8767,11 +8767,11 @@ the Met accepts a suitable Level 3 qualification, or its equivalent, to  become 
 
 Alternatively, applicants may  choose  to  take specific degrees in professional policing. These courses are available at various colleges nationwide. Taking one of these courses permits a person to enter the police at a higher rank than
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000499_99c152c28f70988dc61131a6c87329d5fa168416d1a96cbbf09f8d786a35a2c8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000499_99c152c28f70988dc61131a6c87329d5fa168416d1a96cbbf09f8d786a35a2c8.png)
 
 ## Your Friendly Neighbourhood Police Officer?
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000500_030814bdffa690e84608314a016aaa812cffb4ac9b77ee278d99b36db6449ab6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000500_030814bdffa690e84608314a016aaa812cffb4ac9b77ee278d99b36db6449ab6.png)
 
 A lot of the Met's officers do not actually live in Central London. Although they are trained  in  the  city,  most  of  them  have homes around the outskirts of the Greater London Area or even further afield. They, like so many other members of the capital's workforce, are commuters.
 
@@ -8781,7 +8781,7 @@ In  2014,  the  Met  introduced  the  London  Residency  Criteria,  with  the  a
 
 Trainee officers may  live in police accommodation within their BOCU, like Peter and Lesley do at the beginning of Rivers of London. Those recruited to the Folly may find themselves living on-site, but there's no requirement for them to do so, particularly if they have a family.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000501_de23bef952f7db5b40af38bfd98ed0ab28fd57ad0820ccaaaf8ccbff826d6a1e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000501_de23bef952f7db5b40af38bfd98ed0ab28fd57ad0820ccaaaf8ccbff826d6a1e.png)
 
 those  on  the  IPLDP  (once  they  have  completed  a  shorter probationary period).
 
@@ -8791,27 +8791,27 @@ Once  you  have  become  a  police  officer,  each  rank  has its  own  specific
 
 While  the  IPLDP  was  one  of  the  main  routes  into policing  in  2016,  it  is  currently  being  phased  out  in favour of newer routes, including the Police Constable Degree Apprenticeship (PCDA). In the Met, specialised entry  paths  have  been  in  use  since  2014  to  increase recruitment from underrepresented communities.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000502_447b9a4f6f0b0a83cc758239f742f2f49c4aaecbaa5fb44d30313ab0dc5e09b3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000502_447b9a4f6f0b0a83cc758239f742f2f49c4aaecbaa5fb44d30313ab0dc5e09b3.png)
 
 ## Diversity and the Met
 
 The  MPS has  the  most  diverse  police  force  in  the  UK,  and around half of Britain's Black and Minority Ethnicities (BME) officers work in the Met. That doesn't mean it entirely reflects London's multiracial and multicultural society, though. While around 40% of London's residents in 2016 came from BME communities, that number was only around 12% for the Met's police officers. And, while the city's population is split pretty evenly male to female, only around 25% of its police officers were women at that time. All in all, the Met was (and still is) largely the preserve of white male police officers, although there was more diversity among police staff (25% BME, 56% women).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000503_a94e398397dedb745c1f54b3dd1496f0092b7bca17d88812a77def668c5c989c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000503_a94e398397dedb745c1f54b3dd1496f0092b7bca17d88812a77def668c5c989c.png)
 
 ## Terminology
 
 While  BME  may  be  the  term  used by  a wide  variety  of  official  bodies and  government  departments  at  the time RoL:RPG is set (hence its use here and in Table 12: A Glossary of Common Police Acronyms and Slang ),  this  is  no longer the case, in part due to confusion about  the  acronym's  meaning  and  the marginalised  groups  it  included.  Current guidelines are to use the term 'ethnic minorities' instead and to capitalise the  names  of  individual  ethnic  groups, e.g., Black, Roma, etc.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000504_ddf9d351ed84ff4f7d6662fc5b8dc658d74dccca65aa3e4458e7ba67df56e21b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000504_ddf9d351ed84ff4f7d6662fc5b8dc658d74dccca65aa3e4458e7ba67df56e21b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000505_0987d85d36af2f1665d28d74b59d02dd42dbc47d1acdc024373c629d104528bc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000505_0987d85d36af2f1665d28d74b59d02dd42dbc47d1acdc024373c629d104528bc.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000506_aa1d92a335a2e2862bc32cecb148d6ef37179786bca7c33ab6075c7fdba781cc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000506_aa1d92a335a2e2862bc32cecb148d6ef37179786bca7c33ab6075c7fdba781cc.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000507_c427bc1cc3a4d6638c04cae37ee789666c170f763c2d75a074d3f5052d74731d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000507_c427bc1cc3a4d6638c04cae37ee789666c170f763c2d75a074d3f5052d74731d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000508_549207e1a691866fff02fbb09de76c5d68510b03a55e4b6afa12b1f8ee2d37f9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000508_549207e1a691866fff02fbb09de76c5d68510b03a55e4b6afa12b1f8ee2d37f9.png)
 
 Following on the heels of the London Residency Criteria in 2015/2016, there was a push to encourage people to join the service, especially those who were fluent in at least one of 20 specified languages spoken in London. As a result, people of all ethnicities and genders applied to become part of the workforce.  Some  elements  of  the  recruitment  programme were successful-the number of BME officers increased to a little over 13% and was still rising-but the expansion was largely held back due to budget cuts.
 
@@ -8819,7 +8819,7 @@ Following on the heels of the London Residency Criteria in 2015/2016, there was 
 
 Thankfully, due to the Folly's independent funding resources,  recruitment  and  operational  expenses aren't  something  you  need  to  worry  about.  Just remind the investigators to get Nightingale's approval for any big spends first.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000509_c87f1a6564f534600acca0555357b53ef2086c7300c89f81854958db926a5c78.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000509_c87f1a6564f534600acca0555357b53ef2086c7300c89f81854958db926a5c78.png)
 
 A  lack  of  diversity  can  and  does  cause  issues  on  the front line. An officer may develop a false impression of the community in which they operate if their only interaction with it (and knowledge of it) happens when a crime has been committed. This lack of familiarity and understanding can, in turn, lead to a breakdown in communication. Therefore, diversity  training,  community-based PCSOs, and working with  local  community  groups  are  fundamental  to  the Met's smooth operation at street level, as is the continued recruitment of officers from marginalised communities.
 
@@ -8827,11 +8827,11 @@ A  lack  of  diversity  can  and  does  cause  issues  on  the front line. An of
 
 As mentioned in Policing Issues (page 196), how much discrimination (of whatever type) you wish to have in your game is something you should discuss with your players, ideally as part of your initial conversations ( Creating Your Character , page 44).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000510_5de307d9b3212573ae72de3e51d4e30845c2ea77566c4f2d919968dd0fbc2065.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000510_5de307d9b3212573ae72de3e51d4e30845c2ea77566c4f2d919968dd0fbc2065.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000511_1d6bbb7eaf811c2b537d8c50f19cae6188c2575e090baebe0cdd5ab459a3b1ff.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000511_1d6bbb7eaf811c2b537d8c50f19cae6188c2575e090baebe0cdd5ab459a3b1ff.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000512_585b480d5d7d64f2aacd3a735f96c8075e05f43e1e46c1b49f8b8728e7055a20.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000512_585b480d5d7d64f2aacd3a735f96c8075e05f43e1e46c1b49f8b8728e7055a20.png)
 
 Uniformed  police  officers  are  usually equipped with the following items when on patrol:
 
@@ -8851,19 +8851,19 @@ Uniformed  police  officers  are  usually equipped with the following items when
 
 Some officers may also be authorised to carry a stun gun. Note that the vast majority  of  British  police  officers  do not  carry  guns-there  are  specialist units of armed police officers who are called on as and when the need arises; for the Met, that's SCO19.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000513_f9d765387859f8f39c3419dd1c025e954d78120b215e5aae69fc46035e24b635.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000513_f9d765387859f8f39c3419dd1c025e954d78120b215e5aae69fc46035e24b635.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000514_dddd6002f4c0d60a2ec1f2aa99678463553a4decb122be7b26e0a4323c9f0523.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000514_dddd6002f4c0d60a2ec1f2aa99678463553a4decb122be7b26e0a4323c9f0523.png)
 
 5
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000515_9097229f278241b63ff4c33330f93e6b8e636ac67e35b1816fee4305013e1dbb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000515_9097229f278241b63ff4c33330f93e6b8e636ac67e35b1816fee4305013e1dbb.png)
 
 ## A Typical Met Detective's Bag
 
 Plainclothes detectives, unlike their uniformed colleagues, have a 'bug out' or  'grab'  bag  near  them  at  all  times, that contains the following:
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000516_b0bdaac2fbecdfe208c25d868a8f4f0c389da7949d7b6c16b735060fee45405a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000516_b0bdaac2fbecdfe208c25d868a8f4f0c389da7949d7b6c16b735060fee45405a.png)
 
 - Photo ID (warrant) card ( The Warrant Card , page 211).
 - A reliable timepiece for accurately recording when relevant events occurred-a mechanical (wind-up) watch is essential for any officers who are also practitioners.
@@ -8882,7 +8882,7 @@ Plainclothes detectives, unlike their uniformed colleagues, have a 'bug out' or 
 - Physical money.
 - Blackstone's Crime Investigators' Handbook for referencing.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000517_5b4ec967f43c4182a4c7a9b7241564ec9c0be182f362536cc157f374c687cae7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000517_5b4ec967f43c4182a4c7a9b7241564ec9c0be182f362536cc157f374c687cae7.png)
 
 ## GM ADVICE
 
@@ -8908,7 +8908,7 @@ All  criminal  investigations  have  a  set  procedure.  Knowing what the variou
 
 A criminal investigation usually starts when someone calls in to report a crime. This usually means a phone call from a  member of the public or an Airwave call from an officer at the scene. When a  crime is reported is a crucial factor in
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000518_8ccf7ec83f8dd515acb397ffdcabd7ea549119705ca481ec93e34148c737513a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000518_8ccf7ec83f8dd515acb397ffdcabd7ea549119705ca481ec93e34148c737513a.png)
 
 Don't  forget  that  any  uniformed  police  officers recruited  to  the  Folly  automatically  swap  their everyday uniform for plainclothes, even if it's only a  temporary secondment. If taken on permanently, they'll  still  need  their  dress  uniform  for  official occasions, though, like swearing their oath to become Newtonian apprentices ( The Practitioner's Oath , page 171).
 
@@ -8916,9 +8916,9 @@ Don't  forget  that  any  uniformed  police  officers recruited  to  the  Folly 
 
 In the real world, almost every aspect of an investigation  is  planned  down  to  the  tiniest  detail. We don't advise that you to use this level of realism in your Rivers of London games, as doing so would be rather dull. No one plays a roleplaying game to simulate  police  administration  and  paperwork! Focus  on  the  exciting  and  intriguing  parts  of criminal and supernatural investigation instead.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000519_a64e880c7f6e450fb441b5350cd0a50a906145a98622115e59f09b0bd31e805c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000519_a64e880c7f6e450fb441b5350cd0a50a906145a98622115e59f09b0bd31e805c.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000520_13df73def54dc2ecd5e9dfdd311624a69fa86a50bc53beaa20b2819ea181273d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000520_13df73def54dc2ecd5e9dfdd311624a69fa86a50bc53beaa20b2819ea181273d.png)
 
 Footnote:
 
@@ -8926,7 +8926,7 @@ Footnote:
 
 ('A Rare Book of Cunning Device')
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000521_bcc9d0858fc8fbddf53148c699e058238e3656f8fa9f84b19ea8bd1e39a10dec.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000521_bcc9d0858fc8fbddf53148c699e058238e3656f8fa9f84b19ea8bd1e39a10dec.png)
 
 an investigation. As discussed in Evidence (page 204), the longer the time period between a crime taking place and it being reported, the more opportunities there are for evidence to  become  lost,  contaminated,  or  destroyed,  and  for  the culprits to establish their alibis or interfere with witnesses.
 
@@ -8942,7 +8942,7 @@ Using  the  preliminary  information  gathered  during  the Response and Managem
 
 The Investigation  and  Suspect  Management step should be the key focus of most of case files if the investigators  are  junior  police  officers,  as  they  are the ones who will be sent out to do at least some of  the  legwork.  But,  as  we've  mentioned  before, only  involve  them  in  the  interesting  and  dramatic elements  of  the  investigation-leave  data  entry and the rest of the paperwork to the supporting police staff.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000522_334f60824fdd1d52e43e3f40148fc203c2dfff0f0c135f5603de6ffbabe6a9d4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000522_334f60824fdd1d52e43e3f40148fc203c2dfff0f0c135f5603de6ffbabe6a9d4.png)
 
 ## Case Management and Court
 
@@ -8954,13 +8954,13 @@ Once the court case is complete, the associated paperwork is finalised, and the 
 
 Most Folly cases are unlikely to come to court, as there isn't  usually  a  mundane  culprit  to  convict,  e.g.,  ghosts, vampires, the personification of a children's rhyme, and so on. As a result, Folly-trained detectives are often expected to come up with their own solutions to such cases; for example, by  finding  a  suitable  compromise  that  satisfies  both  sides involved in a problematical disagreement 3 .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000523_2fcea177e7a9ca8752d811e57b67ee07ef4877d7b6a6e8ced6740fa0d40b528b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000523_2fcea177e7a9ca8752d811e57b67ee07ef4877d7b6a6e8ced6740fa0d40b528b.png)
 
 ## Types of Crime
 
 In Britain, crimes are split up into different groupings for the purposes of determining who investigates them. (PIP: Professionalising Investigation Programme.)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000524_659c78439f76daa2c01056b6a9cc25e02051fc7bbceee32c83dff080bef09c4d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000524_659c78439f76daa2c01056b6a9cc25e02051fc7bbceee32c83dff080bef09c4d.png)
 
 - Volume Crimes: common crimes, such as theft and public order offences. PIP Level 1.
 - Priority Crimes: crimes deemed of concern to a particular force and community, such as burglary and car crime. PIP Level 1.
@@ -8969,13 +8969,13 @@ In Britain, crimes are split up into different groupings for the purposes of det
 
 The  Officer  in  Charge  (OIC)  of  PIP Level  1  crimes  is  usually  a  Police  Constable,  although  CID  (and  the  Folly) may  become  involved  if  the  situation warrants it. For PIP Level 2 crimes, a DC, DS, or a DI may be the OIC of the case or investigation, depending on the seriousness of the crime. PIP Level 3 crimes automatically  require  a  Senior  Investigating Officer (SIO) to be in charge.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000525_e2e4fb51f5a4989171532984d1147d5282cae63e32c6303c0f7bc2bb1a0b79e4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000525_e2e4fb51f5a4989171532984d1147d5282cae63e32c6303c0f7bc2bb1a0b79e4.png)
 
 Footnote: 3 Rivers of London
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000526_1a8f63612d483d36c3614eae9b44883cdc1bf30818d025cc0d749febd0d4e60a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000526_1a8f63612d483d36c3614eae9b44883cdc1bf30818d025cc0d749febd0d4e60a.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000527_99e5a54743d9a6aec0ce28bb4aa4a4e6fb5635f9389d468b8dd92627483af3b1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000527_99e5a54743d9a6aec0ce28bb4aa4a4e6fb5635f9389d468b8dd92627483af3b1.png)
 
 5
 
@@ -9010,7 +9010,7 @@ After the Golden Hour, time becomes a resource that needs to  be  managed  effic
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000528_d18f234a496d0595e24904b8a1bd584c5bf597edc37cfec7cacf31bdbcf0e3e0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000528_d18f234a496d0595e24904b8a1bd584c5bf597edc37cfec7cacf31bdbcf0e3e0.png)
 
 Keep  in  mind  that  time  is  an  important  factor  in your  cases,  especially  when  it  comes  to  revealing clues to your players. As already mentioned, much of the legwork should be carried out by non-player characters  (NPCs)  off  screen  to  keep  the  story flowing-only  include  something  if  it's  interesting and builds atmosphere and tension. While the SAU may be small, it is still part of the Met and has access to all of its resources, as well as a few unusual ones of its own ( Police Resources , page 208).
 
@@ -9024,15 +9024,15 @@ Depending on the nature of the case, the investigators  are  unlikely  to  be  t
 
 When we talk about physical evidence, we mean things like fingerprints,  DNA,  blood  and  other  bodily  fluids,  fibres (such as hair or fur), wounds, and objects found at the crime scene.  These  are  usually  collected  by  SOCOs  and  collated by the investigation's Scientific Services Officer and Exhibits Officer (the officer responsible for receiving and safeguarding all the items gathered during an investigation; The Chain of Evidence , page 206).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000529_d0070396ba3f89fd726a036b70d912bf2961019afb0393e8be341346d34ee99f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000529_d0070396ba3f89fd726a036b70d912bf2961019afb0393e8be341346d34ee99f.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000530_c85a8df585c2a7ae3e183ce915d09778229364df1d3e0ef94142bedadcfa8482.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000530_c85a8df585c2a7ae3e183ce915d09778229364df1d3e0ef94142bedadcfa8482.png)
 
 ## GM ADVICE
 
 If  an  investigator  is  searching  for  physical  evidence at  a  crime  scene,  they  are  probably  using  their Observation  skill.  If  they  are  analysing  evidence after it has been collected, they may need to use a suitable expert skill, like Science (Forensics) or Art/ Craft (Forgery), instead.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000531_2d848b5f9eebb8426941b990d94f9f9862b1d6f7a54c927ba22e2b4afae3f3c1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000531_2d848b5f9eebb8426941b990d94f9f9862b1d6f7a54c927ba22e2b4afae3f3c1.png)
 
 ## Intelligence
 
@@ -9042,19 +9042,19 @@ CCTV footage also counts as intelligence: where a person has  or  hasn't  been  
 
 Detectives  usually  have  to  request  permission  to  view CCTV footage from cameras owned by someone other than the police, and sometimes this may require a warrant if the owner doesn't wish to share it. On top of this, it can take hours to properly analyse camera footage if the viewer doesn't know exactly what they're looking for-anything up to eight hours for one hour of recording! So, unless the investigators have a very narrow time frame they're interested in, or know exactly who it is they're looking for, it's probably best to leave in-depth analysis to off-screen NPC technicians.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000532_c12b4fa1750f172b2c4d87f9d58ecaaee8e75cf53e554505e6a41b0de84610ea.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000532_c12b4fa1750f172b2c4d87f9d58ecaaee8e75cf53e554505e6a41b0de84610ea.png)
 
 Footnote:
 
 4 Tales from the Folly ('The Cockpit')
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000533_5d510167d70314e2f81b28403e14cebf56f99e7e90d8047cb67e814213002440.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000533_5d510167d70314e2f81b28403e14cebf56f99e7e90d8047cb67e814213002440.png)
 
 ## GM ADVICE
 
 Remember, investigators use their Research skill to sift  through  recorded  information-notes,  written statements,  etc.-or,  if  the  information  is  more specialist, they may use the appropriate expert skill, e.g.,  Accounting for assessing a company's financial records. For eliciting information  directly  from witnesses  and  the  victim's  family  and  associates, investigators should use their Social skill. They may also use their Read Person skill to judge if someone is telling them the truth or not.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000534_8e40a3a537ac59b034149100b1c33ea9e28b95a94cdd176cb3b6df4246c79092.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000534_8e40a3a537ac59b034149100b1c33ea9e28b95a94cdd176cb3b6df4246c79092.png)
 
 5
 
@@ -9074,9 +9074,9 @@ Investigations of serious crimes need to be well managed if they are to succeed.
 
 Police dramas and crime novels often refer to the 'chain of evidence,' sometimes known as the 'chain of custody.' Evidence is admissible in court only if it has been lawfully obtained, properly handled, and kept safe until the time of the trial-this is where the chain of evidence comes in. The chain of evidence is the record of the following:
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000535_cef69a9041d97b986051a9610bb8de9cda1d61307185935fd163f7425111085e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000535_cef69a9041d97b986051a9610bb8de9cda1d61307185935fd163f7425111085e.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000536_c5977aac8fd725727e553c949c225cdf3aff3e0ad5b5c92ff00d0dbe020fcb12.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000536_c5977aac8fd725727e553c949c225cdf3aff3e0ad5b5c92ff00d0dbe020fcb12.png)
 
 - What the evidence is.
 - When and where it was obtained.
@@ -9090,11 +9090,11 @@ Breaking  the  chain  of  evidence  can have  serious  repercussions  if  the  c
 
 In the UK, responsibility for maintaining the chain of evidence usually falls to someone known as the Exhibits Officer.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000537_daa6f6dc652be2a8478c6b83ec7d0a3c4d51f96f9fa8e5c91cc94acf8cf3d50f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000537_daa6f6dc652be2a8478c6b83ec7d0a3c4d51f96f9fa8e5c91cc94acf8cf3d50f.png)
 
 One of the most recognisable scenes in any police drama is the 'briefing,' where a DCI calls all the officers working on the case into the incident room to inform them of the case's progress, discuss investigation strategy, and assign actions to individuals. Even if the case the investigators are working on doesn't have an official incident room because it isn't large or serious enough, it's still a good idea to have a daily briefing where Nightingale or Peter Grant are on hand to dispense advice, particularly if the players could use some direction regarding where their investigators should go next ( Missing Clues ,  page  226).  This  is  most  likely  to  take  place  in  the
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000538_6decd47a307d6d402c919db0adbfb54094bde0b8dacb75e9374e6ae53b2737e6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000538_6decd47a307d6d402c919db0adbfb54094bde0b8dacb75e9374e6ae53b2737e6.png)
 
 Folly's  briefing  room,  but  it  could  just  as  easily  occur  over tea and cake in the atrium. The GM can use a briefing scene to help the players sum up what they know so far and enable them to discuss how they want to proceed, using NPCs like Peter and Nightingale to help focus their thoughts and keep the investigation heading in the right direction.
 
@@ -9102,13 +9102,13 @@ Folly's  briefing  room,  but  it  could  just  as  easily  occur  over tea and 
 
 There are many different rules of thumb that police officers use when undertaking a criminal investigation. We discuss the main three-the ABC rule, the Six Ws, and TIE-in the following sections.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000539_8e5e8362cbf55c37c400bcf63669a86e6588d9ed03f69ba01b0cc0469b339f24.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000539_8e5e8362cbf55c37c400bcf63669a86e6588d9ed03f69ba01b0cc0469b339f24.png)
 
 ## GM ADVICE
 
 Another staple of the incident room is the evidence board-usually,  a  whiteboard  or  a  corkboard  with pictures of the victim, witnesses, suspects, and any other  relevant  items  pinned  to  it.  Evidence  board organisation  varies  but,  in  fiction,  there's  usually also  something  like  red  string  or  marker  pen  lines joining various items (clues) together. It's a good way to  organise  information  in  a  visual  format,  and  you may  wish  to  actually  create  an  evidence  board  for your case files-some of our playtesters did this to help  them  keep  track  of  the  clues  and  where  they led, to great effect. If playing in person, you can set up an actual (portable) whiteboard or corkboard for the  players  to  add  to  in  every  session,  and  there are  virtual  whiteboard  apps  available  if  you're playing online.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000540_bc4f9ee756efb5c04813ce03461a2e066bf661def1bf53823cddb7e574e31678.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000540_bc4f9ee756efb5c04813ce03461a2e066bf661def1bf53823cddb7e574e31678.png)
 
 ## ABC Rule
 
@@ -9149,7 +9149,7 @@ Whether a subject has been eliminated from the enquiry or not can be tracked thr
 - Where did the incident take place? Geographical details of the incident, including transport to and from the location.
 - What happened? Details of the incident, built up from witness reports, physical evidence, CCTV footage, etc.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000541_c950e692b742af22afcd0b7c35ac3aec5a35e4c0a3e52878c8c335eea963c50e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000541_c950e692b742af22afcd0b7c35ac3aec5a35e4c0a3e52878c8c335eea963c50e.png)
 
 5
 
@@ -9167,17 +9167,17 @@ Work  such  as  this  requires  more  hands  on  deck  and, often, less expertis
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000542_fc4d957cd48f5676cdd3c15a840fb76d59f889b365a5a1a06a39bf0f6da0c64d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000542_fc4d957cd48f5676cdd3c15a840fb76d59f889b365a5a1a06a39bf0f6da0c64d.png)
 
 If the investigators really want to get their hands dirty by  analysing  hours  of  CCTV  footage,  remember,  you can  use  a  Research  skill  roll  to  quickly  determine not  if  they  are  successful,  but  rather when  they  are successful;  i.e.,  the  level  of  success  they  achieve  on the  roll  suggests  how  long  it  took  them  to  find  the information.  For  example,  a  Regular  success  could mean it takes an investigator four hours to find what they're seeking, while a Hard success could mean they find it in half that time; a failure would mean it took them double the time-potentially an issue if time is of the essence, with only a fumble meaning they spot nothing and have to call in a fresh pair of eyes.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000543_c3b940c8703393b9ba6a0a352e7a8f6bd4368a61df67a2e0e35f18bd323d1740.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000543_c3b940c8703393b9ba6a0a352e7a8f6bd4368a61df67a2e0e35f18bd323d1740.png)
 
 Footnote: 6
 
 Rivers of London
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000544_45963891fceccc2931a79eb77572069106051da2e5ca96247389393fb9a74b3f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000544_45963891fceccc2931a79eb77572069106051da2e5ca96247389393fb9a74b3f.png)
 
 ## Police Forensic Services
 
@@ -9219,11 +9219,11 @@ Footnote:
 
 If  there's  a  body,  a  pathologist  will  perform  an  autopsy  to establish the cause and time of death. For the Folly, this role falls to Dr Abdul Haqq Walid (page 235) and Dr Jennifer Vaughan (page  236).  In  England  and  Wales,  pathologists are state-registered but independent of the Home Office, the police, and the coroner; many are freelance, but some work within the National Health Service (NHS), occasionally in other roles as well.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000545_7bffb5cc8cdec61f8f9465beac68161e280bbfb3659227e781d4de2b90c87249.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000545_7bffb5cc8cdec61f8f9465beac68161e280bbfb3659227e781d4de2b90c87249.png)
 
 While  a  pathologist  may  attend  a  crime  scene  at  the SIO's request, they don't usually act as the Forensic Medical Examiner-that role is taken by a local General Practitioner (GP) or a contractor from a specialist service provider. More often  than  not,  the  pathologist  first  becomes  involved  in the  case  when  the  body  arrives  at  the  mortuary.  They  are appointed to the case by Her Majesty's Coroner for that area, once the Coroner's Office has been informed by the police of the victim's death.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000546_a7f6a074c9e5c9d12c60993f0faf89b46edd5a8da609003395255ce458ac0f31.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000546_a7f6a074c9e5c9d12c60993f0faf89b46edd5a8da609003395255ce458ac0f31.png)
 
 ## GM ADVICE
 
@@ -9247,7 +9247,7 @@ The amount of information stored in the PNC  is staggering and highly detailed, 
 
 The  PNC  and  its companion,  the  Police National Database  (PND),  were  due  to  be  replaced  in  2020  by the National Law Enforcement Data Service (NLEDS); however, that system is currently overdue, with no sign of when it will be implemented. The PND was set up in 2010 to allow individual police forces to share their intelligence nationally.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000547_ba31c7002bc406d78eb98fff5bbc0568e06de4f5debd41100fe09b0ebbec2517.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000547_ba31c7002bc406d78eb98fff5bbc0568e06de4f5debd41100fe09b0ebbec2517.png)
 
 ## Forensic Databases
 
@@ -9267,7 +9267,7 @@ Also known as IDENT1, this database contains fingerprints, palm prints, and othe
 
 Anyone  arrested  on  suspicion  of  committing  a  recordable offence-i.e.,  one  that  by  law  has  to  be  recorded  on  the PNC-must give both a fingerprint and a DNA sample. The DNA profile is stored in the NDNAD. If that person isn't formally charged or is found not guilty, their sample must be  deleted  from  the  database  within  a  given  time  period;
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000548_58e2fb12ac021248ba3f9b3bbc2fceac8007d9463c1de752c6204256aae0f55d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000548_58e2fb12ac021248ba3f9b3bbc2fceac8007d9463c1de752c6204256aae0f55d.png)
 
 otherwise, it is stored permanently. The database also holds the unidentified DNA profiles from blood and other bodily fluids, hair, and skin cells found at crime scenes.
 
@@ -9331,23 +9331,23 @@ A  key  part  of  evidence  gathering  involves  interviews  and interrogations.
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000549_e9826ea83d79ef3ff78fa92fdcc5ae52c5f71bf344acf6841d2e24fca0831205.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000549_e9826ea83d79ef3ff78fa92fdcc5ae52c5f71bf344acf6841d2e24fca0831205.png)
 
 Arresting members of the demi-monde may not always be feasible or desirable. Small fry like Zachary Palmeryes; but genii locorum-not so much. Any investigator wishing to formally arrest a member of the demi-monde should first  clear  it  with  DCI  Nightingale  to  avoid  any unfortunate incidents. As with all things demi-monde related, there is usually a subtler, off the books way to handle matters. If all else fails, the new custody suite in  the  Folly's  basement  is  equipped  to  handle  such unusual prisoners ( Basement , page 264).
 
 As  with  stop  and  search,  an  officer  must  clearly  identify themselves and inform the suspect of the reason for their arrest. An officer must caution the suspect at the time of their arrestthe  British  equivalent  of  reading  a  suspect  their  rights.  If  the officer fails to deliver a caution correctly, anything the suspect says becomes inadmissible as evidence (as they weren't warned that it could be used against them; British Police Caution , nearby).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000550_de36497a44440f9650ed46ec70c10761ba3de71e592eab588a4561a1dcf27e21.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000550_de36497a44440f9650ed46ec70c10761ba3de71e592eab588a4561a1dcf27e21.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000551_dbf547a4936dac923270e7fbc04376f4e6274eb82ad9545e7fb0df175e6a5b02.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000551_dbf547a4936dac923270e7fbc04376f4e6274eb82ad9545e7fb0df175e6a5b02.png)
 
 ## British Police Caution
 
 'You do not have to say anything. But, it may harm your defence if you do not mention, when questioned, something which you later rely on in court. Anything you do say may be given in evidence.'
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000552_0d41c8d2bb44b14619135062f7775857da65e0b00664f94e0c33b5bcef30ddd5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000552_0d41c8d2bb44b14619135062f7775857da65e0b00664f94e0c33b5bcef30ddd5.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000553_c58da4af3debfafe33ea647d694f3ba17014c692727427182f9611520d49da13.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000553_c58da4af3debfafe33ea647d694f3ba17014c692727427182f9611520d49da13.png)
 
 If  an  interview  is  conducted  in  an  informal  setting,  the approach  taken  is  left  largely  to  the  officer's  discretion. However, any interview or interrogation taking place on police premises always uses what is known as the PEACE model:
 
@@ -9362,21 +9362,21 @@ If  an  interview  is  conducted  in  an  informal  setting,  the approach  take
 
 You may not wish to follow all the PEACE model steps exactly as written if the investigators end up carrying out a formal interview or interrogation during a case file,  and  you're  probably  not  going  to  ask  them  to come up with an in-depth plan before hand-unless, of  course,  you  think  it's  something  your  players would really enjoy doing. But, it helps sell the setting if  you  know how these things are done in the real world. As always, use what helps tell the story, and ignore anything that slows it down.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000554_341338696647a237b7050fc60a2fef55ab7dc857df667804512a865f8c1e3334.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000554_341338696647a237b7050fc60a2fef55ab7dc857df667804512a865f8c1e3334.png)
 
 213
 
 5
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000555_00acad9143698c4c800f69037290bc51e17ede377cfedc90062140a6acb26c09.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000555_00acad9143698c4c800f69037290bc51e17ede377cfedc90062140a6acb26c09.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000556_818cb37fd66204771cb0976955ae56065693f245c18c6438f9683e21a7aeb6e7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000556_818cb37fd66204771cb0976955ae56065693f245c18c6438f9683e21a7aeb6e7.png)
 
 ## Police Oversight
 
 There  have  been  several  occasions  where Peter  Grant  has  been  investigated  by  the Directorate  of  Professional  Standards  (DPS) as a consequence of his actions 11,12,13,14 . The DPS is  the  Metropolitan  Police  Service's  internal investigation department, responsible for looking into complaints against Met officers. These  may  originate  from  members  of  the public  or  other  services,  but  the  DPS  also investigates suspicions of fraud or corruption, and when an officer has broken their professional codes of conduct.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000557_6e364600418cbeb27e2ece6a65004935397b763d9f7cff782da9a1fa17457aeb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000557_6e364600418cbeb27e2ece6a65004935397b763d9f7cff782da9a1fa17457aeb.png)
 
 Each  police  service  has  their  own  Professional Standards Department, like the DPS. The police are also overseen by a wholly independent  body  known  as  the  Independent  Police Complaints Commission (IPCC; replaced in 2018 by the Independent Office for Police Conduct). The  IPCC  investigates  the  most  serious  complaints  against  police  officers,  such  as  deaths in  custody,  as  well  as  handling  complaints from those who are dissatisfied with the way a regional Professional Standards Department has dealt with a prior complaint.
 
@@ -9393,9 +9393,9 @@ Table 12: A Glossary of Common Police Acronyms and Slang
 | BME       | Black and Ethnic Minorities                                                            | NID       | National Injuries Database  |
 | BOCU      | Borough Operational Command Unit                                                       | NHS       | National Health Service     |
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000558_021f7a528e025d84466ccad2f888c4f804cf35771b01e691a3f44fd18426b2f7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000558_021f7a528e025d84466ccad2f888c4f804cf35771b01e691a3f44fd18426b2f7.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000559_3eb20ef2d0002daa4ae26aa76a8d7d92e5ee6a71d8bb30b16781061ccec7ea79.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000559_3eb20ef2d0002daa4ae26aa76a8d7d92e5ee6a71d8bb30b16781061ccec7ea79.png)
 
 | Acronym   | Definition                            | Acronym       | Definition                                                               |
 |-----------|---------------------------------------|---------------|--------------------------------------------------------------------------|
@@ -9415,7 +9415,7 @@ Table 12: A Glossary of Common Police Acronyms and Slang
 | DS        | Detective Sergeant                    | POI           | Person of Interest                                                       |
 | ECU       | Economic Crime Unit                   | PSD           | Professional Standards Department                                        |
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000560_e421dc705c4ad4683abde7ed70d8c751106ca6e6591e50c7b582c5ae3fa71323.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000560_e421dc705c4ad4683abde7ed70d8c751106ca6e6591e50c7b582c5ae3fa71323.png)
 
 | Acronym   | Definition                                                                                                                                                                                                                                                                                                                                              | Acronym                                                                                                                                                                                                                                                                                                                                                 | Definition                                                                                                                                                                                                                                                                                                                                              |
 |-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -9431,7 +9431,7 @@ Table 12: A Glossary of Common Police Acronyms and Slang
 | Met, the  | The Metropolitan Police Service                                                                                                                                                                                                                                                                                                                         | WOW                                                                                                                                                                                                                                                                                                                                                     | Wanted on Warrant                                                                                                                                                                                                                                                                                                                                       |
 | MIA       | You may have noticed that APB (All Points Bulletin) and BOLO (Be On The Lookout) are both missing from Table 12. That's because, despite their frequent appearances in TV crime dramas, they are both American police terms and not used in the UK. Not that your investigators can't use them, just expect people to look somewhat baffled if they do! | You may have noticed that APB (All Points Bulletin) and BOLO (Be On The Lookout) are both missing from Table 12. That's because, despite their frequent appearances in TV crime dramas, they are both American police terms and not used in the UK. Not that your investigators can't use them, just expect people to look somewhat baffled if they do! | You may have noticed that APB (All Points Bulletin) and BOLO (Be On The Lookout) are both missing from Table 12. That's because, despite their frequent appearances in TV crime dramas, they are both American police terms and not used in the UK. Not that your investigators can't use them, just expect people to look somewhat baffled if they do! |
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000561_523f168664394dc4d35f13ed14fedeea59f8ad0ce8c3712adbaee62ebf346b13.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000561_523f168664394dc4d35f13ed14fedeea59f8ad0ce8c3712adbaee62ebf346b13.png)
 
 ## Game Moderator Advice
 
@@ -9457,9 +9457,9 @@ RoL:RPG , like all other RPGs, is a collaborative storytelling  game  that  aims
 
 The first part of your role involves reading this rulebook so  that  you  understand  how  the  game  works.  You  don't have to memorise everything before you begin playing, but you might want to make a few notes to help you remember the important parts. Appendix B is  a  useful  resource, as it
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000562_19aee62dad90918c30497a6a354c140354b149572dd6d7d6f902c92d8062d626.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000562_19aee62dad90918c30497a6a354c140354b149572dd6d7d6f902c92d8062d626.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000563_d538ec87b10b22d733c39f300ebe3bc22361ed08cfe5a114c2bbee9ae2a20aa6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000563_d538ec87b10b22d733c39f300ebe3bc22361ed08cfe5a114c2bbee9ae2a20aa6.png)
 
 contains  quick-reference  rules  summaries  to  use  during  a game, or  to  print  out  and  share  with  your  players  to  help them know what to do, too.
 
@@ -9493,13 +9493,13 @@ The Rivers of London books take place in an idealised version of  reality.  Ther
 
 You may be feeling a little nervous if this is the first time  you've  run  a  game  for  anyone.  Don't  worry. You've  got  this.  No  one  is  expecting  you  to  be perfect-we  all  make  mistakes  when  we're  GMing, but  we  learn  from  them.  The  more  you  play,  the more experienced you and your players will become. Rules  that  at  first  seem  complicated  will  become second  nature.  And,  in  time,  you'll  wonder  what you were so nervous about!
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000564_65f3a52b5088d4f821ae1f4b48e01412380d003bda05aefcf8da38d4a9e6274d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000564_65f3a52b5088d4f821ae1f4b48e01412380d003bda05aefcf8da38d4a9e6274d.png)
 
 As you can see, to be a GM, you need to be knowledgeable and quick-thinking, as well as flexible and sometimes firm. You need to be sensitive to the players' mood, both as a group and  as  individuals  ( Considerate  Gaming ,  page  44).  You also need to see that everyone gets their say, and that each investigator gets their moments of achievement and triumph, so that everyone in the team feels like they have a place. And,
 
 Police  budgetary  resources  are  something  to  grumble about, not slashed to the point where law and order are in jeopardy.  Most  working-class  criminals  are  just  ordinary folks making a living. And the 'social work' end of police activity-attempting to keep the peace in a populace riddled with pockets of poverty, social marginalisation, alcohol abuse, drug  addiction,  and  mental  health  problems-is  almost entirely missing. So, if you want to stick to the feel of the original  books  when  using  the  London  setting,  remember the following points.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000565_543dc48b4185a1544d901ccb2f9355f744a9f15f28262331666805f9e14ed93a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000565_543dc48b4185a1544d901ccb2f9355f744a9f15f28262331666805f9e14ed93a.png)
 
 Footnote: 15
 
@@ -9531,9 +9531,9 @@ If  a  player  fails  a  pushed  roll,  the  results  need  not  be catastrophic
 
 Rivers of London: the Roleplaying Game could even be described as 'Call of Cthulhu-now with added hope!'
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000566_dce00436dc890270d8fc90315f85df1cb486c7ae8ef6f03f60d83521a46834fa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000566_dce00436dc890270d8fc90315f85df1cb486c7ae8ef6f03f60d83521a46834fa.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000567_e2bfe5b29ded14ebe1854e65551c3c93f70fa8ef4590a118c44667608199438b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000567_e2bfe5b29ded14ebe1854e65551c3c93f70fa8ef4590a118c44667608199438b.png)
 
 5
 
@@ -9573,9 +9573,9 @@ The second read-through is when you start taking notes, whether pencilling in th
 
 While  you're  reading,  ask  yourself:  are  you  happy  with the case file as written or can you think of little tweaks that will suit your purposes better? Check that the way the clues link together makes sense to you and that they'll be clear to your players-remember, they have to be able to solve the
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000568_df7d00e5eaac3c5e82227a54349e2a5e0ebce4f55aaf5819c1894d41ec470f47.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000568_df7d00e5eaac3c5e82227a54349e2a5e0ebce4f55aaf5819c1894d41ec470f47.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000569_7cc41ed349cc524dbba6e27e1591815ce75d36da94ec6b9af27086738b266abd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000569_7cc41ed349cc524dbba6e27e1591815ce75d36da94ec6b9af27086738b266abd.png)
 
 case! Clarify clues and add details or incidents if you feel it's needed. If you think your players might miss a clue or if you can't see a logical reason why a clue should be where it is, put it somewhere else (having the same clue appear in different places  is  a  useful  tip  for  these  kind  of  games).  There's  no requirement to stick to what's written if adapting it suits you, your ongoing campaign, or your players, better.
 
@@ -9619,7 +9619,7 @@ Every player should, ideally, contribute to how the story develops in every game
 
 If it all hits the fan and NPC backup has to be called in for the climactic showdown, make sure your players still have something to do. Keep the players front-of-stage with skill rolls and decision-making, while what the NPCs are doing forms  a  dramatic  background  to  the  investigators'  actions. Even  an  elderly  historian  can  play  lookout  and  make  that crucial Observation roll when a villain is trying to sneak out the back, or get into a fist-fight with a minion!
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000570_f839026405fdab3eb9fb546b80bbd269f19868370f9a81dd36f746c5eb107dc5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000570_f839026405fdab3eb9fb546b80bbd269f19868370f9a81dd36f746c5eb107dc5.png)
 
 5
 
@@ -9645,7 +9645,7 @@ The answer to this is make sure you keep Nightingale in the background as much a
 
 -Lies Sleeping
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000571_86de85295fa935298cec7f250f62250bccdb7d7e4c0a8f72bb468b4ed85ef42d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000571_86de85295fa935298cec7f250f62250bccdb7d7e4c0a8f72bb468b4ed85ef42d.png)
 
 Secondly, there's the problem of practitioners who simply outclass the investigators, at least initially. High-level wizards exist,  but  you  don't  have  to  bring  them  in  as  antagonists until the investigators are ready for them. If they are human criminals, they'll certainly be trying to fly under Nightingale's radar  as  they  go  about  their  nefarious  business.  Seducing investigators away from the side of Law, as the Faceless Man does 23 ,  is  a  strategy that could pay them bigger dividends in the long term than any all-out attack on the Folly ever would.
 
@@ -9653,7 +9653,7 @@ The number of players in your game makes a big difference, and  you  should  onl
 
 Generally speaking, it is much easier to cater for a small group  of  players  than  a  large  one.  You  can  pay  individual attention  to  each  investigator  more  easily,  and  combat,  in particular, flows more swiftly. You'll find the whole gaming experience more relaxed with a smaller group.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000572_5d30ede9080246ff6f9b62f6f7f5d1750e657fb6df42921e068ca1bdc4d082df.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000572_5d30ede9080246ff6f9b62f6f7f5d1750e657fb6df42921e068ca1bdc4d082df.png)
 
 Footnote:
 
@@ -9669,7 +9669,7 @@ Some NPC police roles might make good investigators, but realistically  speaking
 
 The Folly doesn't have to be limited to London, if you don't want it to be. For advice on how to expand the Folly's  operations  to  another  location  in  the  UK, see Your Local Folly? (page 317).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000573_b2cc16d2f82b4030960c49e522e7ee689488f86a82e72100310788a6aae4143f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000573_b2cc16d2f82b4030960c49e522e7ee689488f86a82e72100310788a6aae4143f.png)
 
 The following civilian expertise could be brought in to assist with a case:
 
@@ -9689,9 +9689,9 @@ In RoL:RPG ,  given  the  Folly's  recent  personnel  expansion, almost  any  oc
 
 Further  options  for  bringing  in  larger  numbers  of investigators can be found in the Troupe Play section (page 313).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000574_88250cee2075faf6a889f886cff7279d11f697074c921981336a25cdf2dd1fe3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000574_88250cee2075faf6a889f886cff7279d11f697074c921981336a25cdf2dd1fe3.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000575_7d434e496fec60ea3f6d793404caed8712884ac28134b2da41c2b1ab9a2e75cf.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000575_7d434e496fec60ea3f6d793404caed8712884ac28134b2da41c2b1ab9a2e75cf.png)
 
 5
 
@@ -9707,9 +9707,9 @@ During  Session  Zero  and  character  creation,  give  some thought to the ques
 
 If you do decide to leave things vague, a nice option two or  three  games  in-after  your  players  have  settled  in  with the rules and you've all come to know each other's characters a little-is for you to run a 'flashback' scenario that covers the investigators' introduction to the Folly and its staff, and the creation of their team. This might mean retconning their skills and attributes, as it would probably be set before they were trained in Newtonian magic, so make sure you keep a copy of their original character sheets (physical or electronic) the first time you play. This is a fun way of adding extra depth to roleplaying and rewarding players for their immersion in the game. Of course, you will have to be extra careful not to kill the investigators during the flashback!
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000576_30bb53485db73cc5ce121c4278674834296641b7cb017439938a863c240fd743.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000576_30bb53485db73cc5ce121c4278674834296641b7cb017439938a863c240fd743.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000577_8394e5e30f54111705bb0059ecd2a5f4d6d39a6c6ef6aa045a8969968374f024.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000577_8394e5e30f54111705bb0059ecd2a5f4d6d39a6c6ef6aa045a8969968374f024.png)
 
 ## Don't Sweat the Science…
 
@@ -9741,7 +9741,7 @@ Police  teams  in  real  life  tend  to  conduct  inquiries  and informal interv
 
 Example: ' You  spend  the  day  going  from  door  to  door,  taking statements  from  the  neighbours.  By  the  end  of  it,  your  feet  are sore,  and  you've  drunk  far  too  much  tea.  Those  few  people  who remember Mr Underhill almost all describe him as a quiet man who kept himself to himself.' [Pause to see if anyone picks up on the 'almost,' which they don't this time.] 'No one reports seeing him since Wednesday night at about 9 pm.'
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000578_fb0b490268cbe26a283fa7b3be2b10fbf17cc3c0db93097ceb10ea80eb3dca86.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000578_fb0b490268cbe26a283fa7b3be2b10fbf17cc3c0db93097ceb10ea80eb3dca86.png)
 
 ## Player A: 'Who saw him then?'
 
@@ -9782,7 +9782,7 @@ Physical props and handouts add atmosphere if you have the time and resources to
 
 Example: your  players  find  an  incriminating  letter.  You  can simply tell them, 'The letter makes it clear that Lord Wimbledon has business dealings with Doctor Beresford.' Or you could write the letter out (in part or in full) and read it out to them, letting them draw that same conclusion. Or, assuming you are playing in a face-to-face group and not over the internet, you could put the
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000579_6d357a449c99bfeb7c06f549c1944aad39384878a025fc9921f0c68ac8201ca1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000579_6d357a449c99bfeb7c06f549c1944aad39384878a025fc9921f0c68ac8201ca1.png)
 
 letter into a handwriting font, print it, put it in a torn, addressed envelope, and let them decipher it themselves. What about if the investigators  come  into  possession  of  a  mysterious  magical  key? Providing a drawing would certainly be helpful, or you could use that  actual  old  key  you've  had  stashed  in  your  junk  drawer  for years. You could even 3D print one if you have the resources and are really ambitious. None of this is necessary, but it adds to player immersion, the sense of realism, and the gaming fun.
 
@@ -9800,9 +9800,9 @@ You  might  let  your  players  use  an  online  search  engine freely,  but  be
 
 This technique works well when you're incorporating realworld historical elements into your plots. Obviously, you have to  be  careful  the  players  don't  come  across  any  spoilers-or anything that clearly contradicts your plot. But you've done the real-life research, so why not let them have some of that fun, too? The sense that the magical Rivers of London world could be real because it fits so seamlessly with mundane reality is a thrill. And, if they do unexpectedly turn up something that clashes with your own fictional world, Nightingale can always remind them that not everything written in the public records is correct; the Folly has a long history of covering things up.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000580_f1d48b9031209a82b3383081a03975630a0d11c89079b4bcc93e33777380fcbf.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000580_f1d48b9031209a82b3383081a03975630a0d11c89079b4bcc93e33777380fcbf.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000581_f7696aa747e5badbd0426904ca014138d9b13656a81b10a4ccd28114f51efc85.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000581_f7696aa747e5badbd0426904ca014138d9b13656a81b10a4ccd28114f51efc85.png)
 
 Let's  look  at  another  example  where  tech  can  be  useful. Say you've done your research in locating where in the real world  the  victim's  house  is.  You've  decided  on  an  actual address and you know what it looks like, so why not let your players  also  get  a  look  at  that  address  in  satellite  and  3D street view? It gives them a much clearer idea of what sort of area the victim called home, and probably the victim's class background and lifestyle.  If  the  investigators  can  spot  the building has a side door, they might decide it's better to use that as their entrance. If they swivel around on the 3D map, it might occur to them that the betting shop over the road is an ideal place to go look for witnesses. This heightened 'sense of place' can be the bedrock of an RoL:RPG session.
 
@@ -9842,7 +9842,7 @@ Clashes  of  play  style  and  personality  need  handling according to your per
 
 In  the  immortal  words  of  the  Police  Association:  Engage, Explain,  Encourage,  Enforce  ( The  Four  Es ,  page  71).  Try to  find  out  why  the  problem  is  happening.  If  necessary,  take a  break  and  listen  to  the  player,  and  then  explain  why  it's  a problem  for  everyone.  Encourage  them  to  co-operate,  and only bring in negative consequences to their actions as a final resort. Enforcement can be done in-character, e.g., their police superiors come down on them like a ton of bricks for dereliction of  duty  or  they  get  hauled  up  before  the  relevant  Police Standards Department ( Police Oversight , page 214), but, it is far  better  to  get  player  co-operation  by  reminding them how
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000582_f56c8f0015e3e0818336df99feda173fb08158d7059927f60b925b8c9345be1e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000582_f56c8f0015e3e0818336df99feda173fb08158d7059927f60b925b8c9345be1e.png)
 
 the game works. Sometimes, the solution might be changing up that player's investigator; perhaps they designed the character with different expectations in mind, and now, seeing how the game  is  progressing,  wish  they  could  be  playing  a  character more suited to the case file. If so, work with them to bring in their new investigator while the old one takes a leave of absence.
 
@@ -9868,7 +9868,7 @@ That doesn't mean you should always let investigators have their way with NPCs, 
 
 Just to reiterate: an out-of-character discussion with the group before the game starts might save you a lot of problems ( Creating Your Character , page 44). If you have a player who cannot abide descriptions of animal suffering, for example, you might have to rethink any scenes revolving around certain kinds of demon traps, or make extra sure that the investigator manages to save some victims before they're exploited. However, be aware that asking in advance can put the individual player on the spot. They might not be sure where their boundaries lie, or they might feel too selfconscious to draw a line in the sand before even starting a game. This  is  where  the  safety  tools  we  mentioned  in Considerate Gaming (page 44) really come into their own. They may not be necessary at all for your group, but you still may wish to look at them for some ideas in case the need ever arises.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000583_3288cf4ff80ee5b26950ed260481a21b2fdea379a63fcd729f416a80303ce54d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000583_3288cf4ff80ee5b26950ed260481a21b2fdea379a63fcd729f416a80303ce54d.png)
 
 LANAN
 
@@ -9882,7 +9882,7 @@ The  various  characters'  pen  portrait  descriptions  in  this chapter are pre
 
 Each NPC has a section that describes who they are, how they look and  behave,  and  what  their  allegiances are. Each  character  is  also  presented  with  what  we  call  their 'profile'-the characteristics, skills, and spells that describe what they can do in the game, sometimes also known as a 'stat block.'
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000584_23bbe7e95a0b23118851556ab658843433c04941250507f5260ccc8f55f9e729.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000584_23bbe7e95a0b23118851556ab658843433c04941250507f5260ccc8f55f9e729.png)
 
 ## Human Characters
 
@@ -9894,11 +9894,11 @@ Guidance on creating special abilities for non-Newtonian  practitioners  can  be
 
 Profiles  for  humans,  creatures,  and  members  of  the demi-monde  are  broadly  similar  in  structure,  with  one  or two variations that account for their special foibles. In each profile,  characteristics  are  presented  first,  followed  by  that character's  skills  and  languages.  For  humans,  spells  and signare come  next,  if  they  have  them,  whereas  the  demimonde  profiles  contain  their  powers,  specific  affinity,  and vestigia (if  appropriate),  as  well  as  any  other  relevant notes. A character's skills are given with their common skills first, followed  by  their  expert  skills,  and,  finally,  their  combat skills. Spells known by a character are grouped by order, and any mastered spells are labelled as such.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000585_0d2880cec1f2f67f0c640ac9b8f8b4e3a2260cc28916cd12f23f23069509beee.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000585_0d2880cec1f2f67f0c640ac9b8f8b4e3a2260cc28916cd12f23f23069509beee.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000586_fca561fb68e49473da5df9d841908810f61a0818faf7a2953466ad4d55fc0ba3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000586_fca561fb68e49473da5df9d841908810f61a0818faf7a2953466ad4d55fc0ba3.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000587_731dfc1012c45bbcd2cb2700b90fa4f32fa29d71a8c71428a8bdabe56ab8f834.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000587_731dfc1012c45bbcd2cb2700b90fa4f32fa29d71a8c71428a8bdabe56ab8f834.png)
 
 ## DC Peter Grant
 
@@ -9916,7 +9916,7 @@ Beverley, the love of life, is giving me 'the look,' which means I should wind t
 - Allegiances: obviously, there's Nightingale and the Folly, Beverley Brook, Sahra Guleed, and Abigail Kamara (who's actually a half-cousin, if half-cousin is even a thing). Oh, and FBI agent Kimberley Reynolds, of course.
 - Traits: Lesley used to say I was easily distracted. Nightingale worries about me not following order and tradition, but I can assure you, I adhere to the scientific method. This has led to me developing the Yap scale ( Toby , page 240) and a few innovative spells of my own design.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000588_44da2e179f12abcce96bce6c9f06ad7183b87a6a7eb1ec2d198b6ee86df49e64.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000588_44da2e179f12abcce96bce6c9f06ad7183b87a6a7eb1ec2d198b6ee86df49e64.png)
 
 ## DC Peter Grant, apprentice practitioner
 
@@ -9958,7 +9958,7 @@ Aqua (mastered), Impello (mastered), Scindere (mastered), Werelight (mastered); 
 
 This is where things get complicated. Nightingale's tick-tock precision is there, but after that, it's all over the place-music, laughter, the smell of chocolate, images of London-and, blimey, is it loud! So loud, in fact, that it hides what spell he's cueing up, meaning an adversary can't make a Magic skill roll to determine what spell he's about to fling at them.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000589_75d90b28ed0a745ab3d48234606c735dfe8c579249aeb5f531eb6f55446b847e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000589_75d90b28ed0a745ab3d48234606c735dfe8c579249aeb5f531eb6f55446b847e.png)
 
 ## DCI Thomas Nightingale
 
@@ -10027,9 +10027,9 @@ A clockwork tick, the smell of willow, and a whispering clash like the sound of 
 
 - Traits: I'd describe him as thoughtful and serious, though his dry sense of humour sometimes breaks through. He approaches problems in a rational and calm manner, but don't let that deceive you-when he needs to, he can throw down against the best of them!
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000590_caff4118c9ac89425fb4e45c7fdc6971e28d68fca4d522d2492266d62c9d4b88.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000590_caff4118c9ac89425fb4e45c7fdc6971e28d68fca4d522d2492266d62c9d4b88.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000591_c5d0fdd42fdd6bb2bb168cfc195933f7ab754ad3187a8bfb39170cdeefe47eca.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000591_c5d0fdd42fdd6bb2bb168cfc195933f7ab754ad3187a8bfb39170cdeefe47eca.png)
 
 6
 
@@ -10089,33 +10089,33 @@ Footnote:
 
 2 Moon Over Soho
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000592_8157f28569343d591f2a0f63c6e81fbcea90e5734f60c4d6c30a19cbde384204.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000592_8157f28569343d591f2a0f63c6e81fbcea90e5734f60c4d6c30a19cbde384204.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000593_a5d6d390d412e2f312dc34432a071832a11958331e01f865c59b14ae54b38c1a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000593_a5d6d390d412e2f312dc34432a071832a11958331e01f865c59b14ae54b38c1a.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000594_3f0d13b31780a35a766aaed10d4654a36962e4875886f9982c46be774058081d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000594_3f0d13b31780a35a766aaed10d4654a36962e4875886f9982c46be774058081d.png)
 
 ## The Mystic Art of Fighting
 
 This magical discipline is not part of the Newtonian  tradition.  A  trained  practitioner in the Mystic Art of Fighting can spend 1 magic point to gain a bonus die to  any  Fighting  roll  (but  not  damage rolls),  subject  to  the  usual  rules  on Multiple Bonus or Penalty Dice (page 143).  When expending a magic point in this fashion, the character's  moves should be narrated as looking like the feats  we  might  expect  to  see  in  Hong Kong action cinema.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000595_87d9da063c12daabe66e1f24546dc6350587880982ee2e16e6d7c9857ad0f227.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000595_87d9da063c12daabe66e1f24546dc6350587880982ee2e16e6d7c9857ad0f227.png)
 
 The  woman  arched  in  pain  and  I  watched  as Guleed, still holding her arm, ran up the side of the  Nissan Micra in a way that didn't actually look physically possible and used her whole body weight to bear the nanny face down on to the pavement.
 
 -Lies Sleeping
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000596_ec2fa8aa665b13c4b3e51a85ebb7d09aea2c2a352a4aae51fe5c89c6a13f9b0a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000596_ec2fa8aa665b13c4b3e51a85ebb7d09aea2c2a352a4aae51fe5c89c6a13f9b0a.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000597_bef5110efe6eb32b91f9ff910e32db34f96293e3679042def78fd9fb79eb752c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000597_bef5110efe6eb32b91f9ff910e32db34f96293e3679042def78fd9fb79eb752c.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000598_709f823cfcd8a86a57adb46b550f8cddb29ed93924f0cfd3265d387f7fee1cd1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000598_709f823cfcd8a86a57adb46b550f8cddb29ed93924f0cfd3265d387f7fee1cd1.png)
 
 ## The Wizard's Sword
 
 The  wizard's  sword  is  crafted  in  much the  same  way  as  the  core  of The  Wizard's  Staff (page  324),  and  serves  the same purpose as a magic point storage device for anyone who can utilise magic. As a weapon in the hands of a non-practitioner, it is a regular sword, but in the hands  of  someone  trained  in  the  Mystic Art of Fighting (as Sahra Guleed and Michael Cheung are), it is far more effective. A trained practitioner in the Mystic Art of Fighting can spend 1 magic point to gain a bonus die on any damage roll made  using  their  wizard's  sword.  The sword's base weapon damage is 1.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000599_a0951b374c78f93be4aa3f39ea1e9ebc5bf6a8370c4c5dd0c6c31f6ef2ccefd9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000599_a0951b374c78f93be4aa3f39ea1e9ebc5bf6a8370c4c5dd0c6c31f6ef2ccefd9.png)
 
 ## Harold Postmartin
 
@@ -10159,7 +10159,7 @@ Steadfast.
 
 ## Skills
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000600_e3a331b4ae5d217faa5a93f39dcb8545dcc02d4f4a1b3a6ed68175a00f3705a7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000600_e3a331b4ae5d217faa5a93f39dcb8545dcc02d4f4a1b3a6ed68175a00f3705a7.png)
 
 Athletics 30%, Drive 50%, Navigate 60%, Observation 80%, Read Person 60%, Research 90%, Sense Vestigia 40%, Social 60%, Stealth 60%; History 80%, Law 60%; Fighting 30%, Firearms 60%.
 
@@ -10175,7 +10175,7 @@ Dr Walid works at University College Hospital, London, and is a world-renowned g
 - Allegiances: aligned with Nightingale and the Folly.
 - Traits: he speaks with a soft Scottish accent and has a dry sense of humour.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000601_6cc5bcb4b2e33519e605fa0cdf9943e701049dd29236784762a68c31e85129a6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000601_6cc5bcb4b2e33519e605fa0cdf9943e701049dd29236784762a68c31e85129a6.png)
 
 Footnote:
 
@@ -10183,13 +10183,13 @@ Footnote:
 
 ('A Rare Book of Cunning Device ' )
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000602_c144913b76706408c2b77d471ec098cb7534bee8b13c05ff1fc994f68c4c445b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000602_c144913b76706408c2b77d471ec098cb7534bee8b13c05ff1fc994f68c4c445b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000603_7fff8c3b7215f8b72c492df0df9149f845113fa9b2abea01549360023479e9bf.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000603_7fff8c3b7215f8b72c492df0df9149f845113fa9b2abea01549360023479e9bf.png)
 
 6
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000604_ae1d981fe7b83195d770191898f8d28249d7270e14fc5923343c52001849e019.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000604_ae1d981fe7b83195d770191898f8d28249d7270e14fc5923343c52001849e019.png)
 
 Dr Abdul Haqq Walid, Folly pathologist
 
@@ -10233,9 +10233,9 @@ Arabic 40%, English (own) 80%, Latin 40%.
 
 A ferociously clever doctor from Newport, Wales, who entered medical school with high hopes of becoming a healer, only to find  that  the  puzzle  was  more  interesting  than  the  person. As  a  result,  she  ended  up  gravitating  downwards  towards the morgue and a career in pathology. She was brought in to provide Dr Walid with much needed pathology expertise.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000605_3f2a3ee4b20b481096c584d36e9e0b361a62d73c5fc6f9b34c341d506123a336.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000605_3f2a3ee4b20b481096c584d36e9e0b361a62d73c5fc6f9b34c341d506123a336.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000606_f1c6a8f5bd9c65f2a156672967ecdb2c0a35ac646d8b5495455a52e15bf36c02.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000606_f1c6a8f5bd9c65f2a156672967ecdb2c0a35ac646d8b5495455a52e15bf36c02.png)
 
 Steadfast.
 
@@ -10304,7 +10304,7 @@ Werelight (mastered); other than that, no one's entirely certain which spells Ab
 
 Hasn't yet solidified, but you definitely get a little bit of Nightingale's clockwork orrery mixed with whatever has caught Abigail's interest in the last few months; plus: fox fur, a blast of cold, and something that might be the opening bars of a popular British talent show's theme tune.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000607_8ca30959aa235261a071f202735baa0781ae5eb7b001b1f7b8c3779ffa959f2b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000607_8ca30959aa235261a071f202735baa0781ae5eb7b001b1f7b8c3779ffa959f2b.png)
 
 Footnote:
 
@@ -10318,13 +10318,13 @@ I first met Kim when she was sent over by the FBI to observe a  murder  investig
 - Allegiances: an ally to me and the Folly, though she does work for a different agency, so there's always some caution in dealing with her.
 - Traits: generally, she is quite down to earth, but can sometimes have an air of superiority.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000608_f2c7dd379b4f3dcdfb574055fefe04ecfc759a28d1ecb46e716ff7aa49be52b4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000608_f2c7dd379b4f3dcdfb574055fefe04ecfc759a28d1ecb46e716ff7aa49be52b4.png)
 
 Footnote: 5 Whispers Under Ground
 
 - Traits: if you've not got on the wrong side of her, she has a playful streak, and may well make cheeky comments and retorts. Otherwise, you'll get The Stare.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000609_3762f7134f4dab283166c5263aff9329142651e803b95bc7c5cab129c33a88b3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000609_3762f7134f4dab283166c5263aff9329142651e803b95bc7c5cab129c33a88b3.png)
 
 ## Special Agent Kimberley Reynolds, FBI
 
@@ -10372,7 +10372,7 @@ Stephanopoulos is, how do I put this politely, an intimidating presence with the
 - Traits: she tends to have an agitated expression on her face, like she's about to start growling.
 - Allegiances: a steadfast Metropolitan police officer. She knows about the Folly, but isn't a part of it.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000610_fefd5aa3546ad44f03039cbe12785ef13381d10293c76972aca0ec37b2dc3868.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000610_fefd5aa3546ad44f03039cbe12785ef13381d10293c76972aca0ec37b2dc3868.png)
 
 ## DI Miriam Stephanopoulos, senior detective
 
@@ -10394,9 +10394,9 @@ Michael  is  the  Folly's  liaison  in  Chinatown.  His  business card-I kid you
 
 - Description: an Anglo-Chinese man in his mid-to-late 20s, Michael is short but broad-shouldered, with an
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000611_a47ba9df2fb26d561c73583e511848752480bc7ccd657fd7e6f186c497a8d7d9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000611_a47ba9df2fb26d561c73583e511848752480bc7ccd657fd7e6f186c497a8d7d9.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000612_f67185d4ecee29dffddcf8dfa61bda1ac8d898b4f8912c59fe6e3d6439801bc9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000612_f67185d4ecee29dffddcf8dfa61bda1ac8d898b4f8912c59fe6e3d6439801bc9.png)
 
 athletic build. He keeps his black hair cut short but with a long fringe. Tends to dress casually, although Guleed insists he scrubs up well. Usually has his sword somewhere about his person.
 
@@ -10475,9 +10475,9 @@ MP: 12
 
 LUCK: -
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000613_3bfe8281929720617305a31a3bdd4bceb8379e012ea97d9057a798366e51ea2b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000613_3bfe8281929720617305a31a3bdd4bceb8379e012ea97d9057a798366e51ea2b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000614_fc1a68fe45a207da726bb8f2426d5894a5c4efaccba6472c26bd075ecd44e14c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000614_fc1a68fe45a207da726bb8f2426d5894a5c4efaccba6472c26bd075ecd44e14c.png)
 
 6
 
@@ -10527,15 +10527,15 @@ Born in 1921,  in  Russia.  Varvara  is  a  night  witch  ( Nochnye Koldunyi ), 
 - Description: appears to be a middle-aged white Russian woman with a worn face, faded blue eyes, and hair the colour of dirty straw, currently cut into a business-like bob. Just like Nightingale, though, she seems to be aging backwards and is about a hundred years old, give or take. Tends to go for smart skirt suits these days-quite a transformation from the first time I met her 8 .
 - Traits: he's a lively little fellow with a nose for trouble and sausages.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000615_57bf3b393f29414db25fb0d4f5a55b8c70414867cc988ea704f6db01c94cd627.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000615_57bf3b393f29414db25fb0d4f5a55b8c70414867cc988ea704f6db01c94cd627.png)
 
 Footnote: 6
 
 Rivers of London
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000616_33c5f398d03d54ac5d4235c2beb0ae2c8e2c2db9a50cb549d4c9f188e2b521f3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000616_33c5f398d03d54ac5d4235c2beb0ae2c8e2c2db9a50cb549d4c9f188e2b521f3.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000617_7d4a7d33a133b2a8604566e94451f583123d728abfd01bd55629a5646a008db5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000617_7d4a7d33a133b2a8604566e94451f583123d728abfd01bd55629a5646a008db5.png)
 
 Footnotes: 7 Broken Homes , 8 Whispers Under Ground
 
@@ -10642,7 +10642,7 @@ She's a woman of mysterious power, and her magic is definitely non-Newtonian. If
 
 The burning taste of Scotch bonnet peppers and the fragrance of expensive rum on a warm summer's evening.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000618_2fe6700916ced81cc9575f8f35f2c27d5e5fdd4eb1adb2dba960b34a4ef9e4e3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000618_2fe6700916ced81cc9575f8f35f2c27d5e5fdd4eb1adb2dba960b34a4ef9e4e3.png)
 
 Footnotes:
 
@@ -10660,7 +10660,7 @@ Black Mould
 
 Action at a Distance
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000619_fd087658e363c6737f372fbb4668e8399fd90c673cb3c2022e39f1c5c9c1caf2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000619_fd087658e363c6737f372fbb4668e8399fd90c673cb3c2022e39f1c5c9c1caf2.png)
 
 6
 
@@ -10686,9 +10686,9 @@ Ben's asked us to remind you that there are some normal humans that are also tec
 
 The  Folly,  being  chock  full  of  gentlemen  of  the  Enlightenment,  went forth into the world of magic with the unwarranted confidence of young men on a stag night. They basically stuck a Latin tag on everything from spells to formae  to  fairies-whether  the  fairies  wanted  them  or  not.  It's  not  like they were even consistent. I've found at  least  three  different  classification systems in the Folly's library, all with elaborate Latin tags and, I figure, all the scientific rigour of phrenology.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000620_7e82b9d0d275e1fbd93429f65a3f8398c919285cb82d56509d4260ab8dbe39a1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000620_7e82b9d0d275e1fbd93429f65a3f8398c919285cb82d56509d4260ab8dbe39a1.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000621_f90eb853210823292d2b2e21f8dc8e4000682dbbec1829abc666b5f0ba90e0d5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000621_f90eb853210823292d2b2e21f8dc8e4000682dbbec1829abc666b5f0ba90e0d5.png)
 
 The  thing  is  that at  no  point  did  it occur  to  them  to  ask  anyone  what  it was  they  called  themselves  or  anything else for that matter. As a result, nobody  can  agree  on  the  names  for anything. To the savants of the Folly, a goblin  is  a  type  of  fae  who  is  of  onehalf human blood, one-eighth unseelie fae  and  three-eighths folloy.  Want  to know what a folloy is? So do I.
 
@@ -10696,13 +10696,13 @@ Just  like  the  mundane  world,  the demi-monde  is  just  as  full  of  terms 
 
 'And for god's sake, don't call a goblin a  goblin  unless  you  really,  really,  like hospital food.'
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000622_74a1ce68fa06d92df79e350b67d479922ed80795c0dc9bf042e102c5b729e64f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000622_74a1ce68fa06d92df79e350b67d479922ed80795c0dc9bf042e102c5b729e64f.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000623_98cb6720f966a9b4fab1714998f3e6385f069af2f888e62729fff7d7ce423038.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000623_98cb6720f966a9b4fab1714998f3e6385f069af2f888e62729fff7d7ce423038.png)
 
 -Peter
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000624_9da20cdef63773d38f8a45aa6ec377b84c7db27aab8ae4d28a496e4896c9e7d2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000624_9da20cdef63773d38f8a45aa6ec377b84c7db27aab8ae4d28a496e4896c9e7d2.png)
 
 ## The Magic of the Demi-Monde
 
@@ -10766,7 +10766,7 @@ Genii locorum and the fae have a strong connection to some particular sphere-in 
 
 Such powers are defined uniquely for each demimonde character in Other Beings (page  246),  or  within  a particular case file.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000625_6fbefc4d6063732789b0ab900c56bd9bd7f6601bf89c3b4f17a7aba4c3abed70.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000625_6fbefc4d6063732789b0ab900c56bd9bd7f6601bf89c3b4f17a7aba4c3abed70.png)
 
 ## ADDITIONAL RULES
 
@@ -10792,11 +10792,11 @@ It appears that there is a limit to the scale of a genius loci's domain. Here in
 
 Footnotes: 13, 15 Rivers of London , 14 Broken Homes
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000626_a16b9464b0ba484089065ca8d94a14a03fadffb6c602aa4bf0dd5002744f9ac8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000626_a16b9464b0ba484089065ca8d94a14a03fadffb6c602aa4bf0dd5002744f9ac8.png)
 
 Footnotes: 16, 18 Tales from the Folly ('King of the Rats'), 17 The Furthest Station, 19 Foxglove Summer, 20 21
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000627_d450c28e4305413b543baa3230414fca4884ab8f6b86ffb94e69abd5787e1393.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000627_d450c28e4305413b543baa3230414fca4884ab8f6b86ffb94e69abd5787e1393.png)
 
 ## The Effects of Cold Iron
 
@@ -10805,15 +10805,15 @@ As we've already mentioned, certain members of the demi-monde are vulnerable to 
 - Vulnerable to cold iron: the High Fae (including Molly and Foxglove), unicorns, and genii locorum.
 - Not vulnerable to cold iron: chimeras, talking foxes, vampires, and members of the lower fae, such as trolls, the Quiet People, and folk like Zachary Palmer.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000628_400fbf2b0031c5138a2608041c3c5878c78581f3807f17b840d544af4022412a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000628_400fbf2b0031c5138a2608041c3c5878c78581f3807f17b840d544af4022412a.png)
 
 Successful  attacks  made  against  a  vulnerable character with a cold iron weapon gain a bonus die on the damage roll ( The Damage Roll ,  page 132).  Such  a  character,  when  injured  by  a  cold iron  weapon,  cannot  recover  until  the  iron  is removed  from  their  body,  i.e.,  they  remain  on whatever damage condition they ended the combat on. Damage inflicted by a cold iron weapon is untreatable by human medicine, and if the iron remains  in  the  victim's  body,  it  wicks  their  life energy away until they die.  All wounds caused by cold iron should be treated narratively through the power of the High Fae or genii locorum, such as when Peter rushes Father Thames' son, Ash, to Mama Thames to save him after an unfortunate accident with some iron railings 22 .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000629_009622c82583fce29d4dbc3a364afc9a8f65af80889a7c719956a963720795dc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000629_009622c82583fce29d4dbc3a364afc9a8f65af80889a7c719956a963720795dc.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000630_4312849a3d6ba3533888a55a504c2c79340f872de80e99b098338a35ad44fc57.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000630_4312849a3d6ba3533888a55a504c2c79340f872de80e99b098338a35ad44fc57.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000631_0f057c7d95dd8b549f2cfa6e7556ce4c3f3488d663c8d2ad55b6c767283591ad.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000631_0f057c7d95dd8b549f2cfa6e7556ce4c3f3488d663c8d2ad55b6c767283591ad.png)
 
 locorum , because if the power of such a major river was ever embodied by a single entity, that genius loci would transcend this reality. No one knows if that's true, or if it's just a tale.
 
@@ -10825,7 +10825,7 @@ Anyone wishing to spend time at the location associated with a genius loci , or 
 
 It  should  be  noted,  that  when  it  comes  to Affluence Rating (page  57), genii  locorum can  choose  to  live  at any  level  they  wish,  from  poor  to  rich.  The  glamour  is  a wonderful thing!
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000632_a4e6f0afd058e783c352bf6a36e9ecc036aa7ae0c3aa84fcb5e126c9e412aa75.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000632_a4e6f0afd058e783c352bf6a36e9ecc036aa7ae0c3aa84fcb5e126c9e412aa75.png)
 
 Footnote:
 
@@ -10839,7 +10839,7 @@ This  section  contains  descriptions  of  several  of  the  key  demimonde char
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000633_cec1a8fa0c660b438c00909a3053ccd89c9171dbdf74f5060c6eced54a118fda.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000633_cec1a8fa0c660b438c00909a3053ccd89c9171dbdf74f5060c6eced54a118fda.png)
 
 Members  of  the  higher  demi-monde-like  the  genii locorum-have a vestigia entry as part of their profile, describing  the  sensation  someone  gets  from  them if  they  succeed  with  a  Sense  Vestigia  roll.  For  really powerful demi-monde, i.e., Mama and Father Thames, there's no need for a roll-the power at that level is impossible to miss, even by people who usually don't know what they're sensing. Members of the lower demimonde, like Zachary  Palmer (page  256),  don't  usually have a specific vestigia listed-there's just something about them that those who are sensitive know is 'other.' There are some that do give off their equivalent of a signare when they use their thematic powers, though. These members of the lower demi-monde also have a vestigia listed as part of their profile.
 
@@ -10851,7 +10851,7 @@ When Beverley is around it's safest to assume that the front two rows may get we
 
 - Description: Beverley is an attractive Black woman of West African descent. I would say she had a cheeky face, but she'd probably kill me. She has long dreadlocks, and appears to be in her mid-20s. Her skin is smooth, unnaturally flawless, and sufficiently dark that I can't see when she's blushing. Her eyes are upwardly-tilted, like those of a cat; her dark brown irises are flecked with amber and gold around the pupils. Oh, and there's usually a sly smile playing on her luscious lips.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000634_83a13375fae64daa1961479ed72c126604be85b3da94d155029b25118d9466ba.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000634_83a13375fae64daa1961479ed72c126604be85b3da94d155029b25118d9466ba.png)
 
 full powers in Greater London. She defers to her siblings (Effra, Fleet, and Tyburn) and Mama and Father Thames.
 
@@ -10915,9 +10915,9 @@ Footnote:
 
 A sensation like rain, the sound of boys playing football in the distance, the smell of suburban roses and newly washed cars, evening television flickering through net curtains.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000635_0ca1b81e81b72b645228d12729912aca4dbe6f95f1581e46156207d1282313da.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000635_0ca1b81e81b72b645228d12729912aca4dbe6f95f1581e46156207d1282313da.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000636_6e3a6d94fe778c9edc607ee3799ca11ef2666f509ffaa6d0f52f54b6b32c8479.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000636_6e3a6d94fe778c9edc607ee3799ca11ef2666f509ffaa6d0f52f54b6b32c8479.png)
 
 ## Chimera
 
@@ -11010,7 +11010,7 @@ His power is great-indeed, he could flood a whole city if he so wished. He has t
 - Description: these days, he's a short, white man with a pinched face and beaky nose. His bleak grey eyes have a dangerous sparkle and stare at you from beneath his prominent brow. Although he's many centuries old-almost a couple of millennia, in fact-he appears to be a man in his 70s, full of a sinewy vigour. His fashion's dated but he's always well-dressed in a smart country suit, with a bright yellow pocket square, a red waistcoat, and a gold-fob watch. Wisps of white hair protrude from beneath the battered homburg crammed on his head.
 - Traits: he looks like an old Traveller/Sinti, with smiles and a gift for banter, but one time I witnessed him taking a piss, and the next day that ground was alive with wildflowers.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000637_affe2c43dbe7e721308f09a1e6052802dcaf8dafadd000690b018b683b41be81.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000637_affe2c43dbe7e721308f09a1e6052802dcaf8dafadd000690b018b683b41be81.png)
 
 Footnote: 25 Lies Sleeping
 
@@ -11072,11 +11072,11 @@ Water.
 
 The promise of beer and skittles, walking home on a moonlit night, a warm fireside, amorous company.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000638_c97c8dc4c316ac89a1065841259da19f4c6cd54404f620f2ea01fb813d57104b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000638_c97c8dc4c316ac89a1065841259da19f4c6cd54404f620f2ea01fb813d57104b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000639_4a6a5ef19a1b3a17d258cbf8682d448353bfbba3277eee59d26b22d7b4cbcc61.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000639_4a6a5ef19a1b3a17d258cbf8682d448353bfbba3277eee59d26b22d7b4cbcc61.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000640_2f86544483f84d1f049f4b9157a1432a471419715ebaec4aba519cc7ae53d52a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000640_2f86544483f84d1f049f4b9157a1432a471419715ebaec4aba519cc7ae53d52a.png)
 
 Footnote: 26
 
@@ -11132,7 +11132,7 @@ Nothing anyone's been able to put their finger on just yet.
 
 When a person dies, an imprint of their personality can be left upon their surroundings. Ghosts gain what little power they possess from the magic stored in their location. Stone is especially good at storing magic; old houses are often built
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000641_8e13f42a9a3288f0102ddf40e63c048ac3bfaf185f46dafcc9e19ee172552acd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000641_8e13f42a9a3288f0102ddf40e63c048ac3bfaf185f46dafcc9e19ee172552acd.png)
 
 of stone, hence the reason why ghosts are common in such places. Over time, though, this store of magic fades and any associated ghost tends to degrade. Usually, it takes at least 30 years of magic build-up before you get a ghost 27 .
 
@@ -11156,7 +11156,7 @@ The High Fae are flesh and blood, but not like me and you. They  are  tall  and 
 
 The High Fae don't coexist with us on the material plane. They live in a world apart from ours-I suppose you'd call it Fairyland. You have to see it for yourself to understand it, and even then, it's difficult. It's like each world is a layer on the screen, and the opacity setting of the layers can be altered up or down. We normally only see our layer, but there's another one lying just out of sight 29 .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000642_94d6be6b9f299682958695f2dc84b37c123a08564f9f98d2b1e070d011e6aa78.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000642_94d6be6b9f299682958695f2dc84b37c123a08564f9f98d2b1e070d011e6aa78.png)
 
 Footnotes:
 
@@ -11200,7 +11200,7 @@ Nature.
 
 Sun-dappled leaves, the smell of damp wool, a flash of arrogance and condescension.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000643_6a282f7a708ab3b70b92bf3fa1b48610a02439be78523da2310c6d0f235b9367.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000643_6a282f7a708ab3b70b92bf3fa1b48610a02439be78523da2310c6d0f235b9367.png)
 
 ## Horse
 
@@ -11228,9 +11228,9 @@ Fighting 60%. Uses the rider's Ride skill for general manoeuvres.
 
 Usually known as Ty, or Lady Ty (if you've got any sense), she's  the  eldest  of  Mama  Thames'  daughters,  and  the goddess  of  the  River  Tyburn.  She  makes  no  secret  of  the fact  that  she  read  History  and  Italian  at  Oxford,  though she's  a  little  less  forthcoming  about  crossing  paths  with the  Little  Crocodiles  Dining  Club  (a  private  club  made up of apprentice practitioners back in the 1990s) 30 .  Ty now works  as  a  civil  servant;  she  serves  in  numerous  political organisations, and has contacts in the civil service, business, and  the  government.  She's  pretty  loaded  too,  and  lives  in
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000644_bc9f510e935e5f0fda237eee94036021f6677ee5330bf3d44d9480e62eaec1f6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000644_bc9f510e935e5f0fda237eee94036021f6677ee5330bf3d44d9480e62eaec1f6.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000645_57e4497aa98152fdf6b410a7c50952cdf629bd903209b2182c59f8395125c92c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000645_57e4497aa98152fdf6b410a7c50952cdf629bd903209b2182c59f8395125c92c.png)
 
 Footnote: 30
 
@@ -11332,9 +11332,9 @@ Her relationship with Father Thames is one of territorial rivalry over the river
 - Allegiances: Mama Thames has an agreement with Nightingale not to interfere with Folly business (this sometimes rankles with Lady Ty).
 - Traits: she smiles in a matronly way, and when she speaks, everyone listens.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000646_0073db09c0c229c6e022b1f0f21614ddbdd18862b46ca806ef78634dca4513db.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000646_0073db09c0c229c6e022b1f0f21614ddbdd18862b46ca806ef78634dca4513db.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000647_377ca0080c10ea2d2ae3f2450a9deb89cb78e6383aa75bf26205c6595417c540.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000647_377ca0080c10ea2d2ae3f2450a9deb89cb78e6383aa75bf26205c6595417c540.png)
 
 6
 
@@ -11451,9 +11451,9 @@ Blood (haemomancy).
 
 Nothing that Peter could remember.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000648_23a6f79c5de273512ef81479965f895a05a30b1814391ad9d9d120768ae7b755.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000648_23a6f79c5de273512ef81479965f895a05a30b1814391ad9d9d120768ae7b755.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000649_932f2b18fd9ce927938ea248329632e699afa1cfc1e056c82d935cbdb44e96d3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000649_932f2b18fd9ce927938ea248329632e699afa1cfc1e056c82d935cbdb44e96d3.png)
 
 ## Quiet People
 
@@ -11487,7 +11487,7 @@ Luck of the Demi-monde .
 
 Demi-monde affinity Earth.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000650_16cbf4f89c21d3ea1135496b7a3292e9591f963e60d4fcd5d307bba8157cca16.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000650_16cbf4f89c21d3ea1135496b7a3292e9591f963e60d4fcd5d307bba8157cca16.png)
 
 Footnote:
 
@@ -11509,11 +11509,11 @@ They  can  be  playful,  friendly,  and  helpful  when  it  suits them,  or  rea
 
 There have been sightings of talking foxes as far afield as Herefordshire,  Wales,  and  Scotland.  It's  possible  they've
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000651_1d50c0af3721e4d6259e1f47a30b7d8723f47dcac70b02e428fdaed2ba137866.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000651_1d50c0af3721e4d6259e1f47a30b7d8723f47dcac70b02e428fdaed2ba137866.png)
 
 Footnote:
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000652_e27e4943bb2aad159255a7dfea29e553d346c8825609e1e3a0a1586c862d91bc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000652_e27e4943bb2aad159255a7dfea29e553d346c8825609e1e3a0a1586c862d91bc.png)
 
 migrated  to  Europe  and  North  America  as  well,  but  no confirmed instances have been reported yet. London's foxes  certainly  understand  English  and  speak  their  own idiosyncratic version of it, full of spy jargon.
 
@@ -11545,7 +11545,7 @@ Footnote:
 
 35 Rivers of London
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000653_1879d44be1a8abef3eae7d9c2d3d61aec554107b6b1d33cb67769e027678e35d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000653_1879d44be1a8abef3eae7d9c2d3d61aec554107b6b1d33cb67769e027678e35d.png)
 
 ## Troll, an example
 
@@ -11569,13 +11569,13 @@ These things are large and powerful-the size of a very solid cart horse, except 
 
 Unicorns are usually invisible to the human eye-in our world,  at  least-but  become  visible  when  fed  on  magical energy (such as a werelight) 36 ; they're definitely visible if you happen to end up in Fairyland, though 37 . Their temperament is volatile at best. I'm sure they can be cute and cuddly, but the ones I've witnessed have pretty much all been violent and aggressive. They're closely affiliated with the High Fae, and like them, are vulnerable to cold iron.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000654_e22c0db7d4cda200d173ddc615c1ba6265b3f9c2337568d5c8ff745f3b0c61a3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000654_e22c0db7d4cda200d173ddc615c1ba6265b3f9c2337568d5c8ff745f3b0c61a3.png)
 
 Footnotes: 36 37
 
 Foxglove Summer , The Fey and the Furious
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000655_915dc98886080145956d083142a3ac440eeeb4fcd429c3784dce7a1a093224db.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000655_915dc98886080145956d083142a3ac440eeeb4fcd429c3784dce7a1a093224db.png)
 
 ## Unicorn, an example
 
@@ -11625,7 +11625,7 @@ Can be ridden, but requires a successful Ride roll to convince the creature to l
 
 ## Vampires
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000656_1eb7e8f6ecc8645de5d8f6d9ef0e34d3945efb687f12af07fefcb9128bd024dc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000656_1eb7e8f6ecc8645de5d8f6d9ef0e34d3945efb687f12af07fefcb9128bd024dc.png)
 
 looking at cross sections of their brains. Rather than sucking blood like the vampires you might be familiar with, the real ones feed on magical potential, both from the environment and the living. You can tell they're about by the intense cold they emit.
 
@@ -11661,7 +11661,7 @@ All vampires were living creatures-once. Nightingale refers to them as parasites
 
 Advantages: Natural Toughness, Damage Bonus. Disadvantage: vulnerable to intense heat (flamethrower, phosphorous grenades).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000657_df1008345bd69932ab77c954997181edff49232469340ebc50ec85cf58c0edbf.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000657_df1008345bd69932ab77c954997181edff49232469340ebc50ec85cf58c0edbf.png)
 
 Footnote:
 
@@ -11747,13 +11747,13 @@ Luck of the Demi-monde.
 
 Locks.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000658_66ba413c8e8b5b9b718327ad002f10b9a490e647a037d7d5bdad295baf53d66f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000658_66ba413c8e8b5b9b718327ad002f10b9a490e647a037d7d5bdad295baf53d66f.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000659_1dc839af4b5adc63d4fbb9ea9a2786775130e6e2e072cea9429c270688a22b47.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000659_1dc839af4b5adc63d4fbb9ea9a2786775130e6e2e072cea9429c270688a22b47.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000660_ff932d5cf2e4a9e2a5b286f3dbd6e54c148817cd30c44811cd36778b2f4a04a1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000660_ff932d5cf2e4a9e2a5b286f3dbd6e54c148817cd30c44811cd36778b2f4a04a1.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000661_aed0fcb91991cea91c760b6c008d42d97254e7471b8bff2d64fb50ba6ba527b5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000661_aed0fcb91991cea91c760b6c008d42d97254e7471b8bff2d64fb50ba6ba527b5.png)
 
 LONDON, CAPITAL CITY of the United Kingdom and home of the Society of the Wise, better known as 'the Folly'the heart of Newtonian magic in the UK, at least as far as policing is concerned! This chapter aims to give the Game Moderator (GM) and players-and their investigators-an overview of the Folly's history and associations, as well as of magical London. It is presented as an induction session given by Sergeant Anthony Finnegan, one of the Folly's recently recruited members of staff 1 , aimed at getting new officers and civilian associates up to speed.
 
@@ -11763,7 +11763,7 @@ The  GM  can  use  the  following  sections  directly  as  an in-character intro
 
 For more on creating your own case files, see Writing a Case File (page 336).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000662_08d77045b6d78b685424eb8c7cde158f7fccd3a6f52bb2f35d9e825ea7da47f0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000662_08d77045b6d78b685424eb8c7cde158f7fccd3a6f52bb2f35d9e825ea7da47f0.png)
 
 ## GM ADVICE
 
@@ -11771,7 +11771,7 @@ This  chapter  contains  spoilers-potentially  lots  of them. While we've tried 
 
 Also, there are a few acronyms in the text-if you need  help  understanding  what  they  mean,  don't forget Table  12:  A  Glossary  of  Common  Police Acronyms and Slang (page 214).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000663_c1dea488da94305768479b3c4a09782a17c85b3532bcc9503ec1a3ce320ec9cd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000663_c1dea488da94305768479b3c4a09782a17c85b3532bcc9503ec1a3ce320ec9cd.png)
 
 ## Induction
 
@@ -11781,9 +11781,9 @@ Right.  Morning  all.  Welcome  to  the  Folly,  the  official home of English M
 
 Magic  dates  back  to  the  dawn  of  humanity.  Shamans  in ancient  times  led  rituals  to  protect  their  tribes  or  ensure good hunting, while medieval witches might have known a trick or two passed down through their family. There were secret  groups  like  the Sons  of  Weyland (page  262)  with magical  specialties  connected  to  a  trade,  and  alchemists trying  to  turn  lead  into  gold.  In  the  17 th century,  Sir Isaac  Newton  discovered  the  principles  that  let  magic  be performed successfully and safely. He wrote three Principia : the  first, Philosophiæ  Naturalis  Principia  Mathematicaor Mathematical  Principles  of  Natural  Philosophy ,  published  in 1687-was on mechanics. The second: Philosophiæ Naturalis Principia  Artes  Magicis ,  laid  out  the  principles  of  magic  as they are still taught and used by the Society of the Wise, aka the  Folly  ( Chapter  4: Newtonian Magic ,  page  161).  His unpublished third book, Magni Operis Principia Chemica -or Chymical Principles of the Great Work -got stolen in 1719 by Jack Shepherd 2 .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000664_585dce60fe44900967869ac01c67881282ade74ff79486f92c1bf539bae0ef21.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000664_585dce60fe44900967869ac01c67881282ade74ff79486f92c1bf539bae0ef21.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000665_195a792fb1c645e5238aebcbf94ed001cac585ce74c539a219dfb7156f78a5a9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000665_195a792fb1c645e5238aebcbf94ed001cac585ce74c539a219dfb7156f78a5a9.png)
 
 7
 
@@ -11813,19 +11813,19 @@ Officially, the Folly is the Met's Special Assessment Unit (SAU) , although we w
 
 The  term  hedge  witch  or  hedge  wizard  generally  means a  magical  practitioner  without  Folly  training,  or  a  Society member  who  has  formally  retired  and  'rusticated'  to  the country. It used to be slang for any country-dwelling witch or  wizard,  but  there  are  plenty  in  London  these  days.  For example,  George  Nolfi  of  Wimbledon-of  the  werelight party  trick  fame 5 -who  learned  the  spell  from  his  mum.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000666_805619ac8ffce8c489713fa435d500d33807b018dfb50068fa60c5eac1e49e5e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000666_805619ac8ffce8c489713fa435d500d33807b018dfb50068fa60c5eac1e49e5e.png)
 
 Others  develop  magical  abilities  on  their  own,  sometimes due to neurological conditions, like Mrs Edna Phillips, the occasional car-killer of Cable Street 6 . The Folly has files on rusticated Society Fellows, like Hugh Oswald, who suffered from  post-traumatic  stress  disorder  (PTSD)  after  WWII and retired to Herefordshire to keep bees 7 .
 
 When I say files, I mean old manila folders. If you want to know what they say, you have to dig it out the old-fashioned way; there's none of this computer search malarky-yet. You may be assigned the transferral of this information to DC Grant's new standalone database as one of your duties.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000667_1896e314aa51bda5a5a949301bc81f0485d25901625f48dd9298ac3bddb583e6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000667_1896e314aa51bda5a5a949301bc81f0485d25901625f48dd9298ac3bddb583e6.png)
 
 ## Case Seed: A Pet Project
 
 Someone has bought and restored a former County Practitioner's home, which has lain derelict for ages. Since moving in,  every  night  they  have  been  woken by tapping on the window. Opening the curtains, they see a huge rook outside. They've tried ignoring it, but now rooks are gathering in increasing numbers. Is this  an  ordinary  phenomenon,  or  did the long-dead practitioner bind a spirit in  bird  form  as  his  familiar,  in  a  contract to serve the master of the house until dismissed? If so, is it now an angry supernatural threat?
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000668_fc83c0dffee91fa71fed9a7872db248eeb6fa749b2c2084ecddecb5611daf612.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000668_fc83c0dffee91fa71fed9a7872db248eeb6fa749b2c2084ecddecb5611daf612.png)
 
 ## The Special Collection
 
@@ -11841,29 +11841,29 @@ Footnotes:
 
 Long-Distance Granny'), 7 Foxglove Summer
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000669_c21cfc43c5f0e3efbf7be8b18832b4bce253603258c86cb5e244594f0432ca0d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000669_c21cfc43c5f0e3efbf7be8b18832b4bce253603258c86cb5e244594f0432ca0d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000670_dead552c004d427f5df58d54e58f30300ddbd68c51da67b7f61d5c4800f8aaaa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000670_dead552c004d427f5df58d54e58f30300ddbd68c51da67b7f61d5c4800f8aaaa.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000671_2f85c116f53570d95d57609ee2f62523fefe3b75215a999e091ea0594f5a4698.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000671_2f85c116f53570d95d57609ee2f62523fefe3b75215a999e091ea0594f5a4698.png)
 
 ## Casterbrook
 
 The Casterbrook boarding school lies on the Ambrose Estate, near  the  village  of  Stokenchurch,  Buckinghamshire 8 . It taught magic to boys, mainly those from professional family backgrounds, training them as Fellows of the Society. The school  was  requisitioned  during  WWII  but,  afterwards, there weren't enough pupils or teachers for it to reopen. DCI Nightingale has keys to the main gate and building. There's not  much  left  inside,  except  the  names  of  the  honoured dead; wizards who  died serving their  country-many at  Ettersberg-carved  on  the  wall  of  the  school  hall  by Nightingale. The Folly owns the estate, which is part of our property portfolio-that means we have a healthy operational budget, unlike most Met departments. Money from estate farm  rents  also  pays  for  maintenance  of  the  Casterbrook building, Ambrose House.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000672_25cbcda8598553e1f1c4b6252e488120bf0079c28d227e7a1199386714476200.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000672_25cbcda8598553e1f1c4b6252e488120bf0079c28d227e7a1199386714476200.png)
 
 ## Case Seed: It's in the T rees
 
 A  tenant  farmer  contacts  the  Folly complaining  that  something  is  killing his  cattle.  It  comes  from  the  woods at  night,  mostly.  He's  tried  hunting  it, but 'it don't seem natural.' Did a Casterbrook pupil or teacher leave something monstrous to grow in the estate grounds, or is it a normal wild beast?
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000673_4a34f9cd2ad6b1fbf9a128ff25144add3a241bd109ef096a38a44bc2f0e9b9b1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000673_4a34f9cd2ad6b1fbf9a128ff25144add3a241bd109ef096a38a44bc2f0e9b9b1.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000674_0a8a8d25ddb033d83bbfdebfe8dc162acf889c69aee2c3c56728577c41c7aaaa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000674_0a8a8d25ddb033d83bbfdebfe8dc162acf889c69aee2c3c56728577c41c7aaaa.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000675_922b2f11f0cf6b074bb5ff92d640546ff784a57071f838eb4e970c564b740ccf.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000675_922b2f11f0cf6b074bb5ff92d640546ff784a57071f838eb4e970c564b740ccf.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000676_50da5c793e78f8874d82cfa444f3eac23f6506bc5c60d8faeaae82c18ea0afec.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000676_50da5c793e78f8874d82cfa444f3eac23f6506bc5c60d8faeaae82c18ea0afec.png)
 
 Footnote: 8 Moon Over Soho
 
@@ -11883,11 +11883,11 @@ Although  Hugh  Oswald  escaped  with  the  cabinetsthanks to then-Captain Night
 
 The Folly isn't the only magic society in existence, though it is the only officially recognised one. There are a few others it would be sensible for you to be aware of.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000677_f5a31eaf7fdc5857d3d398a30c5077603cd7ab7684a84b6f26e5cdff2f8ae6fa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000677_f5a31eaf7fdc5857d3d398a30c5077603cd7ab7684a84b6f26e5cdff2f8ae6fa.png)
 
 Footnotes: 9 Broken Homes, 10 Foxglove Summer
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000678_ac96eb49813687525c8d76936635c62603338122b9b5f305248595ad88e37317.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000678_ac96eb49813687525c8d76936635c62603338122b9b5f305248595ad88e37317.png)
 
 ## Little Crocodiles
 
@@ -11899,21 +11899,21 @@ Women trained as magical practitioners in Queen Caroline's court.  They  were  t
 
 Magic  was  then  taught  mother  to  daughter  by  society members.  Current  members  include  Lady  Helena  Louise Linden-Limmer  and  her  adopted  daughter  Lady  Caroline. Lady Helena is an expert on healing techniques. She taught them to Albert Woodville-Gentle in London in the 1960s, and  was  understandably  horrified  to  discover  how  he'd used  them.  In  2014,  the  Society  of  the  Rose  worked  with the Folly to recover Newton's stolen alchemical manuscript. Lady Helena and Lady Caroline got the book, and our two societies remain on good terms. Lady Caroline prefers to call herself a witch or sorceress rather than a practitioner.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000679_54c1e65befe341dd7786a7aefa0554832fff49bdf0a407d7343217f8e58cd4f1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000679_54c1e65befe341dd7786a7aefa0554832fff49bdf0a407d7343217f8e58cd4f1.png)
 
 ## Case Seed: The Wise Woman
 
 A  woman has  put  in  a  complaint  that a  sorceress she consulted for magical services to get her errant husband back took her money, but her husband has now gone completely missing. Is this a case of a scam by a fake psychic, or is the sorceress a member of the Society of the Rose, who felt she was doing the woman the greatest favour by ensuring her rotten husband was gone for good?
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000680_c1ee4f104746b6bfd49f0522296b022b791e7c8d9d6871298f3084f8f7cbfacf.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000680_c1ee4f104746b6bfd49f0522296b022b791e7c8d9d6871298f3084f8f7cbfacf.png)
 
 Footnotes:
 
 11
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000681_871083ce4d04f0f49baca0f7847067b35480ebdc3b9f552ef5e9ff1f6ac9a59b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000681_871083ce4d04f0f49baca0f7847067b35480ebdc3b9f552ef5e9ff1f6ac9a59b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000682_897c4df2d8392cf9977a0c0b719c6c8f91d2429e52acec89716f9a5f5263d707.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000682_897c4df2d8392cf9977a0c0b719c6c8f91d2429e52acec89716f9a5f5263d707.png)
 
 Whispers  Under  Ground,
 
@@ -11925,9 +11925,9 @@ Moon  Over  Soho,
 
 The  Paternoster  Society  poses  as  a  historical  society  with a  particular  interest  in  London  and  Arthurian  legends. Publicly, it funds archaeological digs. Privately, however, its members are unofficial magical practitioners. Some trained at  Oxford,  including  the  now-deceased  John  Chapman. Members rent a side annexe at St Paul's Youth Hostel, on Carter Lane, next to St Paul's Cathedral. Its rooms are an imitation of the Folly, with antique furnishings and a portrait of Sir Isaac Newton. A cabinet once held a sword discovered by 18 th century antiquarian William Winston Galt, allegedly in a cellar at Paternoster Row. It was identified by Camilla Turner  of  Museum  of  London  Archaeology  (MOLA)  as being 5 th century Saxon 14 . The society like to think it's King Arthur's Excalibur. Tracing other members of this group is on our action list.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000683_5224cb57f5b9ed14b3e192b39b54e9485028e6e979f67618bee32b3cc0e638b2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000683_5224cb57f5b9ed14b3e192b39b54e9485028e6e979f67618bee32b3cc0e638b2.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000684_3625af91571e2fba5533d22a16b88cdb550d2eb06f99c748bbfd8a8d1e8afa29.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000684_3625af91571e2fba5533d22a16b88cdb550d2eb06f99c748bbfd8a8d1e8afa29.png)
 
 12
 
@@ -11953,9 +11953,9 @@ There're two sets of stairs-and secret passages. Three wall panels off the atriu
 
 Below  ground,  there's  the  original  kitchens  and  sculleries, kept as Molly, our cook and housekeeper, likes them. Molly (page 252) has her own space down here, but it's private, so
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000685_6256d3ce06ff1774dcf4bd16fb877f3a15a3bd9ed8f00ab8eac95558ba0a2a60.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000685_6256d3ce06ff1774dcf4bd16fb877f3a15a3bd9ed8f00ab8eac95558ba0a2a60.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000686_27c81bdf246dd6ac2392cd35edb997e4c2f531990bd4723114f38eed1e98beb8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000686_27c81bdf246dd6ac2392cd35edb997e4c2f531990bd4723114f38eed1e98beb8.png)
 
 keep your noses out if you don't want them bitten off by Toby (page 240). He has previous 15 . Molly's privacy, among other things, is why we leave the basement off the plans-we don't want outsiders poking around down here.
 
@@ -11967,35 +11967,35 @@ There's a maze of old brick-lined corridors in the basement, leading  to  former
 
 The Folly has an agreement that it can confiscate dangerous magical  items.  Some  of  these  are  kept  down  here.  If  they aren't too dangerous, they're kept in storerooms with some magical  dampening,  from  cork  insulation  to  greenwood panels  to  Faraday  cages.  One  holds  the  Book  of  Cunning Device 16 , a sort of sentient book-cum-musical instrument that
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000687_09db1db597236de1d09f81fba79621271895aac69af8e257aaa515169e6ebd6e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000687_09db1db597236de1d09f81fba79621271895aac69af8e257aaa515169e6ebd6e.png)
 
 ## Secure Storage
 
 Beyond  the  plain  door  is  a  short  corridor and then a grey, steel door without  visible  handles  or  locks,  incised with overlapping circles, which opens by  magic.  The  room  beyond  is  secure storage  containing  the  Black  Library, the Mary Engine, and other dangerous magical  things.  As  Sgt  Finnegan  says, it's out of bounds to everyone without DCI Nightingale's express permission.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000688_71462906ff23d1e6c205284fcb1b3f19ee5a9a4e37e15fb8c1c7ac84f531eeee.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000688_71462906ff23d1e6c205284fcb1b3f19ee5a9a4e37e15fb8c1c7ac84f531eeee.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000689_24b7f1645b2516ead98b67342c879d1ca26766d02b4c97f4a41a04ec5e464447.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000689_24b7f1645b2516ead98b67342c879d1ca26766d02b4c97f4a41a04ec5e464447.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000690_36c88ac7e7625f2e7e34953583502e8ee1c8e106e823fdecb9bba5ec30a8526d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000690_36c88ac7e7625f2e7e34953583502e8ee1c8e106e823fdecb9bba5ec30a8526d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000691_a3c5c944c9ceee9679d4e89ae959a7c3ee63d07eda82d54ef3f4cd493d0a3aba.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000691_a3c5c944c9ceee9679d4e89ae959a7c3ee63d07eda82d54ef3f4cd493d0a3aba.png)
 
 7
 
 DC Grant trapped at the British Library. Given the chance, it likes to go for a wander or fly off using its cover as leathery wings. One action on the to-do list is checking the state of the  magical  dampening  in  minor  storerooms.  Another  is taking the Book for walkies ( Case Seed: Walkies , following).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000692_2d8c66856498bf733b5d3e7dec9a31dbf8c7f11aaeee3042e097a7942324d39f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000692_2d8c66856498bf733b5d3e7dec9a31dbf8c7f11aaeee3042e097a7942324d39f.png)
 
 ## Case Seed: Walkies
 
 The  investigators  are  asked  to  take the Book of Cunning Device for a walk around  the  Folly  for  exercise.  It  isn't allowed  outside  the  building.  At  first, the book seems easily controlled, but if they take it into any room containing other books, it gets excited and skitters up the shelves, dumping tomes on the investigators'  heads.  After  they  have spent some time trying to catch it, the Book finds what it was seeking: an old volume  that,  when  opened,  is  obviously  infested  with  bookworms.  The Book has been trying to warn the investigators of a serious threat to its less communicative  siblings.  How  will  the junior  Folly  members  deal  with  that? And are  those  bookworms  more  than mundane larvae?
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000693_453d684454ca4bb957ee8e707dbb44507734d05d3369d97f2abc171eb1adcde3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000693_453d684454ca4bb957ee8e707dbb44507734d05d3369d97f2abc171eb1adcde3.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000694_f9ba5248e8ac175a6e968cc63c86fdd192350802a5fc7b8bd32e686cfd2e40d3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000694_f9ba5248e8ac175a6e968cc63c86fdd192350802a5fc7b8bd32e686cfd2e40d3.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000695_4bc404b7256dec1040a690a0c20dd5d2efacb3b5370b224018379f94cb48436c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000695_4bc404b7256dec1040a690a0c20dd5d2efacb3b5370b224018379f94cb48436c.png)
 
 ## Rear Mews and Coach House
 
@@ -12019,9 +12019,9 @@ Important  wizards  had  their  suites  on  the  third  floor  (55). The Master'
 
 Tucked up in the roof space is the attic; it includes additional bedrooms for junior practitioners and servants-not slept in since 1945. There's also an observatory (59) with a small glass dome. Foxglove sometimes likes to sleep up there.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000696_0d4bd433789010bcfae9aafd8ff3882901e7fbd9003c23df56d67cabbeaf586e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000696_0d4bd433789010bcfae9aafd8ff3882901e7fbd9003c23df56d67cabbeaf586e.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000697_9a6f0b4ec97b252e77329b473128e509dfc1f985aa63ea145f448ac5b1493385.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000697_9a6f0b4ec97b252e77329b473128e509dfc1f985aa63ea145f448ac5b1493385.png)
 
 267
 
@@ -12037,7 +12037,7 @@ Now we're back in the visitor's  lounge,  let's  continue  with the rest of your
 
 The numbers in brackets after a location's name refer to the Map of Central London on pages 270-271.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000698_58df7f5b4768936df78581aaaa89049eae40c21002a2be5fc37061d6b074dcee.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000698_58df7f5b4768936df78581aaaa89049eae40c21002a2be5fc37061d6b074dcee.png)
 
 7
 
@@ -12053,9 +12053,9 @@ Charing Cross Police Station (CX) is on Agar St, Westminster,  and  is  where  o
 
 The Westminster  Murder  Team  is  based  at Belgravia Police  Station  (AB)  on  Buckingham  Palace  Road.  We've often  worked  with  DCI  Alexander  Seawoll,  the  team's
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000699_b376e4ed02a2bead5933b7a17085243d21ab1e76af022a8eddf09ea1861f3477.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000699_b376e4ed02a2bead5933b7a17085243d21ab1e76af022a8eddf09ea1861f3477.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000700_cc53b0bfbb7b2df8f4112a98f78e473c678c98fa9e818f6faa1fd8c8b8833788.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000700_cc53b0bfbb7b2df8f4112a98f78e473c678c98fa9e818f6faa1fd8c8b8833788.png)
 
 Footnote:
 
@@ -12107,7 +12107,7 @@ The Folly is in Bloomsbury, which is famous for its literary and  intellectual  
 
 What Abigail Did That Summer,
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000701_e0fb5121ff4b2490a14e9c4917d4c73b61759108c72b8a49e19a2f5cd2b2ff46.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000701_e0fb5121ff4b2490a14e9c4917d4c73b61759108c72b8a49e19a2f5cd2b2ff46.png)
 
 Footnotes:
 
@@ -12469,17 +12469,17 @@ Abigail's brother, Paul, has a serious condition and spends most of his time at 
 
 One  important  point  about  the  Folly's  location  is  that Bloomsbury, where the north London borough of Camden meets Central London's West End, is outside the borough of Westminster, where Lady Ty, goddess of the Tyburn, has the most influence. She'd like to extend that influence, but the Folly has so far resisted.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000702_34e919329cfa2697a42cff089932887d92a322932c2855a3c594b7e262780175.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000702_34e919329cfa2697a42cff089932887d92a322932c2855a3c594b7e262780175.png)
 
 ## Case Seed: The Lost Mummy
 
 Tourists  reported  seeing  a  mummy walking  around  the  Petrie  Museum  of Egyptian Archaeology in the University College London. Petrie staff say none of their  mummies  are  missing.  Research shows UCL Egyptologist and witch Dr Margaret Murray (1863-1963) warded the  Petrie's  cabinets  to  stop  anything escaping.  Was  this  sighting  a  student prank, or was the British Museum's lost mummy visiting  relatives?  If  so,  what are its plans?
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000703_08683d5db9d1cab6796df8909ef70687989a9b6b9eb8893154f6e47d021cfe89.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000703_08683d5db9d1cab6796df8909ef70687989a9b6b9eb8893154f6e47d021cfe89.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000704_669ef311aa734105514b0b3b7c5c994cda09cf95c371d50b361675b834b61db4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000704_669ef311aa734105514b0b3b7c5c994cda09cf95c371d50b361675b834b61db4.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000705_b20ec559e5d109e031711a9d20963d3ba54256a5244a96f19d14c8e3bcf43230.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000705_b20ec559e5d109e031711a9d20963d3ba54256a5244a96f19d14c8e3bcf43230.png)
 
 ## University College Hospital (15)
 
@@ -12509,11 +12509,11 @@ Albert Woodville-Gentle, the original Faceless Man, operated a gruesome venture 
 
 Back  in  the  mid-20 th century,  Soho  was  a  hub  for  vice, organised  crime,  and  police  corruption,  but  that's  mostly been cleaned up. The area's now full of media companies and legit bars and clubs, but still has a few places with ties to their seedy  past.  Some  trade  on  nostalgia:  The  Mysterioso,  on Bateman Street, is a basement jazz club that tries to recreate
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000706_28f63683d922cb40ae25bb639c4a133a07aa4fe6f2c238acae028a8d52e30b4b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000706_28f63683d922cb40ae25bb639c4a133a07aa4fe6f2c238acae028a8d52e30b4b.png)
 
 Footnotes: 24 Rivers of London, 25 Lies Sleeping, 26 Tales from the Folly ('The Cockpit'), 27 Moon Over Soho
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000707_4898e5fda77d3a268187ba4fc60ba2eef49866460104fc67eb7c447e19ca8a2c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000707_4898e5fda77d3a268187ba4fc60ba2eef49866460104fc67eb7c447e19ca8a2c.png)
 
 a bygone style. There's usually a long queue to get in, and the management, Stan and Don, employ rough bouncers.
 
@@ -12535,17 +12535,17 @@ Footnote:
 
 28 Moon Over Soho in  2013 29 .  Luckily,  they  alerted  us.  Other  shops  in  the area,  like  Watkins  in  Cecil  Court,  Atlantis  by  the  British Museum, and Treadwell's near UCL, specialise in magical books. Their stock's more folkloric stuff, but they'd recognise a Newtonian tome if offered one.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000708_032eada3be3d9df8aef8fcc3ba3708e46d4bdcedf5b0aee94344959862be43a8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000708_032eada3be3d9df8aef8fcc3ba3708e46d4bdcedf5b0aee94344959862be43a8.png)
 
 ## Case Seed: The Key
 
 An  esoteric  bookshop  contacts  the Folly. They bought a box of old books, including  magical  tomes,  via  a  house clearance  after  an  old  man  died.  One book  had  been  hollowed  out  inside and contained a small key. Its vestigia ( Vestigia , page 161) is burnt tallow, dried blood, and a musical box melody. What mystery does the key unlock?
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000709_84445e93952f859a47abdce6f04509c32762928fa9cc934e5871ac4095a94a9b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000709_84445e93952f859a47abdce6f04509c32762928fa9cc934e5871ac4095a94a9b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000710_904b050cc78c09644f99a64028af8a24ff93725d636880f1e8f337ef29b17434.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000710_904b050cc78c09644f99a64028af8a24ff93725d636880f1e8f337ef29b17434.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000711_508a701b33618869a28afdfd755c9a9687ff070446ab7f96cdfd3648b6f55f04.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000711_508a701b33618869a28afdfd755c9a9687ff070446ab7f96cdfd3648b6f55f04.png)
 
 ## Skygarden (18) and Elephant and Castle (42)
 
@@ -12555,7 +12555,7 @@ Stromberg intended  the  estate  to  be  an  ideal  community, but, in the 1980s
 
 The Skygarden site is still a crater surrounded by hoardings, due to legal wrangling over who owns the land and arguments between locals and Southwark Council over what's wanted there.  Council security tries to prevent unauthorised entry, but Nicky, goddess of the Neckinger (24), has inspired local druids to set up an eco-protest to stop redevelopment and save the garden as a public park. They have a camp by Elephant and Castle roundabout. DCI Nightingale thinks Sky's lost tree might reseed, with saplings growing on the site, perhaps carrying the nymph's spirit-although such biological effects can take years or even generations to manifest. Initial Folly assessments,  with  Toby's  help,  indicate  lots  of  residual vestigia , making it a hot spot for magic.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000712_ffdb239e0edf5f24a80941bab406c1d917ba76217b7d5ed3aa3172e3b891b87c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000712_ffdb239e0edf5f24a80941bab406c1d917ba76217b7d5ed3aa3172e3b891b87c.png)
 
 Footnotes: 29, 30 Broken Homes
 
@@ -12563,13 +12563,13 @@ Footnotes: 29, 30 Broken Homes
 
 Stromberg lived at West Hill House, a fake Le Corbusierstyle mansion in Highgate, north London. He was a member of  the  German  version  of  the  Folly,  but  came  to  London before  the  war.  He  was  fascinated  with  industrial  uses  of magic,  and  kept  an  eye  on  his  experiment  at  Skygarden through  a  telescope  on  his  roof  terrace.  It's  possible  this house still holds a few secrets relating to his theories.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000713_4aa67ffd364b324ae5738cb9053bba630a2981a8b9c8610ecc299c367202ed7d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000713_4aa67ffd364b324ae5738cb9053bba630a2981a8b9c8610ecc299c367202ed7d.png)
 
 ## Case Seed: Skygarden Souvenirs
 
 A  lead  from  the  demi-monde  says  a small  floating  plastic  object  is  to  be auctioned  at  an  upcoming  nazareth ( Demi-monde Pubs and Nazareths , page 283). There are also reports of kids trespassing on the Skygarden site and claiming to have found things floating in the air. Are these connected, and is there any danger?
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000714_8d7297451e28e92c0b904c878b3e4b6c0b87666463221e72562314455f3f4dcb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000714_8d7297451e28e92c0b904c878b3e4b6c0b87666463221e72562314455f3f4dcb.png)
 
 ## Notting Hill
 
@@ -12583,15 +12583,15 @@ Portobello Road, in Notting Hill, has had a famous antique market since the 1940
 
 Abigail  says  a  girl  at  Great  Ormond Street told her she had been hospitalised since her blue bead necklace went missing in Portobello Road Market. One minute she was wearing it, the next it was gone. She claims the beads were a magical charm that helped her breathe, despite a serious chest condition.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000715_c70a0042096ef66492f01b19cb57a1f71c5ee752573297a5c10593f863055f32.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000715_c70a0042096ef66492f01b19cb57a1f71c5ee752573297a5c10593f863055f32.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000716_eb40fd59b8bf69b3a4f8215d014d6276fdd5bffac5bb812d3e1d11edea4c4b84.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000716_eb40fd59b8bf69b3a4f8215d014d6276fdd5bffac5bb812d3e1d11edea4c4b84.png)
 
 Research shows a common early 20 th century  folkloric  belief  that  ordinary blue glass beads protected against bronchitis.  Very  few  were  genuinely magical. A trip  to  Portobello  Road reveals  ordinary  necklaces  on  stalls, but one trader spotted Zachary Palmer with a set of blue beads on the day of the loss. Zach can be traced to a demimonde  pub,  and  claims  he  found  the magical  beads  on  the  ground.  He  has given them to a Quiet Person child with a serious breathing condition. What do the investigators do?
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000717_cb7febe80a18a8c937bbabc7a7aa5f12ddea269996c8ccc473e6d119f1767dfc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000717_cb7febe80a18a8c937bbabc7a7aa5f12ddea269996c8ccc473e6d119f1767dfc.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000718_3e1affa56e19a327b375163062ff5772de5ecd4553f5e6826e6adfabb24edfcc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000718_3e1affa56e19a327b375163062ff5772de5ecd4553f5e6826e6adfabb24edfcc.png)
 
 tunnels and stations, wartime bomb shelters and, of course, underground rivers. There's archaeology under our feet, too. Some  of  underground  London  is  deliberately  hidden,  of course, like the Quiet People's home. Folly personnel have only  seen  a  couple  of  rooms  inside  that.  One  was  a  lowceilinged living room with ceramic walls and empty picture frames-any inquisitive copper would like to know what was in them, and why they're empty. Then, there's a larger room with  a  big  Victorian  table  that  their  leader,  Matthew  TenTons,  and  his  daughter  Elizabeth,  use  for  meeting  others, which occasionally means us.
 
@@ -12601,11 +12601,11 @@ You'd be surprised  how  much  of  London  is  below  ground. Some is public, in
 
 Inside  Moscow  Road  is  a  trapdoor  down  to  the  railway tracks. Between that and Bayswater Station, there's a secret door leading to the hidden ways network, which the Quiet People use to get around London. This includes secret tunnels
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000719_4380cb4fb5874d8d5a004e969d054c1aec5b6e0c8b5316f68ef6b659d1f68942.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000719_4380cb4fb5874d8d5a004e969d054c1aec5b6e0c8b5316f68ef6b659d1f68942.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000720_bd2efd00bc23096771df33bbec5f898d0c74fe51b2c3bb02c90342a508bc99fc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000720_bd2efd00bc23096771df33bbec5f898d0c74fe51b2c3bb02c90342a508bc99fc.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000721_0e88595236bd1c3437f2df1e3fcb455e29aff3115f80e22b2283667fde2be9bf.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000721_0e88595236bd1c3437f2df1e3fcb455e29aff3115f80e22b2283667fde2be9bf.png)
 
 as well as the Underground, the sewer system, old Post Office (GPO) tunnels, and WWII deep-level air raid shelters. The one at Holland Park has been converted into a demi-monde nightclub-Olympia  and  Chelsea,  goddesses  of  Counter's Creek (26) and the River Westbourne (25), are regulars. Exits to ground level are via spiral stairs and through Holland Park tube station, as well as down to the Notting Hill warren.
 
@@ -12633,7 +12633,7 @@ Woodville-Gentle and his successor as the Faceless Man weren't the only unregula
 
 Graveyards are normally peaceful, as their inhabitants died elsewhere, but plague pits can be an exception. New Street, once called Hand Alley, is on the site of a 1666 plague pit where evidence suggests victims were thrown in while still breathing. There are urban legends of things trying to climb out  again.  New  Street  is  opposite  Liverpool  Street  station, just around the corner from the City of London Police station on Bishopsgate. When things are on City of London Police ground, they usually ask us in, but without vestigia training, officers  don't  always  spot  a  Falcon  case  until  it  bites  them. Quite literally, in some instances. SC Geneviève Nguyên is the Folly's City of London Police Liaison Officer; she also deals with fraud cases.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000722_b7f27d88fceed48f4cfffe4e6dbc0a2a2d0f864d169024bb2b015b17caaa34e4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000722_b7f27d88fceed48f4cfffe4e6dbc0a2a2d0f864d169024bb2b015b17caaa34e4.png)
 
 7
 
@@ -12651,11 +12651,11 @@ DC  Grant  worked  undercover  for  a  spell  at  Serious Cybernetics  Corporati
 
 There's a derelict house off East Heath Road in Hampstead (45) that we regularly check on, just to make sure it's still a crumbling ruin, and the power of a dangerous genius loci is still safely draining 35 . Hampstead doesn't have many derelict houses. It's one of the wealthiest parts of London and borders on a vast hilltop heathland between two branches of the River Fleet  ( The  Fleet ,  page  280).  The  Folly  has  some  animalrelated  contacts  up  on  the  heath.  A  group  of  intelligent talking foxes, with a den under Gospel Oak Station, watch for  anything odd in the area. They have their own agenda though, which we'd like to discover. There's also a character
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000723_4986468b174933427b0ea1ea2bc9f67cd5b6aa900a8e62157f229d7377a431b7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000723_4986468b174933427b0ea1ea2bc9f67cd5b6aa900a8e62157f229d7377a431b7.png)
 
 Footnotes: 34 False Value, 35 What Abigail Did That Summer
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000724_a896c2e7f2a5d23b03c7a4a912432e115fb086111aa8beec4ecbde96334227e5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000724_a896c2e7f2a5d23b03c7a4a912432e115fb086111aa8beec4ecbde96334227e5.png)
 
 called the Cat Lady, who can usually be found sitting on a park bench with a large shopping trolley, feeding the strays. She's observant, and seems to have magical awareness, but we need to learn more about her, too.
 
@@ -12675,13 +12675,13 @@ The Bull's Head pub, Chiswick, was used in the 18 th and 19 th centuries by trad
 
 Reports  of  interference  overnight  at an  archaeological  dig  at  Furnivall  Gardens, Hammersmith, could be a Falcon matter  as  a  witness  reported  seeing a huge, incredibly  muscled  woman walking away from the site late at night with a hammer slung over her shoulder. Investigators  can  find  the  witness  at the  Dove  pub-which  has  the  world's smallest  bar-in  a  tiny  riverside  alley that is the only remainder of the earlier village.  Who  was  the  woman?  Did  she interfere at the dig or protect it?
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000725_3385a5cf0a2e0c4410d365357c745d379f1e6b4b9c83a7fa5fd89a188e7ae412.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000725_3385a5cf0a2e0c4410d365357c745d379f1e6b4b9c83a7fa5fd89a188e7ae412.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000726_67ef49875e30bb6ad2c8c4a6c7f0751679516d6aba9cd730383f5015c4983143.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000726_67ef49875e30bb6ad2c8c4a6c7f0751679516d6aba9cd730383f5015c4983143.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000727_4989da209f35535828a8bddb0c2dfc90c8fa00b31a47b8f100789d31d43a6655.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000727_4989da209f35535828a8bddb0c2dfc90c8fa00b31a47b8f100789d31d43a6655.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000728_e752281dd6f25bd68ee10d1179578f985b44b42cd24083ab12189d64081f92c0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000728_e752281dd6f25bd68ee10d1179578f985b44b42cd24083ab12189d64081f92c0.png)
 
 Wandsworth,  South  London,  gets  its  name  from The Wandle (page 282), which reaches the Thames at Battersea. The  Battersea  Shield,  a  stonking  ancient  Celtic  item  with intricate  designs  that  even  the  British  Museum  describes as magical and protective, gets its name from where it was dredged up in 1857. It was thrown into the river as an offering long before the Romans arrived. The original is in the BM ( Bloomsbury ,  page  269),  with  a  copy  in  the  Museum  of London. A few ancient offerings, along with common clay pipes  and  oyster  shells,  still  get  found  by  mudlarks  with permits to search the shoreline at low tide. Others get picked up illegally and not reported. That's an infringement of the law, and sometimes it's a Falcon matter.
 
@@ -12691,7 +12691,7 @@ Hammersmith's  now  a  big  commercial  area  in  West London,  but  DCI  Nighti
 
 In central London, the river passes Pimlico and Westminster  along  the  Victoria  Embankment  to  the  City on  the  north  bank,  and  Southwark  on  the  south.  London Bridge  (29)  links  the  City  with  Southwark.  The  current bridge is a descendant of the first timber river crossing built by the Romans. One of the first acts on that bridge was an imprisonment with a long sentence, involving our old friend, Mr Punch, and the priest who would become Father Thames. Punch was released in 2015 under an agreement with DC Grant, but he's still probably London's most dangerous spirit.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000729_38bd51595755e099a6896bc695ad2cb8e68e830a83f58dcef44d12a0d3d4fc38.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000729_38bd51595755e099a6896bc695ad2cb8e68e830a83f58dcef44d12a0d3d4fc38.png)
 
 7
 
@@ -12701,7 +12701,7 @@ Downriver from Tower Bridge (28), Mama Thames lives in luxury converted warehous
 
 On  the  north  bank,  the  Thames  winds  on  past  the  new financial district of Canary Wharf and the Isle of Dogs. On the south, at Rotherhithe, a point in the river is known as Cuckold's Point.  One  historic  and  annual  custom  involved  horns  being fixed to a pole, with men dressed as women and women as men, all  wearing horns, who would process through Greenwich to Charlton for a festival of a sexual nature. The Horn Fair stopped in the 19 th century, but has recently been renewed-and requires
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000730_695bbafd2447d8d0e15b7bf943d36e5a0bffcef3d214d4d2a31d87ec038aaa23.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000730_695bbafd2447d8d0e15b7bf943d36e5a0bffcef3d214d4d2a31d87ec038aaa23.png)
 
 ## Case Seed: Magic Bus
 
@@ -12711,13 +12711,13 @@ In 1952, a double-decker bus jumped the gap of Tower Bridge (28) as it was openi
 
 The body of a drowned sailor is found on the Thames foreshore. His eyeballs have been removed and in their place are  pearls.  He  is  wearing  a  backpack containing  a  copy  of  TS  Eliot's  apocalyptic  poem, The  Waste  Land.  The Spring Tide, or King Tide, is in 48 hours. Storms are forecast. Is this part of a ritual to flood London? Who is behind it?
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000731_c9829596c85aa3626b57b20b28d770a95b4dbdecd6b8d6b66ee153fe111d1f2a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000731_c9829596c85aa3626b57b20b28d770a95b4dbdecd6b8d6b66ee153fe111d1f2a.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000732_bde33f5e2eeaae8832e9b90aa5714053a7f41b500993f3807a346f6939f09324.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000732_bde33f5e2eeaae8832e9b90aa5714053a7f41b500993f3807a346f6939f09324.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000733_ac16812315b3af26978fa7c50bb5bbf94d52c1b88ecb0ea769a262bc76a9255f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000733_ac16812315b3af26978fa7c50bb5bbf94d52c1b88ecb0ea769a262bc76a9255f.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000734_ac1bfc7f98b850b0919b6178894524b80d7853b654933151448ee79880e0f9a2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000734_ac1bfc7f98b850b0919b6178894524b80d7853b654933151448ee79880e0f9a2.png)
 
 policing. The festival site is close to the Thames Barrier, which protects central London from flooding by storm surges.
 
@@ -12729,15 +12729,15 @@ Lady Ty's daughter, Olivia, describes the river's route as a 'posh line.' St Joh
 
 The Tyburn runs beside Primrose Hill-where revivalist druids  have  celebrated  the  solstices  since  1792-then  over the Grand Union Canal ( Grand Union Canal , page 282) in an iron pipe, and into Regent's Park boating lake (30). DC Grant's father, Richard Grant, aka the jazz musician Lord Grant, plays at a festival at The Hub café there each summer.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000735_c743d254f8a532b483520c680b32099f6ac6b6619f56ac0df12ceb78ff8e1dfe.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000735_c743d254f8a532b483520c680b32099f6ac6b6619f56ac0df12ceb78ff8e1dfe.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000736_bb0261190a1bec3de2c2c9215f7d3015ba34a4500154e1bf8b2ef6c09e20f85f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000736_bb0261190a1bec3de2c2c9215f7d3015ba34a4500154e1bf8b2ef6c09e20f85f.png)
 
 The river has crossed the Circle Line in a Victorian pipe at Baker Street Station since the first Underground station opened in 1863. It then crosses Oxford Street-once Tyburn Road-into  Mayfair,  where  Lady  Ty's  main  address  is  a Regency terraced house on Chesterfield Hill. The 'posh line' continues to Knightsbridge. Note that Harrods department store has requested Folly officials contact the manager before
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000737_da7bd42485f0281c5280e2f8b7a3ec28dab9a468cff6df6b58420814d5682140.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000737_da7bd42485f0281c5280e2f8b7a3ec28dab9a468cff6df6b58420814d5682140.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000738_2d6b81a8751d01496172e80b4ca95b190664ee50eafc70f14a77e9e1f81ef53c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000738_2d6b81a8751d01496172e80b4ca95b190664ee50eafc70f14a77e9e1f81ef53c.png)
 
 going  back  there,  after  an  incident  involving  DC  Grant 37 . Also  posh  is  St  James's,  known  for  prestigious  art  dealers, galleries,  and  auction  houses,  including  Christie's  on  King Street. The Met rents space there for stuff on London's Stolen Art Directory.
 
@@ -12751,7 +12751,7 @@ About 250 years ago, the Tyburn Gallows (11) stood close to what's now Speaker's
 
 As  you  might  expect,  the  pub  became  a  repository  of things  left  and  unclaimed.  The  pub  was,  up  until  quite recently, owned by one of the second Faceless Man's many front  corporations.  He  used  a  back  room  to  store  magical items and books. That's been emptied; the books are in the Folly library, and you don't need to worry about where the rest are. There are other storage rooms, and possible hidden caches, but the Folly can't search them without permission or  a  warrant.  Neither  of  which  we're  likely  to  get  as  Lady
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000739_a9747ebf318af2b7308403c6a405f8c3eafae2ff73a432108014da6bc6062d63.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000739_a9747ebf318af2b7308403c6a405f8c3eafae2ff73a432108014da6bc6062d63.png)
 
 Footnotes:
 
@@ -12763,7 +12763,7 @@ The Hanging Tree,
 
 False Value
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000740_a29cdd2cd923b5313b46d2487192fc0980b52873b1d70be494f0cfe9443df2b1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000740_a29cdd2cd923b5313b46d2487192fc0980b52873b1d70be494f0cfe9443df2b1.png)
 
 7
 
@@ -12779,13 +12779,13 @@ The showmen live on the fringes of the demi-monde and keep ancient wisdom alive,
 
 The goddess of the Fleet holds her summer court by the Ladies'  Bathing  Pond  on  Hampstead  Heath  (45).  A  river tributary  is  Highgate  Brook,  which  runs  not  far  from Spaniards  Inn,  a  demi-monde  pub  on  the  Highgate  side. Its  course  goes  through  Tufnell  Park  and  can  be  seen  in a  pipe  next  to  a  footbridge  near  Tufnell  Park  station.  DC Grant,  Abigail,  and  several  of  Fleet's  children  attended
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000741_231ae61582084f6fbf9b322c7f26fc5c0f42af85af9ea3bfdfce42ba0715a650.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000741_231ae61582084f6fbf9b322c7f26fc5c0f42af85af9ea3bfdfce42ba0715a650.png)
 
 Footnote:
 
 39 The Hanging Tree
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000742_4bb461a787664d5288bda23deacd78043ad97f0eea490674a12436cbe47bd2f8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000742_4bb461a787664d5288bda23deacd78043ad97f0eea490674a12436cbe47bd2f8.png)
 
 Acland Burghley Secondary School, Dartmouth Park Hill, in Tufnell Park, at various times. The comprehensive school, flanked by council estates-including the Peckwater Estate (47)-has  now  received  special  status  as  an  arts  college. Railway cuttings behind the school lead to a graffiti-daubed tunnel haunted by spray can-wielding ghost, Macky 40 .
 
@@ -12803,7 +12803,7 @@ The Walbrook runs through the eastern side of the City of London, below ground s
 
 Its  source is  just  outside  the  City  walls,  near  Shoreditch High Street. Lulu, goddess of the river, runs a flat-roof pub called The Goat and Crocodile opposite the station, with a demi-monde  clientele 42 .  The  building  is  post-Blitz,  but  its sign is old, and possibly magical. DC Grant reports that the vestigia there is burnt earth, incense, and an outdoor market. The front of the pub has recently been repaired after another of DC Grant's little run-ins.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000743_065046502d70f45da679509ab8593949d7eee489f130e506d73baa167c669e5d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000743_065046502d70f45da679509ab8593949d7eee489f130e506d73baa167c669e5d.png)
 
 ## Case Seed: River Head
 
@@ -12817,7 +12817,7 @@ Footnotes:
 
 The decapitated body of a metal detectorist  is  found  beside  Vale  of  Health Pond on the morning of the midwinter solstice. Is this the work of the Hatchett  Man,  a  copy-cat,  or  a  coincidental brutal  murder?  Where  is  the  victim's head? After reading the news, Camilla Turner  of  MOLA  contacts  the  Folly to  say  the Paternoster  Society (page 263) had at one time been asking about ancient  Celtic  practices  of  removing enemies'  heads  to  offer  to  their  gods in  exchange  for  magical  power.  Is  the Paternoster Society involved?
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000744_61354f25f983a089800761b575558ce843430fcd5ca1389bdebeace41f0da93f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000744_61354f25f983a089800761b575558ce843430fcd5ca1389bdebeace41f0da93f.png)
 
 ## The Effra (20)
 
@@ -12827,7 +12827,7 @@ Whispers Under Ground,
 
 Tales from the Folly
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000745_66b7dfebdffe43488e4099e8a5042f3a2484cf347cee72630553ab6250dc975c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000745_66b7dfebdffe43488e4099e8a5042f3a2484cf347cee72630553ab6250dc975c.png)
 
 Footnote:
 
@@ -12835,9 +12835,9 @@ Footnote:
 
 Lies Sleeping
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000746_4562ec1b4c684a54c6c47d65fb63581c89a8e0870bf61085aefda5f5a1db1247.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000746_4562ec1b4c684a54c6c47d65fb63581c89a8e0870bf61085aefda5f5a1db1247.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000747_157848d40c37f0090e5567837261d4cb28c9d040ac2eaee9f3b3dc2531633520.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000747_157848d40c37f0090e5567837261d4cb28c9d040ac2eaee9f3b3dc2531633520.png)
 
 7
 
@@ -12879,7 +12879,7 @@ London  isn't  just  a  built-up  city.  Epping  Forest,  on  the border of Lond
 
 Footnote: 43 Tales from the Folly ('A Dedicated Follower of Fashion')
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000748_7dcdb58bf63d7ae4b4a7ec3817234080f096ee5f14edcdeec9a636f17721b3fc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000748_7dcdb58bf63d7ae4b4a7ec3817234080f096ee5f14edcdeec9a636f17721b3fc.png)
 
 ## Demi-Monde Pubs and Nazareths
 
@@ -12897,13 +12897,13 @@ It's  a  shadow  market  economy.  The  legality  of  things bought  and  sold  
 
 Right,  you  lot-that's  just  a  brief  look  at  London  from  a Falcon  viewpoint.  Our  city  is  huge,  ancient,  and  magical, with far more going on than I can cover in this short briefing. Learning  about  that  is  what  makes  this  job  so  interesting. Good luck in all your investigations. And don't forget, tea in the atrium in five minutes…
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000749_8e6c4fc4380386d3aaf09c970558a237f3717be4334fc2c5e0c12528a96c5168.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000749_8e6c4fc4380386d3aaf09c970558a237f3717be4334fc2c5e0c12528a96c5168.png)
 
 283
 
 2
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000750_7c5f5793f4c12b71a9301cd6e4d64ea97cba4eec0e57454eaf354851816cf217.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000750_7c5f5793f4c12b71a9301cd6e4d64ea97cba4eec0e57454eaf354851816cf217.png)
 
 THIS INTRODUCTORY CASE fi le  is  for  one  to  four investigators  and  is  designed  to  take  around  two  hours  to play. It is set in a bookshop in Covent Garden, London, and aims to introduce players to the workings of the Folly, as well as helping them to become familiar with the rules of Rivers of London: the Roleplaying Game . Throughout this adventure, you'll find plenty of guidance on how the rules work, along with  additional  support  in  the  form  of  Game  Moderator (GM) notes, like the one following.
 
@@ -12911,11 +12911,11 @@ THIS INTRODUCTORY CASE fi le  is  for  one  to  four investigators  and  is  des
 
 This scenario is ideal for one to four investigators, as it is a small and low-key affair. While it is possible to play with up to six investigators, we don't recommend it if this is your first time running RoL:RPG. Advice for  running  games  with  more  than  four  players can be found in Player Group Size (page 222).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000751_22f4575fb2494e484c0b55e48b85ecdc21129f2f475f0dfa27638c02aef8c1b2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000751_22f4575fb2494e484c0b55e48b85ecdc21129f2f475f0dfa27638c02aef8c1b2.png)
 
 If you are going to play through this case file as an investigator, then stop reading now! The information herein is for the GM's eyes only, and the GM is advised to read through the whole adventure at least once before running it for their players. When reading it through, it can be useful to have a notepad to hand so that you make notes of the key and important events, which can then act as an aide-mémoire when running The Bookshop with your players (see also Running a Game , page 220).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000752_90a17debadeadfaeb0e2fec40ea2777bc1b349826db494ac6fe154b0e064873f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000752_90a17debadeadfaeb0e2fec40ea2777bc1b349826db494ac6fe154b0e064873f.png)
 
 'It's not easy being a bookseller,' said Warwick Anderson-bookseller. -'The Cockpit'
 
@@ -12935,13 +12935,13 @@ But why? The basement was, until just over a week ago, home to the children's bo
 
 Thanks to its origins, this is a slightly unusual case file, so the players may wish to create 'practice'  investigators for it, i.e., ones they may not end up using again. This allows the players to get
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000753_715fc2a4da766fb09802fa56e0918954bcc57f13a1d42371968f526bf40b8622.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000753_715fc2a4da766fb09802fa56e0918954bcc57f13a1d42371968f526bf40b8622.png)
 
 8
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000754_aad13f8421c3ec972cc643148427996061e2af996f4148bed8f3f48b969f8dac.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000754_aad13f8421c3ec972cc643148427996061e2af996f4148bed8f3f48b969f8dac.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000755_5e9c7a51556f3660b92cedf167f28e09146532c330c54ccb8009670c975f8505.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000755_5e9c7a51556f3660b92cedf167f28e09146532c330c54ccb8009670c975f8505.png)
 
 the hang of building an investigator without being committed to  keeping  them  for  the  long  term-although  it's  perfectly fine if  they  do  want to keep their new investigators once the adventure is over! Alternatively, the players can use the readyto-play (pre-generated) investigators in Appendix A to see how characteristics, skills, advantages, and spells work in play before creating investigators of their own for their next case file.
 
@@ -12955,9 +12955,9 @@ If the players do decide to create their own investigators, it  is  recommended 
 
 Even if none of the investigators have the expert  skills  mentioned  here,  one  of  them  can always  try  their  Luck  when  that  particular  skill is  required  ( Trying  Your  Luck ,  page  114).  For  an example of how this works in this case file, see Stonewaters (page 292).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000756_2bfb89c7e1f9a40a1756230767c12660ef29881de2553c7edf9afc848c781aab.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000756_2bfb89c7e1f9a40a1756230767c12660ef29881de2553c7edf9afc848c781aab.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000757_bebfb0e32b5b77c9ce056f137a9295790d4ef23df155ce906ca1368140012694.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000757_bebfb0e32b5b77c9ce056f137a9295790d4ef23df155ce906ca1368140012694.png)
 
 ## Dramatis Personae
 
@@ -12983,15 +12983,15 @@ Ms  Jackson  runs  this  busy,  central-London  bookshop,  a task that involves 
 
 Another  annoying,  yappy  little  dog,  but  a  Yorkshire  Terrier rather than whatever Toby is. Ernie's owner, Mr Fitzroy, lives a few doors up from the Folly; he's an elderly gentleman and quite happy for 'those nice young people' (i.e., the investigators) to come and take his dog out for him whenever they feel the need.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000758_6b17e51f0eab821008da2ce113478b001dfb245161846bd559d5869a82dc2ae7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000758_6b17e51f0eab821008da2ce113478b001dfb245161846bd559d5869a82dc2ae7.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000759_5f1f099e42d28e85c87da1e965f4c64e410645349730160486165e6d40903f61.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000759_5f1f099e42d28e85c87da1e965f4c64e410645349730160486165e6d40903f61.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000760_e49857d8e502f36005b4cbf2bda6bd29d2f5b96c164eb6587b30f137f5f44d83.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000760_e49857d8e502f36005b4cbf2bda6bd29d2f5b96c164eb6587b30f137f5f44d83.png)
 
 8
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000761_9a2931e2b5de2e60a1082ed2e18fa2d7905afcb7c4abe92433024147c90f1155.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000761_9a2931e2b5de2e60a1082ed2e18fa2d7905afcb7c4abe92433024147c90f1155.png)
 
 - Description: a small, short-haired Yorkie with a black and tan coat. Occasionally grubby, if he's been rummaging through the dustbins.
 - Roleplaying hooks: while not as adept as Toby in the ghost-hunting department, Ernie makes a half-decent substitute. Besides, taking him for 'walkies' helps an elderly neighbour.
@@ -13023,11 +13023,11 @@ And  with  that,  Nightingale  nods  his  farewells  to  the investigators  and 
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000762_0c45ad825441209eea54ca2d703d3ff92d864c312962b0061e076393a6838f31.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000762_0c45ad825441209eea54ca2d703d3ff92d864c312962b0061e076393a6838f31.png)
 
 In most case files, the investigators have free rein over where they go, to whom they talk, and when, without having to report back to Nightingale after each step. But, as this is most likely their first Falcon investigation, we've taken the liberty of being a little more proscriptive. In addition,  having  the  players  report  back  in  this  way tells you exactly what clues they've picked up on and what theories they've developed. It also highlights any misunderstandings that may have arisen, meaning you can  use  Nightingale  to  get  them  back  on  the  right track. See also Case Update (page 297).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000763_f8c75a97b25cf006bfbff39486f1f2f55a064ee13e9dd30dc1707bb3edc60975.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000763_f8c75a97b25cf006bfbff39486f1f2f55a064ee13e9dd30dc1707bb3edc60975.png)
 
 ## The Folly
 
@@ -13069,11 +13069,11 @@ In most case files, the investigators have free rein over where they go, to whom
 - 29   Study
 - 30   Breakfast Room
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000764_faa18ecf1ff21d39a84abd51b8a9809fcb86320f7c89f6b061ad485b537802a5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000764_faa18ecf1ff21d39a84abd51b8a9809fcb86320f7c89f6b061ad485b537802a5.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000765_ef83edf3faaa1d0ef4cf9737d547808a1ab8a57d3d2189495339512ac55ee8ed.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000765_ef83edf3faaa1d0ef4cf9737d547808a1ab8a57d3d2189495339512ac55ee8ed.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000766_2e36ca6ac3027bee8ba3205721127c95d13ad168d3f22c26da51b17fceb49e7a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000766_2e36ca6ac3027bee8ba3205721127c95d13ad168d3f22c26da51b17fceb49e7a.png)
 
 8
 
@@ -13110,7 +13110,7 @@ Next thingI know,Igethitontheheadbyasofttoy,liketheoneswekeepatthetill points. I
 
 It's all a bit hazy after that,but someone helped me up to the ambulance,where they toldmeI had amild concussion.Iwenthome,thenIgotacall askingmetocomeback in so I could be interviewed by some special crimes unit—you lot,I'm assuming?I told them therewasnowayIwasgoingwithin500metres of that place,but eventually,they convinced me tomeetyou here instead.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000767_29bb9f21b7c4354912a365159262ad2e799f7db255bd70b58685152d804e4c0a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000767_29bb9f21b7c4354912a365159262ad2e799f7db255bd70b58685152d804e4c0a.png)
 
 - If asked if there's anything special about the building, besides it being listed, Anderson admits that he doesn't think so. 'It's a bit of an odd shape, but that's because the original owners bought two small shops on Garrick Street and one on New Row, then knocked them together and fitted out the basement. It's a total nightmare when it comes to shoplifters-lots of dead space.'
 - If asked how old the building is, Anderson replies, 'I think parts of it date from the 18th century, but I couldn't swear to that.'
@@ -13119,7 +13119,7 @@ It's all a bit hazy after that,but someone helped me up to the ambulance,where t
 
 Don't  worry  if  the  investigators  don't  pick  up  on the  fact  that  the  children's  section  has  moved recently; there is another opportunity for them to discover this important piece of information when they  speak  to  Stonewaters'  manager  ( Interviewing Saffron Jackson ,  page 294). The same is true about the  bookshop's  age  and  shape-they'll  see  that for themselves in a few minutes.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000768_4cb15814af4db4e6b34dadaa0b6a31c97cdf0b6854448d792aff4d196bf02b45.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000768_4cb15814af4db4e6b34dadaa0b6a31c97cdf0b6854448d792aff4d196bf02b45.png)
 
 ## A Surprising Development
 
@@ -13131,7 +13131,7 @@ If  any  of  the  investigators  has  the Magic skill,  the  GM should ask those
 
 Why roll for some things but not others? Because a lot of the information Warwick Anderson has is essential to getting the case moving, so you don't want to keep it from the investigators. However, some does require a little more knowledge and understanding, hence the Magic/Occult skill roll request.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000769_d4b8ff61beb635710efdf1cf08af35ffd1274baa8eeb12d24404c3592bc1f40e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000769_d4b8ff61beb635710efdf1cf08af35ffd1274baa8eeb12d24404c3592bc1f40e.png)
 
 - If the investigator achieves a Regular success (equal to or below their full skill value), they not only know that poltergeists are a type of ghost, but also that ghosts don't normally throw things around or try to hurt people, and if they do, it's pretty serious-in fact, it may not be a ghost at all, but something much more concerning.
 - If the investigator achieves a Hard success (equal to or below half of their full skill value), they know that it takes at least 100 years for a genuine poltergeist to develop-so if Anderson is right about the building's age, then a poltergeist isn't beyond the realms of possibility.
@@ -13150,7 +13150,7 @@ Remember, flat-out failing an investigative roll, like this  one,  is  no  fun. 
 
 There  is  nothing  more  Warwick  Anderson  can  tell  the investigators-it's  time  for  them  to  visit  the  scene  of  the crime ( Stonewaters , following).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000770_639e5774e9581d3e1f080b55cb22dadec2d936b92d3f8aa986f098162850953d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000770_639e5774e9581d3e1f080b55cb22dadec2d936b92d3f8aa986f098162850953d.png)
 
 ## Stonewaters
 
@@ -13163,7 +13163,7 @@ If  none  of  the  investigators  has  the  Art/Craft  (Architecture) or History
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000771_4e535d4b77c1029ed140c2f14cf822765374678a8c87146b3385e99f9614d3cc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000771_4e535d4b77c1029ed140c2f14cf822765374678a8c87146b3385e99f9614d3cc.png)
 
 Remember: a Critical success is when the player rolls 01.
 
@@ -13181,13 +13181,13 @@ She asks the investigators if they've spoken to Warwick Anderson, and if he's al
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000772_36b34ab68ca9edd13abcb7fa7cbddedacbdcb2a9057756ddf75d95df65c7bb79.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000772_36b34ab68ca9edd13abcb7fa7cbddedacbdcb2a9057756ddf75d95df65c7bb79.png)
 
 This Observation  roll is worth  encouraging  the players  to  spend  Luck  on  (or  push)  to  achieve  a Regular  success,  as  the  dome-or,  rather,  what's associated with it-is important to what's happening in  the  bookshop.  They  don't  need  a  Hard  success, although  if  they  do  spot  the  mirror  over  the  door, it  should give them the hint that there are likely to be other security devices elsewhere in the building ( The  Basement ,  page  296).  Remember,  as  GM,  you should always play fair, and shouldn't encourage your players  to  spend  Luck  on  rolls-or  push  them-if they don't help to move the story forward or gain the investigators an advantage of some sort.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000773_428c7437a2249b2ebff2cbc76d612d196fe4e55c45943321f1d778b471d8a4e7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000773_428c7437a2249b2ebff2cbc76d612d196fe4e55c45943321f1d778b471d8a4e7.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000774_b36752a0c6423229defdeecf3e12b7d91b841a6780fb9a802ca20a88f152cac8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000774_b36752a0c6423229defdeecf3e12b7d91b841a6780fb9a802ca20a88f152cac8.png)
 
 Chapter 8: The Bookshop
 
@@ -13195,7 +13195,7 @@ Chapter 8: The Bookshop
 
 NEW ROW
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000775_5a5c827191cfeb75e70ec7d75f1048837d11f1f61c2e1c868470be8f0b6892d1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000775_5a5c827191cfeb75e70ec7d75f1048837d11f1f61c2e1c868470be8f0b6892d1.png)
 
 8
 
@@ -13229,7 +13229,7 @@ Next,I called themaintenancecompany tosendsomeone over toboard upthe door andcle
 
 So,ifyou'd liketofollowme,I'll takeyou to thebasement.I don'twant to tell you howto do your job, but I'd really appreciate it if you could hurry it upI'd like to get everything all squared away againbefore opening time.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000776_4e7aca385e909a77c621f322d53a036f451b8764bce15a026a3911e76db70ff8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000776_4e7aca385e909a77c621f322d53a036f451b8764bce15a026a3911e76db70ff8.png)
 
 - If an investigator achieves a Regular success, they detect something that smells very much like a slaughterhouse combined with rotting straw.
 - If an investigator fails the roll and chooses not to spend Luck or push it, they instead get the standard background vestigium of central London (pain, joy, sweat, tears, and something that sounds very much like a sheep bleating forlornly).
@@ -13269,7 +13269,7 @@ Remember,  the  Research  skill  is  for  hunting  down stored information, phys
 
 Again,  don't  worry  too  much  if  the  investigators don't  discover  the  link  to  cockfighting  just  yetthey  can  carry  out  further  research  back  at  the Folly if needed.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000777_a4eb48ba25a7eff6c8dd630307ed8713a89eb2113bfec66e14a10e03f1de37aa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000777_a4eb48ba25a7eff6c8dd630307ed8713a89eb2113bfec66e14a10e03f1de37aa.png)
 
 ## The Basement
 
@@ -13281,7 +13281,7 @@ At the bottom of the stairs, to the right, is a till pointthis  must  be  the  o
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000778_0107f711f4c42b31a944c561a49d5f191f910520554d2d6c2d46f4efe0f4847c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000778_0107f711f4c42b31a944c561a49d5f191f910520554d2d6c2d46f4efe0f4847c.png)
 
 - It takes a successful Social roll to convince Ms Jackson to let the investigators see the CCTV recording-remember, police officer investigators who have shown her their warrant card gain a bonus die to this roll. As always, players can choose to spend Luck or push the roll to achieve a success, although a fumble or a failed pushed roll means Ms Jackson won't let them see the footage without a warrant. If the investigators manage to gain permission to see the CCTV footage, see Caught on Camera (page 297).
 
@@ -13298,7 +13298,7 @@ If the investigators wish to cast a spell while in the basement, they  can-altho
 - If the Magic roll is any kind of success, the spell works exactly as expected.
 - If the Magic roll fails, the spell does something a little strange: for example, Impello barely lifts even the smallest item; Snapdragon produces an almost silent, dull flash, and so on.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000779_01dac0b032273502052957ae52103ca3da1ee187099817c3d07d5cbfaa34c9c5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000779_01dac0b032273502052957ae52103ca3da1ee187099817c3d07d5cbfaa34c9c5.png)
 
 - If the Magic roll is fumbled, or an investigator pushes the roll and fails again, there's a popping and fizzling sound as they destroy the microchips in both the store's till and CCTV camera, as well as those in any powered mobile devices in the basement.
 
@@ -13316,7 +13316,7 @@ Regardless of which spell someone casts, they feel a faint tickling  sensation, 
 
 You  may  need  to  remind  your  players  about  the connection between ghosts and werelights if they're not  familiar  with  the  Rivers  of  London  setting.  It's perfectly  fine  for  you  to  do  this,  as  it's  something their investigators would know, having been taught this when learning the spell.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000780_567dd0566bc99d1547980043a36d23aa548664f2633dc9937b6b49c246af2d69.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000780_567dd0566bc99d1547980043a36d23aa548664f2633dc9937b6b49c246af2d69.png)
 
 ## Caught on Camera
 
@@ -13349,7 +13349,7 @@ As promised, DCI Nightingale is waiting for the investigators back at the Folly,
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000781_b157731ffc0b7091d8a1b22ffad49bea2933dc7e824372e4f471d6eaaa7a755b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000781_b157731ffc0b7091d8a1b22ffad49bea2933dc7e824372e4f471d6eaaa7a755b.png)
 
 Don't be afraid to use Nightingale to clarify anything the  investigators  are  confused  by-although,  he's not  there  to  do  all  the  hard  work  for  them!  The same goes if they're struggling to work out what to do next. In the Rivers of London novels, when Peter Grant  needs  a  nudge,  it's  often  DCI  Nightingale  or someone similarly senior (like Dr Walid) who provides it.  They've  been  in  the  business  longer  than  Peter, and they know what to look for and how to interpret anomalous data. There's no reason for them not to do the same for your investigators as well, when the need arises.
 
@@ -13362,9 +13362,9 @@ Thanks to the Folly's extensive archives, the mundane library on  the  ground  f
 - A Hard success or better uncovers the relevant information after just an hour of searching.
 - A fumble suggests the investigator was distracted by something they found while researching the building, and lost all track of time and thus, they fail to find anything of value.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000782_445a9194e7dd84d7c1731373d86a6d2e979823988aef7143ba34a5240dd1a42b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000782_445a9194e7dd84d7c1731373d86a6d2e979823988aef7143ba34a5240dd1a42b.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000783_c9b908ac7a056a759ae3d866f23c1a7b46271985e6617f387873b8a9ceaf3204.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000783_c9b908ac7a056a759ae3d866f23c1a7b46271985e6617f387873b8a9ceaf3204.png)
 
 ## Consulting the Magical Library
 
@@ -13408,7 +13408,7 @@ Arranging  an  overnight  vigil  in  the  bookshop  requires a  phone  call  to 
 
 - If an investigator cast a basic Werelight while in the basement ( Cooking Up a Spell , page 296), they also know that whatever is down there probably isn't a poltergeist.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000784_636851448c4794f6fc12bae626eb41230657dfea184f530b52ab6dfa9bc916a1.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000784_636851448c4794f6fc12bae626eb41230657dfea184f530b52ab6dfa9bc916a1.png)
 
 ## Next Steps
 
@@ -13421,7 +13421,7 @@ As 8:00 pm approaches, it's time for the investigators to head back to Covent Ga
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000785_209bee7fdc8438a937d98dc09d225e54357a8d3eac1d6b7d751df98b45f9595f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000785_209bee7fdc8438a937d98dc09d225e54357a8d3eac1d6b7d751df98b45f9595f.png)
 
 Remember,  with  a  group  roll,  the  player  with  the lowest  characteristic  or  skill  value  is  the  one  who makes the skill roll, and its results affect everyone present. So, for a group Luck roll, the player with the lowest current Luck value is the one who makes the roll. And don't forget, you can't spend Luck points on a Luck roll!
 
@@ -13439,7 +13439,7 @@ The GM should ask the investigators where they wish to set  up  watch,  and  if 
 
 It is possible the investigators might decide to split up, with  some  stationing  themselves  downstairs  while the rest hang around in the staff area watching the CCTV of the whole store. If they do, follow the advice in Splitting the Party (page 226), swapping between the two groups at an appropriate moment so that everyone remains engaged in the adventure.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000786_ffc1e9b77a2f23a456a79d4bac987c3a0aede591cff06fc4e7705504152af63c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000786_ffc1e9b77a2f23a456a79d4bac987c3a0aede591cff06fc4e7705504152af63c.png)
 
 ## Action at a Distance
 
@@ -13451,9 +13451,9 @@ If the investigators await the poltergeist's appearance in Ms Jackson's  office,
 
 - Enterprising investigators who make a visit to the basement before settling in can alter the camera's angle to get a better view with a successful Tech skill roll.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000787_2fb71f0acc2fe4b4bd22000110be52b1c3c0f048142d9ceab6f9015ad2c401a4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000787_2fb71f0acc2fe4b4bd22000110be52b1c3c0f048142d9ceab6f9015ad2c401a4.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000788_766770044822671855c65362a89d932631bb170f3ad02e8f46ee5eb72c9a0df9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000788_766770044822671855c65362a89d932631bb170f3ad02e8f46ee5eb72c9a0df9.png)
 
 - Similarly, investigators who know their way around a computer can reprogramme the camera's angle from Ms Jackson's computer with a successful Computer Use roll.
 - If the investigators bought new surveillance equipment after destroying the bookshop's CCTV camera ( Cooking Up a Spell , page 296), a successful Tech roll is needed to install it correctly. If they lack the skill, they could try their Luck using either their DEX or INT, whichever is highest ( Trying Your Luck , page 114). A failure indicates they haven't located the equipment in the best position but will still see something, while a fumble indicates an intermittent signal that fails just before things get interesting.
@@ -13495,7 +13495,7 @@ At  11:30  pm,  Ernie,  if  present,  starts  barking  furiously, indicating tha
 
 - If a Regular success, the investigator detects a sudden surge in vestigia -not the type they detected earlier, but rather the smell of blood, the taste of plasticine, and the sensation of crossed legs and chicken feathers. It must
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000789_ec03f5d78942465d4b6de61e38c7dacfa96aba4e939b470a7e8d5bfd6687ffc5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000789_ec03f5d78942465d4b6de61e38c7dacfa96aba4e939b470a7e8d5bfd6687ffc5.png)
 
 8
 
@@ -13542,7 +13542,7 @@ Any  other  investigators  present  should  make  a Sense Vestigia or Observatio
 
 If everything has exploded, or the investigators attempt to leave the basement, go to Ouch! (following).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000790_8476eddf7492eb2cccbb0552bc73255ea450505fdf381cf7ede826251bc868ef.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000790_8476eddf7492eb2cccbb0552bc73255ea450505fdf381cf7ede826251bc868ef.png)
 
 ## Ouch!
 
@@ -13558,9 +13558,9 @@ If the roll is successful, the investigator manages to dive behind some form of 
 
 If Ernie is present, he automatically runs for cover behind the  till  point  desk,  thus  nimbly  avoiding  getting  hit  by anything. Go to An Unholy Mess (following).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000791_251804eff94c49e37f4fda293e9359a0c40632e8e2deeed53289437c0b03fde5.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000791_251804eff94c49e37f4fda293e9359a0c40632e8e2deeed53289437c0b03fde5.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000792_9561a48350dd92e7edd918761793dfa17bf11cbec97929725d5463c1a726b707.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000792_9561a48350dd92e7edd918761793dfa17bf11cbec97929725d5463c1a726b707.png)
 
 ## An Unholy Mess
 
@@ -13570,7 +13570,7 @@ After  the  dust  has  settled,  the  investigators  can  extricate themselves f
 - If an investigator was down (incurred a total of 3 damage), they come to, feeling distinctly the worse for wear. Their player should erase the marks in the Down and Bloodied boxes on their character sheet, but the investigator remains Hurt until the end of the following day, unless they spend 10 Luck points to affect a rapid recovery. They are also impaired until the end of the following day, unless they spend a further 10 Luck points ( After the Fight: Down , page 145).
 - If an investigator was bloodied (incurred a total of 2 damage), they also immediately recover from their injuries. They can erase the marks in the Hurt, Bloodied, and Impaired boxes on their character sheet ( After the Fight: Bloodied , page 145).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000793_1110fc815ff1032ccfdd86042589054f7ef5ede07e6f899c60e0f8d9120973fb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000793_1110fc815ff1032ccfdd86042589054f7ef5ede07e6f899c60e0f8d9120973fb.png)
 
 ## GM ADVICE
 
@@ -13602,11 +13602,11 @@ The GM should encourage the players to discuss how they're going to deal with th
 - Alternatively, if the investigators know any genii locorum or lower fae, they may wish to ask them to talk to the spirit in the basement to see what it wants.
 - If the roll is a Hard success, the investigator also realises that the genius loci is behaving like a small, abandoned
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000794_3288fab7e0393ca4d2a56f9eea2e3d061f1fa35020d04b5dc1bc7942381dda54.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000794_3288fab7e0393ca4d2a56f9eea2e3d061f1fa35020d04b5dc1bc7942381dda54.png)
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000795_4a923d3b752efd15754dc4f637811ab75d6ba33b38b7f8510ac6a48d823d6af8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000795_4a923d3b752efd15754dc4f637811ab75d6ba33b38b7f8510ac6a48d823d6af8.png)
 
 These  solutions  are  based  on  the  ones  in  'The Cockpit'  and  what  happened  in  various  playtest sessions. Of course, your players may come up with a completely different solution, and that's fine! Once they've described their solution to you, you'll need to judge whether it will work-or make the problem worse!  This  might  involve  the  investigators  making a  dice  roll  or  you  can  simply  judge  that  their  plan succeeds automatically, depending on what it is. The key  thing  is  not  to  force  the  ending  to  be  like  the short story on which this adventure is based-reward the  players  for  coming  up  with  their  own  solution, especially if it's really clever and inventive ( Player
 
@@ -13632,9 +13632,9 @@ Playing audiobooks to the genius loci also works but needs to be done more frequ
 
 - If the roll is a failure , the story wasn't long enough, and the genius loci turns the pages of the story book back to the beginning, hinting that it wants to hear it again. As
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000796_752c5a99dee274fc69a0599bfafd8ad252c89424daaa28947c32fe18dcf7492d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000796_752c5a99dee274fc69a0599bfafd8ad252c89424daaa28947c32fe18dcf7492d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000797_f21cf2e3d9bcfef2bcd2f676a994015899ba9a9fbec8921a44ee8cdc9bb8b8b2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000797_f21cf2e3d9bcfef2bcd2f676a994015899ba9a9fbec8921a44ee8cdc9bb8b8b2.png)
 
 ## Loose Ends
 
@@ -13654,9 +13654,9 @@ Once all the loose ends have been tied up, it's time for an Investigator Develop
 
 Congratulations! Your first RoL:RPG case file is now complete!
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000798_7fa6d923f793fc7d45ebe7ac96b09d62b7ad6aed9ed94148c2afe5175bf21dbb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000798_7fa6d923f793fc7d45ebe7ac96b09d62b7ad6aed9ed94148c2afe5175bf21dbb.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000799_8e1463dd273cffe4ceaf057d8cb400d55ce44227a77030d612e99d021af94ff9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000799_8e1463dd273cffe4ceaf057d8cb400d55ce44227a77030d612e99d021af94ff9.png)
 
 ## Cast
 
@@ -13822,9 +13822,9 @@ Books and reading.
 
 The smell of blood, the taste of plasticine, and the sensation of crossed legs and chicken feathers.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000800_dbc98bb99e6ab5dd74d5b2bd6ab53200086369f3d5dcd6cda8a6919db7fcec76.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000800_dbc98bb99e6ab5dd74d5b2bd6ab53200086369f3d5dcd6cda8a6919db7fcec76.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000801_376e3385d34eb6cb79fd15475a4cabc477449fb4b1c71d9912bb34c0791676b6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000801_376e3385d34eb6cb79fd15475a4cabc477449fb4b1c71d9912bb34c0791676b6.png)
 
 MOV:
 
@@ -13876,9 +13876,9 @@ The standard characteristic value range is 30 to 80, so you could also extend th
 
 Players wishing to start the game with a more experienced investigator can do so, with the GM's permission. However,  in  the  interest  of  game  balance,  the  additional benefits gained come at the cost of a disadvantage ( Disadvantages , page 311).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000802_ac2c84ea0d0b26420ad17898c2fe136b0a12b8ee6bca4c869c21fdd1b857d8b8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000802_ac2c84ea0d0b26420ad17898c2fe136b0a12b8ee6bca4c869c21fdd1b857d8b8.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000803_1460d4b59cb80d3f7450fec1074ef1a9a557fa97ca4947e9f4dbe784afcf2f29.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000803_1460d4b59cb80d3f7450fec1074ef1a9a557fa97ca4947e9f4dbe784afcf2f29.png)
 
 ## Academic Experience Package
 
@@ -13900,7 +13900,7 @@ The  investigator  has  spent  most,  if  not  all,  of  their  life involved in
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000804_cb6362de45d3bbf4ecc86274229b67fabb398021758ffb64e74cc9284551848f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000804_cb6362de45d3bbf4ecc86274229b67fabb398021758ffb64e74cc9284551848f.png)
 
 As with the standard Criminal occupation (page 65), the  GM  should  think  carefully  about  permitting  a player to choose this package, especially if the rest of the investigator group are police officers or law enforcement agents.
 
@@ -13941,9 +13941,9 @@ The  investigator  has  served  for  a  number  of  years  on  a police force. A
 - Gain an additional 60 points to spend as desired on required and recommended skills.
 - Must choose one disadvantage ( Disadvantages , page 311).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000805_d6b792aaf02ae26c6d4070f6a35da7beae17a7f661081d4e3c817c76e671128d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000805_d6b792aaf02ae26c6d4070f6a35da7beae17a7f661081d4e3c817c76e671128d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000806_4c732678536179517dfb7115c1513dd36ab22741741016a0ee7e59a29977bfac.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000806_4c732678536179517dfb7115c1513dd36ab22741741016a0ee7e59a29977bfac.png)
 
 ## Spellcaster Experience Package
 
@@ -13965,7 +13965,7 @@ Some  disadvantages  have  limits  associated  with  them, which  are  akin  to 
 
 You  may  also  wish  to  use  disadvantages  with  your NPCs.  Like  investigators,  they  should  incur  only one and are subject to the same limits.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000807_f96d98e150905bdb7774ea8b998c0f2ee0381fc5a7d442dabeb307278d6c4b04.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000807_f96d98e150905bdb7774ea8b998c0f2ee0381fc5a7d442dabeb307278d6c4b04.png)
 
 ## Blunt
 
@@ -14009,7 +14009,7 @@ This character has done something to get themselves in some powerful people's ba
 
 This character lacks physical resilience. They do not possess the Hurt damage  level  (page  144).  If  an  investigator  with this disadvantage incurs 1 damage, their player ignores the Hurt box on their  character  sheet  and  immediately  marks
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000808_dbe3cc99d5f836ca6e56a356d6f18e74440faf9e4194e9faea1b1c918a0e696b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000808_dbe3cc99d5f836ca6e56a356d6f18e74440faf9e4194e9faea1b1c918a0e696b.png)
 
 9
 
@@ -14057,9 +14057,9 @@ Limits: maximum STR 40.
 
 This character lacks physical strength. As a result, they incur a  penalty  die  on  all  STR  rolls,  including  when  making  a damage roll in melee combat ( The Damage Roll , page 132).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000809_20e5eb6777914b7cbc0ab1da2e51f4f41ae7977ba314c5c552895376c389a43d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000809_20e5eb6777914b7cbc0ab1da2e51f4f41ae7977ba314c5c552895376c389a43d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000810_24256286e0070038fcc8b808190213574d26b48e7bd10f9d70cea4ff74620ff9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000810_24256286e0070038fcc8b808190213574d26b48e7bd10f9d70cea4ff74620ff9.png)
 
 ## Creating New Occupations
 
@@ -14079,15 +14079,15 @@ One  option  that  may  appeal  to  some  groups  is  for  each player to contro
 
 Antiques dealers usually have their own shop, retail items out of their homes, or go  on  extended  buying  trips,  making  a profit on reselling to urban stores.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000811_fcd3cdcf26186af6cbd3bbdd405c0b4cec23448fe11d950ab146371f50534ee3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000811_fcd3cdcf26186af6cbd3bbdd405c0b4cec23448fe11d950ab146371f50534ee3.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000812_202de850856329033b7f7f845e102d158f1f43054f06c9ad674dda75103776cc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000812_202de850856329033b7f7f845e102d158f1f43054f06c9ad674dda75103776cc.png)
 
 Suggested contacts: booksellers, antique collectors, historians and historical societies, possibly criminal fences. Required skills: Appraise, Art/Craft (any). Recommended skills: History, Languages, Observation, Research, Social. Equipment: auction catalogues, jeweller's loupe, notebook, business cards.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000813_3006115c7b808f263b55025aa4fd2f22aef9abcae890d59ea4948df117012400.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000813_3006115c7b808f263b55025aa4fd2f22aef9abcae890d59ea4948df117012400.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000814_366751c0f51636ddef714b0b3bff6a86270c89db12b479beca9aacb25e05cb42.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000814_366751c0f51636ddef714b0b3bff6a86270c89db12b479beca9aacb25e05cb42.png)
 
 Ordinarily,  two  investigators  might  not  have  all  the necessary skills between them to uncover all the clues in a case file, and there's a limit to how many new ones they can acquire per game session through Trying Your Luck (page 114).  This  might  mean  the  investigators  have  to  rely  more heavily on NPCs to provide them with the information or expertise they need. However, whenever possible, it's always more  fun  for  the  players  to  find  out  those  sorts  of  details themselves, so having multiple investigators in play means that  the  players-and  their  investigators-are  always  at the heart of the action. One way you can achieve this is by having Primary Investigators (following)  and Secondary Investigators (page 314).
 
@@ -14097,7 +14097,7 @@ Each  player  creates  a  primary  investigator  that  they  play for the majori
 
 If  it  helps,  think  of  a  primary  investigator  as  one  of  the main  characters  in  a  TV  show-they'll  appear  in  most  of an episode's scenes and almost every episode of a series, but may occasionally be off elsewhere for some reason. There are only a handful of TV shows where the main characters are in absolutely every scene of every episode, and every episode of  every  series,  so  there's  no  reason  the  group's  primary investigators have to be.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000815_1fb54fccb3291d483fa16b067d1adc3746c3f62d708974dd286fbb9a6961fda3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000815_1fb54fccb3291d483fa16b067d1adc3746c3f62d708974dd286fbb9a6961fda3.png)
 
 9
 
@@ -14122,7 +14122,7 @@ Each player  creates  their  additional  character  in  the  usual way,  but  th
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000816_20136f04b5161dc9bed710f531cb48c29e1b8f307f53db3a9cc0f106f773ec88.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000816_20136f04b5161dc9bed710f531cb48c29e1b8f307f53db3a9cc0f106f773ec88.png)
 
 Secondary  investigators  come  in  handy  when  a particular  area  of  expertise  is  required  that  the primary investigators don't possess (and don't wish to try their Luck to obtain). For this reason, sometimes a secondary investigator is called in while a player's primary  investigator  is  still  present.  However,  it's preferable that each player only portrays one character in any given scene, so if a player's primary investigator is there, they should stay in the background until their secondary investigator leaves to avoid confusing matters.
 
@@ -14138,13 +14138,13 @@ You may be surprised how easily players get into the role of being one of their 
 
 Another  important  point  to  keep  in  mind  is  that  not everyone may be comfortable with this type of in-character relationship,  i.e.,  some  players  may  be  keen  to  explore them,  whereas  other  players  may  not  be  interested  (for whatever  reason).  Before  choosing  the  option  to  create secondary investigators who are significant others, everyone's willingness to participate should be discussed and boundaries set  to  ensure  everyone's  continued  safety  and  enjoyment of the game. Players should always be able to change their minds about having someone else in the group play one of their  primary investigator's significant others, for whatever reason,  no  questions  asked.  The  same  goes  for  anyone playing  a  significant  other  as  their  secondary  investigator ( Considerate Gaming , page 44).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000817_ecdeeae8baf41c2308bd496e12c82c8a16d8b04d7f9287c26db01d55c4c60cfa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000817_ecdeeae8baf41c2308bd496e12c82c8a16d8b04d7f9287c26db01d55c4c60cfa.png)
 
 Footnote:
 
 1 Moon Over Soho
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000818_984571d25c3ab6853bb596c36dbaba19b837288870e52342af31105dfc85ba7e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000818_984571d25c3ab6853bb596c36dbaba19b837288870e52342af31105dfc85ba7e.png)
 
 ## Out - of - Character vs In - Character Knowledge
 
@@ -14152,7 +14152,7 @@ Sometimes,  an  issue  in  roleplaying  games is  how  to  handle  knowledge  th
 
 - You don't let what your primary investigator knows influence how your secondary investigator behaves (and vice versa). This means the secondary investigator has no idea about the important clue discovered by the primary character, and so makes no attempt to act on the information. It isn't always easy to do, but playing through your investigator's ignorance can be good fun, like when watching a film-we as viewers sometimes know things the characters do not, and this creates a tension between us (the viewer) and the film, so we sit there yelling at the screen, 'No, don't turn your back on her, she's the murderer!' In short, each character you play only knows what they know-they don't share a collective knowledge.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000819_32bd03f30322dc5a2ab77d36e75e7337f005fdfeb008f56bf2953602af25a2ae.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000819_32bd03f30322dc5a2ab77d36e75e7337f005fdfeb008f56bf2953602af25a2ae.png)
 
 ## Secondary Investigators: Burners
 
@@ -14163,15 +14163,15 @@ To provide a contrast, allow the players to each create a secondary investigator
 - You can have your investigator act on the secret knowledge, but only in a manner that subtly changes their actions, as though they were acting on a hunch or as if fate was steering them in the right direction. Thus, they sort of know information they shouldn't, but only use it in a minor way.
 - You can have the primary investigator share their information with the secondary investigator 'off-screen' between scenes. You might even like to have your secondary investigator say something like, 'I spoke to such-and-such on the way over, and you'll never guess what they told me!' or, 'Hey, I just got this text from X about the case.' This can often be the easiest way of dealing with the potential issue, but it's only possible if there's a feasible way the two characters could have communicated in the time available.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000820_c847c6fe651d3db787d16a4a138bd221214e0c9ba69fd8846a9e6aa167b14db7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000820_c847c6fe651d3db787d16a4a138bd221214e0c9ba69fd8846a9e6aa167b14db7.png)
 
 Keeping things straight in your own head as to what your different investigators know can be tricky, and there's no single right way to do it. If people do occasionally get themselves in a  muddle, try to be forgiving-the last thing anyone wants is to get into an argument that leads to bad feelings. If that happens, the best solution is always to take a short break from the  story  and  for  the  whole  group  to  have a  chat and agree on how you want to play it. After all, it's all about having fun together.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000821_a08934bb72d9b499d2702ea30d3770d060b6102b7d163d538744579859d79b90.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000821_a08934bb72d9b499d2702ea30d3770d060b6102b7d163d538744579859d79b90.png)
 
 If the case file features a vampire house, for example, the burner  investigators  could  be  a  group  of  amateur  vampire hunters who lack any specialist equipment or training. As a side story, the players could enjoy a scene where they try to rid their neighbourhood of the vampire scourge, only to get themselves into terrible trouble. Such a scene could even act as a 'pre-credits' introduction to the case file-like the ones you get on police dramas and crime shows-and allows the players to see just how deadly the vampires are before their primary investigators come face to face with them. In a later scene, those primary investigators may find evidence of the burner characters (who may now be vampires themselves) or even interview any surviving ones regarding the case file.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000822_60ca2ce15481403786dcab2492ecb04355c12fa7b0cdd21dd74c3de7626e1819.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000822_60ca2ce15481403786dcab2492ecb04355c12fa7b0cdd21dd74c3de7626e1819.png)
 
 9
 
@@ -14209,7 +14209,7 @@ Alternatively,  you  might  just  want  to  stick  with  the hierarchical, top-d
 
 An organisation's structure may also affect what resources are  available  to  the  investigators.  For  example,  those  who are  part  of  an  independently  operating  cell-especially  if it's clandestine in nature-may have very different levels of access to resources compared to a group that is part of a large, well-funded hierarchical organisation.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000823_d7b48bd502893fc2c467db3f1a66bdbbd7b6a544c80c9c22ef730b06a95ac84f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000823_d7b48bd502893fc2c467db3f1a66bdbbd7b6a544c80c9c22ef730b06a95ac84f.png)
 
 ## Your Local Folly?
 
@@ -14219,7 +14219,7 @@ London is in the title of this game, but you can set your game anywhere you wish
 
 While opening a new branch of the Folly within Great Britain  shouldn't  be  an  issue,  moving  to  another country  would  bring  up  all  sorts  of  jurisdictional issues-picture the Director's face if any of Nightingale's new fledglings suddenly set up shop in Germany 2 , for example!
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000824_3a7a3b622ce702834a63c6d8c3c18139ceff65fb3b012db11e5555c9659e6c9c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000824_3a7a3b622ce702834a63c6d8c3c18139ceff65fb3b012db11e5555c9659e6c9c.png)
 
 If you decide to follow this path, your first couple of case files  could  be  pretty  minor,  serving  more  to  introduce  the investigators to their new home than dealing with anything really serious. Perhaps some of them were born and raised in this city, which is why they've been sent here by Nightingale. But slowly,  the  investigators  begin  to  realise  that  there's  a scarlet  thread  running  through  their  cases  that  hints  at something much more sinister, and that there's some unifying force behind it. With the folks at the Folly in London tied up in their own inquiries, it's up to the investigators to deal with the threat themselves before it escalates any further!
 
@@ -14231,13 +14231,13 @@ It can be a lot of fun telling stories about places you and your players know we
 
 Another key element that stands out from the novels-besides London-is the presence of the police. Just as the previous entry  suggests  options  for  games  set  outside  London,  you can have games in which the investigators are not members of law enforcement. Again, consider fiction and shows that
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000825_673106927695fa34cdbfbaead829ec68b860b904abc4ad2a37759cb36d2ef7d3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000825_673106927695fa34cdbfbaead829ec68b860b904abc4ad2a37759cb36d2ef7d3.png)
 
 Footnotes:
 
 2 The October Man , 3 Foxglove Summer
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000826_053d95394db394a67642c76beba82f7c82fc6e4ecd65c5e9e57f9bc167b72684.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000826_053d95394db394a67642c76beba82f7c82fc6e4ecd65c5e9e57f9bc167b72684.png)
 
 9
 
@@ -14285,7 +14285,7 @@ Rules for creating player character genii locorum are not covered in this book.
 
 The GM should call for the following Luck spends when a fae investigator uses their powers:
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000827_6bd039f1774409d0e9f547fb4e52b848f04d8b1a91bfb373f4017ec254d24b3e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000827_6bd039f1774409d0e9f547fb4e52b848f04d8b1a91bfb373f4017ec254d24b3e.png)
 
 Footnotes: 4 B roken Homes, 5 Lies Sleeping
 
@@ -14293,7 +14293,7 @@ Footnotes: 4 B roken Homes, 5 Lies Sleeping
 
 The  following  guidelines  are  intended  for  player character use, although you may wish to implement them for lower fae NPCs as well, to keep them on a  par  with  the  investigators.  Otherwise,  use  the guidelines presented in Chapter 6 when handling an NPC's Thematic Power (page 244); always use those rules  if  the  NPC  is  a  genius  loci,  for  whom  the following Luck spends do not apply.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000828_5a333c60e9d411a07e51507cb9eda0b2777eef21866394e82f99b657dba5b806.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000828_5a333c60e9d411a07e51507cb9eda0b2777eef21866394e82f99b657dba5b806.png)
 
 - Everyday manifestation (costs 5 Luck points) : something that adds colour to the story-such as breathing life into a wilting bouquet of flowers-or performs a useful minor task, such as closing an open door. In game terms, it could mean the investigator automatically achieves something that would otherwise require a successful Regular skill roll to achieve, such as opening a standard door lock.
 - Significant manifestation (costs 20 Luck points) : something that has an impact on another character or the story in a more impressive or meaningful fashion. In game terms, it could mean the investigator automatically achieves something that would otherwise require a successful Hard skill roll, such as getting an unfamiliar animal to follow your commands. The default cost is 20 Luck points, but the GM is at liberty to increase the cost if the situation is exceedingly challenging, or the outcome is particularly spectacular.
@@ -14306,7 +14306,7 @@ Some sample affinities and examples of what they might achieve with everyday and
 
 Remember, we're not talking genii locorum levels of magical  ability  for  fae  investigators-even  at  their strongest,  they  aren't  going  to  be  able  to  pull  off something as impressive as flooding the entirety of a major London landmark, for instance 6 . Having said that, with the GM's permission, they may be able to pull off something really impressive once per case file for a suitably large investment of Luck points.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000829_c08b7e687fe918d2d5bcf7023fd77ef2d589ae2943f99c40ae588504953898f2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000829_c08b7e687fe918d2d5bcf7023fd77ef2d589ae2943f99c40ae588504953898f2.png)
 
 ## Playing a Quiet Person
 
@@ -14330,7 +14330,7 @@ Unlike  most  other  members  of  the  lower  demi-monde, though, the Quiet Peop
 
 Footnotes: 6 Rivers of London , 7 Whispers Under Ground
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000830_e55e939b842553339376872f07e7f73f42f93a67d2a71d2ed2a91fc26f1d1bc8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000830_e55e939b842553339376872f07e7f73f42f93a67d2a71d2ed2a91fc26f1d1bc8.png)
 
 9
 
@@ -14346,7 +14346,7 @@ Footnotes: 6 Rivers of London , 7 Whispers Under Ground
 | Plants     | The investigator can make vegetation do all sorts of interesting things. Everyday manifestation: encourage a small bouquet's worth of flowers to bloom on demand (5 Luck points). Significant manifestation: cause an obstruction or create a means of escape by making tree branches move, or swell the wood in a door so it jams, etc. (20 Luck points).                                                                                                                                                                                                                                                                                                                                        |
 | Water      | The investigator can influence and control water, wherever it may be found, just not on quite the same scale as the rivers. Everyday manifestation: breathe underwater for several minutes or form a small volume of water into a particular shape (5 Luck points). Significant manifestation: breathe underwater for an hour or direct a jet of water (e.g., from a hosepipe or tap) to wherever they want it (20 Luck points).                                                                                                                                                                                                                                                                  |
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000831_e7278ae0d614e6536ffd33c2c6825cda54c3187b3feb59e66ab64c1760dd2f48.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000831_e7278ae0d614e6536ffd33c2c6825cda54c3187b3feb59e66ab64c1760dd2f48.png)
 
 ## Relationships and Backstory
 
@@ -14362,7 +14362,7 @@ Conversely,  they  incur  a  penalty  die  to  Observation  rolls in  noisy  or 
 
 The  following  section  presents  some  additional  ideas  and options regarding skills and skill rolls.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000832_8c2e8e66327e17db843fae8badba2f270fb288d9b257c4bb6588524bed245a72.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000832_8c2e8e66327e17db843fae8badba2f270fb288d9b257c4bb6588524bed245a72.png)
 
 ## Creating New Skills
 
@@ -14383,7 +14383,7 @@ The difficulty for this skill is set according to the exposure of the skill-user
 - Regular difficulty: determining how someone might act after spending a month or more studying the person's culture.
 - Hard difficulty level: determining how someone might act after spending only a week or less studying the person's culture.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000833_37e10658fe39c6d744fface7c211f2af887f4802335b8d59e7f1e3d0a5c888b3.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000833_37e10658fe39c6d744fface7c211f2af887f4802335b8d59e7f1e3d0a5c888b3.png)
 
 ## Pushing Examples
 
@@ -14393,11 +14393,11 @@ Taking  more  time  to  study  the  culture;  completely immersing themselves in
 
 being  attacked  by  the  people  studied  due  to some perceived transgression of their laws or social mores; suffering severe side-effects as the result of being involved in a ceremony that involved ingesting psychotropic plants.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000834_41f6219b8eb395943f6876d6cddef688873062f02dae55f7798c5126a53d9bab.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000834_41f6219b8eb395943f6876d6cddef688873062f02dae55f7798c5126a53d9bab.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000835_4c37a02d88dd04d6f9927dd199906b0f102d0ffdba5b3bb173780070ea84d2db.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000835_4c37a02d88dd04d6f9927dd199906b0f102d0ffdba5b3bb173780070ea84d2db.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000836_a65a3578a7604948f06c7b1eb737c6b72327f177f10ba13b1e1e220c377109cd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000836_a65a3578a7604948f06c7b1eb737c6b72327f177f10ba13b1e1e220c377109cd.png)
 
 9
 
@@ -14417,7 +14417,7 @@ A character  may  have  a  Social  skill  of  60%,  but  this  doesn't mean they
 
 ## GM ADVICE
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000837_edfcd6720f5994a8013c5cf9284cacddd8c15c99c670489a6c87b13d79663653.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000837_edfcd6720f5994a8013c5cf9284cacddd8c15c99c670489a6c87b13d79663653.png)
 
 needs  to  make  a  Hard  success  (a  roll  equal  to  or  lower  than half the investigator's Social skill; Determining the Difficulty Level , page 105). The vast majority of NPCs have a Read Person skill below 70%, though, so the difficulty level will most often be Regular and a player only needs a Regular success to achieve their goal. When an investigator is interacting with an NPC, it's up to the GM when to call for a Social skill roll.
 
@@ -14433,7 +14433,7 @@ In the combined skill rolls example, as Nafeesa has the same skill value for bot
 
 Nafeesa's player fails the skill roll, and so seeks to push the roll by threatening to expose some of the doctor's underhanded dealings to the press. Nafeesa pulls out her mobile and dials a number, asking for the news desk, and then looks the doctor straight in the eye to make sure she understands the implied threat. The GM awards Nafeesa's player a bonus die on the pushed roll, which cancels out the penalty die incurred by the doctor's reluctance to talk. Unfortunately, Nafeesa's player fails the pushed roll and it is now entirely up to the GM whether the doctor is forthcoming, regardless of any further action the investigators may take against her. Bearing in mind, of course, what would be the most interesting fallout from that failed pushed roll. Perhaps the doctor lies, sending Nafeesa off on a wild goose chase… If, on the other hand, the player had succeeded at their Social roll, the GM would have to give up the name of the contact as this was the player's stated goal.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000838_200e3e2a149035a3f772c7515590a7ff0d090ae08f03a7e3deb36ed5ef4d2818.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000838_200e3e2a149035a3f772c7515590a7ff0d090ae08f03a7e3deb36ed5ef4d2818.png)
 
 ## Magic Revisited
 
@@ -14482,7 +14482,7 @@ Finally, if the spell can be boosted, what does that boost do? For example, does
 
 Once you have everything in place, we suggest you test the spell through an NPC in one or two case files before you let the investigators get their hands on it. This way, you'll know if you've got the balance of what it does for how much it costs about right, or whether you need to go away and refine it a little further.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000839_189ec16dd2ff4d0228ae81ab14abab46520813125ddf0222445c33caa2c17f25.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000839_189ec16dd2ff4d0228ae81ab14abab46520813125ddf0222445c33caa2c17f25.png)
 
 9
 
@@ -14511,7 +14511,7 @@ There  are  some  rules  of  thumb  you  may  wish  to  use  for quickly creatin
 
 Footnote: 9 Broken Homes
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000840_1f1bed9ae9d224d4f38ca0c76de5f3e4f8a572fd6db9a580307894994352fb7c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000840_1f1bed9ae9d224d4f38ca0c76de5f3e4f8a572fd6db9a580307894994352fb7c.png)
 
 ## Demon Trap
 
@@ -14521,7 +14521,7 @@ Given their vile nature, a demon trap is not something the investigators should 
 
 The creation of a demon trap is not especially difficult, but it is very nasty. The process originated in Scandinavia with the Vikings back in the 7 th century. It requires only a second order spell-oh,  and  torture.  Traditionally,  a  captive  individual would be tortured to death and their spirit trapped in the device-basically, a demon trap is a weaponised angry ghost.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000841_3338a2c99ee8822492dd32eeaf77249bfdd3afb4c3ccef86cf388132cf2afef4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000841_3338a2c99ee8822492dd32eeaf77249bfdd3afb4c3ccef86cf388132cf2afef4.png)
 
 A demon trap can take many forms. Traditionally made of metal, they can also be made from plastic, some forms of which are just as good as metal for retaining magic-if not better ( Vestigia in the Environment , page 163). One demon trap described in the novels is a metal disk about 60 cm (2 feet) wide and 5 mm (0.2 inches) thick, but there are other designs on record. It's not so much the look as the feel of the trap that identifies one for what it is.
 
@@ -14559,9 +14559,9 @@ If the person stepping on the demon trap is a practitioner, the GM should ask fo
 
 If the practitioner is aware of the presence of the demon trap, but doesn't know its precise location, they can search for it.  To do this, the practitioner takes a fresh-cut branch in  their  hand  and  feels  over  the  ground  to  find  the  edges of  the  trap.  This  requires  a  Sense  Vestigia  or  Magic  roll (whichever is higher):
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000842_bac65076aff7bc74e9be5f106e74a9922e776d071c65d7f465a1265f549e2728.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000842_bac65076aff7bc74e9be5f106e74a9922e776d071c65d7f465a1265f549e2728.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000843_e50639cfeb8cffbc098d8919987db73df93216f5c511e0e9dbff2c470df11c02.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000843_e50639cfeb8cffbc098d8919987db73df93216f5c511e0e9dbff2c470df11c02.png)
 
 9
 
@@ -14602,7 +14602,7 @@ It's  common  for  a  demon  trap  to  also  have  a  secondary charge to catch 
 
 It may be that you want to create an NPC of your own who uses magic from a tradition very different to that practised by Peter Grant and DCI Nightingale. The simplest way to do this is to adapt the spells in Chapter 4 to better reflect that tradition but essentially use the same underlying system: a set magic point cost for a particular level of spell coupled with a
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000844_a0cf93b89ea159e17f4e98c80f5600502ffd18e5e0f604e05cbf19a175349d00.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000844_a0cf93b89ea159e17f4e98c80f5600502ffd18e5e0f604e05cbf19a175349d00.png)
 
 Footnotes: 10 The Furthest Station , 11 False Value
 
@@ -14632,7 +14632,7 @@ However, not all fights start like that. In some cases, the attack may be a comp
 
 The following rules for surprise attacks assume the target has some chance of anticipating what's about to happen. If the  target  is  drugged  or  otherwise  unconscious,  they're effectively defenceless and the GM should use their discretion to judge the outcome.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000845_ee2de1354b07a75e3722261f6f749060f185f8e1ef38497b17b058ed81f9034f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000845_ee2de1354b07a75e3722261f6f749060f185f8e1ef38497b17b058ed81f9034f.png)
 
 9
 
@@ -14674,7 +14674,7 @@ In Chapter  3 , we talked about outcomes other than damage  during  a  fight,  s
 - If another character breaks cover, even briefly (to fire shots for example), they may be targeted by a character who is holding their action.
 - If, as an investigator, an enemy declares an attack on one of your allies, you may use your held action to intervene in some way, e.g., diving heroically in front of a colleague who is about to get shot.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000846_31d4bbd90c2af26e0f59855d4651b7ec1d66c5bac0a7efc3b5b12768686684c4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000846_31d4bbd90c2af26e0f59855d4651b7ec1d66c5bac0a7efc3b5b12768686684c4.png)
 
 Regardless of what action they are taking (melee, magic, firearms, etc.), the GM should call for an opposed DEX roll to determine who takes their action first-in the case of a tie, the person holding their action wins.
 
@@ -14684,7 +14684,7 @@ Example: Izzy has her gun trained on Nafeesa and her colleagues. Nafeesa's playe
 
 If a player really wants their investigator to dive in front of someone to save them from a spell or a bullet, and they haven't opted to hold their action, you could allow them to use their fight back response ( Response 3: Fight Back ,  page 129), on someone else's behalf. Remember that each character can only make the fight back response once per round unless they have the Fast Reactions advantage (page 51).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000847_b59fbd4788d82e8bee2676e32db4dc103e069a55965aa1220b3080b01e90648e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000847_b59fbd4788d82e8bee2676e32db4dc103e069a55965aa1220b3080b01e90648e.png)
 
 ## Automatic Fire
 
@@ -14714,7 +14714,7 @@ The shooter only rolls to hit if someone decided not to dive for cover, i.e., if
 
 9
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000848_e94bc8d59c8ed5aca219d8b05c0ad99d9b2fe04252285fe3452b22ff54b57eb4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000848_e94bc8d59c8ed5aca219d8b05c0ad99d9b2fe04252285fe3452b22ff54b57eb4.png)
 
 - Failure: no targets are hit.
 - Hard success: 3 targets are hit.
@@ -14736,7 +14736,7 @@ If  the  attack  is  successful,  the  shooter  makes  a  separate damage roll f
 
 If a larger group of targets is confined into a narrow space, then the number of individuals included in the group target may be increased to incorporate everyone within the 2 metre/ yard  zone.  So,  for  example,  if  the  shooter  is  firing  on  full auto  down  a  packed  Underground  train  carriage,  or  firing through the open back doors of a van filled with passengers, or  shooting into a crowded lift just as the doors open, the GM should increase the number of targets in the group. Also, targeting just one individual in a close group is impossible with automatic fire.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000849_c1656ac20c55c8c855305cb370a7bc9a197ff0b00f2a0d30896aff6db3c83236.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000849_c1656ac20c55c8c855305cb370a7bc9a197ff0b00f2a0d30896aff6db3c83236.png)
 
 ## Miscellaneous Firearms Rules
 
@@ -14769,7 +14769,7 @@ However, in the case of a single specific attack, such as being shot, the questi
 
 A character wearing all-over body armour or possessing natural armour, e.g., an elephant's skin, does not require a Luck roll-the armour's protection applies in all cases. If a weakness is spotted in an enemy's armour-a vulnerable spot, such as an open mouth or eye-that area may be targeted, and  the  GM  should  set  an  increased  level  of  difficulty  or apply a penalty die for the attempt.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000850_fccdd5718030b3c3ab9b4d8132c6028b6436b2b7473b8b0f8492fe3a101e597c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000850_fccdd5718030b3c3ab9b4d8132c6028b6436b2b7473b8b0f8492fe3a101e597c.png)
 
 9
 
@@ -14817,9 +14817,9 @@ Regular success vs a Weak success, a Hard success vs a Regular success, or a Cri
 
 As previously described, 4 damage inflicted in one blow is a mortal wound, while 5 damage inflicted in a single attack is a fatal blow and liable to kill the character ( Wounds and Healing , page 144).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000851_29cae8b44bd85661c6402b325d48b30e227dc4f18c412e619ef993c6667d6ce6.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000851_29cae8b44bd85661c6402b325d48b30e227dc4f18c412e619ef993c6667d6ce6.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000852_01c3ae658c17ab90e0c8648635b8e5500b2f5eb1c33c8e0142fed767d6b200fb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000852_01c3ae658c17ab90e0c8648635b8e5500b2f5eb1c33c8e0142fed767d6b200fb.png)
 
 - When the attacker beats their opponent by 1 level of success , the attack inflicts 1 damage plus base weapon damage. This could be a Weak success vs a fumble, a
 
@@ -14878,7 +14878,7 @@ The speed at which the poison acts is determined by the administration  method  
 | Chloroform                            | Very mild | 1 round                | Unconsciousness for 1 hour. No damage.                                                                                                          | Widely used as an anaesthetic in 1800-1900s, but rarely used these days. A high strength (toxic) dose may cause death.                             |
 | Cobra Venom                           | Lethal    | 15 to 60 minutes       | Convulsions, respiratory failure. Make anotherCON roll: with a failure, death is immediate; with a success, suffer a mortal wound.              | Contact with eyes causes immediate irritation and, if untreated, blindness. If antiserum is available, then major injury and death can be avoided. |
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000853_28855b310b31e9b57d5d1c0cfa96acf1d10af51775741bf2725871e5a9858e66.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000853_28855b310b31e9b57d5d1c0cfa96acf1d10af51775741bf2725871e5a9858e66.png)
 
 | Poison            | Type      | Speed                  | Effect (1 dose)                                                                                                                                      | Notes                                                                                                                                                                                                            |
 |-------------------|-----------|------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -14921,7 +14921,7 @@ Note  that  'A  Rare  Book  of  Cunning  Device'  and  the short  story  'King  
 
 Back when the rules system for  RoL:RPG was still being developed, both 'A Rare Book of Cunning Device' and 'The Cockpit' were used as demonstration scenarios, so we know they adapt well and that players can have fun  with  them,  even  if  they  know  the  story.  'The Cockpit' 14   was  later  developed  and  transformed into The  Bookshop (page  285),  the  introductory scenario in this book.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000854_9bec57b3fa84c6caeea803138d86d68271d77162170622c08a1d2944e78b8c04.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000854_9bec57b3fa84c6caeea803138d86d68271d77162170622c08a1d2944e78b8c04.png)
 
 ## Devising Your Own Case Files
 
@@ -14931,7 +14931,7 @@ Footnote: 14 Tales from the Folly
 
 If your player group are huge fans who have read every Rivers of London story already, you will have to create your own case files, but don't worry, you don't have to be Agatha Christie! In fact, go ahead and make use of a Christie plot-she's not accoladed as the 'Queen of Crime' for nothing! If you are writing a case file for a private group of player friends, there are no copyright restrictions upon you, so feel free to borrow whatever inspiration you want from TV shows, movies, crime novels, or urban fantasy fiction. There are a ton of 'Nordic Noir' crime dramas available on various television channels,
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000855_5531b2a9a3e779127d4e79b3d30f5c39fb0bcf8081ebebaf0902837ae865f555.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000855_5531b2a9a3e779127d4e79b3d30f5c39fb0bcf8081ebebaf0902837ae865f555.png)
 
 or you could go further afield and discover the great range of  subtitled  international  crime  fiction  from  India,  Korea, China, South America, and so on. Change the names and the scenery (and some incidents if there is a danger of your players  recognising  the  plot;  you  don't  want  to  spoil  the surprises for them). And, of course, bring on the magic.
 
@@ -14976,7 +14976,7 @@ Example: ' You  are  all  present  at  the  Folly  when  a  call  comes through 
 
 This  gives  less  confident  players  time  to  collect  their thoughts  and  their  equipment,  ask  questions  like  ' Which borough does this fall under? ', ' Who is the Senior Investigating Officer  on  the  case? '  etc.,  and  generally  get  into  character. Alternatively,  you  can  follow  the  grand  tradition  of  crime drama and just drop them into the opening scene, leaving them  to  establish  the  context  later.  This  is  more  dramatic and atmospheric, but might be too far outside your players' comfort zone:
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000856_3d34650fd0165c6bd812b129a4e0db7cfe92d12bcdf0413767510f96f67b5a83.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000856_3d34650fd0165c6bd812b129a4e0db7cfe92d12bcdf0413767510f96f67b5a83.png)
 
 - They were trying to effect much needed (as they see it) change upon society.
 
@@ -14994,9 +14994,9 @@ As the GM, it's a good idea to write yourself a flowchart of clues-where they ca
 
 The bulk of the case file is likely to be a series of investigative scenes  of  one  sort  of  another.  NPCs,  both  helpful  and hindering, will be encountered. New places will be explored. As  you  will  be  painting  a  verbal  picture  for  your  players, make  sure  you  have  included  enough  detail  in  your  notes when you write these scenes to see you through. Exactly how much detail that is differs from GM to GM; some manage quite  happily  with  simple  bullet  points  of  key  descriptive words, while others prefer detailed notes. Experiment to find
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000857_975d1bbe1009e1e9c77c805fa31d6134962b20c8a8dc8772bd0c79f3754bdfea.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000857_975d1bbe1009e1e9c77c805fa31d6134962b20c8a8dc8772bd0c79f3754bdfea.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000858_069ebef6a11a77eb9b290798b9bba684725fcc8a7218a229f11ad1891cb1af89.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000858_069ebef6a11a77eb9b290798b9bba684725fcc8a7218a229f11ad1891cb1af89.png)
 
 out which works best for you, and don't be afraid to make something up on the spot if a player asks a question you didn't anticipate-just  remember  to  write  it  down  somewhere  in case it becomes important again later.
 
@@ -15030,7 +15030,7 @@ So, your players have worked out whodunnit, why they dunnit, and  how  they  dun
 
 You don't have to stick to the paranormal creatures detailed in this book. RoL:RPG takes place in a world where magic is  universal  but  manifests  differently  in  different  countries, so you are at liberty to integrate other mythologies into your version  of  London-or  wherever  you  choose  to  set  your game. The diverse multicultural nature of the UK's capital city makes for great supernatural possibilities but try to avoid the pitfall of treating ethnic minorities-even implicitly-as 'spooky  foreigners'  or  their  cultural  entities  as  'dangerous immigrant monster of the week.' The book series deliberately eschews this trope in favour of invented monsters such as jazz vampires and ancient local spirits like Mr Punch. If you are
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000859_fbc375a32eb4ba2542defa87126af4293b6ba8ede8977b96de7d0e1d0db699a2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000859_fbc375a32eb4ba2542defa87126af4293b6ba8ede8977b96de7d0e1d0db699a2.png)
 
 9
 
@@ -15055,7 +15055,7 @@ stations-are the Metro (a morning tabloid, broadly irreverent to the establishme
 - Local newspapers: the two newspapers that every Londoner can pick up for free at stands on the street-but especially at public transport hubs like Underground
 - The London Underground: if you are using the London setting, you almost certainly need a diagram of the 'Tube' system-the London Underground. Peter Grant uses a car because he's a police officer-his obsession with routes and traffic conditions is a British peculiarity. But civilians are much more likely to use public transport or hail a ride using an online app, because it's cheaper, faster, and they won't be struggling to find somewhere to park once they arrive. Only a little over 50 percent of London households have their own car-far fewer than in Britain as a whole-and younger, more central Londoners are even less likely to keep a private vehicle larger than a bicycle.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000860_3fc04e8f9de063b8e2bc0cde304caa23823adfb12916b4a7b4e6338803b1954b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000860_3fc04e8f9de063b8e2bc0cde304caa23823adfb12916b4a7b4e6338803b1954b.png)
 
 - Online review sites: official websites showcase beautiful professional photographs of places as the curators want you to see them. Independent online review sites, on the other hand, collects tourist photos and comments by the general public, which may give you a different perspective.
 - Weird stuff: there's a bunch of websites about weird stuff-you know, ghosts, Fortean events, folklore, and more-that can provide you with inspiration for plots and spooky encounters. Most regions and cities have a rich history of hauntings and so on, so get your search engine working by looking up things like 'Thames+ghosts' or 'Baltimore+folklore' to dig up interesting details about places where you'd like to set your case files.
@@ -15093,25 +15093,25 @@ EXIT
 
 If  you  would  prefer  to  start  playing Rivers of London: the Roleplaying  Game straight  away,  simply  use  these  readymade (pre-generated) investigators. Alternatively, you could use these investigators as examples for your players to help them become familiar with the game's rules before they go on  to  create  characters  of  their  own,  or  simply  use  them as inspiration. Note that two of the investigators have the Magical advantage while the others are proficient in other
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000861_ffe77421c9b734c8b407804e0ed6c52ae7b9cd311e0778d8a9580e9d0ae256bb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000861_ffe77421c9b734c8b407804e0ed6c52ae7b9cd311e0778d8a9580e9d0ae256bb.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000862_01e3a1afcb1ff595273a91d4537b54887503156a225f534fd12579bfc98a842c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000862_01e3a1afcb1ff595273a91d4537b54887503156a225f534fd12579bfc98a842c.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000863_3dc204d7479fa51df4732328f306b41745bfce12e285d315c033a8a68dc5aacb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000863_3dc204d7479fa51df4732328f306b41745bfce12e285d315c033a8a68dc5aacb.png)
 
 areas-a combination of skills and advantages ensures the players' group has a good balance of expertise and helps to ensure everyone gets to have their moment in the spotlight during each game.
 
 Skills  in  bold  text  are  the  investigator's  starting  skills ( Determine Skills ,  page  52).  Feel  free  to  customise  these profiles  as  you  wish,  altering  the  name,  gender,  backstory, and so on, to best suit your game and your players' preferences.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000864_640c7ab62f6e4ec1eee064fb185eb0fc80fdbe6cfbd2f047387e3c10055b1e73.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000864_640c7ab62f6e4ec1eee064fb185eb0fc80fdbe6cfbd2f047387e3c10055b1e73.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000865_0a58818d6b0120d9243af1ea255ccf5c118c769e1f3daf408d6f18e3f5a66362.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000865_0a58818d6b0120d9243af1ea255ccf5c118c769e1f3daf408d6f18e3f5a66362.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000866_2821eed7977aa03e027dbe808fcd6edebe0e390e31195233f36c167d1011ff32.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000866_2821eed7977aa03e027dbe808fcd6edebe0e390e31195233f36c167d1011ff32.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000867_e8c64c08b49a159a9851f4c0ed462d2a5b7ad31397ab9823da0eca54055fec48.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000867_e8c64c08b49a159a9851f4c0ed462d2a5b7ad31397ab9823da0eca54055fec48.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000868_726b3b22963979323abd67c4798856ec57dd0b140095d12bff9be56c5d33f27d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000868_726b3b22963979323abd67c4798856ec57dd0b140095d12bff9be56c5d33f27d.png)
 
 A
 
@@ -15179,7 +15179,7 @@ Magical
 
 Your  life  was  never  straightforward.  Your  mother  is  a preacher at an evangelical church in Hammersmith, London, and you always seem to take second place. You're not sure about your father; you've heard a few things about him, but why should you get in touch when he doesn't bother? You left school at 17 and got a job in IT. Then, you married at 19 and were about to enrol for training as a special police constable when you unexpectedly got pregnant. None of that stopped you though, and now you're a full-time police officer and a mum-and if that's not enough, you ended up meeting Peter Grant  and  becoming  a  Newtonian  apprentice!  Of  course, with a husband and young child, you don't live at the Folly, but you do spend a lot of time there.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000869_8de1959f029484392fa77a51db3f9a086a1bc6bbe12ee99ff1bbf11234bc7d8e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000869_8de1959f029484392fa77a51db3f9a086a1bc6bbe12ee99ff1bbf11234bc7d8e.png)
 
 ## Affluence
 
@@ -15197,7 +15197,7 @@ Blackbird song, the taste of apples, and a tick-tock sound.
 
 Warrant card, mechanical watch, mobile phone, and a grab bag containing police notebook, pens, spare phone battery, Airwave  radio,  torch  (flashlight)  and  spare  batteries,  Folly and  Met  forms,  crime  scene  barrier  tape,  PPE  pouch, waterproof  clothes,  snacks,  bottled  water,  and Blackstone's Crime Investigators' Handbook .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000870_b33c46076b6dd9f1b4e3aaea4cf70b74570c5ad7e311001ed20e921f531119fa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000870_b33c46076b6dd9f1b4e3aaea4cf70b74570c5ad7e311001ed20e921f531119fa.png)
 
 ## Morgan Omans
 
@@ -15277,7 +15277,7 @@ Firearms
 
 ## Backstory
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000871_69f739865044ff7814b2b9fa36b73d686bafd4264d2658de14bbcca3984f4b1e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000871_69f739865044ff7814b2b9fa36b73d686bafd4264d2658de14bbcca3984f4b1e.png)
 
 ## Affluence
 
@@ -15297,7 +15297,7 @@ You grew up in Dundee and went to a private boarding school. University wasn't f
 
 Warrant card, mechanical watch, mobile phone, and a grab bag containing police notebook, pens, spare phone battery, Airwave  radio,  torch  (flashlight)  and  spare  batteries,  Folly and  Met  forms,  crime  scene  barrier  tape,  PPE  pouch, waterproof  clothes,  snacks,  bottled  water,  and Blackstone's Crime Investigators' Handbook .
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000872_e51d00ac1b36bcf6d23b0baf2687c3212b9bf66fa17930bceff4932e86e136df.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000872_e51d00ac1b36bcf6d23b0baf2687c3212b9bf66fa17930bceff4932e86e136df.png)
 
 30/15
 
@@ -15393,7 +15393,7 @@ Damage Bonus:
 
 ## Backstory
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000873_1f1cd26cfd219e69a242c1344a3fca26d17de7982eec46546f240cd192742706.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000873_1f1cd26cfd219e69a242c1344a3fca26d17de7982eec46546f240cd192742706.png)
 
 ## Affluence
 
@@ -15405,7 +15405,7 @@ Folly Consultant's Card, mobile phone and spare batteries, high  visibility  jac
 
 Rugby  was  always  your  game,  but  then  you're  built  for  it. You were never just brawn though, you had brains too. You studied  medicine  in  Manchester,  and  then  followed  your boyfriend to London. You've been together for over ten years. The idea of  being  a  GP  leaves  you  cold;  quietly  talking  to old ladies about their lumbago-no, thank you. You prefer the excitement and chaos of Accident and Emergency. Staff from the Folly questioned you about some curious individuals you treated, and they seemed to warm to you-so much so, that they've called on your help a few times, and the rest, as they say, is history. So now you spend half your time at the hospital and the other half with the team from the Folly.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000874_f7103b2a3e652735020444f7d8e99163127b28c8a43123546b638fa11f54e5ac.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000874_f7103b2a3e652735020444f7d8e99163127b28c8a43123546b638fa11f54e5ac.png)
 
 ## Eli Venturini
 
@@ -15503,11 +15503,11 @@ Firearms
 
 You grew up in a small town in Kent, the so-called Garden of England, where you attended the local grammar school. After  university,  you  put  down  roots  in  London  and  have stayed there ever since. You found out at a young age that you and your sister were adopted. You've always wondered about contacting your birth mother, but have never quite plucked up the courage to do so. It's funny that you became a history lecturer-it's almost as if you prefer to delve into everyone's history but your own. The 17 th century is your period, with an especial interest in the life of Sir Isaac Newton. Indeed, it was your chosen specialist subject on a well-known TV quiz show, and following that appearance, you were contacted by someone from the Folly. Turns out you have a mutual interest!
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000875_7a0925d5113c4eb285251a705a5560faaf506ae37a9f14b33c9480e7096e367c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000875_7a0925d5113c4eb285251a705a5560faaf506ae37a9f14b33c9480e7096e367c.png)
 
 30/15
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000876_75b440493969ef0a90142fb9363da67421c8957734d7ebf43a3fd6b63dbaee79.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000876_75b440493969ef0a90142fb9363da67421c8957734d7ebf43a3fd6b63dbaee79.png)
 
 ## Affluence
 
@@ -15607,7 +15607,7 @@ Firearms
 
 The main thing you remember from your childhood is a lot of  shouting.  Your  mother  moved  from  the  Philippines  to London, England, in the 1980s, and married your well-off architect father. They must have been happy once. Your father died  a  few  years  back,  and  his  new  wife  took  most  of  his estate. You still see your mother occasionally, usually when she wants something from you. The rock in your life was your stepsister. She was a few years younger than you, but she had problems no one knew about. You were the one who found her body. You don't have a fixed abode-you get by day-today-and  plans  are  what  other  people  make.  Sometimes, those people from the Folly give you jobs to do-they seem like a good lot, on the whole. At the very least, they're usually good for a hot meal.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000877_0ff788e6cc8dae71b7c7fbd2a4818c051b220468fce35f71e6809e688237a4eb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000877_0ff788e6cc8dae71b7c7fbd2a4818c051b220468fce35f71e6809e688237a4eb.png)
 
 60/30
 
@@ -15619,7 +15619,7 @@ The main thing you remember from your childhood is a lot of  shouting.  Your  mo
 
 30/15
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000878_85c3fc9cf523076bc68432877888d8d40c1f2fb4fb9e9002c8d4c97f445b32fe.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000878_85c3fc9cf523076bc68432877888d8d40c1f2fb4fb9e9002c8d4c97f445b32fe.png)
 
 ## Affluence
 
@@ -15733,7 +15733,7 @@ Firearms
 
 You grew up near Leicester in the English Midlands. You did well at school and excelled in music. Then, you moved down to  London  to  study,  and  lodged  with  one  of  your  aunties. Following university, you took a job doing data entry for the Metropolitan Police Service. Yet, music has always been your passion, and you spend your evenings practising and writing songs in your bedroom. So far, you've made some money on the side playing gigs, but you're biding your time until you get your big break. Your auntie doesn't approve of you spending so much time alone in your room-she doesn't think it's healthy for a young woman! Your friend, Morgan Omans, asked for your advice on a music-related case they were working, and that's how you became involved with the Folly.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000879_dff6f79ec21cc548f00517208e81f577b7a643ec9f25332d37751cdb379c153d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000879_dff6f79ec21cc548f00517208e81f577b7a643ec9f25332d37751cdb379c153d.png)
 
 60/30
 
@@ -15745,7 +15745,7 @@ You grew up near Leicester in the English Midlands. You did well at school and e
 
 30/15
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000880_fa7894cd60f1eb2b7cd8b9f9eeb529d104f0e4ee45f80fafd11750bb6fd55904.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000880_fa7894cd60f1eb2b7cd8b9f9eeb529d104f0e4ee45f80fafd11750bb6fd55904.png)
 
 ## Affluence
 
@@ -15755,15 +15755,15 @@ Average.
 
 Folly  Consultant's  Card,  Metropolitan  Police  Service  staff photo ID card, notebook, pens, keyboard, mobile phone, and spare batteries.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000881_b310f7bf1949c5a0ac753f75b141f0dd249ae3be908874946eeec0227f22f203.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000881_b310f7bf1949c5a0ac753f75b141f0dd249ae3be908874946eeec0227f22f203.png)
 
 ## Appendix B: Rules Summaries
 
 A  collection  of  rules  summaries  (cheat  sheets)  for  quick reference while gaming. You may find it useful to copy/print out these summaries so that they are to hand during a game.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000882_a92cdc3a708ee9080bbc1e791f631ff823de6dc233d6912341b3ca6bb88eb9f2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000882_a92cdc3a708ee9080bbc1e791f631ff823de6dc233d6912341b3ca6bb88eb9f2.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000883_f9cf465ad962f82fcc7882ad7ca960d6fcd7751c15555ecb54f4eb19032f2d54.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000883_f9cf465ad962f82fcc7882ad7ca960d6fcd7751c15555ecb54f4eb19032f2d54.png)
 
 ## Character Creation
 
@@ -15833,9 +15833,9 @@ Note: investigators who do not choose the Magical advantage cannot choose Magic 
 - Work out what equipment your investigator would be able to access as part of their occupation (page 59) and write it on the character sheet. Any weapons the investigator has should be written down in the Weapons box.
 - The investigator may purchase any other equipment they need with the GM's permission, as long as it fits within their Living Standard ( Table 2: Living Standards , page 58).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000884_3b168d62c34b112384d67872a52b3109c9f1b2716853126584c1a9860ebfb695.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000884_3b168d62c34b112384d67872a52b3109c9f1b2716853126584c1a9860ebfb695.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000885_92b165b2f0e4ef8d935153651d735c158c078d586d4b6c96bf577b13bddc74c7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000885_92b165b2f0e4ef8d935153651d735c158c078d586d4b6c96bf577b13bddc74c7.png)
 
 B
 
@@ -15903,7 +15903,7 @@ Each skill  roll  may  have  a  maximum  of  one  bonus  or  one penalty die app
 - One bonus die cancels out one penalty die, and vice versa.
 - Penalty die: roll an additional tens die when making a skill roll, i.e., roll two tens dice and one units die. Use the tens die the gives the highest (worst) result to determine if the character succeeds or fails.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000886_5f041273d7070cb580d63166c2a51dc7f2c3ac429fb508367e2cf2ee3adc24a0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000886_5f041273d7070cb580d63166c2a51dc7f2c3ac429fb508367e2cf2ee3adc24a0.png)
 
 ## Investigator Development Phase
 
@@ -15968,7 +15968,7 @@ If someone tries to hit you with a punch or a weapon, such as a knife, you can:
 - If you have a firearm in your hand, you can attempt to shoot them before they hit you ( Fight Back , page 129). You can only fight back once per combat round unless you have the Fast Reactions advantage (page 51).
 - If the attacker is using a weapon, you could attempt to disarm them using a Combat Manoeuvre (page 134).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000887_b054e2319e8b13f3fb3d7241416c50d87311bbb33c0eb3cac8cb1550cbeb4bf8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000887_b054e2319e8b13f3fb3d7241416c50d87311bbb33c0eb3cac8cb1550cbeb4bf8.png)
 
 This could allow you to knock the weapon to the floor or perhaps wrest possession of it from your opponent.
 
@@ -16004,7 +16004,7 @@ If  being  shot  at  from within arm's  reach,  you  can  fight back  using  you
 
 Table 16: Summary of Ranged Attack Modifiers
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000888_dd1539c193e3498385d77d368ec9632433d5b0e0908e86c665e931d66201ce3a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000888_dd1539c193e3498385d77d368ec9632433d5b0e0908e86c665e931d66201ce3a.png)
 
 ## My Options: When Someone Casts a Spell at Me?
 
@@ -16071,7 +16071,7 @@ Like the damage  suffered by people, vehicle  damage is cumulative.
 - If a vehicle takes 2 damage, it is Damaged (still drivable-just!).
 - If a vehicle takes 3 damage, it is Wrecked (no longer drivable).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000889_47bd002a317fdb59a8cd9400fe7f0147307f5a82b06eee303b610b7f1b25ec4c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000889_47bd002a317fdb59a8cd9400fe7f0147307f5a82b06eee303b610b7f1b25ec4c.png)
 
 ## Table 7: Other Forms of Damage
 
@@ -16091,7 +16091,7 @@ Like the damage  suffered by people, vehicle  damage is cumulative.
 
 Forms  of  Damage .  For  example:  with  a  successful CON  roll,  a  lethal  poison  is  treated  as  a  strong poison  (Deadly  rather  than  Terminal);  with  a  Hard success,  move  up  two  levels  on Table  7: Other Forms  of  Damage .  Poisons  may  cause  a  variety  of additional symptoms including: stomach pains, vomiting, diarrhoea, chills, sweats, cramps, jaundice, altered  heart  rate,  impaired  vision,  convulsions, unconsciousness,  and  paralysis-it's  up  to  the  GM whether the symptoms permit the victim to act or not, act with a penalty die, or with an increased level of difficulty. At the GM's discretion, they may allow a poison's effects to be shaken off completely if the CON roll is a Critical success.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000890_3bef5dd962f9868d1b873eb60d48d3efef7fd5373e810cc073e97b97809c479f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000890_3bef5dd962f9868d1b873eb60d48d3efef7fd5373e810cc073e97b97809c479f.png)
 
 ## Injuries and Healing
 
@@ -16149,7 +16149,7 @@ The  time  taken  for  wounds  to  recover  depends  on  the investigator's dama
 
 Damage is cumulative, i.e.,  every  time  a  character  is  dealt damage  in  combat,  it  is  added  to  any  damage  they  have already suffered in the fight so far.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000891_445aae4c4305342e1e023cf65f8dabda54b8967e23d77bdbfc9cd628cc061c09.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000891_445aae4c4305342e1e023cf65f8dabda54b8967e23d77bdbfc9cd628cc061c09.png)
 
 B
 
@@ -16180,7 +16180,7 @@ Note: NPCs move automatically during a chase, so the GM does not need to roll di
 
 Players  use  the  following  four  steps  for  chases  when  their investigators are pursuing someone:
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000892_97ed26a5aaef60b18d84b4da7842b3cb2c8ce447c1f087d035efef96d8df7bce.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000892_97ed26a5aaef60b18d84b4da7842b3cb2c8ce447c1f087d035efef96d8df7bce.png)
 
 - Step 1: Establish the Location (page 154) : describe what your investigator is doing based on the GM's description of the location.
 - Step 3: Track Successes (page 154) : the player keeps a running tally of how many chase successes and failures they have accumulated so far.
@@ -16258,7 +16258,7 @@ In a scene, when a character declares they are casting a spell, any nearby pract
 - Spent magic points regenerate naturally, returning to their normal maximum value for The Next Scene (page 173).
 - The cost of a mastered spell can sometimes be boosted (raised) if the caster wishes to increase or alter its effects ( Boosting a Spell , page 176). Not all spells can be boosted.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000893_ca98f97eb17d8fb4eb1553ecd44884471efad353c1ccaace30904fd3d81cbe1e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000893_ca98f97eb17d8fb4eb1553ecd44884471efad353c1ccaace30904fd3d81cbe1e.png)
 
 B
 
@@ -16308,7 +16308,7 @@ Any demi-monde NPC can perform minor manifestations of their power whenever they
 
 Any demi-monde NPC can perform one major manifestation of their power once per case file. Performing such acts is demanding, emotionally and energetically, and may also cost them socially.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000894_d562d7ddf15c81012ec368b0c2fdb598a619d53ec97cbd7b38f3cdd98c7dc8bc.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000894_d562d7ddf15c81012ec368b0c2fdb598a619d53ec97cbd7b38f3cdd98c7dc8bc.png)
 
 - The Luck of the Demi-monde (page 243) : a demimonde's Luck value is equal to their POW and refreshes at the same time every day.
 
@@ -16342,7 +16342,7 @@ Detailed here is a range of useful source materials that could be of use to thos
 - Robinson, Kevin N. 235 Crime Fiction Prompts and Answers to 59 Frequently Asked Questions (2020).
 - Wynn, Douglas. The Crime Writer's Handbook (2000).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000895_b66edc11f951a931005fbad580fdeae52ea38bab55d9c9efab5589802e51cd9d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000895_b66edc11f951a931005fbad580fdeae52ea38bab55d9c9efab5589802e51cd9d.png)
 
 ## Books about London
 
@@ -16363,7 +16363,7 @@ Detailed here is a range of useful source materials that could be of use to thos
 - Robinson, Kevin N. 218 Facts a Writer Needs to Know About the Police (2015).
 - Robinson, Kevin N. British Police and Crime Directory for Writers and Researchers 2016 (2016).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000896_fc20be556f23444d8a91bcc0581db258854cb9962049eff173a37a1f42cca835.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000896_fc20be556f23444d8a91bcc0581db258854cb9962049eff173a37a1f42cca835.png)
 
 C
 
@@ -16420,9 +16420,9 @@ All websites were available at the time of going to press.
 - London Underground map: http://content.tfl.gov.uk/ standard-tube-map.pdf
 - [Ethnicity terminology: www.civilservice.blog.gov. uk/2019/07/08/please-dont-call-me-bame-or-bme/](http://www.civilservice.blog.gov.uk/2019/07/08/please-dont-call-me-bame-or-bme/)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000897_27642fbed87daaf9b123eb61e7e6c22de071c72f539578e29a32e55b19ee31e9.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000897_27642fbed87daaf9b123eb61e7e6c22de071c72f539578e29a32e55b19ee31e9.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000898_b493e3f09d0734c61acc6d0127466f036a2e46b90f1f399d2429c2ef7dee83c7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000898_b493e3f09d0734c61acc6d0127466f036a2e46b90f1f399d2429c2ef7dee83c7.png)
 
 This appendix contains the collected player versions of the various maps and handouts found in Chapters 7 and 8 .  Plain-text versions of text-based handouts can be found in the PDF package that accompanies this book, free to download from chaosium.com.
 
@@ -16438,7 +16438,7 @@ Next thing I know,I get hit on thehead by a soft toy,like the oneswekeep at the 
 
 It''s all a bit hazy after that,but someone helped me up to the ambulance, where they told me I had a mild concussion.I went home,then I got a call askingme to come back in so I could be interviewed by some special crimes unityou lot, I'm assuming? I told them there was no way I was going within 500 metres of that place, but eventually, they convincedme to meetyou here instead.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000899_8daf5ee229be479ea143c31ef1c913b8da278db418f672eca9d0179031553613.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000899_8daf5ee229be479ea143c31ef1c913b8da278db418f672eca9d0179031553613.png)
 
 D
 
@@ -16460,17 +16460,17 @@ Cockfighting was once a highly popular—and very lucrative-spectator sport in L
 
 It took around two years to fully train a fighting bird. Due to the amount s days, this blood sport was tightly regulated—more so than any other sport at the time. It was finally banned in England and Wales in 1835 under the Cruelty to Animals Act.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000900_3e4f6801119e4719a3673ac903e5fad0ee795f8e10c3eaa116fa0f18e9eee716.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000900_3e4f6801119e4719a3673ac903e5fad0ee795f8e10c3eaa116fa0f18e9eee716.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000901_57a4b84722d1661c142326c755338423ce8aa5b07f14b8999d140de16b21099e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000901_57a4b84722d1661c142326c755338423ce8aa5b07f14b8999d140de16b21099e.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000902_a412dbbd8cb332978d2401357041b86fdf01beec337c25ab5df62a946c976bca.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000902_a412dbbd8cb332978d2401357041b86fdf01beec337c25ab5df62a946c976bca.png)
 
 D
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000903_eccdbd913549ad25f5148546a1dc4be3202b4d056bd6a75697d1a6864e97bc12.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000903_eccdbd913549ad25f5148546a1dc4be3202b4d056bd6a75697d1a6864e97bc12.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000904_7816910a968754777624b292833b52f7d7010f9b481c4208b904044f4ea4e633.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000904_7816910a968754777624b292833b52f7d7010f9b481c4208b904044f4ea4e633.png)
 
 ## The Folly
 
@@ -16512,13 +16512,13 @@ D
 - 29   Study
 - 30   Breakfast Room
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000905_2fab6d9d0885920ccf7e0183af09886d9c7d419d839ef4b518587461822aa8db.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000905_2fab6d9d0885920ccf7e0183af09886d9c7d419d839ef4b518587461822aa8db.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000906_ac6545d6fb8e589252bfb793a0227fa19d64f639f58a011319e2b62ba8486d5d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000906_ac6545d6fb8e589252bfb793a0227fa19d64f639f58a011319e2b62ba8486d5d.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000907_0e204951f48477c396231bed2a4a193bc5d5b34fc8a8a8fe5d258662122bbdad.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000907_0e204951f48477c396231bed2a4a193bc5d5b34fc8a8a8fe5d258662122bbdad.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000908_05af739b264f8f7e8df0f6fd49103de09bcd4bfd8018a0632c7337fbec260b83.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000908_05af739b264f8f7e8df0f6fd49103de09bcd4bfd8018a0632c7337fbec260b83.png)
 
 D
 
@@ -16558,19 +16558,19 @@ D
 - 55   Senior Member's Suite
 - 56   Senior Lounge
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000909_4e3fe881e0c4066a1a13c034cea26e0db1e7136c4f19891fb5270fb760dcdfc0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000909_4e3fe881e0c4066a1a13c034cea26e0db1e7136c4f19891fb5270fb760dcdfc0.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000910_51225e9dbb1233338fc886b0f724f3fd6459c2fdeaf0fce2702d9be176983738.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000910_51225e9dbb1233338fc886b0f724f3fd6459c2fdeaf0fce2702d9be176983738.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000911_ad4aee20ef7f971541acc2cfec14fe427d29445b5bc946a81a5f9d70af7808b4.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000911_ad4aee20ef7f971541acc2cfec14fe427d29445b5bc946a81a5f9d70af7808b4.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000912_84208a5717fda3dbf7f90c1c862f50c1f316cb03971baec1d9e64772b211d904.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000912_84208a5717fda3dbf7f90c1c862f50c1f316cb03971baec1d9e64772b211d904.png)
 
 NEW ROW
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000913_a158853e2c9325034b6b40fd0bbb93badac186a38bfdf6fb8c08fd5d49d45ea2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000913_a158853e2c9325034b6b40fd0bbb93badac186a38bfdf6fb8c08fd5d49d45ea2.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000914_e450470f52cf38d8a02c459772c0c8a3678faaeb8e8be601e49ba740231cdd2a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000914_e450470f52cf38d8a02c459772c0c8a3678faaeb8e8be601e49ba740231cdd2a.png)
 
 Index
 
@@ -16698,7 +16698,7 @@ Backstory  56, 75, 101, 170, 221, 286, 318, 321, 344, 345, 346, 347, 348, 349, 3
 
 Bibliography  361
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000915_707ed328493b8dce2e3c1c74f1f060d4f75354e2ab0ec9aeb9fb98c614bf2421.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000915_707ed328493b8dce2e3c1c74f1f060d4f75354e2ab0ec9aeb9fb98c614bf2421.png)
 
 Biology (Science Specialisation)  81, 98 Bivalacqua, Asterid  241 Black Library, The  233, 262, 264 Blackstone's  202, 207 Bloodied (Damage Condition)  20, 28, 75, 133, 144, 145, 147, 177, 303, 304, 312, 357 Bloomsbury  269, 272 Blue Beads (Case Seed)  274 Blunt (Disadvantage)  311 BOCU  196, 198, 200, 201 Bollocks, Weird  39, 70, 211, 259, 316 Bonus Dice and Penalty Dice  80, 83, 86, 111 Bonus Die  13, 23, 32, 36, 51, 52, 60, 72, 83, 86, 90, 101, 106, 111, 112, 119, 132, 134, 135, 136, 138, 139, 140, 141, 143, 147, 171, 172, 173, 174, 175, 183, 188, 234, 235, 245, 296, 297, 303, 304, 321, 322, 327, 328, 329, 330, 331, 352, 354, 355, 357, 359 Bonus/Penalty Dice, Multiple  111, 138, 140, 143, 172, 359 Book of Cunning Device, The  264 Book Piles, Stonewaters  301, 302 Bookshops  273 Bookshop, Stonewaters  285, 300 Bookshop, The (Case File)  11, 272, 336 Boosting Spells  172, 176, 177, 297, 323, 359 Borough Operational Command Unit (BOCU)  196, 198, 200, 201, 215 Botany (Science Specialisation)  81, 98 Bracing (Firearms)  331 Break Point, Case File  220 Briefing, The  206 Briefing (The Bookshop)  288 British Class System  12 British Library Poltergeist (The Bookshop)  301, 302 British Library, The  266, 272, 281, 336 British Museum, The  269, 272, 277, 337, 338, 340 British Transport Police, The  196, 215, 269, 275 Bromley  282 Bromley and Dulwich Police Stations  269 Brook, Beverley  318 Brook, Beverley (Genius Loci)  232, 243, 244, 246, 247, 251, 282 Buckland, George  260, 326 Build (Vehicle)   157, 159, 355 Bumblebee (Spell)  179, 181, 182, 186 Burner (Secondary Investigator)  314, 315 Burst of Speed (Chases)  151, 154, 155, 157, 311 Burst of Speed (Vehicles)  157 Buying New Advantages  120, 121, 122, 306 C Caffrey, Frank  209, 223, 239, 255, 273 Campaign, Writing a  341 Canal, Mrs  244, 245, 282 Candano (Spell)  179, 183, 189 Car Killer (Spell)  177, 179, 181, 182, 183 Case Disposal  203 Case File  10, 14, 15, 46, 57, 120, 202, 203, 207, 210, 211,
 
@@ -16814,7 +16814,7 @@ Chelsea Thames, Genius Loci  251, 275, 277
 
 Chemistry (Science Specialisation)  81, 99
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000916_b9534d603d3478aab862f0e793dcd2ecffef27db82486939650623cbd76a2b85.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000916_b9534d603d3478aab862f0e793dcd2ecffef27db82486939650623cbd76a2b85.png)
 
 I
 
@@ -17030,7 +17030,7 @@ Criminal Experience Package  310
 
 Criminal Investigation Department (CID)  195, 197, 198, 203, 215
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000917_9dc65963789a3c247bde380b921d59b6fb6135cf0cd3276bed4f829011729164.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000917_9dc65963789a3c247bde380b921d59b6fb6135cf0cd3276bed4f829011729164.png)
 
 Criminal Investigations  202
 
@@ -17204,7 +17204,7 @@ Drowned Sailor, The (Case Seed)  278
 
 Drowning  149, 356
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000918_0cf9a04d8d2ef1b1ddc524b282275ca04fae5fb96174964e7d5f43060bc19e3b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000918_0cf9a04d8d2ef1b1ddc524b282275ca04fae5fb96174964e7d5f43060bc19e3b.png)
 
 I
 
@@ -17218,7 +17218,7 @@ Earth (Affinity)  319, 320 Easily Distracted (Disadvantage)  311 Effra, River  2
 Falling (Athletics)  82 Family Liaison Officer (FLO)  209, 216 Farmer (Occupation)  67, 319 Fast-Moving Targets  130, 138, 142, 143, 184, 354 Fast Reactions (Advantage)  47, 51, 128, 129, 135, 141, 142, 143, 329, 353, 354, 355 Fatal Blow (Damage Condition)  114, 123, 133, 138, 144, 149, 177, 192, 312, 332, 352, 356, 357, 360 Father Thames, Genius Loci  233, 243, 244, 246, 247, 248, 251, 277, 278 Federal Bureau of Investigation (FBI)  74, 216, 237 Fellaman, Mrs  18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41 Fifth Order Spells  179, 190 Fighting Back, Firearms  129, 139, 141, 142, 143, 353, 354 Fighting Back, Magic  129, 141, 142, 143, 176, 353, 354, 360 Fighting Back, Melee  129, 141, 353 Fighting (Combat Skill)  46, 52, 60, 81, 101, 114, 124, 126, 128, 129, 130, 131, 134, 135, 136, 157, 185, 327, 328, 353 Financial Investigators (Police Resources)  209 Fine Art (Art/Craft Specialisation)  81, 88, 89 Fingers and Thumbs (Disadvantage)  311 Finnegan, Sgt Anthony  259, 264 Fire (Affinity)  320 Firearms, Automatic Fire  61, 139, 329 Firearms, Bracing  331 Firearms (Combat Skill)  51, 52, 60, 81, 101, 105, 114, 126, 128, 129, 130, 131, 132, 143, 156, 157, 174, 328, 329, 330, 353 Firearms, Malfunction  107, 141, 143 Firearms, Multiple Shots  139, 140, 329, 330, 354 Firearms, Reloading  139 Firearms, Sights  331 Firearms (Table)  132 Firearms vs Vehicles  157 Fireball (Spell)  51, 135, 171, 172, 173, 174, 179, 181, 182, 183, 187, 256, 312, 323, 355 Firefighter (Occupation)  68 First Aid  94, 146, 147, 357 First Attending Officer (FAO)  204, 216 First Order Spells  178, 179 Fitzroy, Mr  287, 299 Flashbacks  57, 224 Flash Bulb (Spell)  171, 178, 179, 181, 183, 323 Fleet, River  275, 276, 280, 281 Fleet Street  281 Fleet Thames, Genius Loci  246, 251, 280, 281 Flying Ice Saw (Spell)  179, 181, 182, 188 Folklore, Using  339, 341 Folly, Arboretum  266, 267, 366, 368 Folly, Atrium  206, 260, 264, 265, 266, 268, 289, 297, 365, 367, 368 Folly, Basement  212, 264, 265, 266 Folly, Coach House  265, 266, 289, 299, 365, 367 Folly Consultant's Card  13, 60, 211, 290 Folly, Custody Suite  212, 264, 266, 268
 ```
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000919_7dc7780667fa90b1a4d85633b822407942bd66f2a730981682f61771c40a6fbf.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000919_7dc7780667fa90b1a4d85633b822407942bd66f2a730981682f61771c40a6fbf.png)
 
 Folly Expansion Document  12, 222, 260
 
@@ -17398,7 +17398,7 @@ Hit Locations, Optional (Table)  332
 
 Holding Your Action  129, 328
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000920_ca6b226f567276d1eea0b090c30ab2389ec3cbd83a0845305912fdb70c6da0db.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000920_ca6b226f567276d1eea0b090c30ab2389ec3cbd83a0845305912fdb70c6da0db.png)
 
 I
 
@@ -17410,7 +17410,7 @@ HOLMES  206, 207, 208, 210, 216, 266 Hook Scene, The  337 Horn Fair, The  278 Ho
 Investigator Development Phase  92, 120, 121, 122, 161, 170, 171, 172, 178, 306, 353 Investigator Experience Packages  170, 309, 311 Investigator Occupations (List)  45 Investigator Organisation  219, 316 Investigator Organisation, Base  316, 318 Investigator Organisation, Creating  316 Investigator Organisation, Non-Police  317 Investigator Organisation, Structure  316 Investigator, Primary  313, 314, 315 Investigators, Practice  285 Investigators, Ready-To-Play  11, 286, 343 Investigators, Secondary  314, 315, 316 Investigator's Signare  164, 319, 351 Invisible Catch (Spell)  130, 179, 181, 184 Involuntary Action  107, 108, 118, 119, 144, 312, 357 Iron-Blooded (Disadvantage)  312 Iron, Cold  143, 242, 245, 250, 254, 312, 355 Isis Thames  272 Isis (Walbrook)  220, 275, 281 Issues, Policing  196, 201 It's in the Trees (Case Seed)  261 IVA (Initial Vestigium Assessment)  163, 206 J Jackson, Saffron  285, 287, 288, 290, 292, 294, 296, 297, 300, 306, 307 Jones, Nafeesa  49, 50, 51, 53, 58, 88, 104, 105, 106, 107, 108, 109, 111, 112, 114, 115, 118, 119, 122, 124, 126, 129, 133, 136, 137, 138, 139, 140, 147, 148, 155, 164, 171, 172, 173, 174, 175, 176, 177, 322, 329, 333, 344 Jonquiere, Karen (Kay)  269 Journalist (Occupation)  68 Jumping (Athletics)  82 K Kamara, Abigail  9, 49, 223, 232, 237, 240, 269, 272, 274, 280, 281, 326 Keeping Notes  217, 218, 220, 285, 338, 339 Kentish Town Police Station  269 Kew, Royal Botanic Gardens  277 Key, The (Case Seed)  273 Knowledge, The (Advantage)  47, 52, 83 Knuckles  18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 33, 35, 36, 37, 38, 39, 40, 41 Kumar, Sgt Jaget  196, 253, 269, 275 L Laboratories, Folly  265, 266, 289 Lady Ty, Genius Loci  190, 244, 246, 247, 250, 251, 253, 269, 272, 278, 279, 280, 282 Lambert, David  269 Languages (Expert Skill)  26, 52, 81, 91, 92, 117, 313, 351 Latin  92, 170, 178, 237, 242, 244, 264, 279, 323, 339 Law (Expert Skill)  81, 93, 117
 ```
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000921_8b8b738b7c6a1549bf021519066b7f3cec9897a75bf374bdf1f6b5b22a255253.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000921_8b8b738b7c6a1549bf021519066b7f3cec9897a75bf374bdf1f6b5b22a255253.png)
 
 Law Enforcement, London  195
 
@@ -17602,7 +17602,7 @@ Museum of London  263, 275, 277
 
 Mystic Art of Fighting, The  234, 235, 327
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000922_8a246b71be5901cda4efd7f57a54d148175508d45d1b2140d83fc0f4f115d9fd.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000922_8a246b71be5901cda4efd7f57a54d148175508d45d1b2140d83fc0f4f115d9fd.png)
 
 I
 
@@ -17620,7 +17620,7 @@ Old Bill, The  26, 195, 215 Olympia Thames, Genius Loci  251, 275, 277 Omans, Mo
 
 Pilot Boat (Expert Skill)  81, 96, 117
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000923_a52484362c605c98cc762ad034ff6e78f482f4cf850cf45e0700728b6bc827e7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000923_a52484362c605c98cc762ad034ff6e78f482f4cf850cf45e0700728b6bc827e7.png)
 
 PIP  203, 215
 
@@ -17828,7 +17828,7 @@ Recovering Luck  75, 114, 115, 147
 
 Refectory, Folly  266, 267, 366, 368
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000924_96e156aef2d0b713fff14e5ad8a7ba9d42132f12c56acd5e3312db140011f07b.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000924_96e156aef2d0b713fff14e5ad8a7ba9d42132f12c56acd5e3312db140011f07b.png)
 
 I
 
@@ -17840,13 +17840,13 @@ Regent's Canal  244, 281, 282 Regular Difficulty  79, 80, 82, 83, 84, 85, 86, 87
 Scotland Yard, New  196, 260, 269 Seawoll, Alexander  70, 198, 206, 234, 259, 268 Secondary Investigators  314, 315, 316 Secondary Investigators, Alternates  314, 315 Secondary Investigators, Burners  314, 315 Secondary Investigators, Pool  314, 316 Secondary Investigators, Significant Others  314 Second Order Spells  179, 183 Seducere (Spell)  179, 190, 193 Senior Investigating Officer (SIO)  197, 203, 204, 210, 216 Sense Vestigia (Common Skill)  54, 81, 85, 161, 162, 164, 246, 294, 296, 301, 302, 318, 319, 325, 351, 359 Sergeant (Rank)  197, 216 Serious Cybernetics Corporation (SCC)  276 Serra Obscura (Spell)  179, 185 Service Member (Occupation)  73, 310 Session Zero  44, 46, 57, 65, 221, 224, 229 Setting, Game  12, 285 Setting Off a Demon Trap  325 Setting, Rivers of London  12 Set Your Goal (Combat)  116, 123, 127, 133, 134, 135, 136, 137, 139, 140, 155, 157, 353 Shield (Spell)  171, 179, 181, 184, 185, 186, 187, 189, 191 Shooting into Melee Combat  140, 143 Shop, The  282 Shot At Combat Options  142, 354 Showmen  280 Sights (Firearms)  331 Signare  54, 75, 85, 93, 162, 164, 191, 246 Signare, Detection  164, 359 Signare, Investigator's  164, 319, 351 Signare (Table)  165, 166, 167, 168, 169 Signature Firearm (Advantage)  51, 60, 101 Signature Weapon (Advantage)  52, 60, 101, 327 Significant Manifestation (Affinity)  319, 320 Significant Other (Secondary Investigator)  314 Silicon Roundabout  276 Silver, Officer Alona  269 Silver-Tongued (Advantage)  52, 86 Sīphōnem (Spell)  179, 191, 326 Sixth Order Spells  179, 192 Six Ws  207, 214 Skill List  81 Skill Roll  104, 352 Skill Rolls, Combined  89, 91, 94, 99, 321, 322 Skill Rolls, Multiple Players  110, 112 Skill Rolls, Opposed  19, 21, 25, 26, 31, 80, 84, 86, 87, 90, 94, 96, 105, 106, 107, 109, 112, 114, 115, 116, 118, 123, 124, 125, 126, 131, 134, 158, 180, 184, 192, 221, 323, 329, 352, 353 Skills  79 Skills, Acquiring New  120 Skills, Choosing  53 Skills, Combat  52, 53, 81, 101, 221, 351 Skills, Common  52, 53, 81, 82, 104, 221, 351 Skills, Creating New  321 Skills, Expert  52, 53, 76, 79, 81, 84, 87, 88, 104, 114, 117, 121, 221, 321, 351
 ```
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000925_c165273bebc6fdd05dfd5c8e97be604b84c87eb7f9e4b6aee9eda662017d11b2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000925_c165273bebc6fdd05dfd5c8e97be604b84c87eb7f9e4b6aee9eda662017d11b2.png)
 
 Skills, Increasing  120, 121, 161, 306 Skill Specialisations  80 Skills, Pushing  80, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 321, 352 Skill Values  79, 92 Skinner, Terrence  276, 282 Skinny Grenade (Spell)  179, 181, 182, 187 Skygarden  62, 269, 273, 274, 340 Skygarden Souvenirs (Case Seed)  274 Sky (Nymph)  273 Sleight of Hand (Expert Skill)  81, 99, 117 Slow-Footed (Disadvantage)  312 Slow Healer (Disadvantage)  312 Slow vs Rapid Advancement  120, 121 Smithfield Market  275, 281, 341 Smithy, Folly  266, 267, 366, 368 Snapdragon (Spell)  179, 182, 296, 327 Social (Common Skill)  50, 51, 52, 60, 72, 75, 81, 84, 85, 86, 110, 134, 206, 296, 297, 311, 312, 313, 322 Social Worker (Occupation)  18, 26, 73 Society of the Rose, The  179, 219, 260, 263 Society of the Wise, The (see also Folly, The)  170, 259, 260, 263, 269, 316 Soho  272 Solo Adventure  17 Sons of Weyland, The  262, 275, 277, 324 Source Material, Using  285, 336 Spaniards Inn  280, 283 Special Abilities  231, 326 Special Agent (Occupation)  74 Special Assessment Unit (SAU)  10, 12, 13, 15, 197, 204, 206, 211, 216, 260, 316 Special Collection, The  235, 261 Special Constable  198, 216 Specialisations, Skills  80 Specialist Firearms Command  198, 209, 216 Speedy (Advantage)  47, 52, 76, 312, 350, 351 Spellcaster Experience Package  170, 311 Spellcasting Rolls  94, 114, 128, 130, 156, 172, 173, 174, 177, 183, 186, 187, 189, 296, 302, 327, 328, 353, 359 Spellcasting Rolls, Exceptional Circumstances  93, 174, 175 Spellcasting Rolls, Failing  173, 174, 175, 296, 302, 326, 359 Spellcasting Rolls, Pushing  174, 175, 177, 296, 359, 360 Spells  178, 179 Spells and Technology  94, 176, 183, 209, 264, 297 Spells, Base Cost  172, 176, 178, 312, 323, 326, 359 Spells, Boosting  172, 176, 177, 297, 323, 359 Spells, Casting  108, 172, 296, 359 Spells, Creating New  323 Spells, Detecting  94, 130, 176, 359 Spells, Fifth Order  179, 190 Spells, First Order  178, 179 Spells, Fourth Order  179, 188 Spells, Higher-Order  170, 323 Spells, Learning  121, 170, 171, 172, 306 Spells, Mastering  121, 129, 171, 172, 306 Spells, Newtonian  170, 178, 179 Spells, Prerequisites  170, 178, 323 Spells, Second Order  179, 183
 
 Spells, Sixth Order  179, 192 Spells, Starting  170 Spells, Third Order  186 Spending Development Points  120, 306, 353 Spending Luck  21, 23, 24, 26, 31, 82, 104, 106, 107, 108, 112, 113, 114, 115, 118, 123, 130, 131, 133, 136, 144, 146, 147, 152, 158, 174, 175, 177, 190, 192, 193, 243, 291, 292, 294, 296, 300, 303, 312, 333, 352, 357 Spirit of Books and Reading, The  272, 285, 288, 301, 302, 304, 305, 306, 307 Splitting the Party  226, 300, 339 Spoilers  12, 227, 259 Spray and Pray (Automatic Fire)  329 Stadtkrone, The  273 Staff Area, Stonewaters  296, 301 Staffroom, Stonewaters  301 Staff, Wizard's  233, 235, 324, 327 Stages of a Criminal Investigation  202 Starting Equipment  59, 77, 351 Starting Spells  170 Starting Spells, Hedge Wizard  171 Starting Spells, Newtonian Apprentice  170 Stat Block  231 Steadfast (Advantage)  47, 50, 52, 118, 311 Stealth (Common Skill)  81, 84, 87, 96, 100, 105, 110, 188, 328 Stephanopoulos, Miriam  197, 234, 238, 268 Stonewaters, Art Section  294, 296, 299, 302 Stonewaters, Basement  296, 301 Stonewaters, Book Piles  301, 302 Stonewaters Bookshop  285, 293, 300, 369 Stonewaters, Children's Section  285, 294, 299, 304 Stonewaters, Cookery Section  296, 302 Stonewaters, Dome  292, 294, 295, 298, 299 Stonewaters, Manager's Office  297, 300, 301 Stonewaters, Staff Area  296, 301 Stonewaters, Staffroom  301 Stonewaters, Till Point  292, 296, 297, 303 Stop and Search (Police Powers)  211 Strength (STR)  21, 46, 48, 82, 108, 134 Strength (STR) Roll  49, 104, 110, 112, 118, 132, 136, 178, 180, 183, 184, 189, 312, 320, 355 Strip Club of Doctor Moreau, The  219, 263, 272 Stromberg, Erik  273, 274 Strong Vestigia  161, 162, 359 Success, Critical  19, 21, 25, 26, 31, 105, 106, 114, 118, 123, 131, 132, 133, 136, 141, 143, 149, 177, 190, 193, 243, 292, 330, 331, 332, 333, 352, 355, 356, 360 Success, Hard  19, 21, 24, 25, 26, 31, 33, 80, 82, 85, 105, 106, 112, 114, 115, 118, 119, 130, 131, 132, 134, 136, 137, 139, 140, 149, 162, 173, 176, 177, 183, 189, 190, 191, 193, 208, 243, 291, 292, 295, 296, 298, 299, 301, 302, 304, 320, 322, 326, 330, 332, 333, 352, 355, 356, 359, 360 Success, Regular  19, 21, 25, 26, 31, 33, 80, 82, 85, 105, 106, 114, 115, 118, 130, 131, 132, 136, 137, 139, 155, 162, 173, 176, 177, 190, 193, 208, 243, 291, 292, 295, 296, 298, 299, 301, 304, 320, 322, 330, 332, 352, 355, 359, 360
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000926_9986d0b2eb0225d948cba18c26c8e531732607850a2d71392981092670286c5f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000926_9986d0b2eb0225d948cba18c26c8e531732607850a2d71392981092670286c5f.png)
 
 I
 
@@ -18046,7 +18046,7 @@ Vox Imperante (Spell)  179, 190, 193
 
 Vultus Occulto (Spell)  179, 185, 191
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000927_6b8e1d7f39d682fbab0b4b39bd41424c07e167cf8646e1e4cc82db42285a1efb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000927_6b8e1d7f39d682fbab0b4b39bd41424c07e167cf8646e1e4cc82db42285a1efb.png)
 
 ## W
 
@@ -18218,9 +18218,9 @@ Handout: Bookshop 2  294, 364
 
 Handout: Bookshop 3  295, 364
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000928_d1a776fe1fe2dca3edc47a1c6b116c422617c3786d407b8536bb027a86b91fbb.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000928_d1a776fe1fe2dca3edc47a1c6b116c422617c3786d407b8536bb027a86b91fbb.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000929_49502801841bb1168879b08c5f47f70c8a985a2e725509c00366820e5e763052.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000929_49502801841bb1168879b08c5f47f70c8a985a2e725509c00366820e5e763052.png)
 
 RIWERS
 
@@ -18478,9 +18478,9 @@ NAME RELATIONSHIP
 
 2025ChaosiumInc.emissionisrantedtcopyorprsonalnon-commrcialuseonlyRiversofLondonincludingalldistinctivecharactersandlocatons201-025BenAaronovitchUsedwithpemison
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000930_4ffc6c325ed9ab64d5f96185ee68467af8b9792edc4df17fa4bdb79db69d4d9a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000930_4ffc6c325ed9ab64d5f96185ee68467af8b9792edc4df17fa4bdb79db69d4d9a.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000931_2b460e5db48f020c572faf7e8a4570d00704dc19dca9fbb34a1c4302ff94a197.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000931_2b460e5db48f020c572faf7e8a4570d00704dc19dca9fbb34a1c4302ff94a197.png)
 
 Full Half
 
@@ -18680,9 +18680,9 @@ PORTRAIT
 
 8
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000932_a6209aed6b316b3c5b291de1a16a9b702028e41bc5428a348d5398bf190a9901.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000932_a6209aed6b316b3c5b291de1a16a9b702028e41bc5428a348d5398bf190a9901.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000933_e2410ef553b9add8c26b85bc5a1cf8160e50e31d967ded1f18e68af2ca14e3b7.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000933_e2410ef553b9add8c26b85bc5a1cf8160e50e31d967ded1f18e68af2ca14e3b7.png)
 
 NAME
 
@@ -18748,13 +18748,13 @@ Name Relationship
 
 I
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000934_7775da34e7286d108a5b93da0462c8e8a81e0fdefb2432ae2f912661b84d8125.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000934_7775da34e7286d108a5b93da0462c8e8a81e0fdefb2432ae2f912661b84d8125.png)
 
 ## Ben Aaronovitch
 
 Born  and  raised  in  London,  Ben  had  the  sort  of  unrelentingly uninteresting  childhood  that  drives  a  person  to  drink  or  Science Fiction. The latter proved useful in his early career when he wrote for Doctor Who (before it was fashionable), Casualty , and the cheapest soap opera ever madeJupiter Moon . Alas, his career foundered in the late 1990s and he was forced to go out and work for a living. It was while running the Crime and Science Fiction sections at  the Covent Garden branch of Waterstones that he conceived the notion of writing novels instead. Thus was the Rivers of London series born, and when the first bookRivers of London -proved to be a runaway success,  he  waited  all  of  five  minutes  to  give  up  the  day  job  and return to the bliss that is a full-time writing career. He still lives in the city that he modestly calls 'the capital of the world,' and says he will leave when they prise London from his cold dead fingers. He promises that he is already hard at work on the next Peter Grant novel and not playing computer games-honest.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000935_39a0ed4d08e20c909435cbd945afb4bcda35d80eee8461168c749bc6dab5fa10.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000935_39a0ed4d08e20c909435cbd945afb4bcda35d80eee8461168c749bc6dab5fa10.png)
 
 ## Gary Bedell
 
@@ -18766,9 +18766,9 @@ In  his  career,  Gary  has  worked  with  such  companies  as  Crypt TV, Activi
 
 When he's not working, Gary loves to spend time with his wife and three  kitties,  travelling,  spending  time  on  personal  projects,  DJing, and collecting vintage toys. He also runs an artist organisation called Clever Kaiju: a community where professional and aspiring artists can network, learn from each other, attend their classes and demos, and, in some cases, find employment.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000936_49476d7d295df2f1f83c6938dec9f950d5c0cb5c1f1f8ec925a5827be7ce226e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000936_49476d7d295df2f1f83c6938dec9f950d5c0cb5c1f1f8ec925a5827be7ce226e.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000937_eed95885eae692357a8255c6124c5922295fc23358d5a1c1252820a2eb57f1d8.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000937_eed95885eae692357a8255c6124c5922295fc23358d5a1c1252820a2eb57f1d8.png)
 
 ## Irene Caro
 
@@ -18776,7 +18776,7 @@ Irene, under the pseudonym Araire, is an illustrator who primarily  works  on  s
 
 Like any lover of art, she was attracted to the world of illustration as a child but it was not until much later that she devoted herself to learning the profession. Now, she is lucky enough to dedicate herself to  it  entirely,  and  especially  enjoys  being  commissioned  to  create illustrations for fantasy literature, which is one of the main reasons she became interested in art in the first place!
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000938_6b16d2853bd33fbdbae48143ad0699fa5ce03efa6956d445ee60fbbb8dc85cde.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000938_6b16d2853bd33fbdbae48143ad0699fa5ce03efa6956d445ee60fbbb8dc85cde.png)
 
 ## JB Casacop
 
@@ -18784,15 +18784,15 @@ JB  is  a  professional  freelance  illustrator  who  creates  fantasy  and scie
 
 JB is a bona fide geek whose hobbies include assembling custom lightsabres,  3D  printing  miniatures  and  cosplay  props,  playing open-world video games, and reading comic books. When he's not busy with these, he spends time learning martial arts such as Arnis, Muay Thai, Tae Kwon Do, and HEMA.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000939_d57fb6fae410465b5312c802afc779f89f686d502c17da4458d8f6d899a6152a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000939_d57fb6fae410465b5312c802afc779f89f686d502c17da4458d8f6d899a6152a.png)
 
 I
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000940_1306318593c877b04f8c9d2d0c271e5dcff1455daba90dca10e65ef21f064d9f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000940_1306318593c877b04f8c9d2d0c271e5dcff1455daba90dca10e65ef21f064d9f.png)
 
 ## Caleb Cleveland
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000941_5466f7cddf3c72eb586a86fdaed9ef4f6056cfd65a720287e7013086773a991c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000941_5466f7cddf3c72eb586a86fdaed9ef4f6056cfd65a720287e7013086773a991c.png)
 
 ## Simeon Cogswell
 
@@ -18800,13 +18800,13 @@ Caleb is a freelance illustrator and concept artist based in San Diego, Californ
 
 Simeon is a nonbinary geek who started gaming in 1993, when they were given a copy of the Dungeons &amp; Dragons Rules Cyclopedia by their grandfather. Little did he know the kind of effect that would have on a dorky third grader, because almost 30 years later, Simeon now makes these books for a living. Sim's areas of geekery include: RPGs, anime, board games, retro video games, and typography.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000942_a455f54808fafc728fa84093efbf7be7aa5e2c809b13437df5e67b204ff161ae.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000942_a455f54808fafc728fa84093efbf7be7aa5e2c809b13437df5e67b204ff161ae.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000943_6f11190c5df20465e248edd4e3a7cd89398f598719109fb5e8146183eb0c6207.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000943_6f11190c5df20465e248edd4e3a7cd89398f598719109fb5e8146183eb0c6207.png)
 
 ## Alyssa Faden
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000944_36c177c2d37f8b7a4d7c76942cfc8576ca5817e59f413b9bf5172cd9a62584b0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000944_36c177c2d37f8b7a4d7c76942cfc8576ca5817e59f413b9bf5172cd9a62584b0.png)
 
 ## Paul Fricker
 
@@ -18816,15 +18816,15 @@ Paul Fricker is a freelance writer and games designer, and lead system designer 
 
 Paul is also one of the hosts of the horror and gaming podcast, The Good Friends of Jackson Elias . He often can be found on Twitter (@ PaulFricker), where he endeavors to focus on the important topics in life: gaming, music, and food.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000945_353c154b67555021d7f2f893b0d29cf610a69f391b3c6049a3811185b425d59f.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000945_353c154b67555021d7f2f893b0d29cf610a69f391b3c6049a3811185b425d59f.png)
 
 I
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000946_3c39bc0861a0495afe15a3defb4a460f459bfb505468dc0753cd82d50ad27903.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000946_3c39bc0861a0495afe15a3defb4a460f459bfb505468dc0753cd82d50ad27903.png)
 
 ## Doruk Golcu
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000947_30ba64e85d2a8868016f6a875836022a6452879668e460a1dab68e9d716fbc4d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000947_30ba64e85d2a8868016f6a875836022a6452879668e460a1dab68e9d716fbc4d.png)
 
 ## Lloyd Gyan
 
@@ -18834,15 +18834,15 @@ From working with Modiphius Entertainment, to being the cultural liaison on RPG
 
 'Peter Grant's magical life has always vibrated with me, being a West African boy living his best life in London. To be given a chance to work on a project as personal as this is a dream come true. Also, I actually know what Star Beer tastes like!'
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000948_5af0577108ef874d51d9f2f9338d216ff8dff6544864c337bb0dc5095c671c93.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000948_5af0577108ef874d51d9f2f9338d216ff8dff6544864c337bb0dc5095c671c93.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000949_9d4045dcaddc8976a29fde66847b8781a429c12de0d4cdf5e8c60efdaa39a67e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000949_9d4045dcaddc8976a29fde66847b8781a429c12de0d4cdf5e8c60efdaa39a67e.png)
 
 ## Lynne Hardy
 
 A multi-award-winning writer and editor, Lynne has been working on  and  off  in  the  roleplaying  industry  for  almost  30  years,  most recently  in  her  capacity  as  Associate  Editor  for  Chaosium's Call of  Cthulhu RPG.  Her  past  credits  include  work  for  Modiphius Entertainment, Cubicle 7, Green Ronin, and Pelgrane Press. She also created her own steampunk pulp adventure game: Cogs, Cakes &amp; Swordsticks . Bizarrely, for someone who works predominantly in the horror field, Lynne hasn't watched a lot of horror films as they're far too scary, but she is rather fond of tea, books, and fountain pens, along  with  the  occasional  G&amp;T.  When  she's  not  beavering  away at  the  day  job,  she  gives  talks  and  workshops  on  traditional  hand embroidery techniques.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000950_1d0bc7be1128a0aea522978a0db992885725c6a101a3252c711bdafea6c77d6d.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000950_1d0bc7be1128a0aea522978a0db992885725c6a101a3252c711bdafea6c77d6d.png)
 
 ## Gavin Inglis
 
@@ -18850,11 +18850,11 @@ Gavin  Inglis  is  a  writer  and  teacher  based  in  Edinburgh,  with a  backg
 
 Follow her on Twitter (@CogsandCakes).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000951_222ac4ef1dbecafd9d80efeaea155739e79b5ca63132b290abc01054aa7334ec.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000951_222ac4ef1dbecafd9d80efeaea155739e79b5ca63132b290abc01054aa7334ec.png)
 
 I
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000952_9669c5bf355e843c026825a90ef263880c8bc57b105306eaf06aba87f9cb5418.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000952_9669c5bf355e843c026825a90ef263880c8bc57b105306eaf06aba87f9cb5418.png)
 
 ## Kurt Komoda
 
@@ -18862,7 +18862,7 @@ Kurt  was  born  in  New  Jersey  on  May  15,  1970,  interrupting  his brother
 
 After graduating high school in 1988, Kurt joined the US Navy and served as an Aviation Anti-Submarine Warfare Operator and was a  combat aircrewman onboard Lockheed P-3Cs based out of NAS Moffett Field. When the Cold War ended in 1991, the US apparently didn't need quite so many submarine hunters, so he opted for an earlyout offered by the force reductions and returned to civilian life in 1992.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000953_6a491e80591481ad2272990357bf69885cfe4fc5ee1fb290b2af32bf1c77613a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000953_6a491e80591481ad2272990357bf69885cfe4fc5ee1fb290b2af32bf1c77613a.png)
 
 ## Mike Mason
 
@@ -18874,9 +18874,9 @@ Around the millennium, Mike published The Whisperer, a  fanzine devoted  to Call
 
 When he's not working, Kurt's hobbies include macro photography, kayaking, origami, fossil hunting, and video games. Kurt has been an avid martial artist since high school and continues to train and teach. He also takes care of Jowday, a feral that won his way inside and is the only good cat in the world.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000954_d0867ab6b6809190b1cef562456b8bb95941cd2b4723bce0aaf0fab03d71bca2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000954_d0867ab6b6809190b1cef562456b8bb95941cd2b4723bce0aaf0fab03d71bca2.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000955_5aed8f91358184cb7633786067d3bf69e30b5b5e75a7339c229105fd7189302e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000955_5aed8f91358184cb7633786067d3bf69e30b5b5e75a7339c229105fd7189302e.png)
 
 ## Lucas Marques
 
@@ -18884,7 +18884,7 @@ Lucas is a Brazilian illustrator with more than 10 years' experience in professi
 
 From  these  foundations,  Lucas  developed  his  artistic  skills  by studying the fundamentals of his craft and experimenting with new materials and techniques, mixing traditional and digital media to create  fantastical  characters  and  worlds  that  reflect  contemporary elements of pop culture and media.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000956_e6f9318a92282ac0052ad8a2bafe190e0c6414fef47813b66a6384f9201a8e69.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000956_e6f9318a92282ac0052ad8a2bafe190e0c6414fef47813b66a6384f9201a8e69.png)
 
 ## Keris McDonald
 
@@ -18894,15 +18894,15 @@ As  an  artist, Lucas  is driven by all the possibilities  and opportunities  hi
 
 A writer  of  supernatural  fiction  across  the  horror,  fantasy,  and erotica genres, Keris has nine novels in print and has seen her short stories  published  in  many  magazines  and  anthologies.  Her  short story,  'The  Coat  Off  His  Back,'  was  chosen  for  inclusion  in Best Horror of the Year Vol. 7 (ed. E Datlow).
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000957_4e06cf4bbd82ad736f2cfdf99542d30be42c0f75fc08dcb0b712281889a9daa2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000957_4e06cf4bbd82ad736f2cfdf99542d30be42c0f75fc08dcb0b712281889a9daa2.png)
 
 I
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000958_6c8d98d3dd260a3fe8be23dd0ad3295104194122a407a1b601a2192bc5742e5c.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000958_6c8d98d3dd260a3fe8be23dd0ad3295104194122a407a1b601a2192bc5742e5c.png)
 
 ## Maurice Mosqua
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000959_af08c4304104e3c08cfad7c445aa8102c0eaa1e791b613918dc933d0467c9d78.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000959_af08c4304104e3c08cfad7c445aa8102c0eaa1e791b613918dc933d0467c9d78.png)
 
 ## Nicholas Nacario
 
@@ -18910,9 +18910,9 @@ Maurice  is  a  freelance  artist  and  illustrator  from  Germany.  He started 
 
 Nicholas is  an  award-winning  graphic  designer,  art  director, and  part  of  the  creative  team  behind  the Call  of  Cthulhu roleplaying game. His short stories, essays, and Call of Cthulhu scenarios  have  appeared  in  various  fiction  and  roleplaying publications  such  as Corporate  Cthulhu , Destroy  All  Robots , Down Darker Trails , Ill-Considered Expeditions , and Legends of New Orleans . He is originally from the San Francisco Bay Area and now resides in Portland, OR.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000960_531fcaa75e32e7e8edec0c7d390376205163c93c794df2094bfa949aac99604a.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000960_531fcaa75e32e7e8edec0c7d390376205163c93c794df2094bfa949aac99604a.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000961_35b151560058299394b430293b55ab40c1437a89570ecdcef3ed1f3fb84f8b28.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000961_35b151560058299394b430293b55ab40c1437a89570ecdcef3ed1f3fb84f8b28.png)
 
 ## Matt Ryan
 
@@ -18922,17 +18922,17 @@ Drawing the Folly plans was a treat for Matt, as it allowed him to  incorporate 
 
 Matt lives in the Finger Lakes region of New York with his wife, KC. The  pair  can  often  be  found  eating  dinner  in  their  canoe  on Cayuga Lake.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000962_9815809b346760ba0fefaea72234c2963ecea361d373ee7be91fbbfe56cb33ba.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000962_9815809b346760ba0fefaea72234c2963ecea361d373ee7be91fbbfe56cb33ba.png)
 
 ## Lucya Szachnowski
 
 Lucya Szachnowski has lived in London all her life and loves her city,  roleplaying,  and  all  things  magical.  For  Chaosium's Call  of Cthulhu RPG, she co-wrote The London Guidebook , 'The Garden of Earthly  Delights'  for Strange  Aeons ,  'Suffer  Little  Children'  and 'London  Calling'  for Day of  the  Beast ,  'The  Occulted  Light'  for Before the Fall, and contributed to The Investigator's Companion and Keeper's Compendium .  She  wrote  the  introductory  scenario  for  the Sigil &amp; Sign RPG  by Cubicle 7 and Make Believe Games. After years  working  on  local  London  newspapers,  she  did  an  MA  in English literature, specialising in literary London. Under the pen name  Lucya  Starza,  she  has  written  books  on  practical  magic  in Moon Books' Pagan Portals series, and writes a London-based blog: A Bad Witch's Blog. She is very excited to be involved in the Rivers of London RPG.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000963_af0e43effc67e1c3c9b8bcb9669f4bfe9b354e70a3f24339dac98149963293c0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000963_af0e43effc67e1c3c9b8bcb9669f4bfe9b354e70a3f24339dac98149963293c0.png)
 
 I
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000964_6e3ee1d0f8318ecea2af3c3dca364f0ded1fd6503843edf78fc665cfb21a6fe2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000964_6e3ee1d0f8318ecea2af3c3dca364f0ded1fd6503843edf78fc665cfb21a6fe2.png)
 
 ## Anna Urbanek
 
@@ -18940,19 +18940,19 @@ Anna is a graphic designer by trade, a librarian by education, and a folklorist 
 
 Outside of work, Anna is a reclusive witch hiding in the middle of a Finnish forest with a partner, a wolf-like dog, two cat familiars, and a couple of mini humans. She busies herself with researching obscure and arcane topics, embroidering  8 th -century clothing replicas,  playing Shadowrun ,  and  studying  world  mythologies and folk  stories.  Powered  by  the  glories  of  coffee  and  pistachios,  she wages an eternal (and losing) battle with the cats to keep at least one houseplant alive. Her current life goal is to befriend the local murder of ravens.
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000965_84039a438150689fb2d45848ab0512d14ed10d19bfd538608456cbf6accc80de.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000965_84039a438150689fb2d45848ab0512d14ed10d19bfd538608456cbf6accc80de.png)
 
 POLICE
 
 C
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000966_5fcdc1f796bd8c5eaa14a1ee750798ec7b2fc7940dc1cd169cca940e1a4837c0.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000966_5fcdc1f796bd8c5eaa14a1ee750798ec7b2fc7940dc1cd169cca940e1a4837c0.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000967_ffc1b5534d20d44e3cf3b494c3a5a732b7d753d1338b5ac5e56781a25643a265.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000967_ffc1b5534d20d44e3cf3b494c3a5a732b7d753d1338b5ac5e56781a25643a265.png)
 
 ## WELCOME TO THE UNITED STATES OF AMERICA!
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000968_be581ab12e9d0dbb3813c02cd5387226dc87fb7e87776d345449b4e3aae687ce.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000968_be581ab12e9d0dbb3813c02cd5387226dc87fb7e87776d345449b4e3aae687ce.png)
 
 "I ThiNK BECOMING A WiZArd Is ABOuT discovering what's real And what isn't."
 
@@ -18975,11 +18975,11 @@ CHA3200-H
 
 $59.99
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000969_578467e8fd64a4b2a870568d2cc293df15eb0369cffa13ae667b3373b9898a4e.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000969_578467e8fd64a4b2a870568d2cc293df15eb0369cffa13ae667b3373b9898a4e.png)
 
 EXIT
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000970_87eae59d2230d774159b92884ace1dfc7569313576650903e72cdd2c0f594baa.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000970_87eae59d2230d774159b92884ace1dfc7569313576650903e72cdd2c0f594baa.png)
 
 Rivers of London, including all distinctive characters and locations, 2025BenAaronovitch.Usedwithpermission.
 
@@ -18991,6 +18991,6 @@ Published by Chaosium Inc.3450Wooddale Ct,Ann Arbor,MI 48104,USA; Distributed in
 
 customerservice@chaosium.com
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000971_a5fb76f9361b42404c740cf4ec63eaf3e1f5fa18e0791809641c2710a5801323.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000971_a5fb76f9361b42404c740cf4ec63eaf3e1f5fa18e0791809641c2710a5801323.png)
 
-![Image](/home/docling/out/cha3200_-_rivers_of_london_1.4_artifacts/image_000972_5c4c6866743e0b7b2be2880319fb7ae2fb107df6ad700c29b10f0cf817ce49e2.png)
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000972_5c4c6866743e0b7b2be2880319fb7ae2fb107df6ad700c29b10f0cf817ce49e2.png)
