@@ -105,7 +105,7 @@ sudo systemctl enable --now folly
 
 - `public/js/api.js`: Centralized browser API client used by UI actions (`auth`, `users`, `sessions`, and character sheet endpoints).
 - `public/js/app.js`: Main SPA logic (auth flow, session/account/rules tabs, session rename modal, player assignment, GM/player sheet interactions, GM session overview table, embedded HTML rulebook viewer, and The Domestic top-nav solo adventure tab with URL step routing and local sheet persistence).
-- `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views, including backstory support, portrait upload/clear behavior, profession dropdown options, expert skill editing controls, and add controls for additional skills/custom fields.
+- `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views, including backstory support, portrait upload/clear behavior, profession dropdown options, characteristic allocation dropdowns (30–80) with 280-point validation messaging, advantages multi-select with stat-based prerequisite disabling/strikethrough, expert skill editing controls, and add controls for additional skills/custom fields.
 
 ## Utility scripts
 
