@@ -210,6 +210,8 @@ tr:hover td { background: var(--bg3); }
 .skill-row input[type=number] { width: 70px; text-align: center; }
 .skill-name-wrap { display: flex; align-items: center; gap: 0.35rem; min-width: 0; }
 .skill-name-wrap .msk-name { flex: 1; min-width: 0; }
+.common-skills-grid .csk-row input[readonly] { background: var(--bg3); }
+.sheet-inline-expand summary { cursor: pointer; color: var(--accent2); font-size: 0.82rem; margin-bottom: 0.35rem; }
 .btn-inline-remove {
   padding: 0.05rem 0.35rem;
   min-width: 1.2rem;

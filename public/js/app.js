@@ -336,13 +336,13 @@ async function renderGMSessionView(sessionId) {
         <table>
           <thead>
             <tr>
-              <th>Player</th><th>Character</th><th>STR</th><th>CON</th><th>DEX</th><th>INT</th><th>POW</th><th>Speed</th><th>Luck</th><th>Skills</th><th>Essential items</th>
+              <th>Player</th><th>Character</th><th>STR</th><th>CON</th><th>DEX</th><th>INT</th><th>POW</th><th>Speed</th><th>Luck</th><th>Advantages</th><th>Skills</th><th>Essential items</th>
             </tr>
           </thead>
           <tbody>
             ${players.map((p) => {
               const d = (sheetMap[p.id] && sheetMap[p.id].data) || {};
-              const allSkills = [...(d.mandatory_skills || []), ...(d.additional_skills || [])];
+              const allSkills = [...(d.common_skills || []), ...(d.mandatory_skills || []), ...(d.additional_skills || [])];
               return `<tr>
                 <td><strong>${esc(p.username)}</strong></td>
                 <td>${esc(d.name || '—')}</td>
@@ -353,6 +353,7 @@ async function renderGMSessionView(sessionId) {
                 <td>${esc(d.pow || '—')}</td>
                 <td>${esc(d.mov || '—')}</td>
                 <td>${esc(d.luck || '—')}</td>
+                <td>${esc(d.advantages || '—')}</td>
                 <td>${esc(summarizeSkills(allSkills))}</td>
                 <td>${esc(d.carry || '—')}</td>
               </tr>`;

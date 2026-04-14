@@ -96,16 +96,18 @@ sudo systemctl enable --now folly
 
 - Personal details include **glitch**, **backstory**, and **reputation** notes.
 - Portrait upload is supported directly on the sheet (stored with sheet data and shown in the top-right area of the Personal Info section).
-- Skills include expert and additional groups; expert skills start with two blank entries and support inline removal/addition.
+- Skills now include a fixed common-skills group (Athletics, Drive, Navigate, Observation, Read Person, Research, Sense Vestigia, Social, Stealth) with editable dropdown percentages (30/40/50/60), plus expert and additional groups (expert skills still support inline removal/addition).
+- If a character has a Magical advantage, common skills automatically include Magic at 60% and enforce Sense Vestigia at 60%.
 - Vitals include movement (speed), luck, and everyday carry/essential items.
-- GM session view includes a consolidated table for all assigned players showing character identity, stats (STR/CON/DEX/INT/POW plus speed/luck), skills, and essential items.
+- Advantages are displayed in a dedicated text box and edited in a collapsible picker list, improving visibility while preserving saved/custom entries.
+- GM session view includes a consolidated table for all assigned players showing character identity, stats (STR/CON/DEX/INT/POW plus speed/luck), advantages, skills, and essential items.
 - Rules tab directly embeds the bundled HTML Rivers of London rulebook in-app; use browser find (Ctrl/Cmd + F) for text search.
 
 ## Front-end scripts
 
 - `public/js/api.js`: Centralized browser API client used by UI actions (`auth`, `users`, `sessions`, and character sheet endpoints).
 - `public/js/app.js`: Main SPA logic (auth flow, session/account/rules tabs, session rename modal, player assignment, GM/player sheet interactions, GM session overview table, embedded HTML rulebook viewer, and The Domestic top-nav solo adventure tab with URL step routing and local sheet persistence).
-- `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views, including backstory support, portrait upload/clear behavior, profession dropdown options, characteristic allocation dropdowns (30–80) with 280-point validation messaging, advantages multi-select with stat-based prerequisite disabling/strikethrough, expert skill editing controls, and add controls for additional skills/custom fields.
+- `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views, including backstory support, portrait upload/clear behavior, profession dropdown options, characteristic allocation dropdowns (30–80) with 280-point validation messaging, a dedicated advantages textbox + collapsible preset picker with stat-based prerequisite disabling/strikethrough, common skills with 30–60 dropdown defaults and Magical auto-adjustments, expert skill editing controls, and add controls for additional skills/custom fields.
 
 ## Utility scripts
 
