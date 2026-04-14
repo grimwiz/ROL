@@ -323,6 +323,7 @@ async function renderGMSessionView(sessionId) {
 
   const sheetMap = {};
   sheets.forEach(s => { sheetMap[s.user_id] = s; });
+  window.gmSheetMap = sheetMap;
 
   content.innerHTML = `
     <div class="card gm-overview-pane">
@@ -745,6 +746,8 @@ async function gmSaveSheet(sessionId, userId) {
   try {
     const data = SheetForm.collect();
     await api.saveSheet(sessionId, userId, data);
+    // Keep the in-memory sheetMap current so switching between players doesn't revert to stale data
+    if (window.gmSheetMap) window.gmSheetMap[userId] = { data };
     status.textContent = '✓ Saved';
     status.className = 'save-status saved';
   } catch (e) {

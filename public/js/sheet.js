@@ -230,7 +230,10 @@ const SheetForm = (() => {
       <div class="skills-grid" id="additional-skills">
         ${d.additional_skills.map((sk, i) => `
           <div class="skill-row">
-            <input type="text" id="sf_ask_name_${i}" class="ask-name" value="${esc(sk.name)}" placeholder="Skill name"${rdAttr}>
+            <div class="skill-name-wrap">
+              <input type="text" id="sf_ask_name_${i}" class="ask-name" value="${esc(sk.name)}" placeholder="Skill name"${rdAttr}>
+              ${!readonly ? `<button type="button" class="btn btn-inline-remove" title="Remove skill" onclick="SheetForm.removeAdditional(this)">✕</button>` : ''}
+            </div>
             <input type="number" id="sf_ask_val_${i}" class="ask-val" value="${esc(sk.value)}" placeholder="%" min="0" max="100"${rdAttr}>
           </div>`).join('')}
       </div>
@@ -311,7 +314,7 @@ const SheetForm = (() => {
       return `<option value="${esc(adv.name)}"${selectedAttr}>${esc(adv.name)}</option>`;
     }).join('');
     return `
-      <textarea id="sf_advantages_text" rows="2" placeholder="Selected advantages"${readonly ? ' readonly' : ''}>${esc(selected.join(', '))}</textarea>
+      <input type="text" id="sf_advantages_text" placeholder="Selected advantages"${readonly ? ' readonly' : ''} value="${esc(selected.join(', '))}">
       ${readonly ? '' : `<details class="sheet-inline-expand" style="margin-top:0.45rem">
         <summary>Edit selected advantages</summary>
         <select id="sf_advantages" multiple size="8"${rdAttr}>${options}</select>
@@ -433,7 +436,7 @@ const SheetForm = (() => {
 
   function addMandatory() {
     const grid = document.getElementById('mandatory-skills');
-    const i = grid.querySelectorAll('.skill-row').length;
+    const i = Date.now(); // unique id — avoids collisions with pre-rendered rows
     const div = document.createElement('div');
     div.className = 'skill-row';
     div.innerHTML = `<div class="skill-name-wrap">
@@ -451,12 +454,20 @@ const SheetForm = (() => {
 
   function addAdditional() {
     const grid = document.getElementById('additional-skills');
-    const i = grid.querySelectorAll('.skill-row').length;
+    const i = Date.now();
     const div = document.createElement('div');
     div.className = 'skill-row';
-    div.innerHTML = `<input type="text" id="sf_ask_name_${i}" class="ask-name" placeholder="Skill name">
-      <input type="number" id="sf_ask_val_${i}" class="ask-val" placeholder="%" min="0" max="100">`;
+    div.innerHTML = `<div class="skill-name-wrap">
+      <input type="text" id="sf_ask_name_${i}" class="ask-name" placeholder="Skill name">
+      <button type="button" class="btn btn-inline-remove" title="Remove skill" onclick="SheetForm.removeAdditional(this)">✕</button>
+    </div>
+    <input type="number" id="sf_ask_val_${i}" class="ask-val" placeholder="%" min="0" max="100">`;
     grid.appendChild(div);
+  }
+
+  function removeAdditional(btn) {
+    const row = btn && btn.closest('.skill-row');
+    if (row) row.remove();
   }
 
   function addCustomField() {
@@ -550,5 +561,5 @@ const SheetForm = (() => {
     };
   }
 
-  return { render, collect, addMandatory, removeMandatory, addAdditional, addCustomField, removeCustomField, handlePortraitUpload, clearPortrait };
+  return { render, collect, addMandatory, removeMandatory, addAdditional, removeAdditional, addCustomField, removeCustomField, handlePortraitUpload, clearPortrait };
 })();
