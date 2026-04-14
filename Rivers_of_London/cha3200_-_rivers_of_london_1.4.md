@@ -63,10 +63,10 @@ The plans of the Folly were developed and realised by Matt Ryan  from  originals
 
 ![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000001_fb6a0024b7a0e6b8b440a8e300c52166317184044cdaa3cb9ac828089cbc3d17.png)
 
-| Foreword� � � � � � � � � � � � � � � � � �                                                                 | � � � 6        | Other Factors in Combat . . . . . . . . . . .                                                    | .134            |
+| Foreword                                                                                                    |       6        | Other Factors in Combat . . . . . . . . . . .                                                    | .134            |
 |-------------------------------------------------------------------------------------------------------------|----------------|--------------------------------------------------------------------------------------------------|-----------------|
 |                                                                                                             |                | Combat Manoeuvres. . . . . . . . . . . . .                                                       | . . .134        |
-| An Introduction Storytelling�                                                                               | � � � 9        | Improvised Weapons . . . . . . . . . . . . Outnumbered . . . .                                   | . .134 .135     |
+| An Introduction Storytelling                                                                                |       9        | Improvised Weapons . . . . . . . . . . . . Outnumbered . . . .                                   | . .134 .135     |
 | to Collaborative Introduction . . . . . . . . . . . . . . .                                                 | . . .10        | . . . . . . . . . . . . . . Armour . . . . . . . . . .                                           | . . .135        |
 | . . . . . . . . . An Overview of the . . . . . . . . . . . .                                                | . . .10        | . . . . . . . . . . . . . Ranged Attack Modifiers . . . . . . . . .                              | . .138          |
 | Game . What's in this Book? . . . . . . . . . . . . . . . .                                                 | . . .11        | Combat FAQ . . . . . . . . . . . . . . . . . . . .                                               | . . 141         |
@@ -75,14 +75,14 @@ The plans of the Folly were developed and realised by Matt Ryan  from  originals
 | Roleplaying Dice. . . . . . . . . . . . . . . . . .                                                         | . . .13        | After the Fight . . . . . . . . . . . . . . . . .                                                | . . 145         |
 | . The Character Sheet . . . . . . . . . . . . . . . .                                                       | . . .14        | First Aid . . . . . . . . . . . . . . . . . . . .                                                | . .146          |
 | What Now?. . . . . . . . . . . . . . . . . . . . . . . . .                                                  | . . . 14       | . . Medical Aid . . . . . . . . . . . . . . . . . . .                                            | . . 147         |
-| The Domestic� � � � � � � � � � � � � � �                                                                   | � � 17         | Recovering from a Mortal Wound. . . . .                                                          | . . 147         |
+| The Domestic                                                                                                |     17         | Recovering from a Mortal Wound. . . . .                                                          | . . 147         |
 | Start Here . . . . . . . . . . . . . . . . . . . . . . . . . .                                              | . . . 17       | Other Forms of Damage. . . . . . . . . Chases. . . . . . . . . . . . . . . . . . . . . . . . . . | . . 148 . .150  |
-| Chapter 1 : Creating Characters�                                                                            | � � 43         | The Chase Round . . . . . . .                                                                    | . .150          |
+| Chapter 1 : Creating Characters                                                                             |     43         | The Chase Round . . . . . . .                                                                    | . .150          |
 | Creating Your Character. . . . . . .                                                                        | . . .44        | . . . . . . . . Part 1: You Want to Run Away?. . . .                                             | . . 151         |
 | . . . . . . . . Step One: Determine Occupation . . . . .                                                    | . . .45        | Part 2: You Want to Catch Someone?                                                               | . .154          |
 | Investigator Occupation List. . . . . . . .                                                                 | . . .45        | Ranged Attacks Mid-Chase. . . . . . .                                                            | . .156          |
 | . . Step Two: Assign Characteristics . . . . . .                                                            | . . .46        | Vehicle Chases . . . . . . . . . . . . . . . . .                                                 | . .157          |
-| What the Numbers Mean. . . . . . . . . . . .                                                                | . . .48        | Chapter 4: Newtonian Magic                                                                       | � � 161         |
+| What the Numbers Mean. . . . . . . . . . . .                                                                | . . .48        | Chapter 4: Newtonian Magic                                                                       |     161         |
 | Step Three: Advantages . . . . . . . . . . . . . .                                                          | . . .50        | Vestigia . . . . . . . . . . . . . . . . . . . . . . . . .                                       | . . 161         |
 | Step Four: Determine Skills . . . . . . . . .                                                               | . . .52        | Signare . . . . . . . . . . . . . . . . . . . . . . . .                                          | . .164          |
 | . Common and Combat Skill List . . . . . .                                                                  | . . .53        | . Signare List. . . . . . . . . . . . . . . . . . . .                                            | . .165          |
@@ -91,12 +91,12 @@ The plans of the Folly were developed and realised by Matt Ryan  from  originals
 | . . . About the Character Sheet. . . . . . . . . .                                                          | . . .75        | Casting Spells                                                                                   | . . 172         |
 | . . . Summary of Character Creation . . . . . . . .                                                         | . .            | . . . . . . . . . . . . . . . . . . Degradation (HTD).                                           |                 |
 |                                                                                                             | .76            | Hyperthaumaturgical Spells. . . . . . . . . . . . . . . . . . . . . . . . . . .                  | . . 177 . . 178 |
-| Chapter 2 : Skills � � � � � � � � � � � � Skill List . . . . . . . . . . . . . . . . . . . . . . . . . . . | � � 79 . . .81 | Spell Prerequisites. . . . . . . . . . . . . . .                                                 | . . 178         |
+| Chapter 2 : Skills                         Skill List . . . . . . . . . . . . . . . . . . . . . . . . . . . |     79 . . .81 | Spell Prerequisites. . . . . . . . . . . . . . .                                                 | . . 178         |
 | Common Skills. . . . . . . . . . . . . . . . . . . . . .                                                    | . . .82        | Aqua Spell Tree . . . . . . . . . . . . . . . .                                                  | . . 178         |
 | Expert Skills . . . . . . . . . . . . . . . . . . . . . . . .                                               | . . .87        | First Order Spells . . . . . . . . . . . . . . .                                                 | . . 178         |
 | Combat . . . . . . . . . . . .                                                                              | . 101          | Spell List. . . . . . . . . . . . . . . . . . . . . .                                            | . . 179         |
 | Skills . . . . . . . . . . .                                                                                | .              | Impello Spell Tree. . . . . . . . . . . . . . .                                                  | . . 181         |
-| Chapter 3 : The Basic Rules � � � Skill Rolls . . . . . . . . . . . . . . . . . . . . . . . . . .           | � 103 .        | Werelight Spell Tree. . . . . . . . . . . . .                                                    | . .182 .183     |
+| Chapter 3 : The Basic Rules       Skill Rolls . . . . . . . . . . . . . . . . . . . . . . . . . .           |   103 .        | Werelight Spell Tree. . . . . . . . . . . . .                                                    | . .182 .183     |
 | Pushing the Roll . . . . . . . . . . . .                                                                    | .104 . .108    | Second Order Spells . . . . . . . . . . . . . Shield Spell Tree. . . . . . . . . . . . . . .     | . . .185        |
 | . . . . . . . Bonus Dice and Penalty Dice. . . . . . . . .                                                  | . . 111        | . Third Order Spells . . . . . . . . . . . . . .                                                 | . .186          |
 | Human Limits . . . . . . . . . . . . . . . . . .                                                            | . .112         | Fourth Order Spells . . . . . . . . . . . . .                                                    | . .188          |
@@ -104,7 +104,7 @@ The plans of the Folly were developed and realised by Matt Ryan  from  originals
 | Luck . . . . . . . . . . . . . . . . . . . . . . . . . . . .                                                | .              | Spells . . . . . . . . . . . . . .                                                               | .192            |
 | Opposed Skill . . . . . . . . . . . . .                                                                     | .113 .         | Sixth Order                                                                                      | . .             |
 | Rolls . . . Impairment . . . . . . . . . . . . . . . . . .                                                  | . 116 . . 118  | Chapter 5 :                                                                                      |                 |
-| . . . . . Investigator Development Phase . . . . . . . .                                                    | . .120         | Bringing the Rivers of London                                                                    | � �195          |
+| . . . . . Investigator Development Phase . . . . . . . .                                                    | . .120         | Bringing the Rivers of London                                                                    |    195          |
 | Combat . . . . . . . . . . . . . . . . . . . . . . . . . . . .                                              | . .123         | Law Enforcement in London . . . . . . . .                                                        | . . 195         |
 | Combat . . . . . . . . . . . . . . . .                                                                      | . .123         | AGeneral Overview of the Metropolitan                                                            | Service . .196  |
 | Overview. . Declaration of Intent . . . . . . . . . . . . . .                                               | . .124         | Ranks . . . . . . . . . . . . . . . . . . . . . . . .                                            | . .197          |
@@ -137,7 +137,7 @@ Magical vs Mundane Investigations  . . . . . . . . . . . . . . . 211
 | Tech . . . . . . . . . . . . . . Dealing with the Unexpected. . . . . .                | .228      | Base of Operations . . . . . . . . .                                       | . . 318       |
 | Issues with Players . . . . . . . . . . . . . .                                        | .228      | . . . Playing Fae Investigators . . . . . . . . .                          | . . 318       |
 | Have Fun. . . . . . . . . . . . . . . . . . . . . .                                    | .229      | Fae Character Creation. . . . . . . . .                                    | . . 318       |
-| Chapter 6: A Rogues' Gallery�                                                          | �231      | Playing a Quiet Person . . . . . . . . . .                                 | . . 319       |
+| Chapter 6: A Rogues' Gallery                                                           |  231      | Playing a Quiet Person . . . . . . . . . .                                 | . . 319       |
 | Profiles and Stat Blocks . . . . . . . . . . . .                                       | .231      | Skills Revisited . . . . . . . . . . . . . . . .                           | . .321        |
 |                                                                                        |           | Creating New Skills . . . . . . . . . . .                                  | .321          |
 | Human Characters . . . . .                                                             | .231      | Combined Skill Rolls . . . . . .                                           | . . .322      |
@@ -154,13 +154,13 @@ Magical vs Mundane Investigations  . . . . . . . . . . . . . . . 211
 | The Rivers of London . . . . . . . . . . . .                                           | .277      | . . . . . . Miscellaneous Firearms Rules . . .                             | . . 331       |
 | Greater London . .                                                                     | .282      | Armour Revisited . . . . . . . .                                           | . . 331       |
 | . . . . . . . . . . . . . . Demi-Monde Pubs and Nazareths. .                           | .283      | . . . . . Optional Hit Locations . . . . . . . .                           | . .332        |
-| Chapter 8: The Bookshop� � �                                                           | 285       | Damage Rolls: Alternative Method Wounds and Healing Revisited . . . .      | . .332 . .333 |
+| Chapter 8: The Bookshop                                                                | 285       | Damage Rolls: Alternative Method Wounds and Healing Revisited . . . .      | . .332 . .333 |
 | GMBackground. . . . . . . . . . . . . . . . . .                                        | .285      | Spending Luck to Resist Incapacitation.                                    | . .333        |
 | Introducing the Investigators . . . . . .                                              | .285      | Poisons . . . . . . . . . . . . . . . . . . . . .                          | . .333        |
 | Dramatis Personae . . . . . . . . . . . . . . .                                        | .287      | Writing a Case File. . . . . . . .                                         | . .336        |
 | . Start: Morning Briefing . . . . . . . . . . . .                                      | .288      | . . . . . . Using the Source Material . . . . .                            | . .336        |
 | Preliminary Inquiries . . . . . . . . . . . . . .                                      | .290      | . Devising Your Own Case Files . .                                         | . .336        |
-| The Cappuccino Lounge. . . . . . . . . . Stonewaters . . . . . . . . . . . . . . . . . | .290 .292 | Appendices � � � � � � � � � � � � � �                                     | � 343         |
+| The Cappuccino Lounge. . . . . . . . . . Stonewaters . . . . . . . . . . . . . . . . . | .290 .292 | Appendices                                                                 |   343         |
 | . . . Case Update . . . . . . . . . . . . . . . . . . .                                | .297      | Appendix A: Ready-to-Play Investigators                                    | . .343        |
 | . . Visiting the Libraries . . . . . . . . . . . .                                     | .298      | Appendix B: Rules Summaries. . . . .                                       | . .350        |
 | Formulating a Plan . . . . . . . . . . . . . .                                         | .299      | Character Creation . . . . . . . . . . . .                                 | . .350        |
@@ -172,10 +172,10 @@ Magical vs Mundane Investigations  . . . . . . . . . . . . . . . 211
 | . . . . A Book at Bedtime . . . . . . . . . . . . . .                                  | .304      | . . Demi-Monde Magic. . . . . . . . . .                                    | . .360        |
 | Loose Ends . . . . . . . . . . . . . . . . . . . .                                     | .306      | . Appendix C: Bibliography . . . . .                                       | . . 361       |
 | Rewards. . . . . . . . . . . . . . . . . . . . . . .                                   | .306      | . . . Appendix D: Collected Maps and Handouts.                             | . .363        |
-| Cast . . . . .                                                                         | .307      | � � � � � � � � � � � � � � � � �                                          | �             |
-| . . . . . . . . . . . . . . . . . . . . . . .                                          |           | Index� �                                                                   | 370           |
-| Chapter 9: Additional Rules� Advanced Character Creation . . . . . . .                 | 309 .309  | Character Sheets � � � � � � � �                                           | � 384         |
-| Assigning Characteristics Revisited .                                                  | .309      | Contributor Biographies� �                                                 | � 388         |
+| Cast . . . . .                                                                         | .307      |                                                                            |               |
+| . . . . . . . . . . . . . . . . . . . . . . .                                          |           | Index                                                                      | 370           |
+| Chapter 9: Additional Rules  Advanced Character Creation . . . . . . .                 | 309 .309  | Character Sheets                                                           |   384         |
+| Assigning Characteristics Revisited .                                                  | .309      | Contributor Biographies                                                    |   388         |
 
 ![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000002_173172bb367307f30b6fd4bf2973a3adca3a8febccb88bf696d905fa981ee508.png)
 
@@ -2559,7 +2559,9 @@ Some advantages require the investigator to have a minimum value in one or more 
 
 NPCs can also have advantages. Minor NPCs may have only  one,  with  more  important  NPCs-recurring characters,  for  instance-having  up  to  two.  Very experienced and/or major NPCs may have three, if appropriate to their character and their role in the story, e.g., DCI Nightingale (page 233).
 
-## Connected Prerequisite: none.
+## Connected
+
+Prerequisite: none.
 
 Your character can pull strings with some powerful people. This could be a government official, a wealthy individual, or a criminal organisation. The connection provides privileged access to resources or information. Anything significant will come at a cost, and the connection may ask the investigator to do them a 'favour' in return. The player can either define who their investigator is connected to during character creation or they can decide at an appropriate moment later during the game, i.e., when they need to call on someone for help.
 
@@ -2577,9 +2579,7 @@ mentioned, the GM should be equally creative in what the connection  demands  in
 
 ## Damage Bonus
 
-Prerequisite:
-
-requires a minimum STR 60.
+Prerequisite: requires a minimum STR 60.
 
 Your  character  really  packs  a  punch!  Your  melee  attacks inflict +1 damage.
 
