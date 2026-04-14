@@ -5,6 +5,7 @@ const State = {
   users: [],
   currentSession: null,
   currentSheetUserId: null,
+  rulesFiles: null,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -117,6 +118,7 @@ async function renderMain() {
       <div class="nav-brand">🔮 The Folly</div>
       <div class="nav-tabs">
         <button class="nav-tab active" data-tab="sessions" onclick="switchTab('sessions')">Sessions</button>
+        <button class="nav-tab" data-tab="rules" onclick="switchTab('rules')">Rules</button>
         ${isGM ? `<button class="nav-tab" data-tab="users" onclick="switchTab('users')">Accounts</button>` : ''}
       </div>
       <div class="nav-right">
@@ -128,6 +130,7 @@ async function renderMain() {
       </div>
     </nav>
     <div id="tab-sessions" class="main"></div>
+    <div id="tab-rules" class="main" style="display:none"></div>
     ${isGM ? `<div id="tab-users" class="main" style="display:none"></div>` : ''}`;
 
   showPage('main-page');
@@ -140,7 +143,10 @@ function switchTab(tab) {
     const el_ = el(`tab-${t}`);
     if (el_) el_.style.display = t === tab ? '' : 'none';
   });
+  const rulesTab = el('tab-rules');
+  if (rulesTab) rulesTab.style.display = tab === 'rules' ? '' : 'none';
   if (tab === 'users') loadUsersTab();
+  if (tab === 'rules') loadRulesTab();
 }
 
 async function doLogout() {
@@ -451,6 +457,85 @@ async function assignPlayer(sessionId, btn) {
   }
 }
 window.assignPlayer = assignPlayer;
+
+// ── Rules tab ────────────────────────────────────────────────────────────────
+async function loadRulesTab() {
+  const tab = el('tab-rules');
+  if (!tab) return;
+
+  let files = State.rulesFiles;
+  if (!files) {
+    try {
+      const rules = await api.getRules();
+      files = rules.files;
+      State.rulesFiles = files;
+    } catch (e) {
+      tab.innerHTML = `
+        <div class="page-header"><h2>Rules Library</h2></div>
+        <div class="alert alert-danger">${esc(e.message)}</div>`;
+      return;
+    }
+  }
+
+  tab.innerHTML = `
+    <div class="page-header"><h2>Rules Library</h2></div>
+    <div class="card rules-access-card">
+      <div class="card-title">Rulebook files</div>
+      <p class="card-sub">Open the full rules in either format.</p>
+      <div class="rules-links">
+        <a class="btn" target="_blank" rel="noopener noreferrer" href="${esc(files.html)}">Open HTML Rulebook</a>
+        <a class="btn" target="_blank" rel="noopener noreferrer" href="${esc(files.markdown)}">Open Markdown Rulebook</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="form-group" style="margin-bottom:0.5rem">
+        <label for="rules-search-input">Search rules</label>
+        <input type="text" id="rules-search-input" placeholder="e.g. chase, magic, conditions">
+      </div>
+      <div class="rules-search-actions">
+        <button class="btn btn-primary" onclick="searchRules()">Search</button>
+      </div>
+      <div id="rules-search-results" class="rules-search-results"></div>
+    </div>`;
+
+  const searchInput = el('rules-search-input');
+  searchInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') searchRules();
+  });
+}
+
+async function searchRules() {
+  const q = el('rules-search-input').value.trim();
+  const resultsHost = el('rules-search-results');
+  if (!q) {
+    resultsHost.innerHTML = '<p style="color:var(--text2)">Enter a search term.</p>';
+    return;
+  }
+  resultsHost.innerHTML = '<p style="color:var(--text2)">Searching…</p>';
+  try {
+    const response = await api.searchRules(q);
+    const files = response.files || State.rulesFiles;
+    State.rulesFiles = files || State.rulesFiles;
+    if (!response.results || response.results.length === 0) {
+      resultsHost.innerHTML = '<p style="color:var(--text2)">No matching lines found in the markdown rulebook.</p>';
+      return;
+    }
+    resultsHost.innerHTML = `
+      <p style="color:var(--text2);margin-bottom:0.75rem">Found ${response.count} matching line${response.count === 1 ? '' : 's'}.</p>
+      <div class="rules-results-list">
+        ${response.results.map((result) => `
+          <div class="rules-result-item">
+            <div class="rules-result-title">${esc(result.title)} <span>line ${result.line}</span></div>
+            <p>${esc(result.snippet)}</p>
+          </div>
+        `).join('')}
+      </div>
+      ${files ? `<div style="margin-top:0.75rem"><a class="btn btn-sm" target="_blank" rel="noopener noreferrer" href="${esc(files.markdown)}">Open markdown source</a></div>` : ''}`;
+  } catch (e) {
+    resultsHost.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+  }
+}
+window.searchRules = searchRules;
 
 // ── Accounts tab (GM) ─────────────────────────────────────────────────────────
 async function loadUsersTab() {

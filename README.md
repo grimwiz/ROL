@@ -96,12 +96,24 @@ sudo systemctl enable --now folly
 - Skills include mandatory and additional groups, with inline removal for mandatory entries.
 - Vitals include movement (speed), luck, and everyday carry/essential items.
 - GM session view includes a consolidated table for all assigned players showing character identity, stats (STR/CON/DEX/INT/POW plus speed/luck), skills, and essential items.
+- Rules Library tab lets authenticated users open the bundled Rivers of London rulebook in HTML or Markdown, and run full-text search against the Markdown file.
 
 ## Front-end scripts
 
 - `public/js/api.js`: Centralized browser API client used by UI actions (`auth`, `users`, `sessions`, and character sheet endpoints).
-- `public/js/app.js`: Main SPA logic (auth flow, session/account tabs, session rename modal, player assignment, GM/player sheet interactions, and the GM session overview table).
+- `public/js/app.js`: Main SPA logic (auth flow, session/account/rules tabs, session rename modal, player assignment, GM/player sheet interactions, GM session overview table, and rulebook search UI).
 - `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views, including backstory support, portrait upload/clear behavior, add/remove controls for mandatory skills, and add controls for additional skills/custom fields.
+
+## Rulebook files
+
+- Place the supplied rulebook files in `Rivers_of_London/` with matching base names:
+  - `cha3200_-_rivers_of_london_1.4.md`
+  - `cha3200_-_rivers_of_london_1.4.html`
+  - `cha3200_-_rivers_of_london_1.4_artifacts/` (image references used by the HTML/Markdown)
+- The server exposes these files at `/rules-files/*`.
+- API endpoints for authenticated users:
+  - `GET /api/rules` (returns direct HTML/Markdown file URLs)
+  - `GET /api/rules/search?q=<term>` (searches Markdown lines and returns snippets)
 
 ## Data
 

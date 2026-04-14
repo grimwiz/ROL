@@ -1,5 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
 const db = require('./db');
 const { signToken, requireAuth, requireGM, COOKIE_NAME, COOKIE_OPTS } = require('./auth');
 
@@ -189,6 +191,86 @@ router.put('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
     ON CONFLICT(session_id, user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
   `).run(sessionId, userId, data);
   res.json({ ok: true });
+});
+
+// ── Rules library ────────────────────────────────────────────────────────────
+
+const rulesRoot = path.join(__dirname, '..', 'Rivers_of_London');
+const rulesBaseName = 'cha3200_-_rivers_of_london_1.4';
+const rulesMdPath = path.join(rulesRoot, `${rulesBaseName}.md`);
+const rulesHtmlPath = path.join(rulesRoot, `${rulesBaseName}.html`);
+
+function loadRulesIndex() {
+  if (!fs.existsSync(rulesMdPath) || !fs.existsSync(rulesHtmlPath)) {
+    return null;
+  }
+
+  const markdown = fs.readFileSync(rulesMdPath, 'utf8');
+  const lines = markdown.split(/\r?\n/);
+  return {
+    markdown,
+    lines,
+    htmlPath: `/rules-files/${rulesBaseName}.html`,
+    markdownPath: `/rules-files/${rulesBaseName}.md`
+  };
+}
+
+router.get('/rules', requireAuth, (req, res) => {
+  const rulesIndex = loadRulesIndex();
+  if (!rulesIndex) {
+    return res.status(404).json({ error: 'Rules files are not available on the server.' });
+  }
+  res.json({
+    files: {
+      html: rulesIndex.htmlPath,
+      markdown: rulesIndex.markdownPath
+    }
+  });
+});
+
+router.get('/rules/search', requireAuth, (req, res) => {
+  const q = String(req.query.q || '').trim();
+  if (!q) return res.status(400).json({ error: 'Search query is required.' });
+
+  const rulesIndex = loadRulesIndex();
+  if (!rulesIndex) {
+    return res.status(404).json({ error: 'Rules files are not available on the server.' });
+  }
+
+  const qLower = q.toLowerCase();
+  const maxResults = 25;
+  const contextRadius = 1;
+  const results = [];
+
+  for (let i = 0; i < rulesIndex.lines.length && results.length < maxResults; i += 1) {
+    const line = rulesIndex.lines[i];
+    if (!line.toLowerCase().includes(qLower)) continue;
+
+    const title = line.replace(/^#+\s*/, '').trim() || `Line ${i + 1}`;
+    const snippetStart = Math.max(0, i - contextRadius);
+    const snippetEnd = Math.min(rulesIndex.lines.length - 1, i + contextRadius);
+    const snippet = rulesIndex.lines
+      .slice(snippetStart, snippetEnd + 1)
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    results.push({
+      line: i + 1,
+      title,
+      snippet: snippet.length > 300 ? `${snippet.slice(0, 297)}...` : snippet
+    });
+  }
+
+  res.json({
+    query: q,
+    count: results.length,
+    results,
+    files: {
+      html: rulesIndex.htmlPath,
+      markdown: rulesIndex.markdownPath
+    }
+  });
 });
 
 module.exports = router;
