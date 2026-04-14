@@ -70,7 +70,7 @@ async function init() {
   renderLoginPage();
   window.addEventListener('popstate', () => {
     const step = readAdventureStepFromUrl();
-    if (step && el('tab-rules') && el('tab-rules').style.display !== 'none') {
+    if (step && el('tab-domestic') && el('tab-domestic').style.display !== 'none') {
       openDomesticAdventure(step, true);
     }
   });
@@ -146,6 +146,7 @@ async function renderMain() {
       <div class="nav-tabs">
         <button class="nav-tab active" data-tab="sessions" onclick="switchTab('sessions')">Sessions</button>
         <button class="nav-tab" data-tab="rules" onclick="switchTab('rules')">Rules</button>
+        <button class="nav-tab" data-tab="domestic" onclick="switchTab('domestic')">The Domestic</button>
         ${isGM ? `<button class="nav-tab" data-tab="users" onclick="switchTab('users')">Accounts</button>` : ''}
       </div>
       <div class="nav-right">
@@ -158,6 +159,7 @@ async function renderMain() {
     </nav>
     <div id="tab-sessions" class="main"></div>
     <div id="tab-rules" class="main" style="display:none"></div>
+    <div id="tab-domestic" class="main" style="display:none"></div>
     ${isGM ? `<div id="tab-users" class="main" style="display:none"></div>` : ''}`;
 
   showPage('main-page');
@@ -166,7 +168,7 @@ async function renderMain() {
 
 function switchTab(tab) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  ['sessions','users'].forEach(t => {
+  ['sessions','users','domestic'].forEach(t => {
     const el_ = el(`tab-${t}`);
     if (el_) el_.style.display = t === tab ? '' : 'none';
   });
@@ -174,6 +176,7 @@ function switchTab(tab) {
   if (rulesTab) rulesTab.style.display = tab === 'rules' ? '' : 'none';
   if (tab === 'users') loadUsersTab();
   if (tab === 'rules') loadRulesTab();
+  if (tab === 'domestic') loadDomesticTab();
 }
 
 async function doLogout() {
@@ -506,77 +509,33 @@ async function loadRulesTab() {
 
   tab.innerHTML = `
     <div class="page-header"><h2>Rules Library</h2></div>
-    <div class="card rules-access-card">
-      <div class="card-title">Rulebook files</div>
-      <p class="card-sub">Open the full rules in either format.</p>
-      <div class="rules-links">
-        <a class="btn" target="_blank" rel="noopener noreferrer" href="${esc(files.html)}">Open HTML Rulebook</a>
-        <a class="btn" target="_blank" rel="noopener noreferrer" href="${esc(files.markdown)}">Open Markdown Rulebook</a>
-      </div>
-    </div>
     <div class="card">
-      <div class="card-title">Solo Adventure: The Domestic</div>
-      <p class="card-sub">Track your current step in the URL, move forward with action buttons, and step back with trace links.</p>
-      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem">
-        <button class="btn btn-primary" onclick="openDomesticAdventure()">Play The Domestic</button>
-        <a class="btn btn-sm" target="_blank" rel="noopener noreferrer" href="/rules-files/The%20Domestic.md">Open source markdown</a>
+      <div class="card-title">Rivers of London Rulebook</div>
+      <p class="card-sub">The HTML rulebook is shown below. Use your browser's built-in find (Ctrl/Cmd + F) to search.</p>
+      <div class="rulebook-pane">
+        <iframe src="${esc(files.html)}" title="Rivers of London rulebook" loading="lazy"></iframe>
       </div>
-    </div>
-    <div id="domestic-adventure-area"></div>
-    <div class="card">
-      <div class="form-group" style="margin-bottom:0.5rem">
-        <label for="rules-search-input">Search rules</label>
-        <input type="text" id="rules-search-input" placeholder="e.g. chase, magic, conditions">
-      </div>
-      <div class="rules-search-actions">
-        <button class="btn btn-primary" onclick="searchRules()">Search</button>
-      </div>
-      <div id="rules-search-results" class="rules-search-results"></div>
     </div>`;
+}
 
-  const searchInput = el('rules-search-input');
-  searchInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') searchRules();
-  });
+async function loadDomesticTab() {
+  const tab = el('tab-domestic');
+  if (!tab) return;
+
+  tab.innerHTML = `
+    <div class="page-header"><h2>The Domestic</h2></div>
+    <div class="card">
+      <div class="card-sub">Track your current step in the URL, move forward with action buttons, and step back with trace links.</div>
+    </div>
+    <div id="domestic-adventure-area"></div>`;
 
   const stepFromUrl = readAdventureStepFromUrl();
   if (stepFromUrl) {
     openDomesticAdventure(stepFromUrl, true);
-  }
-}
-
-async function searchRules() {
-  const q = el('rules-search-input').value.trim();
-  const resultsHost = el('rules-search-results');
-  if (!q) {
-    resultsHost.innerHTML = '<p style="color:var(--text2)">Enter a search term.</p>';
     return;
   }
-  resultsHost.innerHTML = '<p style="color:var(--text2)">Searching…</p>';
-  try {
-    const response = await api.searchRules(q);
-    const files = response.files || State.rulesFiles;
-    State.rulesFiles = files || State.rulesFiles;
-    if (!response.results || response.results.length === 0) {
-      resultsHost.innerHTML = '<p style="color:var(--text2)">No matching lines found in the markdown rulebook.</p>';
-      return;
-    }
-    resultsHost.innerHTML = `
-      <p style="color:var(--text2);margin-bottom:0.75rem">Found ${response.count} matching line${response.count === 1 ? '' : 's'}.</p>
-      <div class="rules-results-list">
-        ${response.results.map((result) => `
-          <div class="rules-result-item">
-            <div class="rules-result-title">${esc(result.title)} <span>line ${result.line}</span></div>
-            <p>${esc(result.snippet)}</p>
-          </div>
-        `).join('')}
-      </div>
-      ${files ? `<div style="margin-top:0.75rem"><a class="btn btn-sm" target="_blank" rel="noopener noreferrer" href="${esc(files.markdown)}">Open markdown source</a></div>` : ''}`;
-  } catch (e) {
-    resultsHost.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
-  }
+  openDomesticAdventure();
 }
-window.searchRules = searchRules;
 
 async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
   const host = el('domestic-adventure-area');

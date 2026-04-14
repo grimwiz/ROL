@@ -9,9 +9,8 @@ const SheetForm = (() => {
     str: '', con: '', dex: '', int: '', pow: '',
     advantages: '', disadvantages: '',
     mandatory_skills: [
-      { name: 'Art/Craft (Stage Magic)', value: '' },
-      { name: 'Sleight of Hand', value: '' },
-      { name: 'Persuade', value: '' }
+      { name: '', value: '' },
+      { name: '', value: '' }
     ],
     additional_skills: [
       { name: '', value: '' },
@@ -22,6 +21,37 @@ const SheetForm = (() => {
     carry: '',
     custom_fields: []
   };
+
+  const OCCUPATIONS = [
+    { name: 'Architect', novel: true },
+    { name: 'Artist', novel: true },
+    { name: 'Athlete', novel: false },
+    { name: 'Author', novel: false },
+    { name: 'Chancer', novel: true },
+    { name: 'Clergy, member of the', novel: false },
+    { name: 'Computer specialist', novel: true },
+    { name: 'Criminal', novel: true },
+    { name: 'Dilettante', novel: true },
+    { name: 'Doctor of medicine', novel: true },
+    { name: 'Driver', novel: false },
+    { name: 'Entertainer', novel: true },
+    { name: 'Farmer', novel: true },
+    { name: 'Firefighter', novel: true },
+    { name: 'Influencer', novel: false },
+    { name: 'Journalist', novel: false },
+    { name: 'Lawyer', novel: true },
+    { name: 'Lecturer', novel: false },
+    { name: 'Librarian', novel: true },
+    { name: 'Nurse', novel: false },
+    { name: 'Paramedic', novel: true },
+    { name: 'Parapsychologist', novel: false },
+    { name: 'Police officer/detective', novel: true },
+    { name: 'Private investigator', novel: false },
+    { name: 'Service member', novel: true },
+    { name: 'Social worker', novel: true },
+    { name: 'Special agent', novel: true },
+    { name: 'Tradesperson', novel: true }
+  ];
 
   function merge(saved) {
     const base = JSON.parse(JSON.stringify(DEFAULT));
@@ -58,28 +88,33 @@ const SheetForm = (() => {
   <div class="sheet-section">
     <div class="sheet-section-header">1 · Personal Info &amp; Backstory</div>
     <div class="sheet-section-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1.5rem;">
+      <div class="sheet-personal-layout">
+        <div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1.5rem;">
         ${fg('Name', `<input type="text" id="sf_name" value="${esc(d.name)}" placeholder="Full name"${rdAttr}>`)}
         ${fg('Pronouns', `<input type="text" id="sf_pronouns" value="${esc(d.pronouns)}" placeholder="e.g. he/him"${rdAttr}>`)}
         ${fg('Place of Birth', `<input type="text" id="sf_birthplace" value="${esc(d.birthplace)}"${rdAttr}>`)}
         ${fg('Residence', `<input type="text" id="sf_residence" value="${esc(d.residence)}"${rdAttr}>`)}
-        ${fg('Occupation', `<input type="text" id="sf_occupation" value="${esc(d.occupation)}"${rdAttr}>`)}
+        ${fg('Profession', renderProfessionSelect(d.occupation, readonly))}
         ${fg('Age', `<input type="number" id="sf_age" value="${esc(d.age)}" min="16" max="100"${rdAttr}>`)}
-      </div>
-      ${fg('The "Glitch" – What was your anomalous event?',
-        `<textarea id="sf_glitch" rows="4" placeholder="Describe the unexplained event that drew you in…"${rdAttr}>${esc(d.glitch)}</textarea>`)}
-      ${fg('Backstory',
-        `<textarea id="sf_backstory" rows="5" placeholder="Who are they, where did they come from, and what shaped them?"${rdAttr}>${esc(d.backstory)}</textarea>`)}
-      ${fg('Reputation',
-        `<input type="text" id="sf_reputation" value="${esc(d.reputation)}" placeholder="e.g. Analytical. Thorough. Sceptical."${rdAttr}>`)}
-      <div class="form-group">
-        <label>Portrait</label>
-        <div class="portrait-controls">
-          ${!readonly ? '<input type="file" id="sf_portrait_file" accept="image/*" onchange="SheetForm.handlePortraitUpload(event)">' : ''}
-          <input type="hidden" id="sf_portrait" value="${esc(d.portrait)}">
-          ${!readonly ? '<button type="button" class="btn btn-sm" onclick="SheetForm.clearPortrait()">Remove picture</button>' : ''}
+          </div>
+          ${fg('The "Glitch" – What was your anomalous event?',
+            `<textarea id="sf_glitch" rows="4" placeholder="Describe the unexplained event that drew you in…"${rdAttr}>${esc(d.glitch)}</textarea>`)}
+          ${fg('Backstory',
+            `<textarea id="sf_backstory" rows="5" placeholder="Who are they, where did they come from, and what shaped them?"${rdAttr}>${esc(d.backstory)}</textarea>`)}
+          ${fg('Reputation',
+            `<input type="text" id="sf_reputation" value="${esc(d.reputation)}" placeholder="e.g. Analytical. Thorough. Sceptical."${rdAttr}>`)}
         </div>
-        <div id="portrait-help" class="card-sub">Upload a JPG/PNG/GIF/WebP image to display at the top-right when viewing this sheet.</div>
+        <div class="sheet-portrait-block">
+          <label>Portrait</label>
+          <div class="sheet-portrait">${renderPortraitPreview(d.portrait)}</div>
+          <div class="portrait-controls">
+            ${!readonly ? '<input type="file" id="sf_portrait_file" accept="image/*" onchange="SheetForm.handlePortraitUpload(event)">' : ''}
+            <input type="hidden" id="sf_portrait" value="${esc(d.portrait)}">
+            ${!readonly ? '<button type="button" class="btn btn-sm" onclick="SheetForm.clearPortrait()">Remove picture</button>' : ''}
+          </div>
+          <div id="portrait-help" class="card-sub">Upload a JPG/PNG/GIF/WebP image to display in the top-right of this character sheet.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -108,18 +143,18 @@ const SheetForm = (() => {
   <div class="sheet-section">
     <div class="sheet-section-header">4 · Skills &amp; Specialties</div>
     <div class="sheet-section-body">
-      <label style="display:block;margin-bottom:0.75rem;font-size:0.78rem;font-weight:700;color:var(--text2);">MANDATORY SKILLS</label>
+      <label style="display:block;margin-bottom:0.75rem;font-size:0.78rem;font-weight:700;color:var(--text2);">EXPERT SKILLS</label>
       <div class="skills-grid" id="mandatory-skills">
         ${d.mandatory_skills.map((sk, i) => `
           <div class="skill-row">
             <div class="skill-name-wrap">
               <input type="text" id="sf_msk_name_${i}" class="msk-name" value="${esc(sk.name)}" placeholder="Skill name"${rdAttr}>
-              ${!readonly ? `<button type="button" class="btn btn-inline-remove" title="Remove mandatory skill" onclick="SheetForm.removeMandatory(this)">✕</button>` : ''}
+              ${!readonly ? `<button type="button" class="btn btn-inline-remove" title="Remove expert skill" onclick="SheetForm.removeMandatory(this)">✕</button>` : ''}
             </div>
             <input type="number" id="sf_msk_val_${i}" class="msk-val" value="${esc(sk.value)}" placeholder="%" min="0" max="100"${rdAttr}>
           </div>`).join('')}
       </div>
-      ${!readonly ? `<button type="button" class="btn btn-sm" style="margin-top:0.5rem" onclick="SheetForm.addMandatory()">+ Add mandatory skill</button>` : ''}
+      ${!readonly ? `<button type="button" class="btn btn-sm" style="margin-top:0.5rem" onclick="SheetForm.addMandatory()">+ Add expert skill</button>` : ''}
 
       <label style="display:block;margin:1rem 0 0.75rem;font-size:0.78rem;font-weight:700;color:var(--text2);">ADDITIONAL SKILLS</label>
       <div class="skills-grid" id="additional-skills">
@@ -156,10 +191,26 @@ const SheetForm = (() => {
 
 </div>`;
 
-    const portraitPreview = d.portrait
-      ? `<img src="${esc(d.portrait)}" alt="Character portrait" class="sheet-portrait-image">`
+  }
+
+  function renderPortraitPreview(value) {
+    return value
+      ? `<img src="${esc(value)}" alt="Character portrait" class="sheet-portrait-image">`
       : '<div class="sheet-portrait-empty">No picture</div>';
-    container.insertAdjacentHTML('afterbegin', `<div class="sheet-portrait">${portraitPreview}</div>`);
+  }
+
+  function renderProfessionSelect(selected, readonly) {
+    const rdAttr = readonly ? ' disabled' : '';
+    const options = OCCUPATIONS.map((occupation) => {
+      const selectedAttr = occupation.name === selected ? ' selected' : '';
+      const label = occupation.novel ? `${occupation.name} (Novel)` : occupation.name;
+      return `<option value="${esc(occupation.name)}"${selectedAttr}>${esc(label)}</option>`;
+    }).join('');
+    return `<select id="sf_occupation"${rdAttr}>
+      <option value="">Select a profession</option>
+      ${options}
+    </select>
+    <div class="occupation-key">${OCCUPATIONS.filter((o) => o.novel).map((o) => `<span>${esc(o.name)}</span>`).join('')}<div class="occupation-key-help">Brighter entries are occupations held by characters in the Rivers of London novels.</div></div>`;
   }
 
   function renderCustomField(cf, i, readonly) {
@@ -178,7 +229,7 @@ const SheetForm = (() => {
     div.className = 'skill-row';
     div.innerHTML = `<div class="skill-name-wrap">
       <input type="text" id="sf_msk_name_${i}" class="msk-name" placeholder="Skill name">
-      <button type="button" class="btn btn-inline-remove" title="Remove mandatory skill" onclick="SheetForm.removeMandatory(this)">✕</button>
+      <button type="button" class="btn btn-inline-remove" title="Remove expert skill" onclick="SheetForm.removeMandatory(this)">✕</button>
     </div>
     <input type="number" id="sf_msk_val_${i}" class="msk-val" placeholder="%" min="0" max="100">`;
     grid.appendChild(div);
