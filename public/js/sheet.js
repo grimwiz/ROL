@@ -53,7 +53,19 @@ const SheetForm = (() => {
     { name: 'Tradesperson', novel: true }
   ];
   const STAT_OPTIONS = [30, 40, 50, 60, 70, 80];
+  const SKILL_PERCENT_OPTIONS = [30, 40, 50, 60];
   const STAT_KEYS = ['str', 'con', 'dex', 'int', 'pow'];
+  const COMMON_SKILL_NAMES = [
+    'Athletics',
+    'Drive',
+    'Navigate',
+    'Observation',
+    'Read Person',
+    'Research',
+    'Sense Vestigia',
+    'Social',
+    'Stealth'
+  ];
   const ADVANTAGES = [
     { name: 'Connected' },
     { name: 'Damage Bonus', requirements: [{ stat: 'str', min: 60 }] },
@@ -70,6 +82,34 @@ const SheetForm = (() => {
     { name: 'The Knowledge', requirements: [{ stat: 'int', min: 60 }] },
     { name: 'Wealthy' }
   ];
+  const ADVANTAGE_PRESET_NAMES = ADVANTAGES.map((adv) => adv.name);
+
+  function parseAdvantages(value) {
+    if (Array.isArray(value)) return value.map((v) => String(v || '').trim()).filter(Boolean);
+    return String(value || '')
+      .split(/,|;|\n|\band\b/gi)
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+  }
+
+  function defaultCommonSkills() {
+    return COMMON_SKILL_NAMES.map((name) => ({ name, value: '30' }));
+  }
+
+  function mergeCommonSkills(saved) {
+    const byName = {};
+    defaultCommonSkills().forEach((sk) => { byName[sk.name.toLowerCase()] = { ...sk }; });
+    if (Array.isArray(saved)) {
+      saved.forEach((sk) => {
+        const key = String((sk && sk.name) || '').trim().toLowerCase();
+        if (!key || !byName[key]) return;
+        const value = String((sk && sk.value) || '').trim();
+        byName[key].value = value || byName[key].value;
+      });
+    }
+    return COMMON_SKILL_NAMES.map((name) => ({ ...byName[name.toLowerCase()] }));
+  }
+
 
   function merge(saved) {
     const base = JSON.parse(JSON.stringify(DEFAULT));
@@ -80,6 +120,8 @@ const SheetForm = (() => {
     if (!Array.isArray(base.mandatory_skills)) base.mandatory_skills = DEFAULT.mandatory_skills;
     if (!Array.isArray(base.additional_skills)) base.additional_skills = DEFAULT.additional_skills;
     if (!Array.isArray(base.custom_fields)) base.custom_fields = [];
+    base.common_skills = mergeCommonSkills(base.common_skills);
+    base.advantages = parseAdvantages(base.advantages).join(', ');
     return base;
   }
 
@@ -162,7 +204,16 @@ const SheetForm = (() => {
   <div class="sheet-section">
     <div class="sheet-section-header">4 · Skills &amp; Specialties</div>
     <div class="sheet-section-body">
-      <label style="display:block;margin-bottom:0.75rem;font-size:0.78rem;font-weight:700;color:var(--text2);">EXPERT SKILLS</label>
+      <label style="display:block;margin-bottom:0.75rem;font-size:0.78rem;font-weight:700;color:var(--text2);">COMMON SKILLS</label>
+      <div class="skills-grid common-skills-grid" id="common-skills">
+        ${(d.common_skills || defaultCommonSkills()).map((sk, i) => `
+          <div class="skill-row csk-row" data-name="${esc(sk.name)}">
+            <input type="text" value="${esc(sk.name)}" readonly>
+            ${renderSkillValueSelect(`sf_csk_val_${i}`, sk.value || '30', readonly)}
+          </div>`).join('')}
+      </div>
+
+      <label style="display:block;margin:1rem 0 0.75rem;font-size:0.78rem;font-weight:700;color:var(--text2);">EXPERT SKILLS</label>
       <div class="skills-grid" id="mandatory-skills">
         ${d.mandatory_skills.map((sk, i) => `
           <div class="skill-row">
@@ -243,11 +294,13 @@ const SheetForm = (() => {
     </select>`;
   }
 
-  function parseAdvantages(value) {
-    return String(value || '')
-      .split(',')
-      .map((entry) => entry.trim())
-      .filter(Boolean);
+  function renderSkillValueSelect(id, value, readonly) {
+    const rdAttr = readonly ? ' disabled' : '';
+    const options = SKILL_PERCENT_OPTIONS.map((n) => {
+      const selectedAttr = String(value || '30') === String(n) ? ' selected' : '';
+      return `<option value="${n}"${selectedAttr}>${n}%</option>`;
+    }).join('');
+    return `<select id="${id}" class="csk-val"${rdAttr}>${options}</select>`;
   }
 
   function renderAdvantagesSelect(value, readonly) {
@@ -257,8 +310,13 @@ const SheetForm = (() => {
       const selectedAttr = selected.includes(adv.name) ? ' selected' : '';
       return `<option value="${esc(adv.name)}"${selectedAttr}>${esc(adv.name)}</option>`;
     }).join('');
-    return `<select id="sf_advantages" multiple size="8"${rdAttr}>${options}</select>
-      <div class="card-sub" style="margin-top:0.35rem">Hold Ctrl/Cmd to select multiple advantages.</div>`;
+    return `
+      <textarea id="sf_advantages_text" rows="2" placeholder="Selected advantages"${readonly ? ' readonly' : ''}>${esc(selected.join(', '))}</textarea>
+      ${readonly ? '' : `<details class="sheet-inline-expand" style="margin-top:0.45rem">
+        <summary>Edit selected advantages</summary>
+        <select id="sf_advantages" multiple size="8"${rdAttr}>${options}</select>
+        <div class="card-sub" style="margin-top:0.35rem">Hold Ctrl/Cmd to select multiple advantages. Custom entries in the text box are preserved.</div>
+      </details>`}`;
   }
 
   function getStatValue(statKey) {
@@ -274,7 +332,7 @@ const SheetForm = (() => {
 
   function updateAdvantagesAvailability() {
     const select = document.getElementById('sf_advantages');
-    if (!select) return;
+    if (!select) return syncCommonSkillsForAdvantages();
     const options = Array.from(select.options);
     options.forEach((opt) => {
       const advantage = ADVANTAGES.find((adv) => adv.name === opt.value);
@@ -283,6 +341,47 @@ const SheetForm = (() => {
       opt.style.textDecoration = allowed ? 'none' : 'line-through';
       if (!allowed) opt.selected = false;
     });
+    syncAdvantagesTextFromPicker();
+  }
+
+
+  function syncAdvantagesTextFromPicker() {
+    const picker = document.getElementById('sf_advantages');
+    const textEl = document.getElementById('sf_advantages_text');
+    if (!textEl || !picker) return;
+    const presetSelections = Array.from(picker.selectedOptions).map((opt) => opt.value.trim()).filter(Boolean);
+    const customEntries = parseAdvantages(textEl.value).filter((entry) => !ADVANTAGE_PRESET_NAMES.includes(entry));
+    textEl.value = [...presetSelections, ...customEntries].join(', ');
+    syncCommonSkillsForAdvantages();
+  }
+
+  function isMagicalAdvantageChosen() {
+    const text = (document.getElementById('sf_advantages_text') || {}).value;
+    return parseAdvantages(text).some((adv) => /^magical\b/i.test(adv));
+  }
+
+  function syncCommonSkillsForAdvantages() {
+    const commonGrid = document.getElementById('common-skills');
+    if (!commonGrid) return;
+    const magical = isMagicalAdvantageChosen();
+    commonGrid.querySelectorAll('.csk-row').forEach((row) => {
+      const name = String(row.dataset.name || '').toLowerCase();
+      const valueSelect = row.querySelector('.csk-val');
+      if (!valueSelect) return;
+      if (name === 'sense vestigia' && magical) valueSelect.value = '60';
+    });
+
+    const magicRow = Array.from(commonGrid.querySelectorAll('.csk-row'))
+      .find((row) => String(row.dataset.name || '').toLowerCase() === 'magic');
+    if (magical && !magicRow) {
+      const index = commonGrid.querySelectorAll('.csk-row').length;
+      const row = document.createElement('div');
+      row.className = 'skill-row csk-row';
+      row.dataset.name = 'Magic';
+      row.innerHTML = `<input type="text" value="Magic" readonly>${renderSkillValueSelect(`sf_csk_val_${index}`, '60', false)}`;
+      commonGrid.appendChild(row);
+    }
+    if (!magical && magicRow) magicRow.remove();
   }
 
   function updateStatAllocationMessage() {
@@ -313,11 +412,14 @@ const SheetForm = (() => {
   function initialiseDynamicFields(readonly) {
     updateStatAllocationMessage();
     updateAdvantagesAvailability();
+    syncCommonSkillsForAdvantages();
     if (readonly) return;
     STAT_KEYS.forEach((stat) => {
       const el = document.getElementById(`sf_${stat}`);
       if (el) el.addEventListener('change', handleStatChange);
     });
+    const advantagesPicker = document.getElementById('sf_advantages');
+    if (advantagesPicker) advantagesPicker.addEventListener('change', syncAdvantagesTextFromPicker);
   }
 
   function renderCustomField(cf, i, readonly) {
@@ -426,6 +528,13 @@ const SheetForm = (() => {
       if (k && k.value.trim()) custom_fields.push({ key: k.value.trim(), value: (v ? v.value.trim() : '') });
     });
 
+    const common_skills = [];
+    document.querySelectorAll('#common-skills .csk-row').forEach((row) => {
+      const name = String(row.dataset.name || '').trim();
+      const value = ((row.querySelector('.csk-val') || {}).value || '').trim();
+      if (name) common_skills.push({ name, value: value || '30' });
+    });
+
     return {
       name: g('name'), pronouns: g('pronouns'),
       birthplace: g('birthplace'), residence: g('residence'),
@@ -433,12 +542,9 @@ const SheetForm = (() => {
       glitch: g('glitch'), backstory: g('backstory'), reputation: g('reputation'),
       portrait: g('portrait'),
       str: g('str'), con: g('con'), dex: g('dex'), int: g('int'), pow: g('pow'),
-      advantages: Array.from((document.getElementById('sf_advantages') || {}).selectedOptions || [])
-        .map((opt) => opt.value.trim())
-        .filter(Boolean)
-        .join(', '),
+      advantages: g('advantages_text'),
       disadvantages: g('disadvantages'),
-      mandatory_skills, additional_skills,
+      common_skills, mandatory_skills, additional_skills,
       mov: g('mov'), luck: g('luck'), carry: g('carry'),
       custom_fields
     };
