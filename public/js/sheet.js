@@ -3,10 +3,10 @@ const SheetForm = (() => {
 
   const DEFAULT = {
     name: '', pronouns: '', birthplace: '', residence: '',
-    occupation: '', age: '',
+    occupation: '', social_class: '', age: '',
     glitch: '', backstory: '', reputation: '',
     portrait: '',
-    str: '', con: '', dex: '', int: '', pow: '',
+    str: '', con: '', dex: '', int: '', pow: '', siz: '',
     advantages: '', disadvantages: '',
     mandatory_skills: [
       { name: '', value: '' },
@@ -19,42 +19,13 @@ const SheetForm = (() => {
     ],
     mov: '', luck: '',
     carry: '',
+    magic_spells: [],
     custom_fields: []
   };
 
-  const OCCUPATIONS = [
-    { name: 'Architect', novel: true },
-    { name: 'Artist', novel: true },
-    { name: 'Athlete', novel: false },
-    { name: 'Author', novel: false },
-    { name: 'Chancer', novel: true },
-    { name: 'Clergy, member of the', novel: false },
-    { name: 'Computer specialist', novel: true },
-    { name: 'Criminal', novel: true },
-    { name: 'Dilettante', novel: true },
-    { name: 'Doctor of medicine', novel: true },
-    { name: 'Driver', novel: false },
-    { name: 'Entertainer', novel: true },
-    { name: 'Farmer', novel: true },
-    { name: 'Firefighter', novel: true },
-    { name: 'Influencer', novel: false },
-    { name: 'Journalist', novel: false },
-    { name: 'Lawyer', novel: true },
-    { name: 'Lecturer', novel: false },
-    { name: 'Librarian', novel: true },
-    { name: 'Nurse', novel: false },
-    { name: 'Paramedic', novel: true },
-    { name: 'Parapsychologist', novel: false },
-    { name: 'Police officer/detective', novel: true },
-    { name: 'Private investigator', novel: false },
-    { name: 'Service member', novel: true },
-    { name: 'Social worker', novel: true },
-    { name: 'Special agent', novel: true },
-    { name: 'Tradesperson', novel: true }
-  ];
-  const STAT_OPTIONS = [30, 40, 50, 60, 70, 80];
-  const SKILL_PERCENT_OPTIONS = [30, 40, 50, 60];
-  const STAT_KEYS = ['str', 'con', 'dex', 'int', 'pow'];
+  const STAT_OPTIONS = [10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90];
+  const SKILL_PERCENT_OPTIONS = [20,25,30,35,40,45,50,55,60,65,70,75,80];
+  const STAT_KEYS = ['str', 'con', 'dex', 'int', 'pow', 'siz'];
   const COMMON_SKILL_NAMES = [
     'Athletics',
     'Drive',
@@ -84,6 +55,56 @@ const SheetForm = (() => {
   ];
   const ADVANTAGE_PRESET_NAMES = ADVANTAGES.map((adv) => adv.name);
 
+  // ── Derived stat calculations ──────────────────────────────────────────────
+  function getStatValue(statKey) {
+    const el = document.getElementById(`sf_${statKey}`);
+    const val = parseInt(el ? el.value : '', 10);
+    return Number.isFinite(val) ? val : 0;
+  }
+
+  function calcDerived() {
+    const con = getStatValue('con');
+    const siz = getStatValue('siz');
+    const pow = getStatValue('pow');
+    const str = getStatValue('str');
+    const hp = siz && con ? Math.round((con + siz) / 10) : '';
+    const san = pow ? pow : '';
+    const mp  = pow ? Math.round(pow / 5) : '';
+    const buildRaw = str && siz ? str + siz : null;
+    let build = '';
+    if (buildRaw !== null) {
+      if (buildRaw <= 64)       build = '-2';
+      else if (buildRaw <= 84)  build = '-1';
+      else if (buildRaw <= 124) build = '0';
+      else if (buildRaw <= 164) build = '+1';
+      else if (buildRaw <= 204) build = '+2';
+      else                       build = '+3';
+    }
+    return { hp, san, mp, build };
+  }
+
+  function updateDerivedDisplay() {
+    const d = calcDerived();
+    const fields = ['hp','san','mp','build'];
+    fields.forEach((f) => {
+      const el = document.getElementById(`sf_derived_${f}`);
+      if (el && el.dataset.auto === 'true') el.value = d[f] !== undefined ? d[f] : '';
+    });
+  }
+
+  function toggleDerivedAuto(field) {
+    const el = document.getElementById(`sf_derived_${field}`);
+    if (!el) return;
+    const btn = document.getElementById(`sf_derived_${field}_toggle`);
+    const isAuto = el.dataset.auto === 'true';
+    el.dataset.auto = isAuto ? 'false' : 'true';
+    el.readOnly = !isAuto; // toggling: if was auto, now manual → not readonly
+    if (btn) btn.textContent = isAuto ? 'Auto' : 'Manual';
+    if (!isAuto) updateDerivedDisplay();
+  }
+  window.SheetFormToggleDerived = toggleDerivedAuto;
+
+  // ── Advantages helpers ─────────────────────────────────────────────────────
   function parseAdvantages(value) {
     if (Array.isArray(value)) return value.map((v) => String(v || '').trim()).filter(Boolean);
     return String(value || '')
@@ -92,6 +113,7 @@ const SheetForm = (() => {
       .filter(Boolean);
   }
 
+  // ── Common skills ──────────────────────────────────────────────────────────
   function defaultCommonSkills() {
     return COMMON_SKILL_NAMES.map((name) => ({ name, value: '30' }));
   }
@@ -110,37 +132,124 @@ const SheetForm = (() => {
     return COMMON_SKILL_NAMES.map((name) => ({ ...byName[name.toLowerCase()] }));
   }
 
-
   function merge(saved) {
     const base = JSON.parse(JSON.stringify(DEFAULT));
     if (!saved) return base;
-    // Deep merge top-level keys
     Object.assign(base, saved);
-    // Ensure arrays exist
     if (!Array.isArray(base.mandatory_skills)) base.mandatory_skills = DEFAULT.mandatory_skills;
     if (!Array.isArray(base.additional_skills)) base.additional_skills = DEFAULT.additional_skills;
     if (!Array.isArray(base.custom_fields)) base.custom_fields = [];
+    if (!Array.isArray(base.magic_spells)) base.magic_spells = [];
     base.common_skills = mergeCommonSkills(base.common_skills);
     base.advantages = parseAdvantages(base.advantages).join(', ');
+    // Migrate old derived fields stored flat
+    if (!base.derived) {
+      base.derived = {
+        hp:    saved.hp    || '',
+        san:   saved.san   || '',
+        mp:    saved.mp    || '',
+        build: saved.build || '',
+        move:  saved.move  || saved.mov || ''
+      };
+    }
     return base;
   }
 
-  function ro(readonly) { return readonly ? ' readonly' : ''; }
-  function inp(id, val, type, placeholder, extra) {
-    type = type || 'text';
-    return `<input type="${type}" id="sf_${id}" value="${esc(val)}" placeholder="${placeholder||''}" ${extra||''}>`;
-  }
   function esc(v) { return String(v||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
-  function ta(id, val, placeholder) {
-    return `<textarea id="sf_${id}" placeholder="${placeholder||''}" rows="3">${esc(val)}</textarea>`;
-  }
   function fg(label, inner) {
     return `<div class="form-group"><label>${label}</label>${inner}</div>`;
   }
 
+  // ── Render helpers ─────────────────────────────────────────────────────────
+  function renderStatSelect(statKey, value, readonly) {
+    const rdAttr = readonly ? ' disabled' : '';
+    const options = STAT_OPTIONS.map((n) => {
+      const selectedAttr = String(value || '') === String(n) ? ' selected' : '';
+      return `<option value="${n}"${selectedAttr}>${n}</option>`;
+    }).join('');
+    return `<select id="sf_${statKey}"${rdAttr}>
+      <option value="">–</option>
+      ${options}
+    </select>`;
+  }
+
+  function renderSkillValueSelect(id, value, readonly) {
+    const rdAttr = readonly ? ' disabled' : '';
+    const options = SKILL_PERCENT_OPTIONS.map((n) => {
+      const selectedAttr = String(value || '30') === String(n) ? ' selected' : '';
+      return `<option value="${n}"${selectedAttr}>${n}%</option>`;
+    }).join('');
+    return `<select id="${id}" class="csk-val"${rdAttr}>${options}</select>`;
+  }
+
+  function renderAdvantagesSelect(value, readonly) {
+    const selected = parseAdvantages(value);
+    const rdAttr = readonly ? ' disabled' : '';
+    const options = ADVANTAGES.map((adv) => {
+      const selectedAttr = selected.includes(adv.name) ? ' selected' : '';
+      return `<option value="${esc(adv.name)}"${selectedAttr}>${esc(adv.name)}</option>`;
+    }).join('');
+    return `
+      <input type="text" id="sf_advantages_text" placeholder="Selected advantages"${readonly ? ' readonly' : ''} value="${esc(selected.join(', '))}">
+      ${readonly ? '' : `<details class="sheet-inline-expand" style="margin-top:0.45rem">
+        <summary>Edit selected advantages</summary>
+        <select id="sf_advantages" multiple size="8"${rdAttr}>${options}</select>
+        <div class="card-sub" style="margin-top:0.35rem">Hold Ctrl/Cmd to select multiple. Custom entries in the text box are preserved.</div>
+      </details>`}`;
+  }
+
+  function renderPortraitPreview(value) {
+    return value
+      ? `<img src="${esc(value)}" alt="Character portrait" class="sheet-portrait-image">`
+      : '<div class="sheet-portrait-empty">No picture</div>';
+  }
+
+  function renderDerivedField(field, label, value, autoValue, readonly) {
+    const isAuto = !value || value === String(autoValue);
+    const displayVal = isAuto ? autoValue : value;
+    if (readonly) {
+      return fg(label, `<input type="text" value="${esc(displayVal)}" readonly>`);
+    }
+    return fg(label, `
+      <div style="display:flex;gap:0.4rem;align-items:center">
+        <input type="text" id="sf_derived_${field}" value="${esc(displayVal)}"
+          data-auto="${isAuto ? 'true' : 'false'}"
+          ${isAuto ? 'readonly' : ''}
+          style="flex:1">
+        <button type="button" id="sf_derived_${field}_toggle"
+          class="btn btn-sm" style="white-space:nowrap"
+          onclick="SheetFormToggleDerived('${field}')"
+          title="Switch between auto-calculated and manual entry">
+          ${isAuto ? 'Manual' : 'Auto'}
+        </button>
+      </div>`);
+  }
+
+  function renderMagicSpell(spell, i, readonly) {
+    const rdAttr = readonly ? ' readonly' : '';
+    return `<div class="magic-spell-row" id="spell_row_${i}">
+      <input type="text" class="spell-name" value="${esc(spell.name || '')}" placeholder="Spell / technique name"${rdAttr}>
+      <input type="text" class="spell-order" value="${esc(spell.order || '')}" placeholder="Order &amp; mastery (e.g. 1st – Mastered)"${rdAttr}>
+      <input type="text" class="spell-notes" value="${esc(spell.notes || '')}" placeholder="Notes / description"${rdAttr}>
+      ${!readonly ? `<button type="button" class="btn btn-inline-remove" onclick="SheetForm.removeSpell(this)" title="Remove">✕</button>` : '<span></span>'}
+    </div>`;
+  }
+
+  function renderCustomField(cf, i, readonly) {
+    const rdAttr = readonly ? ' readonly' : '';
+    return `<div class="custom-field-row" id="cf_row_${i}">
+      <input type="text" id="cf_key_${i}" value="${esc(cf.key)}" placeholder="Field name"${rdAttr}>
+      <input type="text" id="cf_val_${i}" value="${esc(cf.value)}" placeholder="Value"${rdAttr}>
+      ${!readonly ? `<button type="button" class="btn btn-sm btn-danger" onclick="SheetForm.removeCustomField(${i})">✕</button>` : '<span></span>'}
+    </div>`;
+  }
+
+  // ── Main render ────────────────────────────────────────────────────────────
   function render(container, data, readonly) {
     const d = merge(data);
     const rdAttr = readonly ? ' readonly' : '';
+    const derived = d.derived || {};
+    const autoD = calcDerivedFromData(d);
 
     container.innerHTML = `
 <div class="sheet-container${readonly ? ' readonly-sheet' : ''}">
@@ -151,12 +260,13 @@ const SheetForm = (() => {
       <div class="sheet-personal-layout">
         <div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1.5rem;">
-        ${fg('Name', `<input type="text" id="sf_name" value="${esc(d.name)}" placeholder="Full name"${rdAttr}>`)}
-        ${fg('Pronouns', `<input type="text" id="sf_pronouns" value="${esc(d.pronouns)}" placeholder="e.g. he/him"${rdAttr}>`)}
-        ${fg('Place of Birth', `<input type="text" id="sf_birthplace" value="${esc(d.birthplace)}"${rdAttr}>`)}
-        ${fg('Residence', `<input type="text" id="sf_residence" value="${esc(d.residence)}"${rdAttr}>`)}
-        ${fg('Profession', renderProfessionSelect(d.occupation, readonly))}
-        ${fg('Age', `<input type="number" id="sf_age" value="${esc(d.age)}" min="16" max="100"${rdAttr}>`)}
+            ${fg('Name', `<input type="text" id="sf_name" value="${esc(d.name)}" placeholder="Full name"${rdAttr}>`)}
+            ${fg('Pronouns', `<input type="text" id="sf_pronouns" value="${esc(d.pronouns)}" placeholder="e.g. he/him"${rdAttr}>`)}
+            ${fg('Place of Birth', `<input type="text" id="sf_birthplace" value="${esc(d.birthplace)}"${rdAttr}>`)}
+            ${fg('Residence', `<input type="text" id="sf_residence" value="${esc(d.residence)}"${rdAttr}>`)}
+            ${fg('Occupation / Role', `<input type="text" id="sf_occupation" value="${esc(d.occupation)}" placeholder="e.g. Stage Magician / Physicist"${rdAttr}>`)}
+            ${fg('Age', `<input type="number" id="sf_age" value="${esc(d.age)}" min="16" max="100"${rdAttr}>`)}
+            ${fg('Social Class', `<input type="text" id="sf_social_class" value="${esc(d.social_class)}" placeholder="e.g. Middle Class (Academic)"${rdAttr}>`)}
           </div>
           ${fg('The "Glitch" – What was your anomalous event?',
             `<textarea id="sf_glitch" rows="4" placeholder="Describe the unexplained event that drew you in…"${rdAttr}>${esc(d.glitch)}</textarea>`)}
@@ -173,7 +283,7 @@ const SheetForm = (() => {
             <input type="hidden" id="sf_portrait" value="${esc(d.portrait)}">
             ${!readonly ? '<button type="button" class="btn btn-sm" onclick="SheetForm.clearPortrait()">Remove picture</button>' : ''}
           </div>
-          <div id="portrait-help" class="card-sub">Upload a JPG/PNG/GIF/WebP image to display in the top-right of this character sheet.</div>
+          <div class="card-sub">Upload a JPG/PNG/GIF/WebP image.</div>
         </div>
       </div>
     </div>
@@ -182,14 +292,26 @@ const SheetForm = (() => {
   <div class="sheet-section">
     <div class="sheet-section-header">2 · Characteristics</div>
     <div class="sheet-section-body">
-      <div class="characteristics-grid">
-        ${['str','con','dex','int','pow'].map(s => `
+      <label style="display:block;margin-bottom:0.5rem;font-size:0.78rem;font-weight:700;color:var(--text2);">BASE STATS</label>
+      <div class="characteristics-grid characteristics-grid-6">
+        ${['str','con','dex','int','pow','siz'].map(s => `
           <div class="char-field form-group">
             <label>${s.toUpperCase()}</label>
             ${renderStatSelect(s, d[s], readonly)}
           </div>`).join('')}
       </div>
       <div id="stat-allocation-note" class="card-sub" style="margin-top:0.5rem"></div>
+
+      <label style="display:block;margin:1.25rem 0 0.5rem;font-size:0.78rem;font-weight:700;color:var(--text2);">DERIVED STATS</label>
+      <div class="derived-grid">
+        ${renderDerivedField('hp',    'HP',      derived.hp    || '', autoD.hp,    readonly)}
+        ${renderDerivedField('san',   'SAN',     derived.san   || '', autoD.san,   readonly)}
+        ${renderDerivedField('mp',    'MP',      derived.mp    || '', autoD.mp,    readonly)}
+        ${renderDerivedField('build', 'Build',   derived.build || '', autoD.build, readonly)}
+        ${fg('Move', `<input type="text" id="sf_derived_move" value="${esc(derived.move || d.mov || '')}" placeholder="e.g. 8"${rdAttr}>`)}
+        ${fg('Luck', `<input type="number" id="sf_luck" value="${esc(d.luck)}" min="1" max="100"${rdAttr}>`)}
+      </div>
+      ${!readonly ? `<p class="card-sub" style="margin-top:0.35rem">HP, SAN, MP and Build are auto-calculated from base stats. Click "Manual" to override.</p>` : ''}
     </div>
   </div>
 
@@ -197,7 +319,7 @@ const SheetForm = (() => {
     <div class="sheet-section-header">3 · Edges &amp; Flaws</div>
     <div class="sheet-section-body">
       ${fg('Advantages', renderAdvantagesSelect(d.advantages, readonly))}
-      ${fg('Disadvantages', `<input type="text" id="sf_disadvantages" value="${esc(d.disadvantages)}" placeholder="e.g. Weak (Max STR 40)"${rdAttr}>`)}
+      ${fg('Flaws', `<input type="text" id="sf_disadvantages" value="${esc(d.disadvantages)}" placeholder="e.g. Weak – physically fragile; fails most heavy lifting/grappling tests"${rdAttr}>`)}
     </div>
   </div>
 
@@ -242,18 +364,33 @@ const SheetForm = (() => {
   </div>
 
   <div class="sheet-section">
-    <div class="sheet-section-header">5 · The Vitals</div>
+    <div class="sheet-section-header">5 · Magic</div>
     <div class="sheet-section-body">
-      <div class="edl-grid">
-        ${fg('Movement (MOV)', `<input type="number" id="sf_mov" value="${esc(d.mov)}" min="1" max="20"${rdAttr}>`)}
-        ${fg('Luck Roll', `<input type="number" id="sf_luck" value="${esc(d.luck)}" min="1" max="100"${rdAttr}>`)}
+      ${fg('Tradition / Practice', `<input type="text" id="sf_magic_tradition" value="${esc(d.magic_tradition || '')}" placeholder="e.g. Newtonian Practitioner"${rdAttr}>`)}
+      <label style="display:block;margin:0.75rem 0 0.5rem;font-size:0.78rem;font-weight:700;color:var(--text2);">SPELLS &amp; TECHNIQUES</label>
+      <div class="magic-spells-header" style="display:grid;grid-template-columns:1fr 1fr 2fr auto;gap:0.5rem;margin-bottom:0.35rem;padding:0 0.1rem">
+        <span style="font-size:0.75rem;color:var(--text2)">Name</span>
+        <span style="font-size:0.75rem;color:var(--text2)">Order &amp; Mastery</span>
+        <span style="font-size:0.75rem;color:var(--text2)">Notes</span>
+        <span></span>
       </div>
+      <div id="magic-spells">
+        ${d.magic_spells.map((sp, i) => renderMagicSpell(sp, i, readonly)).join('')}
+      </div>
+      ${!readonly ? `<button type="button" class="btn btn-sm" style="margin-top:0.5rem" onclick="SheetForm.addSpell()">+ Add spell / technique</button>` : ''}
+      ${fg('Magic Notes', `<textarea id="sf_magic_notes" rows="3" placeholder="General notes on your magical practice, limitations, or discoveries…"${rdAttr}>${esc(d.magic_notes || '')}</textarea>`)}
+    </div>
+  </div>
+
+  <div class="sheet-section">
+    <div class="sheet-section-header">6 · The Vitals</div>
+    <div class="sheet-section-body">
       ${fg('Everyday Carry', `<textarea id="sf_carry" rows="3" placeholder="List what your character routinely carries…"${rdAttr}>${esc(d.carry)}</textarea>`)}
     </div>
   </div>
 
   <div class="sheet-section">
-    <div class="sheet-section-header">6 · Custom Fields</div>
+    <div class="sheet-section-header">7 · Custom Fields</div>
     <div class="sheet-section-body">
       <div class="custom-fields" id="custom-fields">
         ${d.custom_fields.map((cf, i) => renderCustomField(cf, i, readonly)).join('')}
@@ -266,68 +403,29 @@ const SheetForm = (() => {
     initialiseDynamicFields(readonly);
   }
 
-  function renderPortraitPreview(value) {
-    return value
-      ? `<img src="${esc(value)}" alt="Character portrait" class="sheet-portrait-image">`
-      : '<div class="sheet-portrait-empty">No picture</div>';
+  // Derived calc from raw data object (not DOM) — used during render before DOM exists
+  function calcDerivedFromData(d) {
+    const con = parseInt(d.con, 10) || 0;
+    const siz = parseInt(d.siz, 10) || 0;
+    const pow = parseInt(d.pow, 10) || 0;
+    const str = parseInt(d.str, 10) || 0;
+    const hp  = siz && con ? Math.round((con + siz) / 10) : '';
+    const san = pow || '';
+    const mp  = pow ? Math.round(pow / 5) : '';
+    const buildRaw = str && siz ? str + siz : null;
+    let build = '';
+    if (buildRaw !== null) {
+      if (buildRaw <= 64)       build = '-2';
+      else if (buildRaw <= 84)  build = '-1';
+      else if (buildRaw <= 124) build = '0';
+      else if (buildRaw <= 164) build = '+1';
+      else if (buildRaw <= 204) build = '+2';
+      else                       build = '+3';
+    }
+    return { hp, san, mp, build };
   }
 
-  function renderProfessionSelect(selected, readonly) {
-    const rdAttr = readonly ? ' disabled' : '';
-    const options = OCCUPATIONS.map((occupation) => {
-      const selectedAttr = occupation.name === selected ? ' selected' : '';
-      const label = occupation.novel ? `${occupation.name} (Novel)` : occupation.name;
-      return `<option value="${esc(occupation.name)}"${selectedAttr}>${esc(label)}</option>`;
-    }).join('');
-    return `<select id="sf_occupation"${rdAttr}>
-      <option value="">Select a profession</option>
-      ${options}
-    </select>`;
-  }
-
-  function renderStatSelect(statKey, value, readonly) {
-    const rdAttr = readonly ? ' disabled' : '';
-    const options = STAT_OPTIONS.map((n) => {
-      const selectedAttr = String(value || '') === String(n) ? ' selected' : '';
-      return `<option value="${n}"${selectedAttr}>${n}</option>`;
-    }).join('');
-    return `<select id="sf_${statKey}"${rdAttr}>
-      <option value="">-</option>
-      ${options}
-    </select>`;
-  }
-
-  function renderSkillValueSelect(id, value, readonly) {
-    const rdAttr = readonly ? ' disabled' : '';
-    const options = SKILL_PERCENT_OPTIONS.map((n) => {
-      const selectedAttr = String(value || '30') === String(n) ? ' selected' : '';
-      return `<option value="${n}"${selectedAttr}>${n}%</option>`;
-    }).join('');
-    return `<select id="${id}" class="csk-val"${rdAttr}>${options}</select>`;
-  }
-
-  function renderAdvantagesSelect(value, readonly) {
-    const selected = parseAdvantages(value);
-    const rdAttr = readonly ? ' disabled' : '';
-    const options = ADVANTAGES.map((adv) => {
-      const selectedAttr = selected.includes(adv.name) ? ' selected' : '';
-      return `<option value="${esc(adv.name)}"${selectedAttr}>${esc(adv.name)}</option>`;
-    }).join('');
-    return `
-      <input type="text" id="sf_advantages_text" placeholder="Selected advantages"${readonly ? ' readonly' : ''} value="${esc(selected.join(', '))}">
-      ${readonly ? '' : `<details class="sheet-inline-expand" style="margin-top:0.45rem">
-        <summary>Edit selected advantages</summary>
-        <select id="sf_advantages" multiple size="8"${rdAttr}>${options}</select>
-        <div class="card-sub" style="margin-top:0.35rem">Hold Ctrl/Cmd to select multiple advantages. Custom entries in the text box are preserved.</div>
-      </details>`}`;
-  }
-
-  function getStatValue(statKey) {
-    const el = document.getElementById(`sf_${statKey}`);
-    const val = parseInt(el ? el.value : '', 10);
-    return Number.isFinite(val) ? val : 0;
-  }
-
+  // ── Dynamic field wiring ───────────────────────────────────────────────────
   function meetsRequirements(requirements) {
     if (!requirements || !requirements.length) return true;
     return requirements.every((req) => getStatValue(req.stat) >= req.min);
@@ -346,7 +444,6 @@ const SheetForm = (() => {
     });
     syncAdvantagesTextFromPicker();
   }
-
 
   function syncAdvantagesTextFromPicker() {
     const picker = document.getElementById('sf_advantages');
@@ -391,25 +488,15 @@ const SheetForm = (() => {
     const messageEl = document.getElementById('stat-allocation-note');
     if (!messageEl) return;
     const total = STAT_KEYS.reduce((sum, key) => sum + getStatValue(key), 0);
-    const delta = 280 - total;
-    if (delta === 0) {
-      messageEl.textContent = 'Stat allocation total is 280/280.';
-      messageEl.style.color = 'var(--text2)';
-      return;
-    }
-    if (delta > 0) {
-      messageEl.textContent = `Stat allocation total is ${total}/280. Allocate ${delta} more points.`;
-      messageEl.style.color = '#c77900';
-      return;
-    }
-    const excess = Math.abs(delta);
-    messageEl.textContent = `Stat allocation total is ${total}/280. Reduce your stats by ${excess} points.`;
-    messageEl.style.color = '#b42318';
+    // Target is 330 for 6 stats at 55 average — but allow freeform, just show total
+    messageEl.textContent = `Stat total: ${total}`;
+    messageEl.style.color = 'var(--text2)';
   }
 
   function handleStatChange() {
     updateStatAllocationMessage();
     updateAdvantagesAvailability();
+    updateDerivedDisplay();
   }
 
   function initialiseDynamicFields(readonly) {
@@ -425,18 +512,10 @@ const SheetForm = (() => {
     if (advantagesPicker) advantagesPicker.addEventListener('change', syncAdvantagesTextFromPicker);
   }
 
-  function renderCustomField(cf, i, readonly) {
-    const rdAttr = readonly ? ' readonly' : '';
-    return `<div class="custom-field-row" id="cf_row_${i}">
-      <input type="text" id="cf_key_${i}" value="${esc(cf.key)}" placeholder="Field name"${rdAttr}>
-      <input type="text" id="cf_val_${i}" value="${esc(cf.value)}" placeholder="Value"${rdAttr}>
-      ${!readonly ? `<button type="button" class="btn btn-sm btn-danger" onclick="SheetForm.removeCustomField(${i})">✕</button>` : '<span></span>'}
-    </div>`;
-  }
-
+  // ── Mutators ───────────────────────────────────────────────────────────────
   function addMandatory() {
     const grid = document.getElementById('mandatory-skills');
-    const i = Date.now(); // unique id — avoids collisions with pre-rendered rows
+    const i = Date.now();
     const div = document.createElement('div');
     div.className = 'skill-row';
     div.innerHTML = `<div class="skill-name-wrap">
@@ -470,15 +549,34 @@ const SheetForm = (() => {
     if (row) row.remove();
   }
 
+  function addSpell() {
+    const container = document.getElementById('magic-spells');
+    const i = Date.now();
+    const div = document.createElement('div');
+    div.className = 'magic-spell-row';
+    div.id = `spell_row_${i}`;
+    div.innerHTML = `
+      <input type="text" class="spell-name" placeholder="Spell / technique name">
+      <input type="text" class="spell-order" placeholder="Order &amp; mastery">
+      <input type="text" class="spell-notes" placeholder="Notes / description">
+      <button type="button" class="btn btn-inline-remove" onclick="SheetForm.removeSpell(this)" title="Remove">✕</button>`;
+    container.appendChild(div);
+  }
+
+  function removeSpell(btn) {
+    const row = btn && btn.closest('.magic-spell-row');
+    if (row) row.remove();
+  }
+
   function addCustomField() {
     const container = document.getElementById('custom-fields');
-    const i = container.querySelectorAll('.custom-field-row').length;
+    const i = Date.now();
     const div = document.createElement('div');
     div.className = 'custom-field-row';
     div.id = `cf_row_${i}`;
     div.innerHTML = `<input type="text" id="cf_key_${i}" placeholder="Field name">
       <input type="text" id="cf_val_${i}" placeholder="Value">
-      <button type="button" class="btn btn-sm btn-danger" onclick="SheetForm.removeCustomField(${i})">✕</button>`;
+      <button type="button" class="btn btn-sm btn-danger" onclick="SheetForm.removeCustomField('${i}')">✕</button>`;
     container.appendChild(div);
   }
 
@@ -490,11 +588,7 @@ const SheetForm = (() => {
   function handlePortraitUpload(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file.');
-      event.target.value = '';
-      return;
-    }
+    if (!file.type.startsWith('image/')) { alert('Please upload an image file.'); event.target.value = ''; return; }
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = String(reader.result || '');
@@ -515,6 +609,7 @@ const SheetForm = (() => {
     if (picker) picker.value = '';
   }
 
+  // ── Collect ────────────────────────────────────────────────────────────────
   function collect() {
     const g = (id) => { const el = document.getElementById(`sf_${id}`); return el ? el.value.trim() : ''; };
 
@@ -532,13 +627,6 @@ const SheetForm = (() => {
       if (name) additional_skills.push({ name: name.trim(), value: value.trim() });
     });
 
-    const custom_fields = [];
-    document.querySelectorAll('#custom-fields .custom-field-row').forEach((row, i) => {
-      const k = document.getElementById(`cf_key_${i}`);
-      const v = document.getElementById(`cf_val_${i}`);
-      if (k && k.value.trim()) custom_fields.push({ key: k.value.trim(), value: (v ? v.value.trim() : '') });
-    });
-
     const common_skills = [];
     document.querySelectorAll('#common-skills .csk-row').forEach((row) => {
       const name = String(row.dataset.name || '').trim();
@@ -546,20 +634,53 @@ const SheetForm = (() => {
       if (name) common_skills.push({ name, value: value || '30' });
     });
 
+    const magic_spells = [];
+    document.querySelectorAll('#magic-spells .magic-spell-row').forEach((row) => {
+      const name  = (row.querySelector('.spell-name')  || {}).value || '';
+      const order = (row.querySelector('.spell-order') || {}).value || '';
+      const notes = (row.querySelector('.spell-notes') || {}).value || '';
+      if (name || order) magic_spells.push({ name: name.trim(), order: order.trim(), notes: notes.trim() });
+    });
+
+    const custom_fields = [];
+    document.querySelectorAll('#custom-fields .custom-field-row').forEach((row) => {
+      const k = row.querySelector('input:first-child');
+      const v = row.querySelector('input:nth-child(2)');
+      if (k && k.value.trim()) custom_fields.push({ key: k.value.trim(), value: (v ? v.value.trim() : '') });
+    });
+
+    // Derived — respect manual overrides
+    const derivedFields = ['hp','san','mp','build'];
+    const derived = {};
+    derivedFields.forEach((f) => {
+      const el = document.getElementById(`sf_derived_${f}`);
+      derived[f] = el ? el.value.trim() : '';
+    });
+    derived.move = g('derived_move');
+
     return {
       name: g('name'), pronouns: g('pronouns'),
       birthplace: g('birthplace'), residence: g('residence'),
-      occupation: g('occupation'), age: g('age'),
+      occupation: g('occupation'), social_class: g('social_class'), age: g('age'),
       glitch: g('glitch'), backstory: g('backstory'), reputation: g('reputation'),
       portrait: g('portrait'),
-      str: g('str'), con: g('con'), dex: g('dex'), int: g('int'), pow: g('pow'),
+      str: g('str'), con: g('con'), dex: g('dex'), int: g('int'), pow: g('pow'), siz: g('siz'),
       advantages: g('advantages_text'),
       disadvantages: g('disadvantages'),
       common_skills, mandatory_skills, additional_skills,
-      mov: g('mov'), luck: g('luck'), carry: g('carry'),
+      luck: g('luck'), carry: g('carry'),
+      magic_tradition: g('magic_tradition'), magic_notes: g('magic_notes'), magic_spells,
+      derived,
       custom_fields
     };
   }
 
-  return { render, collect, addMandatory, removeMandatory, addAdditional, removeAdditional, addCustomField, removeCustomField, handlePortraitUpload, clearPortrait };
+  return {
+    render, collect,
+    addMandatory, removeMandatory,
+    addAdditional, removeAdditional,
+    addSpell, removeSpell,
+    addCustomField, removeCustomField,
+    handlePortraitUpload, clearPortrait
+  };
 })();

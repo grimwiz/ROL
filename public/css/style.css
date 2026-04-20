@@ -397,3 +397,29 @@ tr:hover td { background: var(--bg3); }
   .sheet-personal-layout { grid-template-columns: 1fr; }
   .sheet-portrait-block { justify-self: start; width: 140px; }
 }
+
+/* ── 6-column characteristics grid (STR/CON/DEX/INT/POW/SIZ) ── */
+.characteristics-grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.75rem; }
+.characteristics-grid-6 .char-field label { text-align: center; }
+.characteristics-grid-6 .char-field select { text-align: center; }
+
+/* ── Derived stats grid ── */
+.derived-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem 1.5rem; }
+
+/* ── Magic spells table ── */
+.magic-spell-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+.magic-spell-row input { margin: 0; }
+
+/* ── Responsive additions ── */
+@media (max-width: 700px) {
+  .characteristics-grid-6 { grid-template-columns: repeat(3, 1fr); }
+  .derived-grid { grid-template-columns: repeat(2, 1fr); }
+  .magic-spell-row { grid-template-columns: 1fr 1fr auto; }
+  .magic-spell-row .spell-notes { grid-column: 1 / -1; }
+}
