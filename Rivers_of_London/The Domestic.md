@@ -194,7 +194,9 @@ If you are a Police Officer, go to 18 .
 
 ![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000035_31fa96d26cb24cf0e10cbef2d675dc3a724d226556cd09ef06644cbb081e0b40.png)
 
-If not, make a Power (POW) roll. If you succeed, go to 22 ; if you fail, go to 27 .
+If not, make a Power (POW) roll. If you succeed, go to 22 .
+
+If you fail, go to 27 .
 
 (7, 49)
 
@@ -302,9 +304,7 @@ To ask about the bruise on Mrs Fellaman's cheek, go to 50 . To look for anything
 
 21
 
-After  long  nights  attempting  to  push  over  empty  cans  of fizzy  drink  from  a  distance,  you  progressed  to  long  nights successfully  pushing  over  full  cans  of  fizzy  drink  from
-
-a  distance.  Molly  was  not  pleased  about  the  sticky  floor, but you can achieve an effective cast of Impello every time, particularly if you are thirsty.
+After  long  nights  attempting  to  push  over  empty  cans  of fizzy  drink  from  a  distance,  you  progressed  to  long  nights successfully  pushing  over  full  cans  of  fizzy  drink  from a  distance.  Molly  was  not  pleased  about  the  sticky  floor, but you can achieve an effective cast of Impello every time, particularly if you are thirsty.
 
 Note on your character sheet that you have Werelight and Impello as  mastered  spells.  You  do  this  by  marking  the  square  next  to the spell name.
 
