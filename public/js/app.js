@@ -526,9 +526,6 @@ async function loadDomesticTab() {
 
   tab.innerHTML = `
     <div class="page-header"><h2>The Domestic</h2></div>
-    <div class="card">
-      <div class="card-sub">Track your current step in the URL, move forward with action buttons, and step back with trace links.</div>
-    </div>
     <div id="domestic-adventure-area"></div>`;
 
   const stepFromUrl = readAdventureStepFromUrl();
