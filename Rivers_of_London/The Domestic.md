@@ -552,8 +552,13 @@ If you lose the opposed roll, go to 48 .
 
 A hairy  missile  with  teeth  launches  from  behind  the  bins. You throw yourself out of its path.
 
-Make a Dexterity (DEX) roll. As usual, you may spend Luck
-to improve your roll. If you succeed, go to 58; if you fail, go to 68.
+Make a Dexterity (DEX) roll. As usual, you may spend Luck to improve your roll.
+
+If you succeed, go to 58 .
+
+If you fail, go to 68 .
+
+(15)
 
 ## 41
 
