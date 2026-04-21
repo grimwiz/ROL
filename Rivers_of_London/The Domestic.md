@@ -552,9 +552,12 @@ If you lose the opposed roll, go to 48 .
 
 A hairy  missile  with  teeth  launches  from  behind  the  bins. You throw yourself out of its path.
 
+Make a Dexterity (DEX) roll. As usual, you may spend Luck
+to improve your roll. If you succeed, go to 58; if you fail, go to 68.
+
 ## 41
 
-Mrs  Fellaman  emerges  from  the  kitchen  holding  a  whiteenamel camping mug and the kind of plastic cup that comes from the top of a Thermos flask. You sit down at the table. China  crunches  beneath  your  feet.  ' Sorry  I'm  out  of  real cups, ' she says.
+Mrs Fellaman emerges from  the  kitchen  holding  a  white enamel camping mug and the kind of plastic cup that comes from the top of a Thermos flask. You sit down at the table. China crunches beneath your feet. 'Sorry I'm out of real cups,' she says.
 
 Her teapot has somehow survived. As the tea brews she offers you a custard cream. You take one and ask about the ghost.
 
