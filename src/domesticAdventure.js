@@ -5,22 +5,22 @@ const adventurePath = path.join(__dirname, '..', 'Rivers_of_London', 'The Domest
 
 function normalizeActionLabel(label, target) {
   const cleaned = String(label || '')
-    .replace(/^[\s.,;:!?-]+/, '')
+    .replace(/^[\s.,;:\!?-]+/, '')
     .replace(/\s+/g, ' ')
     .trim();
-  if (!cleaned || /^go to$/i.test(cleaned)) return `Go to ${target}`;
+  if (\!cleaned || /^go to$/i.test(cleaned)) return `Go to ${target}`;
   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 }
 
 function parseActions(text) {
   const actions = [];
   const seen = new Set();
-  const regex = /([^\n.!?]*?)\bgo to\s+(\d+)\s*\./gi;
+  const regex = /([^\n.\!?]*?)\bgo to\s+(\d+)\s*\./gi;
   let match;
 
-  while ((match = regex.exec(text)) !== null) {
+  while ((match = regex.exec(text)) \!== null) {
     const target = parseInt(match[2], 10);
-    if (!Number.isInteger(target)) continue;
+    if (\!Number.isInteger(target)) continue;
     const dedupeKey = `${match.index}:${target}`;
     if (seen.has(dedupeKey)) continue;
     seen.add(dedupeKey);
@@ -35,9 +35,13 @@ function parseActions(text) {
 
 function parseTracebacks(text) {
   const traceMatches = text.matchAll(/\(([^()]+)\)\s*$/gm);
+  const isTracebackList = (s) => /^\s*\d+(\s*,\s*\d+)*\s*$/.test(s);
   let lastMatch;
-  for (const match of traceMatches) lastMatch = match;
-  if (!lastMatch) return [];
+  for (const match of traceMatches) {
+    if (\!isTracebackList(match[1])) continue;
+    lastMatch = match;
+  }
+  if (\!lastMatch) return [];
 
   const values = lastMatch[1]
     .split(',')
@@ -93,7 +97,7 @@ function parseDomesticAdventure(markdown) {
 }
 
 function loadDomesticAdventure() {
-  if (!fs.existsSync(adventurePath)) return null;
+  if (\!fs.existsSync(adventurePath)) return null;
   const markdown = fs.readFileSync(adventurePath, 'utf8');
   return parseDomesticAdventure(markdown);
 }

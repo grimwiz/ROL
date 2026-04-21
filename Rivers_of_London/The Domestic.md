@@ -800,7 +800,7 @@ Go to 77 .
 
 You sidestep Knuckles' punch and get a lock on his arm. You try to force him to the ground. He continues to lash out at your legs and stomach.
 
-Knuckles, roll your tens die twice and take the worst result. So, if the tens dice come up 30 and 70 and the units die comes up 8, you have rolled 38 and 78. The worst result is 78, so that's the one you have to use to determine whether Knuckles succeeds or fails at his Fighting roll.
+Continue the combat, but give Knuckles a penalty die for the remainder of the fight. This means that every time you roll for Knuckles, roll your tens die twice and take the worst result. So, if the tens dice come up 30 and 70 and the units die comes up 8, you have rolled 38 and 78. The worst result is 78, so that's the one you have to use to determine whether Knuckles succeeds or fails at his Fighting roll.
 
 You  may  attempt  a  further combat  manoeuvre  to  restrain Knuckles completely.
 
@@ -831,8 +831,6 @@ You have Constitution (CON) 60. Write that, and its half value of 30, beside the
 Your skills also use half values for Hard skill rolls. Fill those in now. So, if your Stealth skill has a value of 60%, then its half value is 30%, written in this adventure as 60/30.
 
 Go to 88 .
-
-Continue  the  combat,  but  give  Knuckles  a  penalty  die  for  the remainder of  the  fight.  This  means  that  every  time  you  roll  for
 
 (14, 31, 35, 46)
 

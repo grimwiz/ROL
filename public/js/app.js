@@ -600,7 +600,29 @@ async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
 window.openDomesticAdventure = openDomesticAdventure;
 
 function formatAdventureText(value) {
-  return esc(value).replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>').replace(/^/, '<p>').replace(/$/, '</p>');
+  // Extract markdown image refs (![alt](src)) and replace with placeholders so
+  // the surrounding text can be safely escaped without mangling the tag.
+  const images = [];
+  const placeholder = (i) => `\u0000IMG${i}\u0000`;
+  const text = String(value || '').replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
+    const i = images.length;
+    images.push({ alt, src });
+    return placeholder(i);
+  });
+
+  let html = esc(text)
+    .replace(/\n{2,}/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+  html = '<p>' + html + '</p>';
+
+  html = html.replace(/\u0000IMG(\d+)\u0000/g, (_, idx) => {
+    const img = images[Number(idx)];
+    const srcPath = String(img.src || '').replace(/^\/+/, '');
+    const encoded = srcPath.split('/').map(encodeURIComponent).join('/');
+    return `<img class="adventure-image" src="/rules-files/${encoded}" alt="${esc(img.alt)}" style="max-width:100%;height:auto;display:block;margin:0.75rem auto;">`;
+  });
+
+  return html;
 }
 
 function domesticStorageKey() {
