@@ -561,7 +561,6 @@ async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
       <div class="card-header">
         <div>
           <div class="card-title">${esc(adventure.title)} — Step ${step.step}</div>
-          <div class="card-sub">${adventure.totalSteps} total steps. You can bookmark this page to return to this exact step.</div>
         </div>
       </div>
       <div class="adventure-description">${formatAdventureText(step.description)}</div>
