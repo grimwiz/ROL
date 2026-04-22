@@ -64,7 +64,7 @@
 
   <header>
     <h1>Character Portrait Test</h1>
-    <p>Takes a photo and runs it through ComfyUI + PhotoMaker&nbsp;v2 to generate an Alphonse&nbsp;Mucha-style RPG portrait. Standalone test — not yet wired into the character sheet.</p>
+    <p>Takes a photo and runs it through ComfyUI img2img stylisation to generate an Alphonse&nbsp;Mucha-style RPG portrait. Standalone test for the same workflow used by the character sheet.</p>
   </header>
 
   <section>
@@ -130,21 +130,19 @@
 const WORKFLOW = {
   "1": { "class_type": "CheckpointLoaderSimple", "inputs": { "ckpt_name": "aZovyaRPGArtistTools_v4VAE.safetensors" } },
   "2": { "class_type": "LoadImage",              "inputs": { "image": "portrait_input.jpg" } },
-  "3": { "class_type": "PhotoMakerLoaderPlus",   "inputs": { "photomaker_model_name": "photomaker-v2.bin" } },
-  "4": { "class_type": "PhotoMakerInsightFaceLoader", "inputs": { "provider": "CUDA" } },
-  "5": { "class_type": "PhotoMakerEncodePlus",   "inputs": {
-           "clip": ["1", 1], "photomaker": ["3", 0], "image": ["2", 0],
-           "trigger_word": "img", "text": "placeholder", "insightface_opt": ["4", 0] } },
-  "6": { "class_type": "CLIPTextEncode",         "inputs": {
+  "3": { "class_type": "VAEEncode",              "inputs": {
+           "pixels": ["2", 0], "vae": ["1", 2] } },
+  "4": { "class_type": "CLIPTextEncode",         "inputs": {
+           "clip": ["1", 1], "text": "placeholder" } },
+  "5": { "class_type": "CLIPTextEncode",         "inputs": {
            "clip": ["1", 1],
            "text": "lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, 3d render, cgi, low quality" } },
-  "7": { "class_type": "EmptyLatentImage",       "inputs": { "width": 832, "height": 1216, "batch_size": 1 } },
-  "8": { "class_type": "KSampler",               "inputs": {
+  "6": { "class_type": "KSampler",               "inputs": {
            "model": ["1", 0], "seed": 0, "steps": 28, "cfg": 5.5,
-           "sampler_name": "dpmpp_2m_sde", "scheduler": "karras", "denoise": 1.0,
-           "positive": ["5", 0], "negative": ["6", 0], "latent_image": ["7", 0] } },
-  "9": { "class_type": "VAEDecode",              "inputs": { "samples": ["8", 0], "vae": ["1", 2] } },
-  "10":{ "class_type": "SaveImage",              "inputs": { "images": ["9", 0], "filename_prefix": "ROL_portrait" } }
+           "sampler_name": "dpmpp_2m_sde", "scheduler": "karras", "denoise": 0.5,
+           "positive": ["4", 0], "negative": ["5", 0], "latent_image": ["3", 0] } },
+  "7": { "class_type": "VAEDecode",              "inputs": { "samples": ["6", 0], "vae": ["1", 2] } },
+  "8": { "class_type": "SaveImage",              "inputs": { "images": ["7", 0], "filename_prefix": "ROL_portrait" } }
 };
 
 // ----- DOM refs -----
@@ -295,12 +293,12 @@ async function generate() {
     // 3. Build the workflow
     const workflow = JSON.parse(JSON.stringify(WORKFLOW));
     const promptText =
-      `head-and-shoulders portrait of a ${classNoun} img, ${occupation}, known for ${skill}, ` +
+      `head-and-shoulders portrait of a ${classNoun}, ${occupation}, known for ${skill}, ` +
       `contemporary London setting, ${styleNote}, soft flat lighting, serious expression, ` +
       `three-quarters view, illustration, no text, no watermark`;
     workflow['2'].inputs.image = uploadedName;
-    workflow['5'].inputs.text = promptText;
-    workflow['8'].inputs.seed = Math.floor(Math.random() * 2 ** 31);
+    workflow['4'].inputs.text = promptText;
+    workflow['6'].inputs.seed = Math.floor(Math.random() * 2 ** 31);
     log(`Prompt: ${promptText.slice(0, 120)}...`);
 
     // 4. Queue (via Folly proxy)
@@ -317,7 +315,7 @@ async function generate() {
 
     // 6. Fetch and display
     const outputs = entry.outputs || {};
-    const saveNode = outputs['10'] || Object.values(outputs).find((o) => o && o.images && o.images.length);
+    const saveNode = outputs['8'] || Object.values(outputs).find((o) => o && o.images && o.images.length);
     if (!saveNode || !saveNode.images || !saveNode.images.length) {
       throw new Error('No output images in history entry.');
     }
@@ -327,7 +325,7 @@ async function generate() {
     if (resultEl.src && resultEl.src.startsWith('blob:')) URL.revokeObjectURL(resultEl.src);
     resultEl.src = URL.createObjectURL(imgBlob);
     $('resultMeta').textContent =
-      `${imgInfo.filename} — ${Math.round(imgBlob.size / 1024)} KB — seed ${workflow['8'].inputs.seed}`;
+      `${imgInfo.filename} — ${Math.round(imgBlob.size / 1024)} KB — seed ${workflow['6'].inputs.seed}`;
     log(`Saved on server as ${imgInfo.filename}.`);
   } catch (e) {
     log('FAILED: ' + e.message, 'error');

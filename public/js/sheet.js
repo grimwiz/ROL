@@ -68,27 +68,29 @@ const SheetForm = (() => {
   // API-format ComfyUI workflow used for Stylise/Reroll. Mirrors
   // scripts/comfyui-portrait-workflow.json — kept inline so the browser can
   // mutate it (image filename, prompt, seed) before posting.
+  //
+  // This is plain img2img rather than PhotoMaker. The previous PhotoMaker
+  // workflow depended on a model/checkpoint pairing that no longer matches the
+  // ComfyUI server, which caused runtime shape errors during encoding.
   const PORTRAIT_WORKFLOW = {
     '1': { class_type: 'CheckpointLoaderSimple', inputs: { ckpt_name: 'aZovyaRPGArtistTools_v4VAE.safetensors' } },
     '2': { class_type: 'LoadImage', inputs: { image: 'portrait_input.jpg' } },
-    '3': { class_type: 'PhotoMakerLoaderPlus', inputs: { photomaker_model_name: 'photomaker-v2.bin' } },
-    '4': { class_type: 'PhotoMakerInsightFaceLoader', inputs: { provider: 'CUDA' } },
-    '5': { class_type: 'PhotoMakerEncodePlus', inputs: {
-      clip: ['1', 1], photomaker: ['3', 0], image: ['2', 0],
-      trigger_word: 'img', text: '', insightface_opt: ['4', 0]
+    '3': { class_type: 'VAEEncode', inputs: { pixels: ['2', 0], vae: ['1', 2] } },
+    '4': { class_type: 'CLIPTextEncode', inputs: {
+      clip: ['1', 1],
+      text: ''
     } },
-    '6': { class_type: 'CLIPTextEncode', inputs: {
+    '5': { class_type: 'CLIPTextEncode', inputs: {
       clip: ['1', 1],
       text: 'lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, 3d render, cgi, low quality'
     } },
-    '7': { class_type: 'EmptyLatentImage', inputs: { width: 832, height: 1216, batch_size: 1 } },
-    '8': { class_type: 'KSampler', inputs: {
+    '6': { class_type: 'KSampler', inputs: {
       model: ['1', 0], seed: 42, steps: 28, cfg: 5.5,
-      sampler_name: 'dpmpp_2m_sde', scheduler: 'karras', denoise: 1.0,
-      positive: ['5', 0], negative: ['6', 0], latent_image: ['7', 0]
+      sampler_name: 'dpmpp_2m_sde', scheduler: 'karras', denoise: 0.5,
+      positive: ['4', 0], negative: ['5', 0], latent_image: ['3', 0]
     } },
-    '9': { class_type: 'VAEDecode', inputs: { samples: ['8', 0], vae: ['1', 2] } },
-    '10': { class_type: 'SaveImage', inputs: { images: ['9', 0], filename_prefix: 'ROL_portrait' } }
+    '7': { class_type: 'VAEDecode', inputs: { samples: ['6', 0], vae: ['1', 2] } },
+    '8': { class_type: 'SaveImage', inputs: { images: ['7', 0], filename_prefix: 'ROL_portrait' } }
   };
 
   function revokeIfBlobUrl(url) {
@@ -755,7 +757,7 @@ const SheetForm = (() => {
   function defaultPortraitPrompt() {
     const subj = inferSubjectFromPronouns();
     const occ = ((document.getElementById('sf_occupation') || {}).value || '').trim() || 'investigator';
-    return `head-and-shoulders portrait of a ${subj} img, ${occ}, `
+    return `head-and-shoulders portrait of a ${subj}, ${occ}, `
       + 'contemporary London setting, Alphonse Mucha art nouveau style, painterly linework, '
       + 'decorative halo and floral border motifs, muted earthy palette with a single accent colour, '
       + 'soft flat lighting, serious expression, three-quarters view, illustration, no text, no watermark';
@@ -783,7 +785,7 @@ const SheetForm = (() => {
 
     // Downscale to a sensible size (1024 px longest side, JPEG q=0.9). This
     // keeps the sheet JSON small, speeds up saves, and is plenty of detail for
-    // both the on-sheet preview and PhotoMaker's face analysis.
+    // the on-sheet preview and img2img stylisation.
     const file = await resizeImageBlob(rawFile, 1024, 0.9);
 
     // Keep the resized upload in memory so Stylise/Reroll don't need a re-upload.
@@ -872,8 +874,8 @@ const SheetForm = (() => {
       // 2. Mutate a fresh copy of the workflow with image, prompt, seed.
       const workflow = JSON.parse(JSON.stringify(PORTRAIT_WORKFLOW));
       workflow['2'].inputs.image = uploadedName;
-      workflow['5'].inputs.text = promptText;
-      workflow['8'].inputs.seed = Math.floor(Math.random() * 2 ** 31);
+      workflow['4'].inputs.text = promptText;
+      workflow['6'].inputs.seed = Math.floor(Math.random() * 2 ** 31);
 
       // 3. Queue prompt.
       const q = await fetch('/api/portrait/prompt', {
@@ -933,7 +935,7 @@ const SheetForm = (() => {
 
       // 5. Locate the saved image and fetch it.
       const outputs = entry.outputs || {};
-      const saveNode = outputs['10'] || Object.values(outputs).find((o) => o && o.images);
+      const saveNode = outputs['8'] || Object.values(outputs).find((o) => o && o.images);
       if (!saveNode || !saveNode.images || !saveNode.images.length) {
         throw new Error('ComfyUI finished but returned no image.');
       }

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Local sanity test for ComfyUI + PhotoMaker v2 portrait generation.
+// Local sanity test for ComfyUI portrait img2img stylisation.
 //
 // Usage:
 //   node scripts/comfyui-portrait-test.js <input-image> [occupation] [skill]
@@ -44,7 +44,7 @@ if (!fs.existsSync(WORKFLOW_PATH)) {
 // --------------------------------------------------------------------- prompt
 
 const PROMPT_TEMPLATE = (occ, skill) =>
-  `head-and-shoulders portrait of a man img, ${occ}, known for ${skill}, ` +
+  `head-and-shoulders portrait of a man, ${occ}, known for ${skill}, ` +
   `contemporary London setting, Alphonse Mucha art nouveau style, painterly linework, ` +
   `decorative halo and floral border motifs, muted earthy palette with a single accent colour, ` +
   `soft flat lighting, serious expression, three-quarters view, illustration, no text, no watermark`;
@@ -127,12 +127,12 @@ async function fetchOutputImage({ filename, subfolder, type }) {
   console.log(`  stored as: ${uploadedName}`);
 
   // 2. Substitute inputs into the workflow
-  // Node 2 = LoadImage, node 5 = PhotoMakerEncodePlus (positive text), node 8 = KSampler (seed)
+  // Node 2 = LoadImage, node 4 = positive text, node 6 = KSampler (seed)
   if (workflow['2'] && workflow['2'].inputs) workflow['2'].inputs.image = uploadedName;
-  if (workflow['5'] && workflow['5'].inputs) workflow['5'].inputs.text = PROMPT_TEMPLATE(occupation, topSkill);
-  if (workflow['8'] && workflow['8'].inputs) workflow['8'].inputs.seed = Math.floor(Math.random() * 2 ** 31);
+  if (workflow['4'] && workflow['4'].inputs) workflow['4'].inputs.text = PROMPT_TEMPLATE(occupation, topSkill);
+  if (workflow['6'] && workflow['6'].inputs) workflow['6'].inputs.seed = Math.floor(Math.random() * 2 ** 31);
 
-  console.log(`Prompt: ${workflow['5'].inputs.text.slice(0, 120)}...`);
+  console.log(`Prompt: ${workflow['4'].inputs.text.slice(0, 120)}...`);
 
   // 3. Queue
   const promptId = await queuePrompt(workflow);
@@ -145,7 +145,7 @@ async function fetchOutputImage({ filename, subfolder, type }) {
 
   // 5. Locate the saved image in the history outputs
   const outputs = entry.outputs || {};
-  const saveNode = outputs['10'] || Object.values(outputs).find((o) => o && o.images);
+  const saveNode = outputs['8'] || Object.values(outputs).find((o) => o && o.images);
   if (!saveNode || !saveNode.images || !saveNode.images.length) {
     console.error('No image in outputs. Full entry:');
     console.error(JSON.stringify(entry, null, 2));

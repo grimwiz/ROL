@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "check:domestic": "node scripts/check-domestic-adventure.js"
+    "check:domestic": "node scripts/check-domestic-adventure.js",
+    "compare:sheets": "python3 scripts/compare-character-sheet-dbs.py"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
