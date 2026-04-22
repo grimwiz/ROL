@@ -337,12 +337,12 @@ const SheetForm = (() => {
             <input type="hidden" id="sf_portrait" value="${esc(d.portrait)}">
           </div>
           ${!readonly ? `
-            <div id="sf_portrait_prompt_row" style="display:none;margin-top:0.5rem">
+            <div id="sf_portrait_prompt_row" style="margin-top:0.5rem">
               <label style="display:block;font-size:0.75rem;color:var(--text2);margin-bottom:0.2rem">Stylise prompt</label>
-              <textarea id="sf_portrait_prompt" rows="3" placeholder="Describe the portrait style…" style="width:100%;font-size:0.85rem"></textarea>
+              <textarea id="sf_portrait_prompt" rows="3" placeholder="Upload a photo, then describe the style…" style="width:100%;font-size:0.85rem"></textarea>
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.5rem">
-              <button type="button" id="sf_portrait_stylise" class="btn btn-sm" style="display:none" onclick="SheetForm.stylisePortrait(false)">Stylise</button>
+              <button type="button" id="sf_portrait_stylise" class="btn btn-sm" disabled onclick="SheetForm.stylisePortrait(false)" title="Upload a photo first">Stylise</button>
               <button type="button" id="sf_portrait_reroll" class="btn btn-sm" style="display:none" onclick="SheetForm.stylisePortrait(true)">Reroll</button>
               <button type="button" id="sf_portrait_revert" class="btn btn-sm" style="display:none" onclick="SheetForm.revertPortrait()">Revert to upload</button>
               <button type="button" id="sf_portrait_clear" class="btn btn-sm" onclick="SheetForm.clearPortrait()">Remove picture</button>
@@ -675,19 +675,74 @@ const SheetForm = (() => {
   }
 
   function updatePortraitControlsVisibility() {
+    // Prompt textarea + Stylise button are always visible when the sheet is
+    // editable; Reroll/Revert appear only after a successful generation. All
+    // buttons get enabled/disabled based on whether we have an upload to work
+    // with and whether a generation is currently in flight.
+    const hasOriginal = !!originalBlob;
+    const hasGenerated = !!lastGeneratedUrl;
     const show = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
-    show('sf_portrait_prompt_row', !!originalBlob);
-    show('sf_portrait_stylise',    !!originalBlob);
-    show('sf_portrait_reroll',     !!originalBlob && !!lastGeneratedUrl);
-    show('sf_portrait_revert',     !!originalBlob && !!lastGeneratedUrl);
+    show('sf_portrait_reroll', hasGenerated);
+    show('sf_portrait_revert', hasGenerated);
+    const setDisabled = (id, off) => { const el = document.getElementById(id); if (el) el.disabled = !!off; };
+    setDisabled('sf_portrait_file',    stylising);
+    setDisabled('sf_portrait_clear',   stylising);
+    setDisabled('sf_portrait_prompt',  stylising);
+    setDisabled('sf_portrait_stylise', stylising || !hasOriginal);
+    setDisabled('sf_portrait_reroll',  stylising || !hasOriginal);
+    setDisabled('sf_portrait_revert',  stylising);
+    const styliseBtn = document.getElementById('sf_portrait_stylise');
+    if (styliseBtn) styliseBtn.title = hasOriginal ? '' : 'Upload a photo first';
   }
 
-  function setPortraitControlsEnabled(enabled) {
-    ['sf_portrait_file', 'sf_portrait_stylise', 'sf_portrait_reroll',
-     'sf_portrait_revert', 'sf_portrait_clear', 'sf_portrait_prompt'].forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) el.disabled = !enabled;
-    });
+  // Kept for backward-compat with callers; folded into updatePortraitControlsVisibility.
+  function setPortraitControlsEnabled() { updatePortraitControlsVisibility(); }
+
+  // Resize an image blob so its longest side is at most maxDim pixels, re-encoded
+  // as JPEG. Returns the original file untouched if it's already small enough and
+  // not a runaway PNG. Falls back to the original on any decode failure.
+  async function resizeImageBlob(file, maxDim, quality) {
+    const maxBytesWithoutResize = 512 * 1024; // re-encode bigger-than-this even if dims are OK
+    try {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      try {
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = () => reject(new Error('decode failed'));
+          img.src = url;
+        });
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+      const w0 = img.naturalWidth || img.width;
+      const h0 = img.naturalHeight || img.height;
+      if (!w0 || !h0) return file;
+      const longest = Math.max(w0, h0);
+      const needsDownscale = longest > maxDim;
+      const needsReencode = file.size > maxBytesWithoutResize;
+      if (!needsDownscale && !needsReencode) return file;
+      const scale = needsDownscale ? maxDim / longest : 1;
+      const w = Math.max(1, Math.round(w0 * scale));
+      const h = Math.max(1, Math.round(h0 * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const blob = await new Promise((resolve) => {
+        canvas.toBlob((b) => resolve(b), 'image/jpeg', quality || 0.9);
+      });
+      if (!blob) return file;
+      try {
+        return new File([blob], 'portrait.jpg', { type: 'image/jpeg' });
+      } catch (_) {
+        return blob;
+      }
+    } catch (err) {
+      console.warn('Portrait resize fell back to original:', err);
+      return file;
+    }
   }
 
   function inferSubjectFromPronouns() {
@@ -716,15 +771,22 @@ const SheetForm = (() => {
   }
 
   // ── Portrait handlers ──────────────────────────────────────────────────────
-  function handlePortraitUpload(event) {
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
+  async function handlePortraitUpload(event) {
+    const rawFile = event.target.files && event.target.files[0];
+    if (!rawFile) return;
+    if (!rawFile.type.startsWith('image/')) {
       alert('Please upload an image file.');
       event.target.value = '';
       return;
     }
-    // Keep raw upload in memory so Stylise/Reroll don't need a re-upload.
+    setPortraitStatus('Resizing…', '');
+
+    // Downscale to a sensible size (1024 px longest side, JPEG q=0.9). This
+    // keeps the sheet JSON small, speeds up saves, and is plenty of detail for
+    // both the on-sheet preview and PhotoMaker's face analysis.
+    const file = await resizeImageBlob(rawFile, 1024, 0.9);
+
+    // Keep the resized upload in memory so Stylise/Reroll don't need a re-upload.
     revokeIfBlobUrl(originalUrl);
     revokeIfBlobUrl(lastGeneratedUrl);
     originalBlob = file;
@@ -733,19 +795,22 @@ const SheetForm = (() => {
 
     // Make the uploaded image the current saved portrait straight away — if
     // the player just wants to use it as-is, Save sheet works immediately.
-    readBlobAsDataUrl(file).then((dataUrl) => {
+    try {
+      const dataUrl = await readBlobAsDataUrl(file);
       setPortraitField(dataUrl);
       setPortraitPreview(dataUrl);
-    }).catch((err) => {
+    } catch (err) {
       console.error(err);
       setPortraitStatus('Could not read that image.', 'error');
-    });
+      return;
+    }
 
     // Pre-fill the stylise prompt from the sheet fields if empty.
     const promptEl = document.getElementById('sf_portrait_prompt');
     if (promptEl && !promptEl.value.trim()) promptEl.value = defaultPortraitPrompt();
 
-    setPortraitStatus('', '');
+    const kb = Math.round(file.size / 1024);
+    setPortraitStatus(`Ready (${kb} KB). Click Stylise to turn it into an AI portrait, or Save the sheet to use as-is.`, '');
     updatePortraitControlsVisibility();
   }
 
@@ -934,49 +999,6 @@ const SheetForm = (() => {
       if (name || order) magic_spells.push({ name: name.trim(), order: order.trim(), notes: notes.trim() });
     });
 
-    const custom_fields = [];
-    document.querySelectorAll('#custom-fields .custom-field-row').forEach((row) => {
-      const k = row.querySelector('input:first-child');
-      const v = row.querySelector('input:nth-child(2)');
-      if (k && k.value.trim()) custom_fields.push({ key: k.value.trim(), value: (v ? v.value.trim() : '') });
-    });
-
-    // Derived — respect manual overrides
-    const derivedFields = ['hp','san','mp','build'];
-    const derived = {};
-    derivedFields.forEach((f) => {
-      const el = document.getElementById(`sf_derived_${f}`);
-      derived[f] = el ? el.value.trim() : '';
-    });
-    derived.move = g('derived_move');
-
-    return {
-      name: g('name'), pronouns: g('pronouns'),
-      birthplace: g('birthplace'), residence: g('residence'),
-      occupation: g('occupation'), social_class: g('social_class'), age: g('age'),
-      glitch: g('glitch'), backstory: g('backstory'), reputation: g('reputation'),
-      portrait: g('portrait'),
-      str: g('str'), con: g('con'), dex: g('dex'), int: g('int'), pow: g('pow'), siz: g('siz'),
-      advantages: g('advantages_text'),
-      disadvantages: g('disadvantages'),
-      common_skills, mandatory_skills, additional_skills,
-      luck: g('luck'), carry: g('carry'),
-      magic_tradition: g('magic_tradition'), magic_notes: g('magic_notes'), magic_spells,
-      derived,
-      custom_fields
-    };
-  }
-
-  return {
-    render, collect,
-    addMandatory, removeMandatory,
-    addAdditional, removeAdditional,
-    addSpell, removeSpell,
-    addCustomField, removeCustomField,
-    handlePortraitUpload, clearPortrait,
-    stylisePortrait, revertPortrait
-  };
-})();
     const custom_fields = [];
     document.querySelectorAll('#custom-fields .custom-field-row').forEach((row) => {
       const k = row.querySelector('input:first-child');
