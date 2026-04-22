@@ -1266,3 +1266,5 @@ const SheetForm = (() => {
     stylisePortrait, revertPortrait
   };
 })();
+
+window.SheetForm = SheetForm;

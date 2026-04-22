@@ -8,10 +8,14 @@ const State = {
   rulesFiles: null,
   domesticAdventure: null,
   domesticCurrentStep: null,
+  domesticSavedStep: null,
+  domesticProgressLoaded: false,
   domesticSheet: null,
   domesticSheetLoaded: false,
   domesticSaveTimer: null,
   domesticSaveInflight: null,
+  domesticProgressInflight: null,
+  domesticProgressTarget: null,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -141,6 +145,8 @@ function resetUserScopedState() {
   State.rulesFiles = null;
   State.domesticAdventure = null;
   State.domesticCurrentStep = null;
+  State.domesticSavedStep = null;
+  State.domesticProgressLoaded = false;
   State.domesticSheet = null;
   State.domesticSheetLoaded = false;
   if (State.domesticSaveTimer) {
@@ -148,6 +154,8 @@ function resetUserScopedState() {
     State.domesticSaveTimer = null;
   }
   State.domesticSaveInflight = null;
+  State.domesticProgressInflight = null;
+  State.domesticProgressTarget = null;
 }
 
 // ── Routing ───────────────────────────────────────────────────────────────────
@@ -878,6 +886,8 @@ async function loadDomesticTab() {
 
   // Re-read the solo character from the server whenever the tab is opened so
   // returning to The Domestic cannot show stale in-memory state.
+  State.domesticSavedStep = null;
+  State.domesticProgressLoaded = false;
   State.domesticSheet = null;
   State.domesticSheetLoaded = false;
 
@@ -902,6 +912,11 @@ async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
     if (!State.domesticAdventure) {
       State.domesticAdventure = await api.getDomesticAdventure();
     }
+    if (!State.domesticProgressLoaded) {
+      const progress = await api.getDomesticProgress();
+      State.domesticSavedStep = progress && Number.isInteger(progress.current_step) ? progress.current_step : null;
+      State.domesticProgressLoaded = true;
+    }
     if (!State.domesticSheetLoaded) {
       State.domesticSheet = await loadDomesticSheetState();
       State.domesticSheetLoaded = true;
@@ -912,9 +927,10 @@ async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
   }
 
   const adventure = State.domesticAdventure;
-  const requestedStep = stepFromUrl || State.domesticCurrentStep || adventure.startStep;
+  const requestedStep = stepFromUrl || State.domesticCurrentStep || State.domesticSavedStep || adventure.startStep;
   const step = adventure.steps.find((entry) => entry.step === requestedStep) || adventure.steps.find((entry) => entry.step === adventure.startStep);
   State.domesticCurrentStep = step.step;
+  queueDomesticProgressSave(step.step);
   updateAdventureStepInUrl(step.step, replaceUrl);
 
   host.innerHTML = `
@@ -1029,6 +1045,31 @@ async function persistDomesticSheet(data, pendingLabel = 'Saving adventure sheet
   } finally {
     State.domesticSaveInflight = null;
   }
+}
+
+function queueDomesticProgressSave(step) {
+  if (!Number.isInteger(step)) return;
+  State.domesticCurrentStep = step;
+  State.domesticProgressTarget = step;
+  if (State.domesticSavedStep === step && !State.domesticProgressInflight) return;
+  if (State.domesticProgressInflight) return;
+
+  State.domesticProgressInflight = (async () => {
+    try {
+      while (Number.isInteger(State.domesticProgressTarget) && State.domesticSavedStep !== State.domesticProgressTarget) {
+        const target = State.domesticProgressTarget;
+        await api.saveDomesticProgress(target);
+        State.domesticSavedStep = target;
+      }
+    } catch (e) {
+      console.error('Unable to save Domestic progress:', e);
+    } finally {
+      State.domesticProgressInflight = null;
+      if (Number.isInteger(State.domesticProgressTarget) && State.domesticSavedStep !== State.domesticProgressTarget) {
+        queueDomesticProgressSave(State.domesticProgressTarget);
+      }
+    }
+  })();
 }
 
 function attachDomesticSheetPersistence(host) {

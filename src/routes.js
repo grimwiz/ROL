@@ -330,6 +330,33 @@ router.get('/adventure/domestic', requireAuth, (req, res) => {
   res.json(adventure);
 });
 
+router.get('/adventure/domestic/progress', requireAuth, (req, res) => {
+  const row = db.prepare('SELECT current_step, updated_at FROM domestic_progress WHERE user_id = ?').get(req.user.id);
+  if (!row) return res.json({ current_step: null });
+  res.json(row);
+});
+
+router.put('/adventure/domestic/progress', requireAuth, (req, res) => {
+  const adventure = loadDomesticAdventure();
+  if (!adventure) {
+    return res.status(404).json({ error: 'The Domestic adventure markdown is not available on the server.' });
+  }
+  const currentStep = parseInt(req.body && req.body.current_step, 10);
+  if (!Number.isInteger(currentStep)) {
+    return res.status(400).json({ error: 'A valid adventure step is required.' });
+  }
+  const exists = adventure.steps.some((step) => step.step === currentStep);
+  if (!exists) {
+    return res.status(400).json({ error: 'That adventure step does not exist.' });
+  }
+  db.prepare(`
+    INSERT INTO domestic_progress (user_id, current_step, updated_at)
+    VALUES (?, ?, datetime('now'))
+    ON CONFLICT(user_id) DO UPDATE SET current_step = excluded.current_step, updated_at = excluded.updated_at
+  `).run(req.user.id, currentStep);
+  res.json({ ok: true, current_step: currentStep });
+});
+
 router.get('/adventure/domestic/sheet', requireAuth, (req, res) => {
   const { session, sheet } = getDomesticSheetRow(req.user.id);
   if (!sheet) return res.json({ session_id: session.id, data: {} });

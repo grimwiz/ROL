@@ -41,6 +41,8 @@ const api = (() => {
     getRules: () => req('GET', '/rules'),
     searchRules: (query) => req('GET', `/rules/search?q=${encodeURIComponent(query)}`),
     getDomesticAdventure: () => req('GET', '/adventure/domestic'),
+    getDomesticProgress: () => req('GET', '/adventure/domestic/progress'),
+    saveDomesticProgress: (currentStep) => req('PUT', '/adventure/domestic/progress', { current_step: currentStep }),
     getDomesticSheet: () => req('GET', '/adventure/domestic/sheet'),
     saveDomesticSheet: (data) => req('PUT', '/adventure/domestic/sheet', { data }),
     deleteDomesticSheet: () => req('DELETE', '/adventure/domestic/sheet'),

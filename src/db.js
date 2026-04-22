@@ -59,6 +59,12 @@ db.exec(`
     updated_at TEXT DEFAULT (datetime('now')),
     UNIQUE(user_id)
   );
+
+  CREATE TABLE IF NOT EXISTS domestic_progress (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    current_step INTEGER NOT NULL,
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 module.exports = db;
