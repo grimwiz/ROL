@@ -2,13 +2,23 @@ const Database = require('better-sqlite3');
 const path = require('path');
 
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, '..', 'data', 'folly.db');
+const JOURNAL_MODE = String(process.env.SQLITE_JOURNAL_MODE || 'DELETE').toUpperCase();
+const ALLOWED_JOURNAL_MODES = new Set(['DELETE', 'TRUNCATE', 'PERSIST', 'MEMORY', 'WAL', 'OFF']);
 
 const fs = require('fs');
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 
 const db = new Database(DB_PATH);
 
-db.pragma('journal_mode = WAL');
+if (!ALLOWED_JOURNAL_MODES.has(JOURNAL_MODE)) {
+  throw new Error(`Unsupported SQLITE_JOURNAL_MODE: ${JOURNAL_MODE}`);
+}
+
+// DELETE mode keeps the deployment simpler: after each transaction, the main
+// database lives in a single file on disk rather than a persistent .db + .wal
+// pair. If WAL is ever wanted again for concurrency, opt back in with
+// SQLITE_JOURNAL_MODE=WAL.
+db.pragma(`journal_mode = ${JOURNAL_MODE}`);
 db.pragma('foreign_keys = ON');
 
 db.exec(`
