@@ -8,6 +8,10 @@ const State = {
   rulesFiles: null,
   domesticAdventure: null,
   domesticCurrentStep: null,
+  domesticSheet: null,
+  domesticSheetLoaded: false,
+  domesticSaveTimer: null,
+  domesticSaveInflight: null,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -39,6 +43,27 @@ function summarizeSkills(skills) {
     .join(', ') || '—';
 }
 
+function hasSheetData(sheet) {
+  return !!(sheet && sheet.data && Object.keys(sheet.data).length > 0);
+}
+
+function resetUserScopedState() {
+  State.sessions = [];
+  State.users = [];
+  State.currentSession = null;
+  State.currentSheetUserId = null;
+  State.rulesFiles = null;
+  State.domesticAdventure = null;
+  State.domesticCurrentStep = null;
+  State.domesticSheet = null;
+  State.domesticSheetLoaded = false;
+  if (State.domesticSaveTimer) {
+    clearTimeout(State.domesticSaveTimer);
+    State.domesticSaveTimer = null;
+  }
+  State.domesticSaveInflight = null;
+}
+
 // ── Routing ───────────────────────────────────────────────────────────────────
 function showPage(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -46,12 +71,15 @@ function showPage(pageId) {
   if (pg) pg.classList.add('active');
 }
 
-function updateAdventureStepInUrl(step, replace = false) {
+function updateUiStateInUrl(patch, replace = false) {
   const url = new URL(window.location.href);
-  if (step) {
-    url.searchParams.set('adventureStep', String(step));
-  } else {
-    url.searchParams.delete('adventureStep');
+  for (const [key, value] of Object.entries(patch)) {
+    if (value === undefined) continue;
+    if (value === null || value === '') {
+      url.searchParams.delete(key);
+    } else {
+      url.searchParams.set(key, String(value));
+    }
   }
   if (replace) {
     window.history.replaceState({}, '', url.toString());
@@ -60,21 +88,64 @@ function updateAdventureStepInUrl(step, replace = false) {
   }
 }
 
+function updateAdventureStepInUrl(step, replace = false) {
+  updateUiStateInUrl({ adventureStep: step || null }, replace);
+}
+
+function readUiStateFromUrl() {
+  const url = new URL(window.location.href);
+  const parseIntParam = (name) => {
+    const value = parseInt(url.searchParams.get(name), 10);
+    return Number.isInteger(value) ? value : null;
+  };
+  const tab = url.searchParams.get('tab');
+  return {
+    tab: tab || 'sessions',
+    sessionId: parseIntParam('session'),
+    adventureStep: parseIntParam('adventureStep')
+  };
+}
+
 function readAdventureStepFromUrl() {
-  const value = parseInt(new URL(window.location.href).searchParams.get('adventureStep'), 10);
-  return Number.isInteger(value) ? value : null;
+  return readUiStateFromUrl().adventureStep;
+}
+
+async function restoreUiFromUrl(replace = false) {
+  const route = readUiStateFromUrl();
+  const allowedTabs = new Set(['sessions', 'rules', 'domestic', 'users']);
+  const targetTab = allowedTabs.has(route.tab) ? route.tab : 'sessions';
+
+  if (targetTab === 'users' && State.user.role !== 'gm') {
+    await switchTab('sessions', { replaceUrl: true });
+    return;
+  }
+
+  if (targetTab === 'sessions') {
+    if (route.sessionId) {
+      if (!State.sessions.length) {
+        await loadSessionsTab({ skipUrlUpdate: true });
+      }
+      await openSession(route.sessionId, { replaceUrl: replace });
+      return;
+    }
+    await switchTab('sessions', { replaceUrl: true });
+    return;
+  }
+
+  await switchTab(targetTab, { replaceUrl: replace });
 }
 
 // ── App init ──────────────────────────────────────────────────────────────────
 async function init() {
   renderLoginPage();
   window.addEventListener('popstate', () => {
-    const step = readAdventureStepFromUrl();
-    if (step && el('tab-domestic') && el('tab-domestic').style.display !== 'none') {
-      openDomesticAdventure(step, true);
-    }
+    if (!State.user) return;
+    restoreUiFromUrl(true).catch((err) => {
+      console.error('Could not restore UI state from URL:', err);
+    });
   });
   try {
+    resetUserScopedState();
     State.user = await api.me();
     await renderMain();
   } catch {
@@ -116,6 +187,7 @@ function renderLoginPage() {
   const doLogin = async () => {
     btn.disabled = true; btn.textContent = 'Signing in…';
     try {
+      resetUserScopedState();
       State.user = await api.login(el('login-user').value, el('login-pass').value);
       await renderMain();
     } catch (e) {
@@ -150,10 +222,10 @@ async function renderMain() {
         ${isGM ? `<button class="nav-tab" data-tab="users" onclick="switchTab('users')">Accounts</button>` : ''}
       </div>
       <div class="nav-right">
-        <span class="nav-user">
+        <button class="nav-user nav-user-button" onclick="openMyCharacters()" title="View your stored characters">
           ${esc(State.user.username)}
           ${isGM ? '<span class="badge-gm">GM</span>' : ''}
-        </span>
+        </button>
         <button class="btn btn-sm" onclick="doLogout()">Sign out</button>
       </div>
     </nav>
@@ -163,10 +235,11 @@ async function renderMain() {
     ${isGM ? `<div id="tab-users" class="main" style="display:none"></div>` : ''}`;
 
   showPage('main-page');
-  await loadSessionsTab();
+  await restoreUiFromUrl(true);
 }
 
-function switchTab(tab) {
+async function switchTab(tab, options = {}) {
+  const { replaceUrl = false, preserveSession = false } = options;
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
   ['sessions','users','domestic'].forEach(t => {
     const el_ = el(`tab-${t}`);
@@ -174,22 +247,134 @@ function switchTab(tab) {
   });
   const rulesTab = el('tab-rules');
   if (rulesTab) rulesTab.style.display = tab === 'rules' ? '' : 'none';
-  if (tab === 'users') loadUsersTab();
-  if (tab === 'rules') loadRulesTab();
-  if (tab === 'domestic') loadDomesticTab();
+
+  updateUiStateInUrl({
+    tab,
+    session: tab === 'sessions' && preserveSession ? undefined : null,
+    gmPlayer: null,
+    adventureStep: tab === 'domestic' ? undefined : null
+  }, replaceUrl);
+
+  if (tab === 'sessions') await loadSessionsTab({ skipUrlUpdate: true });
+  if (tab === 'users') await loadUsersTab();
+  if (tab === 'rules') await loadRulesTab();
+  if (tab === 'domestic') await loadDomesticTab();
 }
 
 async function doLogout() {
   await api.logout();
+  resetUserScopedState();
   State.user = null;
   showPage('login-page');
   renderLoginPage();
 }
 
+async function openMyCharacters() {
+  const view = modal(`
+    <h3>My Characters</h3>
+    <div id="my-characters-body"><p style="color:var(--text2)">Loading stored characters…</p></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Close</button>
+    </div>`, (bd) => {
+    const modalEl = bd.querySelector('.modal');
+    if (modalEl) modalEl.style.maxWidth = '1100px';
+  });
+
+  const body = view.querySelector('#my-characters-body');
+
+  try {
+    const sessions = State.sessions.length ? State.sessions : await api.getSessions();
+    if (!State.sessions.length) State.sessions = sessions;
+
+    const [domesticSheet, sessionSheets] = await Promise.all([
+      api.getDomesticSheet(),
+      Promise.all(sessions.map(async (session) => ({
+        session,
+        sheet: await api.getSheet(session.id, State.user.id)
+      })))
+    ]);
+
+    const rows = sessionSheets
+      .filter(({ sheet }) => hasSheetData(sheet))
+      .map(({ session, sheet }) => ({
+        label: session.name,
+        route: async () => {
+          view.remove();
+          if (!State.sessions.length) State.sessions = sessions;
+          await openSession(session.id);
+        },
+        data: sheet.data
+      }));
+
+    if (hasSheetData(domesticSheet)) {
+      rows.unshift({
+        label: 'The Domestic',
+        route: async () => {
+          view.remove();
+          await switchTab('domestic');
+        },
+        data: domesticSheet.data
+      });
+    }
+
+    if (!rows.length) {
+      body.innerHTML = '<div class="empty" style="padding:1.5rem 0.5rem"><p>No stored characters yet.</p></div>';
+      return;
+    }
+
+    body.innerHTML = `
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Session</th><th>Character</th><th>STR</th><th>CON</th><th>DEX</th><th>INT</th><th>POW</th><th>Speed</th><th>Luck</th><th>Advantages</th><th>Skills</th><th>Essential items</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((row, i) => {
+              const d = row.data || {};
+              const allSkills = [...(d.common_skills || []), ...(d.mandatory_skills || []), ...(d.additional_skills || [])];
+              return `<tr>
+                <td><strong>${esc(row.label)}</strong></td>
+                <td>${esc(d.name || '—')}</td>
+                <td>${esc(d.str || '—')}</td>
+                <td>${esc(d.con || '—')}</td>
+                <td>${esc(d.dex || '—')}</td>
+                <td>${esc(d.int || '—')}</td>
+                <td>${esc(d.pow || '—')}</td>
+                <td>${esc(d.mov || (d.derived && d.derived.move) || '—')}</td>
+                <td>${esc(d.luck || '—')}</td>
+                <td>${esc(d.advantages || '—')}</td>
+                <td>${esc(summarizeSkills(allSkills))}</td>
+                <td>${esc(d.carry || '—')}</td>
+                <td><button class="btn btn-sm" onclick="openStoredCharacter(${i})">Open</button></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+
+    window.openStoredCharacter = async (index) => {
+      const row = rows[index];
+      if (!row) return;
+      await row.route();
+    };
+  } catch (e) {
+    body.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+  }
+}
+window.openMyCharacters = openMyCharacters;
+
 // ── Sessions tab ──────────────────────────────────────────────────────────────
-async function loadSessionsTab() {
+async function loadSessionsTab(options = {}) {
+  const { skipUrlUpdate = false, replaceUrl = false } = options;
   const tab = el('tab-sessions');
   tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading…</p>';
+  State.currentSession = null;
+  State.currentSheetUserId = null;
+  if (!skipUrlUpdate) {
+    updateUiStateInUrl({ tab: 'sessions', session: null, gmPlayer: null }, replaceUrl);
+  }
   State.sessions = await api.getSessions();
 
   const isGM = State.user.role === 'gm';
@@ -285,10 +470,53 @@ async function deleteSession(id) {
 }
 
 // ── Session detail view ───────────────────────────────────────────────────────
-async function openSession(sessionId) {
+function gmSelectedPlayerStorageKey(sessionId) {
+  return `gm_selected_player_${State.user ? State.user.id : 'anon'}_${sessionId}`;
+}
+
+function readStoredGmPlayerId(sessionId) {
+  try {
+    const value = parseInt(sessionStorage.getItem(gmSelectedPlayerStorageKey(sessionId)), 10);
+    return Number.isInteger(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function storeGmPlayerId(sessionId, userId) {
+  try {
+    if (!userId) sessionStorage.removeItem(gmSelectedPlayerStorageKey(sessionId));
+    else sessionStorage.setItem(gmSelectedPlayerStorageKey(sessionId), String(userId));
+  } catch {
+    // Ignore storage failures; the UI still works without persistence.
+  }
+}
+
+async function openSession(sessionId, options = {}) {
+  const { replaceUrl = false } = options;
   const session = State.sessions.find(s => s.id === sessionId);
+  if (!session) {
+    await loadSessionsTab({ replaceUrl: true });
+    return;
+  }
+  State.currentSession = sessionId;
   const tab = el('tab-sessions');
   const isGM = State.user.role === 'gm';
+
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'sessions'));
+  ['sessions','users','domestic'].forEach(t => {
+    const el_ = el(`tab-${t}`);
+    if (el_) el_.style.display = t === 'sessions' ? '' : 'none';
+  });
+  const rulesTab = el('tab-rules');
+  if (rulesTab) rulesTab.style.display = 'none';
+
+  updateUiStateInUrl({
+    tab: 'sessions',
+    session: sessionId,
+    gmPlayer: null,
+    adventureStep: null
+  }, replaceUrl);
 
   tab.innerHTML = `
     <div class="page-header">
@@ -303,13 +531,13 @@ async function openSession(sessionId) {
     <div id="session-content"><p style="color:var(--text2)">Loading…</p></div>`;
 
   if (isGM) {
-    await renderGMSessionView(sessionId);
+    await renderGMSessionView(sessionId, readStoredGmPlayerId(sessionId));
   } else {
     await renderPlayerSessionView(sessionId);
   }
 }
 
-async function renderGMSessionView(sessionId) {
+async function renderGMSessionView(sessionId, preferredUserId = null) {
   const [players, sheets] = await Promise.all([
     api.getSessionPlayers(sessionId),
     api.getSheets(sessionId)
@@ -380,12 +608,15 @@ async function renderGMSessionView(sessionId) {
 
   // Show first player
   if (players.length > 0) {
-    window.gmCurrentPlayerId = players[0].id;
-    gmSelectSheet(players[0].id, players[0].username);
+    const preferredPlayer = players.find((p) => p.id === preferredUserId) || players[0];
+    window.gmCurrentPlayerId = preferredPlayer.id;
+    gmSelectSheet(preferredPlayer.id, preferredPlayer.username);
   }
 
   async function gmSelectSheet(userId, username) {
     window.gmCurrentPlayerId = userId;
+    State.currentSheetUserId = userId;
+    storeGmPlayerId(sessionId, userId);
     document.querySelectorAll('.sheet-tab').forEach(t => t.classList.remove('active'));
     const tab = el(`stab_${userId}`);
     if (tab) tab.classList.add('active');
@@ -530,10 +761,10 @@ async function loadDomesticTab() {
 
   const stepFromUrl = readAdventureStepFromUrl();
   if (stepFromUrl) {
-    openDomesticAdventure(stepFromUrl, true);
+    await openDomesticAdventure(stepFromUrl, true);
     return;
   }
-  openDomesticAdventure();
+  await openDomesticAdventure();
 }
 
 async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
@@ -544,6 +775,10 @@ async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
   try {
     if (!State.domesticAdventure) {
       State.domesticAdventure = await api.getDomesticAdventure();
+    }
+    if (!State.domesticSheetLoaded) {
+      State.domesticSheet = await loadDomesticSheetState();
+      State.domesticSheetLoaded = true;
     }
   } catch (e) {
     host.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
@@ -589,8 +824,7 @@ async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
     </div>`;
 
   const sheetHost = el('domestic-sheet');
-  const savedSheet = loadDomesticSheetState();
-  SheetForm.render(sheetHost, savedSheet, false);
+  SheetForm.render(sheetHost, State.domesticSheet || {}, false);
   attachDomesticSheetPersistence(sheetHost);
 }
 window.openDomesticAdventure = openDomesticAdventure;
@@ -621,15 +855,25 @@ function formatAdventureText(value) {
   return html;
 }
 
-function domesticStorageKey() {
+function legacyDomesticStorageKey() {
   return `domestic_sheet_${State.user ? State.user.id : 'anon'}`;
 }
 
-function loadDomesticSheetState() {
+async function loadDomesticSheetState() {
+  const serverSheet = await api.getDomesticSheet();
+  const serverData = (serverSheet && serverSheet.data) || {};
+  if (Object.keys(serverData).length > 0) return serverData;
+
   try {
-    const raw = localStorage.getItem(domesticStorageKey());
+    const raw = localStorage.getItem(legacyDomesticStorageKey());
     if (!raw) return {};
-    return JSON.parse(raw);
+    const migrated = JSON.parse(raw);
+    if (migrated && Object.keys(migrated).length > 0) {
+      await api.saveDomesticSheet(migrated);
+      localStorage.removeItem(legacyDomesticStorageKey());
+      return migrated;
+    }
+    return {};
   } catch {
     return {};
   }
@@ -641,10 +885,35 @@ function attachDomesticSheetPersistence(host) {
   const onChange = () => {
     try {
       const data = SheetForm.collect();
-      localStorage.setItem(domesticStorageKey(), JSON.stringify(data));
-      if (status) status.textContent = 'Adventure sheet saved locally';
+      State.domesticSheet = data;
+      if (status) {
+        status.textContent = 'Saving adventure sheet…';
+        status.className = 'save-status';
+      }
+      if (State.domesticSaveTimer) clearTimeout(State.domesticSaveTimer);
+      State.domesticSaveTimer = window.setTimeout(async () => {
+        State.domesticSaveTimer = null;
+        try {
+          State.domesticSaveInflight = api.saveDomesticSheet(State.domesticSheet);
+          await State.domesticSaveInflight;
+          if (status) {
+            status.textContent = 'Adventure sheet saved';
+            status.className = 'save-status saved';
+          }
+        } catch {
+          if (status) {
+            status.textContent = 'Unable to save adventure sheet';
+            status.className = 'save-status error';
+          }
+        } finally {
+          State.domesticSaveInflight = null;
+        }
+      }, 350);
     } catch {
-      if (status) status.textContent = 'Unable to save local adventure sheet';
+      if (status) {
+        status.textContent = 'Unable to save adventure sheet';
+        status.className = 'save-status error';
+      }
     }
   };
   host.querySelectorAll('input, textarea, select').forEach((field) => {
@@ -653,8 +922,18 @@ function attachDomesticSheetPersistence(host) {
   });
 }
 
-function resetDomesticSheet() {
-  localStorage.removeItem(domesticStorageKey());
+async function resetDomesticSheet() {
+  if (State.domesticSaveTimer) {
+    clearTimeout(State.domesticSaveTimer);
+    State.domesticSaveTimer = null;
+  }
+  if (State.domesticSaveInflight) {
+    try { await State.domesticSaveInflight; } catch {}
+  }
+  await api.deleteDomesticSheet();
+  try { localStorage.removeItem(legacyDomesticStorageKey()); } catch {}
+  State.domesticSheet = {};
+  State.domesticSheetLoaded = true;
   openDomesticAdventure(State.domesticCurrentStep, true);
 }
 window.resetDomesticSheet = resetDomesticSheet;

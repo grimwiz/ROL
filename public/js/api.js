@@ -41,5 +41,8 @@ const api = (() => {
     getRules: () => req('GET', '/rules'),
     searchRules: (query) => req('GET', `/rules/search?q=${encodeURIComponent(query)}`),
     getDomesticAdventure: () => req('GET', '/adventure/domestic'),
+    getDomesticSheet: () => req('GET', '/adventure/domestic/sheet'),
+    saveDomesticSheet: (data) => req('PUT', '/adventure/domestic/sheet', { data }),
+    deleteDomesticSheet: () => req('DELETE', '/adventure/domestic/sheet'),
   };
 })();

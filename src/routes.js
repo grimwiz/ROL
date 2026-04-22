@@ -203,6 +203,27 @@ router.get('/adventure/domestic', requireAuth, (req, res) => {
   res.json(adventure);
 });
 
+router.get('/adventure/domestic/sheet', requireAuth, (req, res) => {
+  const sheet = db.prepare('SELECT * FROM domestic_sheets WHERE user_id = ?').get(req.user.id);
+  if (!sheet) return res.json({ data: {} });
+  res.json({ ...sheet, data: JSON.parse(sheet.data) });
+});
+
+router.put('/adventure/domestic/sheet', requireAuth, (req, res) => {
+  const data = JSON.stringify(req.body.data || {});
+  db.prepare(`
+    INSERT INTO domestic_sheets (user_id, data, updated_at)
+    VALUES (?, ?, datetime('now'))
+    ON CONFLICT(user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
+  `).run(req.user.id, data);
+  res.json({ ok: true });
+});
+
+router.delete('/adventure/domestic/sheet', requireAuth, (req, res) => {
+  db.prepare('DELETE FROM domestic_sheets WHERE user_id = ?').run(req.user.id);
+  res.json({ ok: true });
+});
+
 // ── Rules library ────────────────────────────────────────────────────────────
 
 const rulesRoot = path.join(__dirname, '..', 'Rivers_of_London');

@@ -51,6 +51,14 @@ db.exec(`
     updated_at TEXT DEFAULT (datetime('now')),
     UNIQUE(session_id, user_id)
   );
+
+  CREATE TABLE IF NOT EXISTS domestic_sheets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    data TEXT NOT NULL DEFAULT '{}',
+    updated_at TEXT DEFAULT (datetime('now')),
+    UNIQUE(user_id)
+  );
 `);
 
 module.exports = db;
