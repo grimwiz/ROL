@@ -469,7 +469,7 @@ const SheetForm = (() => {
           <label>Portrait</label>
           <div class="sheet-portrait">${renderPortraitPreview(d.portrait)}</div>
           <div class="portrait-controls">
-            ${!readonly ? '<input type="file" id="sf_portrait_file" accept="image/*" onchange="SheetForm.handlePortraitUpload(event)">' : ''}
+            ${!readonly ? '<input type="file" id="sf_portrait_file" accept="image/*" capture="user" onchange="SheetForm.handlePortraitUpload(event)">' : ''}
             <input type="hidden" id="sf_portrait" value="${esc(d.portrait)}">
           </div>
           ${!readonly ? `
