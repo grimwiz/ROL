@@ -74,6 +74,7 @@ const SheetForm = (() => {
   let originalUrl = null;        // blob: URL for the raw upload
   let lastGeneratedUrl = null;   // blob: URL of latest stylised output
   let stylising = false;
+  let portraitCameraStream = null;
 
   function revokeIfBlobUrl(url) {
     if (url && typeof url === 'string' && url.startsWith('blob:')) URL.revokeObjectURL(url);
@@ -82,6 +83,9 @@ const SheetForm = (() => {
   function resetPortraitState() {
     revokeIfBlobUrl(originalUrl);
     revokeIfBlobUrl(lastGeneratedUrl);
+    stopPortraitCameraStream();
+    const modal = document.getElementById('portrait-camera-modal');
+    if (modal) modal.remove();
     originalBlob = null;
     originalUrl = null;
     lastGeneratedUrl = null;
@@ -442,18 +446,18 @@ const SheetForm = (() => {
           <div class="sheet-portrait">${renderPortraitPreview(d.portrait)}</div>
           <div class="portrait-controls">
             ${!readonly ? '<input type="file" id="sf_portrait_file" accept="image/*" capture="user" onchange="SheetForm.handlePortraitUpload(event)">' : ''}
+            ${!readonly ? '<button type="button" id="sf_portrait_camera" class="btn btn-sm" onclick="SheetForm.openPortraitCamera()">Take photo</button>' : ''}
             <input type="hidden" id="sf_portrait" value="${esc(d.portrait)}">
           </div>
           ${!readonly ? `
             <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.5rem">
-              <button type="button" id="sf_portrait_stylise" class="btn btn-sm" disabled onclick="SheetForm.stylisePortrait(false)" title="Upload a photo first">Stylise</button>
-              <button type="button" id="sf_portrait_reroll" class="btn btn-sm" style="display:none" onclick="SheetForm.stylisePortrait(true)">Reroll</button>
+              <button type="button" id="sf_portrait_stylise" class="btn btn-sm" disabled onclick="SheetForm.stylisePortrait()" title="Upload a photo first">Stylise</button>
               <button type="button" id="sf_portrait_revert" class="btn btn-sm" style="display:none" onclick="SheetForm.revertPortrait()">Revert to upload</button>
               <button type="button" id="sf_portrait_clear" class="btn btn-sm" onclick="SheetForm.clearPortrait()">Remove picture</button>
             </div>
             <div id="sf_portrait_status" class="card-sub" style="margin-top:0.35rem;min-height:1em"></div>
           ` : ''}
-          <div class="card-sub">Upload a JPG/PNG/GIF/WebP image. <em>Stylise</em> turns it into an AI portrait using your sheet details; <em>Reroll</em> tries again with a new seed.</div>
+          <div class="card-sub">Upload a JPG/PNG/GIF/WebP image or take a webcam photo. <em>Stylise</em> turns it into an AI portrait using your sheet details.</div>
         </div>
       </div>
     </div>
@@ -888,13 +892,12 @@ const SheetForm = (() => {
     const hasOriginal = !!originalBlob;
     const hasGenerated = !!lastGeneratedUrl;
     const show = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
-    show('sf_portrait_reroll', hasGenerated);
     show('sf_portrait_revert', hasGenerated);
     const setDisabled = (id, off) => { const el = document.getElementById(id); if (el) el.disabled = !!off; };
     setDisabled('sf_portrait_file',    stylising);
+    setDisabled('sf_portrait_camera',  stylising);
     setDisabled('sf_portrait_clear',   stylising);
     setDisabled('sf_portrait_stylise', stylising || !hasOriginal);
-    setDisabled('sf_portrait_reroll',  stylising || !hasOriginal);
     setDisabled('sf_portrait_revert',  stylising);
     const styliseBtn = document.getElementById('sf_portrait_stylise');
     if (styliseBtn) styliseBtn.title = hasOriginal ? '' : 'Upload a photo first';
@@ -959,44 +962,119 @@ const SheetForm = (() => {
     });
   }
 
-  // ── Portrait handlers ──────────────────────────────────────────────────────
-  async function handlePortraitUpload(event) {
-    const rawFile = event.target.files && event.target.files[0];
+  async function processPortraitSource(rawFile) {
     if (!rawFile) return;
     if (!rawFile.type.startsWith('image/')) {
-      alert('Please upload an image file.');
-      event.target.value = '';
-      return;
+      throw new Error('Please upload an image file.');
     }
     setPortraitStatus('Resizing…', '');
-
-    // Downscale to a sensible size (1024 px longest side, JPEG q=0.9). This
-    // keeps the sheet JSON small, speeds up saves, and is plenty of detail for
-    // the on-sheet preview and img2img stylisation.
     const file = await resizeImageBlob(rawFile, 1024, 0.9);
 
-    // Keep the resized upload in memory so Stylise/Reroll don't need a re-upload.
     revokeIfBlobUrl(originalUrl);
     revokeIfBlobUrl(lastGeneratedUrl);
     originalBlob = file;
     originalUrl = URL.createObjectURL(file);
     lastGeneratedUrl = null;
 
-    // Make the uploaded image the current saved portrait straight away — if
-    // the player just wants to use it as-is, Save sheet works immediately.
-    try {
-      const dataUrl = await readBlobAsDataUrl(file);
-      setPortraitField(dataUrl);
-      setPortraitPreview(dataUrl);
-    } catch (err) {
-      console.error(err);
-      setPortraitStatus('Could not read that image.', 'error');
-      return;
-    }
+    const dataUrl = await readBlobAsDataUrl(file);
+    setPortraitField(dataUrl);
+    setPortraitPreview(dataUrl);
 
     const kb = Math.round(file.size / 1024);
     setPortraitStatus(`Ready (${kb} KB). Click Stylise to generate a portrait from this photo and your sheet details, or Save the sheet to use it as-is.`, '');
     updatePortraitControlsVisibility();
+  }
+
+  function stopPortraitCameraStream() {
+    if (!portraitCameraStream) return;
+    portraitCameraStream.getTracks().forEach((track) => track.stop());
+    portraitCameraStream = null;
+  }
+
+  function closePortraitCameraModal() {
+    stopPortraitCameraStream();
+    const modal = document.getElementById('portrait-camera-modal');
+    if (modal) modal.remove();
+  }
+
+  async function openPortraitCamera() {
+    if (stylising) return;
+    closePortraitCameraModal();
+    const modal = document.createElement('div');
+    modal.id = 'portrait-camera-modal';
+    modal.className = 'portrait-camera-modal';
+    modal.innerHTML = `
+      <div class="portrait-camera-dialog">
+        <div class="portrait-camera-title">Take portrait photo</div>
+        <video id="portrait-camera-video" class="portrait-camera-video" autoplay playsinline muted></video>
+        <div class="portrait-camera-actions">
+          <button type="button" class="btn btn-primary" id="portrait-camera-capture">Capture</button>
+          <button type="button" class="btn" id="portrait-camera-cancel">Cancel</button>
+        </div>
+      </div>`;
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) closePortraitCameraModal();
+    });
+    document.body.appendChild(modal);
+
+    try {
+      portraitCameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1024 }, height: { ideal: 1024 } },
+        audio: false
+      });
+      const video = document.getElementById('portrait-camera-video');
+      if (video) video.srcObject = portraitCameraStream;
+    } catch (err) {
+      closePortraitCameraModal();
+      setPortraitStatus(`Camera unavailable: ${err.message || err}`, 'error');
+      return;
+    }
+
+    const captureBtn = document.getElementById('portrait-camera-capture');
+    const cancelBtn = document.getElementById('portrait-camera-cancel');
+    if (captureBtn) captureBtn.addEventListener('click', capturePortraitCameraFrame);
+    if (cancelBtn) cancelBtn.addEventListener('click', closePortraitCameraModal);
+  }
+
+  async function capturePortraitCameraFrame() {
+    const video = document.getElementById('portrait-camera-video');
+    if (!video) return;
+    const width = video.videoWidth || 1024;
+    const height = video.videoHeight || 1024;
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, width, height);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+    if (!blob) {
+      setPortraitStatus('Could not capture a webcam frame.', 'error');
+      closePortraitCameraModal();
+      return;
+    }
+    closePortraitCameraModal();
+    try {
+      const file = new File([blob], 'portrait-webcam.jpg', { type: 'image/jpeg' });
+      await processPortraitSource(file);
+    } catch (err) {
+      console.error(err);
+      setPortraitStatus(err.message || 'Could not process webcam image.', 'error');
+    }
+  }
+
+  // ── Portrait handlers ──────────────────────────────────────────────────────
+  async function handlePortraitUpload(event) {
+    const rawFile = event.target.files && event.target.files[0];
+    if (!rawFile) return;
+    try {
+      await processPortraitSource(rawFile);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Could not read that image.');
+      setPortraitStatus(err.message || 'Could not read that image.', 'error');
+    } finally {
+      event.target.value = '';
+    }
   }
 
   function clearPortrait() {
@@ -1005,6 +1083,7 @@ const SheetForm = (() => {
     setPortraitPreview('');
     const picker = document.getElementById('sf_portrait_file');
     if (picker) picker.value = '';
+    closePortraitCameraModal();
     setPortraitStatus('', '');
     updatePortraitControlsVisibility();
   }
@@ -1021,23 +1100,24 @@ const SheetForm = (() => {
     });
   }
 
-  async function stylisePortrait(reroll) {
+  async function stylisePortrait() {
     if (stylising) return;
     if (!originalBlob) {
       setPortraitStatus('Upload a photo first.', 'error');
       return;
     }
     const portraitSheet = collectPortraitPromptSheet();
+    const reroll = !!lastGeneratedUrl;
 
     stylising = true;
     setPortraitControlsEnabled(false);
-    setPortraitStatus((reroll ? 'Rerolling' : 'Generating') + '… (can take ~1 min on first run)', '');
+    setPortraitStatus('Generating… (can take ~1 min on first run)', '');
 
     let statusTick = 0;
     const ticker = setInterval(() => {
       statusTick += 1;
       const dots = '.'.repeat((statusTick % 4) + 1);
-      setPortraitStatus((reroll ? 'Rerolling' : 'Generating') + dots, '');
+      setPortraitStatus(`Generating${dots}`, '');
     }, 800);
 
     try {
@@ -1133,7 +1213,7 @@ const SheetForm = (() => {
       revokeIfBlobUrl(lastGeneratedUrl);
       lastGeneratedUrl = URL.createObjectURL(blob);
 
-      setPortraitStatus(reroll ? 'Rerolled.' : 'Generated. Save the sheet to keep it.', 'ok');
+      setPortraitStatus('Generated. Save the sheet to keep it.', 'ok');
     } catch (err) {
       console.error('Portrait generation failed:', err);
       setPortraitStatus(`Generation failed: ${err.message || err}`, 'error');
@@ -1151,6 +1231,7 @@ const SheetForm = (() => {
     return {
       pronouns: data.pronouns,
       occupation: data.occupation,
+      age: data.age,
       social_class: data.social_class,
       reputation: data.reputation,
       advantages: data.advantages,
@@ -1262,6 +1343,7 @@ const SheetForm = (() => {
     addWeapon, removeWeapon,
     addSpell, removeSpell,
     addCustomField, removeCustomField,
+    openPortraitCamera,
     handlePortraitUpload, clearPortrait,
     stylisePortrait, revertPortrait
   };

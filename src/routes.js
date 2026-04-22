@@ -532,6 +532,7 @@ function collectPortraitWeaponNames(sheet) {
 function buildPortraitPromptFromSheet(sheet) {
   const subject = inferPortraitSubject(sheet.pronouns);
   const occupation = cleanPortraitText(sheet.occupation, 80) || 'investigator';
+  const age = cleanPortraitText(sheet.age, 20);
   const socialClass = cleanPortraitText(sheet.social_class, 80);
   const reputation = cleanPortraitText(sheet.reputation, 120);
   const tradition = cleanPortraitText(sheet.magic_tradition, 80);
@@ -542,6 +543,7 @@ function buildPortraitPromptFromSheet(sheet) {
     || (Array.isArray(sheet.magic_spells) && sheet.magic_spells.some((spell) => cleanPortraitText(spell && spell.name, 80)));
 
   const descriptors = [occupation];
+  if (age) descriptors.push(`${age} years old`);
   if (socialClass) descriptors.push(socialClass);
   if (reputation) descriptors.push(reputation);
   if (magical && tradition) descriptors.push(`subtle signs of ${tradition} magic`);
