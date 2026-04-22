@@ -455,7 +455,7 @@ router.get('/rules/search', requireAuth, (req, res) => {
 // Configure with COMFYUI_URL env var (default: http://192.168.37.51:8188).
 
 const COMFYUI_URL = (process.env.COMFYUI_URL || 'http://192.168.37.51:8188').replace(/\/+$/, '');
-const PORTRAIT_NEGATIVE_PROMPT = 'lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, photo snapshot, realistic modern interior, kitchen tiles, cupboards, domestic room, plain wall, tiled wall, cgi, 3d render, low quality';
+const PORTRAIT_NEGATIVE_PROMPT = 'lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, photo snapshot, realistic modern interior, kitchen tiles, cupboards, domestic room, plain wall, tiled wall, historical robe, flowing robe, fantasy robe, wizard robe, victorian gown, medieval costume, fantasy costume, anachronistic clothing, cgi, 3d render, low quality';
 const PORTRAIT_WORKFLOW_TEMPLATE = {
   '1': { class_type: 'CheckpointLoaderSimple', inputs: { ckpt_name: 'aZovyaRPGArtistTools_v4VAE.safetensors' } },
   '2': { class_type: 'LoadImage', inputs: { image: 'portrait_input.jpg' } },
@@ -463,8 +463,8 @@ const PORTRAIT_WORKFLOW_TEMPLATE = {
   '4': { class_type: 'CLIPTextEncode', inputs: { clip: ['1', 1], text: '' } },
   '5': { class_type: 'CLIPTextEncode', inputs: { clip: ['1', 1], text: PORTRAIT_NEGATIVE_PROMPT } },
   '6': { class_type: 'KSampler', inputs: {
-    model: ['1', 0], seed: 42, steps: 30, cfg: 6.2,
-    sampler_name: 'dpmpp_2m_sde', scheduler: 'karras', denoise: 0.62,
+    model: ['1', 0], seed: 42, steps: 28, cfg: 5.8,
+    sampler_name: 'dpmpp_2m_sde', scheduler: 'karras', denoise: 0.52,
     positive: ['4', 0], negative: ['5', 0], latent_image: ['3', 0]
   } },
   '7': { class_type: 'VAEDecode', inputs: { samples: ['6', 0], vae: ['1', 2] } },
@@ -480,6 +480,13 @@ function inferPortraitSubject(pronouns) {
   if (/\b(she|her|hers)\b/.test(p)) return 'woman';
   if (/\b(he|him|his)\b/.test(p)) return 'man';
   return 'person';
+}
+
+function inferPortraitPresentation(pronouns) {
+  const p = cleanPortraitText(pronouns, 60).toLowerCase();
+  if (/\b(she|her|hers)\b/.test(p)) return 'female-presenting';
+  if (/\b(he|him|his)\b/.test(p)) return 'male-presenting';
+  return 'androgynous or non-binary presentation';
 }
 
 function parseAdvantagesText(value) {
@@ -531,39 +538,68 @@ function collectPortraitWeaponNames(sheet) {
 
 function inferPortraitBackdrop(occupation) {
   const text = cleanPortraitText(occupation, 120).toLowerCase();
-  if (!text) return 'a stylised London backdrop suited to their profession';
+  if (!text) return 'a subtle London backdrop suited to their profession';
   if (/(police|detective|officer|forensic|constable|investigator|security)/.test(text)) {
-    return 'an elegant Folly caseboard backdrop with evidence notes, police files, brass fittings, and London civic details';
+    return 'a subtle Folly caseboard or investigative office backdrop';
   }
   if (/(doctor|nurse|surgeon|medic|paramedic|therapist|chemist|scientist|researcher|physicist|biologist)/.test(text)) {
-    return 'a refined laboratory or consulting-room backdrop with glassware, notebooks, instruments, and ordered shelves';
+    return 'a subtle laboratory or consulting-room backdrop';
   }
   if (/(journalist|writer|author|editor|librarian|academic|historian|archivist|teacher|lecturer)/.test(text)) {
-    return 'a book-lined study backdrop with stacked papers, reference books, reading lamps, and archival details';
+    return 'a subtle study or library backdrop';
   }
   if (/(musician|singer|actor|actress|artist|painter|magician|performer|dancer|stage)/.test(text)) {
-    return 'a theatrical backdrop with stage drapery, posters, ornamented panels, and performance props';
+    return 'a subtle theatrical or studio backdrop';
   }
   if (/(builder|engineer|mechanic|electrician|plumber|smith|technician|driver|pilot)/.test(text)) {
-    return 'a crafted workshop or transport backdrop with tools, gauges, brasswork, and engineered detail';
+    return 'a subtle workshop or transport backdrop';
   }
   if (/(chef|cook|baker|bartender|barista|publican)/.test(text)) {
-    return 'a warmly lit kitchen or bar backdrop with copper pans, bottles, tiled surfaces, and hospitality details';
+    return 'a subtle kitchen or bar backdrop';
   }
   if (/(lawyer|solicitor|barrister|judge|clerk|civil servant|banker|accountant|broker)/.test(text)) {
-    return 'a formal office backdrop with ledgers, polished wood, legal papers, and institutional detail';
+    return 'a subtle formal office backdrop';
   }
   if (/(river|boat|sailor|fisher|marine|dock|water)/.test(text)) {
-    return 'a richly stylised Thames-side backdrop with bridges, water motifs, river mist, and ornamental currents';
+    return 'a subtle Thames-side backdrop';
   }
   if (/(magical|wizard|practitioner|occult|medium|witch)/.test(text)) {
-    return 'an occult London interior with arcane diagrams, candlelight, vestigia-like flourishes, and ritual objects';
+    return 'a subtle occult London interior backdrop';
   }
-  return 'a stylised London backdrop with props and architecture suited to their profession';
+  return 'a subtle London backdrop suited to their profession';
+}
+
+function inferPortraitAttire(occupation) {
+  const text = cleanPortraitText(occupation, 120).toLowerCase();
+  if (!text) return 'contemporary 21st-century London clothing appropriate to their role';
+  if (/(police|detective|officer|forensic|constable|security)/.test(text)) {
+    return 'contemporary 21st-century British policing or investigative attire, practical and recognisable';
+  }
+  if (/(doctor|nurse|surgeon|medic|paramedic|therapist|chemist|scientist|researcher|physicist|biologist)/.test(text)) {
+    return 'contemporary 21st-century professional attire appropriate to a clinician or researcher';
+  }
+  if (/(journalist|writer|author|editor|librarian|academic|historian|archivist|teacher|lecturer)/.test(text)) {
+    return 'contemporary 21st-century smart-casual or academic clothing';
+  }
+  if (/(musician|singer|actor|actress|artist|painter|magician|performer|dancer|stage)/.test(text)) {
+    return 'contemporary 21st-century performance or creative-professional clothing, stylish but modern';
+  }
+  if (/(builder|engineer|mechanic|electrician|plumber|smith|technician|driver|pilot)/.test(text)) {
+    return 'contemporary 21st-century practical workwear or technical clothing';
+  }
+  if (/(chef|cook|baker|bartender|barista|publican)/.test(text)) {
+    return 'contemporary 21st-century hospitality or kitchen-appropriate clothing';
+  }
+  if (/(lawyer|solicitor|barrister|judge|clerk|civil servant|banker|accountant|broker)/.test(text)) {
+    return 'contemporary 21st-century professional office clothing';
+  }
+  return 'contemporary 21st-century London clothing appropriate to their profession';
 }
 
 function buildPortraitPromptFromSheet(sheet) {
   const subject = inferPortraitSubject(sheet.pronouns);
+  const presentation = inferPortraitPresentation(sheet.pronouns);
+  const pronouns = cleanPortraitText(sheet.pronouns, 40);
   const occupation = cleanPortraitText(sheet.occupation, 80) || 'investigator';
   const age = cleanPortraitText(sheet.age, 20);
   const socialClass = cleanPortraitText(sheet.social_class, 80);
@@ -573,6 +609,7 @@ function buildPortraitPromptFromSheet(sheet) {
   const weaponNames = collectPortraitWeaponNames(sheet);
   const advantages = parseAdvantagesText(sheet.advantages);
   const backdrop = inferPortraitBackdrop(occupation);
+  const attire = inferPortraitAttire(occupation);
   const magical = advantages.some((adv) => /^magical\b/i.test(adv)) || !!tradition
     || (Array.isArray(sheet.magic_spells) && sheet.magic_spells.some((spell) => cleanPortraitText(spell && spell.name, 80)));
 
@@ -587,13 +624,13 @@ function buildPortraitPromptFromSheet(sheet) {
   if (weaponNames.length) descriptors.push(`equipped with ${weaponNames.join(' and ')}`);
 
   return `head-and-shoulders portrait of a ${subject}, ${descriptors.join(', ')}, `
-    + 'preserve the same person from the source photo, preserving facial structure, age, hair, glasses, and distinctive features, '
+    + `pronouns ${pronouns || 'unspecified'}, ${presentation}, `
+    + 'preserve the same person from the source photo, preserving facial structure, apparent sex/gender presentation, age, hair, glasses, and distinctive features, '
+    + `${attire}, no robes or fantasy costume, `
     + `${backdrop}, `
     + 'replace the original photo background while keeping the person recognisable, '
-    + 'strong Alphonse Mucha Art Nouveau poster aesthetic, ornate decorative framing, '
-    + 'halo-like circular composition behind the head, flowing botanical arabesques, '
-    + 'elegant sinuous linework, stylised period poster design, richly designed background integrated with the profession, '
-    + 'muted earthy palette with antique gold accents, painterly illustration, serious expression, three-quarters view, '
+    + 'Art Nouveau portrait styling with a restrained Art Deco frame around the portrait, '
+    + 'clean elegant linework, muted earthy palette with antique gold accents, painterly illustration, serious expression, three-quarters view, '
     + 'not photorealistic, not modern snapshot, no text, no watermark';
 }
 
