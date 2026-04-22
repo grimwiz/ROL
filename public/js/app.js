@@ -47,6 +47,17 @@ function hasSheetData(sheet) {
   return !!(sheet && sheet.data && Object.keys(sheet.data).length > 0);
 }
 
+const DICE_PRESETS = [
+  { value: '1d100', label: 'd100 (Percentile)' },
+  { value: '2d10+50', label: '2d10+50 (Luck)' },
+  { value: '1d20', label: 'd20' },
+  { value: '1d12', label: 'd12' },
+  { value: '1d10', label: 'd10' },
+  { value: '1d8', label: 'd8' },
+  { value: '1d6', label: 'd6' },
+  { value: '1d4', label: 'd4' }
+];
+
 function resetUserScopedState() {
   State.sessions = [];
   State.users = [];
@@ -222,6 +233,13 @@ async function renderMain() {
         ${isGM ? `<button class="nav-tab" data-tab="users" onclick="switchTab('users')">Accounts</button>` : ''}
       </div>
       <div class="nav-right">
+        <div class="dice-roller" title="Quick dice roller">
+          <select id="nav-dice-select" class="dice-select" aria-label="Dice preset">
+            ${DICE_PRESETS.map((preset) => `<option value="${preset.value}"${preset.value === '1d100' ? ' selected' : ''}>${preset.label}</option>`).join('')}
+          </select>
+          <button class="btn btn-sm" onclick="rollNavDice()">Roll</button>
+          <span id="nav-dice-result" class="dice-result">—</span>
+        </div>
         <button class="nav-user nav-user-button" onclick="openMyCharacters()" title="View your stored characters">
           ${esc(State.user.username)}
           ${isGM ? '<span class="badge-gm">GM</span>' : ''}
@@ -268,6 +286,37 @@ async function doLogout() {
   showPage('login-page');
   renderLoginPage();
 }
+
+function rollFormula(formula) {
+  const match = String(formula || '').trim().match(/^(\d+)d(\d+)([+-]\d+)?$/i);
+  if (!match) throw new Error('Unsupported dice formula');
+  const count = parseInt(match[1], 10);
+  const sides = parseInt(match[2], 10);
+  const modifier = parseInt(match[3] || '0', 10);
+  const rolls = [];
+  for (let i = 0; i < count; i += 1) {
+    rolls.push(Math.floor(Math.random() * sides) + 1);
+  }
+  const total = rolls.reduce((sum, roll) => sum + roll, 0) + modifier;
+  return { total, rolls, modifier };
+}
+
+function rollNavDice() {
+  const select = el('nav-dice-select');
+  const result = el('nav-dice-result');
+  if (!select || !result) return;
+  try {
+    const formula = select.value || '1d100';
+    const rolled = rollFormula(formula);
+    result.textContent = String(rolled.total);
+    const modifierText = rolled.modifier ? ` ${rolled.modifier > 0 ? '+' : '-'} ${Math.abs(rolled.modifier)}` : '';
+    result.title = `${formula}: ${rolled.rolls.join(' + ')}${modifierText} = ${rolled.total}`;
+  } catch (e) {
+    result.textContent = 'Err';
+    result.title = e.message || 'Dice roll failed';
+  }
+}
+window.rollNavDice = rollNavDice;
 
 async function openMyCharacters() {
   const view = modal(`
