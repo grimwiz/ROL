@@ -295,6 +295,7 @@ async function openMyCharacters() {
     ]);
 
     const rows = sessionSheets
+      .filter(({ session }) => !(domesticSheet && domesticSheet.session_id && session.id === domesticSheet.session_id))
       .filter(({ sheet }) => hasSheetData(sheet))
       .map(({ session, sheet }) => ({
         label: session.name,
@@ -323,35 +324,43 @@ async function openMyCharacters() {
     }
 
     body.innerHTML = `
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Session</th><th>Character</th><th>STR</th><th>CON</th><th>DEX</th><th>INT</th><th>POW</th><th>Speed</th><th>Luck</th><th>Advantages</th><th>Skills</th><th>Essential items</th><th></th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map((row, i) => {
-              const d = row.data || {};
-              const allSkills = [...(d.common_skills || []), ...(d.mandatory_skills || []), ...(d.additional_skills || [])];
-              return `<tr>
-                <td><strong>${esc(row.label)}</strong></td>
-                <td>${esc(d.name || '—')}</td>
-                <td>${esc(d.str || '—')}</td>
-                <td>${esc(d.con || '—')}</td>
-                <td>${esc(d.dex || '—')}</td>
-                <td>${esc(d.int || '—')}</td>
-                <td>${esc(d.pow || '—')}</td>
-                <td>${esc(d.mov || (d.derived && d.derived.move) || '—')}</td>
-                <td>${esc(d.luck || '—')}</td>
-                <td>${esc(d.advantages || '—')}</td>
-                <td>${esc(summarizeSkills(allSkills))}</td>
-                <td>${esc(d.carry || '—')}</td>
-                <td><button class="btn btn-sm" onclick="openStoredCharacter(${i})">Open</button></td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
+      <div class="card gm-overview-pane">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Stored Characters</div>
+            <div class="card-sub">All your characters across sessions and The Domestic.</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Session</th><th>Character</th><th>STR</th><th>CON</th><th>DEX</th><th>INT</th><th>POW</th><th>Speed</th><th>Luck</th><th>Advantages</th><th>Skills</th><th>Essential items</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map((row, i) => {
+                const d = row.data || {};
+                const allSkills = [...(d.common_skills || []), ...(d.mandatory_skills || []), ...(d.additional_skills || [])];
+                return `<tr>
+                  <td><strong>${esc(row.label)}</strong></td>
+                  <td>${esc(d.name || '—')}</td>
+                  <td>${esc(d.str || '—')}</td>
+                  <td>${esc(d.con || '—')}</td>
+                  <td>${esc(d.dex || '—')}</td>
+                  <td>${esc(d.int || '—')}</td>
+                  <td>${esc(d.pow || '—')}</td>
+                  <td>${esc(d.mov || (d.derived && d.derived.move) || '—')}</td>
+                  <td>${esc(d.luck || '—')}</td>
+                  <td>${esc(d.advantages || '—')}</td>
+                  <td>${esc(summarizeSkills(allSkills))}</td>
+                  <td>${esc(d.carry || '—')}</td>
+                  <td><button class="btn btn-sm" onclick="openStoredCharacter(${i})">Open</button></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
       </div>`;
 
     window.openStoredCharacter = async (index) => {

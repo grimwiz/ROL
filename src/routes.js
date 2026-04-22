@@ -7,6 +7,58 @@ const { signToken, requireAuth, requireGM, COOKIE_NAME, COOKIE_OPTS } = require(
 const { loadDomesticAdventure } = require('./domesticAdventure');
 
 const router = express.Router();
+const DOMESTIC_SYSTEM_DESCRIPTION = '__SYSTEM_DOMESTIC__';
+
+function getDomesticSystemSession() {
+  return db.prepare('SELECT * FROM sessions WHERE description = ? ORDER BY id LIMIT 1').get(DOMESTIC_SYSTEM_DESCRIPTION);
+}
+
+function getNamedDomesticSession() {
+  return db.prepare(`
+    SELECT * FROM sessions
+    WHERE name = ? COLLATE NOCASE
+    ORDER BY CASE WHEN description = ? THEN 0 ELSE 1 END, id
+    LIMIT 1
+  `).get('The Domestic', DOMESTIC_SYSTEM_DESCRIPTION);
+}
+
+function ensureDomesticSystemSession() {
+  let session = getNamedDomesticSession() || getDomesticSystemSession();
+  if (session) return session;
+  const result = db.prepare('INSERT INTO sessions (name, description) VALUES (?, ?)').run('The Domestic', DOMESTIC_SYSTEM_DESCRIPTION);
+  session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(result.lastInsertRowid);
+  return session;
+}
+
+function getDomesticSheetRow(userId) {
+  let session = db.prepare(`
+    SELECT s.* FROM sessions s
+    JOIN character_sheets cs ON cs.session_id = s.id
+    WHERE cs.user_id = ? AND s.name = ? COLLATE NOCASE
+    ORDER BY CASE WHEN s.description = ? THEN 0 ELSE 1 END, s.id
+    LIMIT 1
+  `).get(userId, 'The Domestic', DOMESTIC_SYSTEM_DESCRIPTION);
+
+  if (!session) session = ensureDomesticSystemSession();
+
+  let sheet = db.prepare('SELECT * FROM character_sheets WHERE session_id = ? AND user_id = ?').get(session.id, userId);
+
+  // Legacy migration from the short-lived dedicated domestic_sheets table.
+  if (!sheet) {
+    const legacy = db.prepare('SELECT * FROM domestic_sheets WHERE user_id = ?').get(userId);
+    if (legacy) {
+      db.prepare(`
+        INSERT INTO character_sheets (session_id, user_id, data, updated_at)
+        VALUES (?, ?, ?, COALESCE(?, datetime('now')))
+        ON CONFLICT(session_id, user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
+      `).run(session.id, userId, legacy.data || '{}', legacy.updated_at || null);
+      db.prepare('DELETE FROM domestic_sheets WHERE user_id = ?').run(userId);
+      sheet = db.prepare('SELECT * FROM character_sheets WHERE session_id = ? AND user_id = ?').get(session.id, userId);
+    }
+  }
+
+  return { session, sheet };
+}
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
@@ -83,14 +135,15 @@ router.get('/sessions', requireAuth, (req, res) => {
       SELECT s.*, COUNT(sp.user_id) as player_count
       FROM sessions s
       LEFT JOIN session_players sp ON s.id = sp.session_id
+      WHERE COALESCE(s.description, '') != ?
       GROUP BY s.id ORDER BY s.created_at DESC
-    `).all();
+    `).all(DOMESTIC_SYSTEM_DESCRIPTION);
   } else {
     sessions = db.prepare(`
       SELECT s.* FROM sessions s
       JOIN session_players sp ON s.id = sp.session_id
-      WHERE sp.user_id = ? ORDER BY s.created_at DESC
-    `).all(req.user.id);
+      WHERE sp.user_id = ? AND COALESCE(s.description, '') != ? ORDER BY s.created_at DESC
+    `).all(req.user.id, DOMESTIC_SYSTEM_DESCRIPTION);
   }
   res.json(sessions);
 });
@@ -204,22 +257,26 @@ router.get('/adventure/domestic', requireAuth, (req, res) => {
 });
 
 router.get('/adventure/domestic/sheet', requireAuth, (req, res) => {
-  const sheet = db.prepare('SELECT * FROM domestic_sheets WHERE user_id = ?').get(req.user.id);
-  if (!sheet) return res.json({ data: {} });
-  res.json({ ...sheet, data: JSON.parse(sheet.data) });
+  const { session, sheet } = getDomesticSheetRow(req.user.id);
+  if (!sheet) return res.json({ session_id: session.id, data: {} });
+  res.json({ ...sheet, session_id: session.id, data: JSON.parse(sheet.data) });
 });
 
 router.put('/adventure/domestic/sheet', requireAuth, (req, res) => {
+  const session = ensureDomesticSystemSession();
   const data = JSON.stringify(req.body.data || {});
   db.prepare(`
-    INSERT INTO domestic_sheets (user_id, data, updated_at)
-    VALUES (?, ?, datetime('now'))
-    ON CONFLICT(user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
-  `).run(req.user.id, data);
-  res.json({ ok: true });
+    INSERT INTO character_sheets (session_id, user_id, data, updated_at)
+    VALUES (?, ?, ?, datetime('now'))
+    ON CONFLICT(session_id, user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
+  `).run(session.id, req.user.id, data);
+  db.prepare('DELETE FROM domestic_sheets WHERE user_id = ?').run(req.user.id);
+  res.json({ ok: true, session_id: session.id });
 });
 
 router.delete('/adventure/domestic/sheet', requireAuth, (req, res) => {
+  const session = ensureDomesticSystemSession();
+  db.prepare('DELETE FROM character_sheets WHERE session_id = ? AND user_id = ?').run(session.id, req.user.id);
   db.prepare('DELETE FROM domestic_sheets WHERE user_id = ?').run(req.user.id);
   res.json({ ok: true });
 });
