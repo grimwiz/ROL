@@ -529,6 +529,39 @@ function collectPortraitWeaponNames(sheet) {
     .slice(0, 2);
 }
 
+function inferPortraitBackdrop(occupation) {
+  const text = cleanPortraitText(occupation, 120).toLowerCase();
+  if (!text) return 'a stylised London backdrop suited to their profession';
+  if (/(police|detective|officer|forensic|constable|investigator|security)/.test(text)) {
+    return 'an elegant Folly caseboard backdrop with evidence notes, police files, brass fittings, and London civic details';
+  }
+  if (/(doctor|nurse|surgeon|medic|paramedic|therapist|chemist|scientist|researcher|physicist|biologist)/.test(text)) {
+    return 'a refined laboratory or consulting-room backdrop with glassware, notebooks, instruments, and ordered shelves';
+  }
+  if (/(journalist|writer|author|editor|librarian|academic|historian|archivist|teacher|lecturer)/.test(text)) {
+    return 'a book-lined study backdrop with stacked papers, reference books, reading lamps, and archival details';
+  }
+  if (/(musician|singer|actor|actress|artist|painter|magician|performer|dancer|stage)/.test(text)) {
+    return 'a theatrical backdrop with stage drapery, posters, ornamented panels, and performance props';
+  }
+  if (/(builder|engineer|mechanic|electrician|plumber|smith|technician|driver|pilot)/.test(text)) {
+    return 'a crafted workshop or transport backdrop with tools, gauges, brasswork, and engineered detail';
+  }
+  if (/(chef|cook|baker|bartender|barista|publican)/.test(text)) {
+    return 'a warmly lit kitchen or bar backdrop with copper pans, bottles, tiled surfaces, and hospitality details';
+  }
+  if (/(lawyer|solicitor|barrister|judge|clerk|civil servant|banker|accountant|broker)/.test(text)) {
+    return 'a formal office backdrop with ledgers, polished wood, legal papers, and institutional detail';
+  }
+  if (/(river|boat|sailor|fisher|marine|dock|water)/.test(text)) {
+    return 'a richly stylised Thames-side backdrop with bridges, water motifs, river mist, and ornamental currents';
+  }
+  if (/(magical|wizard|practitioner|occult|medium|witch)/.test(text)) {
+    return 'an occult London interior with arcane diagrams, candlelight, vestigia-like flourishes, and ritual objects';
+  }
+  return 'a stylised London backdrop with props and architecture suited to their profession';
+}
+
 function buildPortraitPromptFromSheet(sheet) {
   const subject = inferPortraitSubject(sheet.pronouns);
   const occupation = cleanPortraitText(sheet.occupation, 80) || 'investigator';
@@ -539,6 +572,7 @@ function buildPortraitPromptFromSheet(sheet) {
   const notableSkills = collectPortraitSkillDetails(sheet);
   const weaponNames = collectPortraitWeaponNames(sheet);
   const advantages = parseAdvantagesText(sheet.advantages);
+  const backdrop = inferPortraitBackdrop(occupation);
   const magical = advantages.some((adv) => /^magical\b/i.test(adv)) || !!tradition
     || (Array.isArray(sheet.magic_spells) && sheet.magic_spells.some((spell) => cleanPortraitText(spell && spell.name, 80)));
 
@@ -553,9 +587,12 @@ function buildPortraitPromptFromSheet(sheet) {
   if (weaponNames.length) descriptors.push(`equipped with ${weaponNames.join(' and ')}`);
 
   return `head-and-shoulders portrait of a ${subject}, ${descriptors.join(', ')}, `
-    + 'contemporary London setting, Alphonse Mucha art nouveau style, painterly linework, '
-    + 'decorative halo and floral border motifs, muted earthy palette with a single accent colour, '
-    + 'soft flat lighting, serious expression, three-quarters view, illustration, no text, no watermark';
+    + `${backdrop}, `
+    + 'strong Alphonse Mucha Art Nouveau poster aesthetic, ornate decorative framing, '
+    + 'halo-like circular composition behind the head, flowing botanical arabesques, '
+    + 'elegant sinuous linework, stylised period poster design, richly designed background integrated with the profession, '
+    + 'muted earthy palette with antique gold accents, painterly illustration, serious expression, three-quarters view, '
+    + 'not photorealistic, not modern snapshot, no text, no watermark';
 }
 
 // Upload a source photo. The browser POSTs multipart/form-data here; we stream
