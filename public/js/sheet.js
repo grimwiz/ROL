@@ -816,13 +816,28 @@ const SheetForm = (() => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ prompt: workflow })
       });
+      const qText = await q.text();
+      let qJson = null;
+      try { qJson = JSON.parse(qText); } catch (_) { /* left null */ }
       if (!q.ok) {
-        const txt = await q.text().catch(() => '');
-        throw new Error(`Queue failed (HTTP ${q.status}). ${txt.slice(0, 200)}`);
+        console.error('ComfyUI /prompt rejected the workflow:', qJson || qText);
+        throw new Error(`Queue failed (HTTP ${q.status}). ${qText.slice(0, 300)}`);
       }
-      const qJson = await q.json();
+      // /prompt can return 200 with node_errors populated when a node fails
+      // validation (e.g. missing model file). Treat that as a failure and show
+      // the real message.
+      if (qJson && qJson.node_errors && Object.keys(qJson.node_errors).length) {
+        console.error('ComfyUI node_errors:', qJson.node_errors);
+        const summary = Object.entries(qJson.node_errors).map(([nodeId, info]) => {
+          const errs = (info && info.errors) || [];
+          const msg = errs.map((e) => `${e.type || ''}: ${e.message || ''} ${e.details ? '(' + e.details + ')' : ''}`.trim()).join('; ');
+          const cls = (info && info.class_type) ? ` [${info.class_type}]` : '';
+          return `node ${nodeId}${cls} — ${msg || 'unknown error'}`;
+        }).join(' | ');
+        throw new Error(`Validation failed: ${summary}`);
+      }
       const promptId = qJson && qJson.prompt_id;
-      if (!promptId) throw new Error('ComfyUI returned no prompt_id.');
+      if (!promptId) throw new Error(`ComfyUI returned no prompt_id: ${qText.slice(0, 200)}`);
 
       // 4. Poll history until completed.
       const started = Date.now();
@@ -836,7 +851,16 @@ const SheetForm = (() => {
           const e = hJson[promptId];
           if (e && e.status && e.status.completed) { entry = e; break; }
           if (e && e.status && e.status.status_str === 'error') {
-            throw new Error('ComfyUI reported an error running the workflow.');
+            console.error('ComfyUI history error for', promptId, ':', e.status);
+            // Pull out the execution_error message (last "execution_error" entry wins).
+            const execErr = (e.status.messages || []).slice().reverse()
+              .find((m) => Array.isArray(m) && m[0] === 'execution_error');
+            if (execErr && execErr[1]) {
+              const info = execErr[1];
+              const where = info.node_type ? ` in ${info.node_type} (node ${info.node_id})` : '';
+              throw new Error(`ComfyUI error${where}: ${info.exception_message || info.exception_type || 'unknown'}`);
+            }
+            throw new Error('ComfyUI reported an error. Check the ComfyUI server log for details.');
           }
         }
       }
@@ -910,6 +934,49 @@ const SheetForm = (() => {
       if (name || order) magic_spells.push({ name: name.trim(), order: order.trim(), notes: notes.trim() });
     });
 
+    const custom_fields = [];
+    document.querySelectorAll('#custom-fields .custom-field-row').forEach((row) => {
+      const k = row.querySelector('input:first-child');
+      const v = row.querySelector('input:nth-child(2)');
+      if (k && k.value.trim()) custom_fields.push({ key: k.value.trim(), value: (v ? v.value.trim() : '') });
+    });
+
+    // Derived — respect manual overrides
+    const derivedFields = ['hp','san','mp','build'];
+    const derived = {};
+    derivedFields.forEach((f) => {
+      const el = document.getElementById(`sf_derived_${f}`);
+      derived[f] = el ? el.value.trim() : '';
+    });
+    derived.move = g('derived_move');
+
+    return {
+      name: g('name'), pronouns: g('pronouns'),
+      birthplace: g('birthplace'), residence: g('residence'),
+      occupation: g('occupation'), social_class: g('social_class'), age: g('age'),
+      glitch: g('glitch'), backstory: g('backstory'), reputation: g('reputation'),
+      portrait: g('portrait'),
+      str: g('str'), con: g('con'), dex: g('dex'), int: g('int'), pow: g('pow'), siz: g('siz'),
+      advantages: g('advantages_text'),
+      disadvantages: g('disadvantages'),
+      common_skills, mandatory_skills, additional_skills,
+      luck: g('luck'), carry: g('carry'),
+      magic_tradition: g('magic_tradition'), magic_notes: g('magic_notes'), magic_spells,
+      derived,
+      custom_fields
+    };
+  }
+
+  return {
+    render, collect,
+    addMandatory, removeMandatory,
+    addAdditional, removeAdditional,
+    addSpell, removeSpell,
+    addCustomField, removeCustomField,
+    handlePortraitUpload, clearPortrait,
+    stylisePortrait, revertPortrait
+  };
+})();
     const custom_fields = [];
     document.querySelectorAll('#custom-fields .custom-field-row').forEach((row) => {
       const k = row.querySelector('input:first-child');
