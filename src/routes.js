@@ -455,7 +455,7 @@ router.get('/rules/search', requireAuth, (req, res) => {
 // Configure with COMFYUI_URL env var (default: http://192.168.37.51:8188).
 
 const COMFYUI_URL = (process.env.COMFYUI_URL || 'http://192.168.37.51:8188').replace(/\/+$/, '');
-const PORTRAIT_NEGATIVE_PROMPT = 'lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, 3d render, cgi, low quality';
+const PORTRAIT_NEGATIVE_PROMPT = 'lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, photo snapshot, realistic modern interior, kitchen tiles, cupboards, domestic room, plain wall, tiled wall, cgi, 3d render, low quality';
 const PORTRAIT_WORKFLOW_TEMPLATE = {
   '1': { class_type: 'CheckpointLoaderSimple', inputs: { ckpt_name: 'aZovyaRPGArtistTools_v4VAE.safetensors' } },
   '2': { class_type: 'LoadImage', inputs: { image: 'portrait_input.jpg' } },
@@ -463,8 +463,8 @@ const PORTRAIT_WORKFLOW_TEMPLATE = {
   '4': { class_type: 'CLIPTextEncode', inputs: { clip: ['1', 1], text: '' } },
   '5': { class_type: 'CLIPTextEncode', inputs: { clip: ['1', 1], text: PORTRAIT_NEGATIVE_PROMPT } },
   '6': { class_type: 'KSampler', inputs: {
-    model: ['1', 0], seed: 42, steps: 28, cfg: 5.5,
-    sampler_name: 'dpmpp_2m_sde', scheduler: 'karras', denoise: 0.5,
+    model: ['1', 0], seed: 42, steps: 34, cfg: 7,
+    sampler_name: 'dpmpp_2m_sde', scheduler: 'karras', denoise: 0.8,
     positive: ['4', 0], negative: ['5', 0], latent_image: ['3', 0]
   } },
   '7': { class_type: 'VAEDecode', inputs: { samples: ['6', 0], vae: ['1', 2] } },
@@ -588,6 +588,7 @@ function buildPortraitPromptFromSheet(sheet) {
 
   return `head-and-shoulders portrait of a ${subject}, ${descriptors.join(', ')}, `
     + `${backdrop}, `
+    + 'replace the original photo background completely, '
     + 'strong Alphonse Mucha Art Nouveau poster aesthetic, ornate decorative framing, '
     + 'halo-like circular composition behind the head, flowing botanical arabesques, '
     + 'elegant sinuous linework, stylised period poster design, richly designed background integrated with the profession, '
