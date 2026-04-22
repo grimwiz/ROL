@@ -463,8 +463,8 @@ const PORTRAIT_WORKFLOW_TEMPLATE = {
   '4': { class_type: 'CLIPTextEncode', inputs: { clip: ['1', 1], text: '' } },
   '5': { class_type: 'CLIPTextEncode', inputs: { clip: ['1', 1], text: PORTRAIT_NEGATIVE_PROMPT } },
   '6': { class_type: 'KSampler', inputs: {
-    model: ['1', 0], seed: 42, steps: 34, cfg: 7,
-    sampler_name: 'dpmpp_2m_sde', scheduler: 'karras', denoise: 0.8,
+    model: ['1', 0], seed: 42, steps: 30, cfg: 6.2,
+    sampler_name: 'dpmpp_2m_sde', scheduler: 'karras', denoise: 0.62,
     positive: ['4', 0], negative: ['5', 0], latent_image: ['3', 0]
   } },
   '7': { class_type: 'VAEDecode', inputs: { samples: ['6', 0], vae: ['1', 2] } },
@@ -587,8 +587,9 @@ function buildPortraitPromptFromSheet(sheet) {
   if (weaponNames.length) descriptors.push(`equipped with ${weaponNames.join(' and ')}`);
 
   return `head-and-shoulders portrait of a ${subject}, ${descriptors.join(', ')}, `
+    + 'preserve the same person from the source photo, preserving facial structure, age, hair, glasses, and distinctive features, '
     + `${backdrop}, `
-    + 'replace the original photo background completely, '
+    + 'replace the original photo background while keeping the person recognisable, '
     + 'strong Alphonse Mucha Art Nouveau poster aesthetic, ornate decorative framing, '
     + 'halo-like circular composition behind the head, flowing botanical arabesques, '
     + 'elegant sinuous linework, stylised period poster design, richly designed background integrated with the profession, '
