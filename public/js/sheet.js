@@ -402,6 +402,31 @@ const SheetForm = (() => {
     </div>`;
   }
 
+  function hasMagicData(d) {
+    return !!(
+      (d.magic_tradition && String(d.magic_tradition).trim()) ||
+      (d.magic_notes && String(d.magic_notes).trim()) ||
+      (Array.isArray(d.magic_spells) && d.magic_spells.some((sp) => sp && (sp.name || sp.order || sp.notes)))
+    );
+  }
+
+  function hasMagicSkill(skills) {
+    return Array.isArray(skills) && skills.some((sk) => {
+      const name = String((sk && sk.name) || '').trim().toLowerCase();
+      const value = parseInt((sk && sk.value) || '', 10);
+      return name === 'magic' && Number.isFinite(value) && value > 0;
+    });
+  }
+
+  function isMagicCapableData(d) {
+    const magicalAdvantage = parseAdvantages(d.advantages).some((adv) => /^magical\b/i.test(adv));
+    return magicalAdvantage
+      || hasMagicSkill(d.common_skills)
+      || hasMagicSkill(d.mandatory_skills)
+      || hasMagicSkill(d.additional_skills)
+      || hasMagicData(d);
+  }
+
   // ── Main render ────────────────────────────────────────────────────────────
   function render(container, data, readonly) {
     // Clear any in-memory portrait state from a previous sheet — each render
@@ -413,6 +438,7 @@ const SheetForm = (() => {
     const rdAttr = readonly ? ' readonly' : '';
     const derived = d.derived || {};
     const autoD = calcDerivedFromData(d);
+    const showMagicSection = isMagicCapableData(d);
 
     container.innerHTML = `
 <div class="sheet-container${readonly ? ' readonly-sheet' : ''}">
@@ -502,16 +528,6 @@ const SheetForm = (() => {
   <div class="sheet-section">
     <div class="sheet-section-header">4 · Skills &amp; Specialties</div>
     <div class="sheet-section-body">
-      <label style="display:block;margin-bottom:0.75rem;font-size:0.78rem;font-weight:700;color:var(--text2);">COMBAT SKILLS</label>
-      <div class="combat-skills-header">
-        <span>Skill</span>
-        <span>Full</span>
-        <span>Half</span>
-      </div>
-      <div class="combat-skills-grid" id="combat-skills">
-        ${(d.combat_skills || defaultCombatSkills()).map((sk, i) => renderCombatSkillRow(sk, i, readonly)).join('')}
-      </div>
-
       <label style="display:block;margin-bottom:0.75rem;font-size:0.78rem;font-weight:700;color:var(--text2);">COMMON SKILLS</label>
       <div class="skills-grid common-skills-grid" id="common-skills">
         ${(d.common_skills || defaultCommonSkills()).map((sk, i) => `
@@ -549,7 +565,7 @@ const SheetForm = (() => {
     </div>
   </div>
 
-  <div class="sheet-section">
+  <div class="sheet-section" id="magic-section"${showMagicSection ? '' : ' style="display:none"'}>
     <div class="sheet-section-header">5 · Magic</div>
     <div class="sheet-section-body">
       ${fg('Tradition / Practice', `<input type="text" id="sf_magic_tradition" value="${esc(d.magic_tradition || '')}" placeholder="e.g. Newtonian Practitioner"${rdAttr}>`)}
@@ -571,6 +587,16 @@ const SheetForm = (() => {
   <div class="sheet-section">
     <div class="sheet-section-header">6 · Combat, Damage &amp; Gear</div>
     <div class="sheet-section-body">
+      <label style="display:block;margin-bottom:0.75rem;font-size:0.78rem;font-weight:700;color:var(--text2);">COMBAT SKILLS</label>
+      <div class="combat-skills-header">
+        <span>Skill</span>
+        <span>Full</span>
+        <span>Half</span>
+      </div>
+      <div class="combat-skills-grid" id="combat-skills">
+        ${(d.combat_skills || defaultCombatSkills()).map((sk, i) => renderCombatSkillRow(sk, i, readonly)).join('')}
+      </div>
+
       <label style="display:block;margin-bottom:0.5rem;font-size:0.78rem;font-weight:700;color:var(--text2);">DAMAGE</label>
       <div class="damage-grid">
         ${renderDamageToggle('hurt', 'Hurt', d.damage && d.damage.hurt, readonly)}
@@ -662,6 +688,7 @@ const SheetForm = (() => {
     const customEntries = parseAdvantages(textEl.value).filter((entry) => !ADVANTAGE_PRESET_NAMES.includes(entry));
     textEl.value = [...presetSelections, ...customEntries].join(', ');
     syncCommonSkillsForAdvantages();
+    updateMagicSectionVisibility();
   }
 
   function isMagicalAdvantageChosen() {
@@ -691,6 +718,7 @@ const SheetForm = (() => {
       commonGrid.appendChild(row);
     }
     if (!magical && magicRow) magicRow.remove();
+    updateMagicSectionVisibility();
   }
 
   function updateStatAllocationMessage() {
@@ -718,11 +746,40 @@ const SheetForm = (() => {
     });
   }
 
+  function isMagicCapableFromDom() {
+    const magicalAdvantage = isMagicalAdvantageChosen();
+    const skillRows = [
+      ...Array.from(document.querySelectorAll('#common-skills .csk-row')),
+      ...Array.from(document.querySelectorAll('#mandatory-skills .skill-row')),
+      ...Array.from(document.querySelectorAll('#additional-skills .skill-row'))
+    ];
+    const hasMagicSkillRow = skillRows.some((row) => {
+      const nameEl = row.querySelector('.msk-name, .ask-name') || row.querySelector('input[readonly]');
+      const valueEl = row.querySelector('.msk-val, .ask-val, .csk-val');
+      const name = String((nameEl && nameEl.value) || row.dataset.name || '').trim().toLowerCase();
+      const value = parseInt((valueEl && valueEl.value) || '', 10);
+      return name === 'magic' && Number.isFinite(value) && value > 0;
+    });
+    const hasMagicContent = !!(
+      ((document.getElementById('sf_magic_tradition') || {}).value || '').trim() ||
+      ((document.getElementById('sf_magic_notes') || {}).value || '').trim() ||
+      document.querySelector('#magic-spells .magic-spell-row')
+    );
+    return magicalAdvantage || hasMagicSkillRow || hasMagicContent;
+  }
+
+  function updateMagicSectionVisibility() {
+    const section = document.getElementById('magic-section');
+    if (!section) return;
+    section.style.display = isMagicCapableFromDom() ? '' : 'none';
+  }
+
   function initialiseDynamicFields(readonly) {
     updateStatAllocationMessage();
     updateAdvantagesAvailability();
     syncCommonSkillsForAdvantages();
     updateCombatSkillHalves();
+    updateMagicSectionVisibility();
     if (readonly) return;
     STAT_KEYS.forEach((stat) => {
       const el = document.getElementById(`sf_${stat}`);
@@ -730,8 +787,16 @@ const SheetForm = (() => {
     });
     const advantagesPicker = document.getElementById('sf_advantages');
     if (advantagesPicker) advantagesPicker.addEventListener('change', syncAdvantagesTextFromPicker);
+    const advantagesText = document.getElementById('sf_advantages_text');
+    if (advantagesText) advantagesText.addEventListener('input', updateMagicSectionVisibility);
     document.querySelectorAll('.combat-skill-full').forEach((el) => {
       el.addEventListener('input', updateCombatSkillHalves);
+    });
+    document.querySelectorAll('.msk-name, .msk-val, .ask-name, .ask-val').forEach((el) => {
+      el.addEventListener('input', updateMagicSectionVisibility);
+    });
+    document.querySelectorAll('#sf_magic_tradition, #sf_magic_notes, .spell-name, .spell-order, .spell-notes').forEach((el) => {
+      el.addEventListener('input', updateMagicSectionVisibility);
     });
   }
 
@@ -747,11 +812,13 @@ const SheetForm = (() => {
     </div>
     <input type="number" id="sf_msk_val_${i}" class="msk-val" placeholder="%" min="0" max="100">`;
     grid.appendChild(div);
+    div.querySelectorAll('.msk-name, .msk-val').forEach((el) => el.addEventListener('input', updateMagicSectionVisibility));
   }
 
   function removeMandatory(btn) {
     const row = btn && btn.closest('.skill-row');
     if (row) row.remove();
+    updateMagicSectionVisibility();
   }
 
   function addAdditional() {
@@ -765,11 +832,13 @@ const SheetForm = (() => {
     </div>
     <input type="number" id="sf_ask_val_${i}" class="ask-val" placeholder="%" min="0" max="100">`;
     grid.appendChild(div);
+    div.querySelectorAll('.ask-name, .ask-val').forEach((el) => el.addEventListener('input', updateMagicSectionVisibility));
   }
 
   function removeAdditional(btn) {
     const row = btn && btn.closest('.skill-row');
     if (row) row.remove();
+    updateMagicSectionVisibility();
   }
 
   function addSpell() {
@@ -784,11 +853,14 @@ const SheetForm = (() => {
       <input type="text" class="spell-notes" placeholder="Notes / description">
       <button type="button" class="btn btn-inline-remove" onclick="SheetForm.removeSpell(this)" title="Remove">✕</button>`;
     container.appendChild(div);
+    div.querySelectorAll('.spell-name, .spell-order, .spell-notes').forEach((el) => el.addEventListener('input', updateMagicSectionVisibility));
+    updateMagicSectionVisibility();
   }
 
   function removeSpell(btn) {
     const row = btn && btn.closest('.magic-spell-row');
     if (row) row.remove();
+    updateMagicSectionVisibility();
   }
 
   function addWeapon() {
