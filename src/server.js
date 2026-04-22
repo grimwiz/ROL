@@ -1,9 +1,17 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const crypto = require('crypto');
 const path = require('path');
+const { requireAuth } = require('./auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.disable('x-powered-by');
+const trustProxy = process.env.TRUST_PROXY;
+if (trustProxy === undefined || trustProxy === '') app.set('trust proxy', 1);
+else if (/^\d+$/.test(trustProxy)) app.set('trust proxy', Number(trustProxy));
+else if (/^(true|false)$/i.test(trustProxy)) app.set('trust proxy', /^true$/i.test(trustProxy));
+else app.set('trust proxy', trustProxy);
 
 // Portrait data URLs can push a single sheet well past the default 100KB limit;
 // 20MB is plenty for a JPEG/PNG of a reasonable subject and leaves headroom for
@@ -11,7 +19,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json({ limit: '20mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '..', 'public')));
-app.use('/rules-files', express.static(path.join(__dirname, '..', 'Rivers_of_London')));
+app.use('/rules-files', requireAuth, express.static(path.join(__dirname, '..', 'Rivers_of_London')));
 
 app.use('/api', require('./routes'));
 
@@ -42,10 +50,29 @@ app.listen(PORT, () => {
   const bcrypt = require('bcryptjs');
   const existing = db.prepare('SELECT COUNT(*) as n FROM users').get();
   if (existing.n === 0) {
-    const defaultPassword = process.env.GM_INITIAL_PASSWORD || 'changeme123';
-    const hash = bcrypt.hashSync(defaultPassword, 12);
+    const buildBootstrapPassword = () => {
+      if (process.env.GM_INITIAL_PASSWORD) return process.env.GM_INITIAL_PASSWORD;
+      const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const lower = 'abcdefghijklmnopqrstuvwxyz';
+      const digits = '0123456789';
+      const all = upper + lower + digits;
+      const take = (chars) => chars[crypto.randomInt(chars.length)];
+      const chars = [
+        take(upper),
+        take(lower),
+        take(digits)
+      ];
+      while (chars.length < 24) chars.push(take(all));
+      for (let i = chars.length - 1; i > 0; i -= 1) {
+        const j = crypto.randomInt(i + 1);
+        [chars[i], chars[j]] = [chars[j], chars[i]];
+      }
+      return chars.join('');
+    };
+    const bootstrapPassword = buildBootstrapPassword();
+    const hash = bcrypt.hashSync(bootstrapPassword, 12);
     db.prepare("INSERT INTO users (username, password_hash, role) VALUES ('gm', ?, 'gm')").run(hash);
-    console.log(`Default GM account created — username: gm, password: ${defaultPassword}`);
-    console.log('IMPORTANT: Change this password immediately via the GM settings panel.');
+    console.log(`Default GM account created — username: gm, password: ${bootstrapPassword}`);
+    console.log('IMPORTANT: Store this password securely and change it immediately via the GM settings panel.');
   }
 });

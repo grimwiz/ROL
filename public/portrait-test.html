@@ -126,25 +126,6 @@
 </div>
 
 <script>
-// ----- Inline API-format workflow (mirrors scripts/comfyui-portrait-workflow.json) -----
-const WORKFLOW = {
-  "1": { "class_type": "CheckpointLoaderSimple", "inputs": { "ckpt_name": "aZovyaRPGArtistTools_v4VAE.safetensors" } },
-  "2": { "class_type": "LoadImage",              "inputs": { "image": "portrait_input.jpg" } },
-  "3": { "class_type": "VAEEncode",              "inputs": {
-           "pixels": ["2", 0], "vae": ["1", 2] } },
-  "4": { "class_type": "CLIPTextEncode",         "inputs": {
-           "clip": ["1", 1], "text": "placeholder" } },
-  "5": { "class_type": "CLIPTextEncode",         "inputs": {
-           "clip": ["1", 1],
-           "text": "lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, 3d render, cgi, low quality" } },
-  "6": { "class_type": "KSampler",               "inputs": {
-           "model": ["1", 0], "seed": 0, "steps": 28, "cfg": 5.5,
-           "sampler_name": "dpmpp_2m_sde", "scheduler": "karras", "denoise": 0.5,
-           "positive": ["4", 0], "negative": ["5", 0], "latent_image": ["3", 0] } },
-  "7": { "class_type": "VAEDecode",              "inputs": { "samples": ["6", 0], "vae": ["1", 2] } },
-  "8": { "class_type": "SaveImage",              "inputs": { "images": ["7", 0], "filename_prefix": "ROL_portrait" } }
-};
-
 // ----- DOM refs -----
 const $ = (id) => document.getElementById(id);
 const logEl = $('log');
@@ -229,12 +210,12 @@ async function uploadImage(blob) {
   return json.name;
 }
 
-async function queuePrompt(workflow, clientId) {
+async function queuePrompt(image, sheet) {
   const res = await fetch('/api/portrait/prompt', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ prompt: workflow, client_id: clientId })
+    body: JSON.stringify({ image, sheet })
   });
   if (!res.ok) throw new Error(`Queue failed: HTTP ${res.status} — ${await res.text().catch(() => '')}`);
   const json = await res.json();
@@ -290,22 +271,15 @@ async function generate() {
     const uploadedName = await uploadImage(blob);
     log(`  stored as: ${uploadedName}`);
 
-    // 3. Build the workflow
-    const workflow = JSON.parse(JSON.stringify(WORKFLOW));
-    const promptText =
-      `head-and-shoulders portrait of a ${classNoun}, ${occupation}, known for ${skill}, ` +
-      `contemporary London setting, ${styleNote}, soft flat lighting, serious expression, ` +
-      `three-quarters view, illustration, no text, no watermark`;
-    workflow['2'].inputs.image = uploadedName;
-    workflow['4'].inputs.text = promptText;
-    workflow['6'].inputs.seed = Math.floor(Math.random() * 2 ** 31);
-    log(`Prompt: ${promptText.slice(0, 120)}...`);
-
-    // 4. Queue (via Folly proxy)
-    const clientId = (crypto.randomUUID && crypto.randomUUID()) ||
-      Array.from(crypto.getRandomValues(new Uint8Array(16))).map((b) => b.toString(16).padStart(2, '0')).join('');
+    // 3. Queue (via Folly proxy)
+    const sheet = {
+      pronouns: classNoun === 'woman' ? 'she/her' : classNoun === 'man' ? 'he/him' : 'they/them',
+      occupation,
+      reputation: styleNote,
+      additional_skills: [{ name: skill, value: '60' }]
+    };
     log('→ queueing prompt...');
-    const promptId = await queuePrompt(workflow, clientId);
+    const promptId = await queuePrompt(uploadedName, sheet);
     log(`  prompt_id: ${promptId}`);
 
     // 5. Poll
@@ -325,7 +299,7 @@ async function generate() {
     if (resultEl.src && resultEl.src.startsWith('blob:')) URL.revokeObjectURL(resultEl.src);
     resultEl.src = URL.createObjectURL(imgBlob);
     $('resultMeta').textContent =
-      `${imgInfo.filename} — ${Math.round(imgBlob.size / 1024)} KB — seed ${workflow['6'].inputs.seed}`;
+      `${imgInfo.filename} — ${Math.round(imgBlob.size / 1024)} KB`;
     log(`Saved on server as ${imgInfo.filename}.`);
   } catch (e) {
     log('FAILED: ' + e.message, 'error');

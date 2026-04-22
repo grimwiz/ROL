@@ -75,34 +75,6 @@ const SheetForm = (() => {
   let lastGeneratedUrl = null;   // blob: URL of latest stylised output
   let stylising = false;
 
-  // API-format ComfyUI workflow used for Stylise/Reroll. Mirrors
-  // scripts/comfyui-portrait-workflow.json — kept inline so the browser can
-  // mutate it (image filename, prompt, seed) before posting.
-  //
-  // This is plain img2img rather than PhotoMaker. The previous PhotoMaker
-  // workflow depended on a model/checkpoint pairing that no longer matches the
-  // ComfyUI server, which caused runtime shape errors during encoding.
-  const PORTRAIT_WORKFLOW = {
-    '1': { class_type: 'CheckpointLoaderSimple', inputs: { ckpt_name: 'aZovyaRPGArtistTools_v4VAE.safetensors' } },
-    '2': { class_type: 'LoadImage', inputs: { image: 'portrait_input.jpg' } },
-    '3': { class_type: 'VAEEncode', inputs: { pixels: ['2', 0], vae: ['1', 2] } },
-    '4': { class_type: 'CLIPTextEncode', inputs: {
-      clip: ['1', 1],
-      text: ''
-    } },
-    '5': { class_type: 'CLIPTextEncode', inputs: {
-      clip: ['1', 1],
-      text: 'lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, 3d render, cgi, low quality'
-    } },
-    '6': { class_type: 'KSampler', inputs: {
-      model: ['1', 0], seed: 42, steps: 28, cfg: 5.5,
-      sampler_name: 'dpmpp_2m_sde', scheduler: 'karras', denoise: 0.5,
-      positive: ['4', 0], negative: ['5', 0], latent_image: ['3', 0]
-    } },
-    '7': { class_type: 'VAEDecode', inputs: { samples: ['6', 0], vae: ['1', 2] } },
-    '8': { class_type: 'SaveImage', inputs: { images: ['7', 0], filename_prefix: 'ROL_portrait' } }
-  };
-
   function revokeIfBlobUrl(url) {
     if (url && typeof url === 'string' && url.startsWith('blob:')) URL.revokeObjectURL(url);
   }
@@ -473,10 +445,6 @@ const SheetForm = (() => {
             <input type="hidden" id="sf_portrait" value="${esc(d.portrait)}">
           </div>
           ${!readonly ? `
-            <div id="sf_portrait_prompt_row" style="margin-top:0.5rem">
-              <label style="display:block;font-size:0.75rem;color:var(--text2);margin-bottom:0.2rem">Stylise prompt</label>
-              <textarea id="sf_portrait_prompt" rows="3" placeholder="Upload a photo, then describe the style…" style="width:100%;font-size:0.85rem"></textarea>
-            </div>
             <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.5rem">
               <button type="button" id="sf_portrait_stylise" class="btn btn-sm" disabled onclick="SheetForm.stylisePortrait(false)" title="Upload a photo first">Stylise</button>
               <button type="button" id="sf_portrait_reroll" class="btn btn-sm" style="display:none" onclick="SheetForm.stylisePortrait(true)">Reroll</button>
@@ -485,7 +453,7 @@ const SheetForm = (() => {
             </div>
             <div id="sf_portrait_status" class="card-sub" style="margin-top:0.35rem;min-height:1em"></div>
           ` : ''}
-          <div class="card-sub">Upload a JPG/PNG/GIF/WebP image. <em>Stylise</em> turns it into an AI portrait; <em>Reroll</em> tries again with a new seed.</div>
+          <div class="card-sub">Upload a JPG/PNG/GIF/WebP image. <em>Stylise</em> turns it into an AI portrait using your sheet details; <em>Reroll</em> tries again with a new seed.</div>
         </div>
       </div>
     </div>
@@ -917,10 +885,6 @@ const SheetForm = (() => {
   }
 
   function updatePortraitControlsVisibility() {
-    // Prompt textarea + Stylise button are always visible when the sheet is
-    // editable; Reroll/Revert appear only after a successful generation. All
-    // buttons get enabled/disabled based on whether we have an upload to work
-    // with and whether a generation is currently in flight.
     const hasOriginal = !!originalBlob;
     const hasGenerated = !!lastGeneratedUrl;
     const show = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
@@ -929,7 +893,6 @@ const SheetForm = (() => {
     const setDisabled = (id, off) => { const el = document.getElementById(id); if (el) el.disabled = !!off; };
     setDisabled('sf_portrait_file',    stylising);
     setDisabled('sf_portrait_clear',   stylising);
-    setDisabled('sf_portrait_prompt',  stylising);
     setDisabled('sf_portrait_stylise', stylising || !hasOriginal);
     setDisabled('sf_portrait_reroll',  stylising || !hasOriginal);
     setDisabled('sf_portrait_revert',  stylising);
@@ -987,22 +950,6 @@ const SheetForm = (() => {
     }
   }
 
-  function inferSubjectFromPronouns() {
-    const p = ((document.getElementById('sf_pronouns') || {}).value || '').toLowerCase();
-    if (/\b(she|her|hers)\b/.test(p)) return 'woman';
-    if (/\b(he|him|his)\b/.test(p))   return 'man';
-    return 'person';
-  }
-
-  function defaultPortraitPrompt() {
-    const subj = inferSubjectFromPronouns();
-    const occ = ((document.getElementById('sf_occupation') || {}).value || '').trim() || 'investigator';
-    return `head-and-shoulders portrait of a ${subj}, ${occ}, `
-      + 'contemporary London setting, Alphonse Mucha art nouveau style, painterly linework, '
-      + 'decorative halo and floral border motifs, muted earthy palette with a single accent colour, '
-      + 'soft flat lighting, serious expression, three-quarters view, illustration, no text, no watermark';
-  }
-
   function readBlobAsDataUrl(blob) {
     return new Promise((resolve, reject) => {
       const r = new FileReader();
@@ -1047,12 +994,8 @@ const SheetForm = (() => {
       return;
     }
 
-    // Pre-fill the stylise prompt from the sheet fields if empty.
-    const promptEl = document.getElementById('sf_portrait_prompt');
-    if (promptEl && !promptEl.value.trim()) promptEl.value = defaultPortraitPrompt();
-
     const kb = Math.round(file.size / 1024);
-    setPortraitStatus(`Ready (${kb} KB). Click Stylise to turn it into an AI portrait, or Save the sheet to use as-is.`, '');
+    setPortraitStatus(`Ready (${kb} KB). Click Stylise to generate a portrait from this photo and your sheet details, or Save the sheet to use it as-is.`, '');
     updatePortraitControlsVisibility();
   }
 
@@ -1084,8 +1027,7 @@ const SheetForm = (() => {
       setPortraitStatus('Upload a photo first.', 'error');
       return;
     }
-    const promptEl = document.getElementById('sf_portrait_prompt');
-    const promptText = (promptEl && promptEl.value.trim()) || defaultPortraitPrompt();
+    const portraitSheet = collectPortraitPromptSheet();
 
     stylising = true;
     setPortraitControlsEnabled(false);
@@ -1111,17 +1053,12 @@ const SheetForm = (() => {
       const uploadedName = upJson && upJson.name;
       if (!uploadedName) throw new Error('Upload returned no filename.');
 
-      // 2. Mutate a fresh copy of the workflow with image, prompt, seed.
-      const workflow = JSON.parse(JSON.stringify(PORTRAIT_WORKFLOW));
-      workflow['2'].inputs.image = uploadedName;
-      workflow['4'].inputs.text = promptText;
-      workflow['6'].inputs.seed = Math.floor(Math.random() * 2 ** 31);
-
-      // 3. Queue prompt.
+      // 2. Ask the server to build and queue the fixed portrait workflow from
+      //    the allowed sheet fields.
       const q = await fetch('/api/portrait/prompt', {
         method: 'POST', credentials: 'include',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ prompt: workflow })
+        body: JSON.stringify({ image: uploadedName, sheet: portraitSheet, reroll: !!reroll })
       });
       const qText = await q.text();
       let qJson = null;
@@ -1209,6 +1146,24 @@ const SheetForm = (() => {
   }
 
   // ── Collect ────────────────────────────────────────────────────────────────
+  function collectPortraitPromptSheet() {
+    const data = collect();
+    return {
+      pronouns: data.pronouns,
+      occupation: data.occupation,
+      social_class: data.social_class,
+      reputation: data.reputation,
+      advantages: data.advantages,
+      common_skills: data.common_skills,
+      combat_skills: data.combat_skills,
+      mandatory_skills: data.mandatory_skills,
+      additional_skills: data.additional_skills,
+      weapons: data.weapons,
+      magic_tradition: data.magic_tradition,
+      magic_spells: data.magic_spells
+    };
+  }
+
   function collect() {
     const g = (id) => { const el = document.getElementById(`sf_${id}`); return el ? el.value.trim() : ''; };
 

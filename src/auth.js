@@ -1,8 +1,11 @@
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || (() => {
-  console.warn('WARNING: JWT_SECRET not set. Set it in your environment for production.');
-  return 'change-this-secret-in-production';
+const JWT_SECRET = (() => {
+  if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+  const generated = crypto.randomBytes(48).toString('base64url');
+  console.warn('WARNING: JWT_SECRET not set. Generated an ephemeral signing secret for this process; all sessions will be invalidated on restart.');
+  return generated;
 })();
 
 const COOKIE_NAME = 'folly_token';
