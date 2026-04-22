@@ -3,11 +3,15 @@ const SheetForm = (() => {
 
   const DEFAULT = {
     name: '', pronouns: '', birthplace: '', residence: '',
-    occupation: '', social_class: '', age: '',
+    occupation: '', social_class: '', age: '', affluence: '',
     glitch: '', backstory: '', reputation: '',
     portrait: '',
     str: '', con: '', dex: '', int: '', pow: '', siz: '',
     advantages: '', disadvantages: '',
+    combat_skills: [
+      { name: 'Fighting', value: '30' },
+      { name: 'Firearms', value: '30' }
+    ],
     mandatory_skills: [
       { name: '', value: '' },
       { name: '', value: '' }
@@ -18,6 +22,11 @@ const SheetForm = (() => {
       { name: '', value: '' }
     ],
     mov: '', luck: '',
+    damage: { hurt: false, bloodied: false, down: false, impaired: false },
+    weapons: [
+      { name: '', full: '', half: '', damage: '', range: '' },
+      { name: '', full: '', half: '', damage: '', range: '' }
+    ],
     carry: '',
     magic_spells: [],
     custom_fields: []
@@ -37,6 +46,7 @@ const SheetForm = (() => {
     'Social',
     'Stealth'
   ];
+  const COMBAT_SKILL_NAMES = ['Fighting', 'Firearms'];
   const ADVANTAGES = [
     { name: 'Connected' },
     { name: 'Damage Bonus', requirements: [{ stat: 'str', min: 60 }] },
@@ -169,6 +179,23 @@ const SheetForm = (() => {
     return COMMON_SKILL_NAMES.map((name) => ({ name, value: '30' }));
   }
 
+  function defaultCombatSkills() {
+    return COMBAT_SKILL_NAMES.map((name) => ({ name, value: '30' }));
+  }
+
+  function findSkillValue(skillName, pools) {
+    const wanted = String(skillName || '').trim().toLowerCase();
+    for (const pool of pools) {
+      if (!Array.isArray(pool)) continue;
+      for (const sk of pool) {
+        const name = String((sk && sk.name) || '').trim().toLowerCase();
+        const value = String((sk && sk.value) || '').trim();
+        if (name === wanted && value) return value;
+      }
+    }
+    return '';
+  }
+
   function mergeCommonSkills(saved) {
     const byName = {};
     defaultCommonSkills().forEach((sk) => { byName[sk.name.toLowerCase()] = { ...sk }; });
@@ -183,6 +210,51 @@ const SheetForm = (() => {
     return COMMON_SKILL_NAMES.map((name) => ({ ...byName[name.toLowerCase()] }));
   }
 
+  function mergeCombatSkills(saved, mandatorySkills, additionalSkills) {
+    const byName = {};
+    defaultCombatSkills().forEach((sk) => { byName[sk.name.toLowerCase()] = { ...sk }; });
+    if (Array.isArray(saved)) {
+      saved.forEach((sk) => {
+        const key = String((sk && sk.name) || '').trim().toLowerCase();
+        if (!key || !byName[key]) return;
+        const value = String((sk && sk.value) || '').trim();
+        byName[key].value = value || byName[key].value;
+      });
+    }
+    COMBAT_SKILL_NAMES.forEach((name) => {
+      const key = name.toLowerCase();
+      const explicitValue = findSkillValue(name, [saved]);
+      if (explicitValue) {
+        byName[key].value = explicitValue;
+        return;
+      }
+      const legacyValue = findSkillValue(name, [mandatorySkills, additionalSkills]);
+      if (legacyValue) byName[key].value = legacyValue;
+    });
+    return COMBAT_SKILL_NAMES.map((name) => ({ ...byName[name.toLowerCase()] }));
+  }
+
+  function normaliseDamage(saved) {
+    const base = { hurt: false, bloodied: false, down: false, impaired: false };
+    if (!saved || typeof saved !== 'object') return base;
+    Object.keys(base).forEach((key) => { base[key] = !!saved[key]; });
+    return base;
+  }
+
+  function normaliseWeapons(saved) {
+    const rows = Array.isArray(saved) ? saved : [];
+    const clean = rows
+      .map((row) => ({
+        name: String((row && row.name) || ''),
+        full: String((row && row.full) || ''),
+        half: String((row && row.half) || ''),
+        damage: String((row && row.damage) || ''),
+        range: String((row && row.range) || '')
+      }))
+      .filter((row) => row.name || row.full || row.half || row.damage || row.range);
+    return clean.length ? clean : JSON.parse(JSON.stringify(DEFAULT.weapons));
+  }
+
   function merge(saved) {
     const base = JSON.parse(JSON.stringify(DEFAULT));
     if (!saved) return base;
@@ -192,6 +264,9 @@ const SheetForm = (() => {
     if (!Array.isArray(base.custom_fields)) base.custom_fields = [];
     if (!Array.isArray(base.magic_spells)) base.magic_spells = [];
     base.common_skills = mergeCommonSkills(base.common_skills);
+    base.combat_skills = mergeCombatSkills(base.combat_skills, base.mandatory_skills, base.additional_skills);
+    base.damage = normaliseDamage(base.damage);
+    base.weapons = normaliseWeapons(base.weapons);
     base.advantages = parseAdvantages(base.advantages).join(', ');
     // Migrate old derived fields stored flat
     if (!base.derived) {
@@ -231,6 +306,38 @@ const SheetForm = (() => {
       return `<option value="${n}"${selectedAttr}>${n}%</option>`;
     }).join('');
     return `<select id="${id}" class="csk-val"${rdAttr}>${options}</select>`;
+  }
+
+  function renderPercentInput(id, value, readonly, extraClass = '') {
+    return `<input type="number" id="${id}" class="${extraClass}" value="${esc(value)}" min="0" max="100"${readonly ? ' readonly' : ''}>`;
+  }
+
+  function renderCombatSkillRow(sk, i, readonly) {
+    const half = sk.value ? Math.floor(parseInt(sk.value, 10) / 2) : '';
+    return `<div class="combat-skill-row">
+      <input type="text" value="${esc(sk.name)}" readonly>
+      ${renderPercentInput(`sf_combat_val_${i}`, sk.value || '30', readonly, 'combat-skill-full')}
+      <input type="text" class="combat-skill-half" value="${esc(half)}" readonly>
+    </div>`;
+  }
+
+  function renderDamageToggle(key, label, checked, readonly) {
+    return `<label class="damage-toggle${checked ? ' checked' : ''}">
+      <input type="checkbox" id="sf_damage_${key}" ${checked ? 'checked' : ''}${readonly ? ' disabled' : ''}>
+      <span>${label}</span>
+    </label>`;
+  }
+
+  function renderWeaponRow(wp, i, readonly) {
+    const rdAttr = readonly ? ' readonly' : '';
+    return `<div class="weapon-row" id="weapon_row_${i}">
+      <input type="text" class="weapon-name" value="${esc(wp.name || '')}" placeholder="Weapon name"${rdAttr}>
+      <input type="text" class="weapon-full" value="${esc(wp.full || '')}" placeholder="Full"${rdAttr}>
+      <input type="text" class="weapon-half" value="${esc(wp.half || '')}" placeholder="Half"${rdAttr}>
+      <input type="text" class="weapon-damage" value="${esc(wp.damage || '')}" placeholder="Damage"${rdAttr}>
+      <input type="text" class="weapon-range" value="${esc(wp.range || '')}" placeholder="Range"${rdAttr}>
+      ${!readonly ? `<button type="button" class="btn btn-inline-remove" onclick="SheetForm.removeWeapon(this)" title="Remove weapon">✕</button>` : '<span></span>'}
+    </div>`;
   }
 
   function renderAdvantagesSelect(value, readonly) {
@@ -323,6 +430,7 @@ const SheetForm = (() => {
             ${fg('Occupation / Role', `<input type="text" id="sf_occupation" value="${esc(d.occupation)}" placeholder="e.g. Stage Magician / Physicist"${rdAttr}>`)}
             ${fg('Age', `<input type="number" id="sf_age" value="${esc(d.age)}" min="16" max="100"${rdAttr}>`)}
             ${fg('Social Class', `<input type="text" id="sf_social_class" value="${esc(d.social_class)}" placeholder="e.g. Middle Class (Academic)"${rdAttr}>`)}
+            ${fg('Affluence', `<input type="text" id="sf_affluence" value="${esc(d.affluence || '')}" placeholder="e.g. Average"${rdAttr}>`)}
           </div>
           ${fg('The "Glitch" – What was your anomalous event?',
             `<textarea id="sf_glitch" rows="4" placeholder="Describe the unexplained event that drew you in…"${rdAttr}>${esc(d.glitch)}</textarea>`)}
@@ -394,6 +502,16 @@ const SheetForm = (() => {
   <div class="sheet-section">
     <div class="sheet-section-header">4 · Skills &amp; Specialties</div>
     <div class="sheet-section-body">
+      <label style="display:block;margin-bottom:0.75rem;font-size:0.78rem;font-weight:700;color:var(--text2);">COMBAT SKILLS</label>
+      <div class="combat-skills-header">
+        <span>Skill</span>
+        <span>Full</span>
+        <span>Half</span>
+      </div>
+      <div class="combat-skills-grid" id="combat-skills">
+        ${(d.combat_skills || defaultCombatSkills()).map((sk, i) => renderCombatSkillRow(sk, i, readonly)).join('')}
+      </div>
+
       <label style="display:block;margin-bottom:0.75rem;font-size:0.78rem;font-weight:700;color:var(--text2);">COMMON SKILLS</label>
       <div class="skills-grid common-skills-grid" id="common-skills">
         ${(d.common_skills || defaultCommonSkills()).map((sk, i) => `
@@ -451,8 +569,31 @@ const SheetForm = (() => {
   </div>
 
   <div class="sheet-section">
-    <div class="sheet-section-header">6 · The Vitals</div>
+    <div class="sheet-section-header">6 · Combat, Damage &amp; Gear</div>
     <div class="sheet-section-body">
+      <label style="display:block;margin-bottom:0.5rem;font-size:0.78rem;font-weight:700;color:var(--text2);">DAMAGE</label>
+      <div class="damage-grid">
+        ${renderDamageToggle('hurt', 'Hurt', d.damage && d.damage.hurt, readonly)}
+        ${renderDamageToggle('bloodied', 'Bloodied', d.damage && d.damage.bloodied, readonly)}
+        ${renderDamageToggle('down', 'Down', d.damage && d.damage.down, readonly)}
+        ${renderDamageToggle('impaired', 'Impaired', d.damage && d.damage.impaired, readonly)}
+      </div>
+
+      <label style="display:block;margin:1rem 0 0.5rem;font-size:0.78rem;font-weight:700;color:var(--text2);">WEAPONS</label>
+      <div class="weapons-header">
+        <span>Name</span>
+        <span>Full</span>
+        <span>Half</span>
+        <span>Damage</span>
+        <span>Range</span>
+        <span></span>
+      </div>
+      <div id="weapons">
+        ${d.weapons.map((wp, i) => renderWeaponRow(wp, i, readonly)).join('')}
+      </div>
+      ${!readonly ? `<button type="button" class="btn btn-sm" style="margin-top:0.5rem" onclick="SheetForm.addWeapon()">+ Add weapon</button>` : ''}
+
+      <label style="display:block;margin:1rem 0 0.5rem;font-size:0.78rem;font-weight:700;color:var(--text2);">FILES / NOTES</label>
       ${fg('Everyday Carry', `<textarea id="sf_carry" rows="3" placeholder="List what your character routinely carries…"${rdAttr}>${esc(d.carry)}</textarea>`)}
     </div>
   </div>
@@ -567,10 +708,21 @@ const SheetForm = (() => {
     updateDerivedDisplay();
   }
 
+  function updateCombatSkillHalves() {
+    document.querySelectorAll('#combat-skills .combat-skill-row').forEach((row) => {
+      const fullEl = row.querySelector('.combat-skill-full');
+      const halfEl = row.querySelector('.combat-skill-half');
+      if (!fullEl || !halfEl) return;
+      const full = parseInt(fullEl.value, 10);
+      halfEl.value = Number.isFinite(full) ? Math.floor(full / 2) : '';
+    });
+  }
+
   function initialiseDynamicFields(readonly) {
     updateStatAllocationMessage();
     updateAdvantagesAvailability();
     syncCommonSkillsForAdvantages();
+    updateCombatSkillHalves();
     if (readonly) return;
     STAT_KEYS.forEach((stat) => {
       const el = document.getElementById(`sf_${stat}`);
@@ -578,6 +730,9 @@ const SheetForm = (() => {
     });
     const advantagesPicker = document.getElementById('sf_advantages');
     if (advantagesPicker) advantagesPicker.addEventListener('change', syncAdvantagesTextFromPicker);
+    document.querySelectorAll('.combat-skill-full').forEach((el) => {
+      el.addEventListener('input', updateCombatSkillHalves);
+    });
   }
 
   // ── Mutators ───────────────────────────────────────────────────────────────
@@ -633,6 +788,19 @@ const SheetForm = (() => {
 
   function removeSpell(btn) {
     const row = btn && btn.closest('.magic-spell-row');
+    if (row) row.remove();
+  }
+
+  function addWeapon() {
+    const container = document.getElementById('weapons');
+    const i = Date.now();
+    const div = document.createElement('div');
+    div.innerHTML = renderWeaponRow({ name: '', full: '', half: '', damage: '', range: '' }, i, false);
+    container.appendChild(div.firstElementChild);
+  }
+
+  function removeWeapon(btn) {
+    const row = btn && btn.closest('.weapon-row');
     if (row) row.remove();
   }
 
@@ -972,6 +1140,13 @@ const SheetForm = (() => {
   function collect() {
     const g = (id) => { const el = document.getElementById(`sf_${id}`); return el ? el.value.trim() : ''; };
 
+    const combat_skills = [];
+    document.querySelectorAll('#combat-skills .combat-skill-row').forEach((row) => {
+      const name = ((row.querySelector('input[readonly]') || {}).value || '').trim();
+      const value = ((row.querySelector('.combat-skill-full') || {}).value || '').trim();
+      if (name) combat_skills.push({ name, value: value || '0' });
+    });
+
     const mandatory_skills = [];
     document.querySelectorAll('#mandatory-skills .skill-row').forEach((row) => {
       const name = (row.querySelector('.msk-name') || {}).value || '';
@@ -1017,17 +1192,36 @@ const SheetForm = (() => {
     });
     derived.move = g('derived_move');
 
+    const damage = {
+      hurt: !!((document.getElementById('sf_damage_hurt') || {}).checked),
+      bloodied: !!((document.getElementById('sf_damage_bloodied') || {}).checked),
+      down: !!((document.getElementById('sf_damage_down') || {}).checked),
+      impaired: !!((document.getElementById('sf_damage_impaired') || {}).checked)
+    };
+
+    const weapons = [];
+    document.querySelectorAll('#weapons .weapon-row').forEach((row) => {
+      const name = ((row.querySelector('.weapon-name') || {}).value || '').trim();
+      const full = ((row.querySelector('.weapon-full') || {}).value || '').trim();
+      const half = ((row.querySelector('.weapon-half') || {}).value || '').trim();
+      const damageValue = ((row.querySelector('.weapon-damage') || {}).value || '').trim();
+      const range = ((row.querySelector('.weapon-range') || {}).value || '').trim();
+      if (name || full || half || damageValue || range) {
+        weapons.push({ name, full, half, damage: damageValue, range });
+      }
+    });
+
     return {
       name: g('name'), pronouns: g('pronouns'),
       birthplace: g('birthplace'), residence: g('residence'),
-      occupation: g('occupation'), social_class: g('social_class'), age: g('age'),
+      occupation: g('occupation'), social_class: g('social_class'), age: g('age'), affluence: g('affluence'),
       glitch: g('glitch'), backstory: g('backstory'), reputation: g('reputation'),
       portrait: g('portrait'),
       str: g('str'), con: g('con'), dex: g('dex'), int: g('int'), pow: g('pow'), siz: g('siz'),
       advantages: g('advantages_text'),
       disadvantages: g('disadvantages'),
-      common_skills, mandatory_skills, additional_skills,
-      luck: g('luck'), carry: g('carry'),
+      combat_skills, common_skills, mandatory_skills, additional_skills,
+      luck: g('luck'), damage, weapons, carry: g('carry'),
       magic_tradition: g('magic_tradition'), magic_notes: g('magic_notes'), magic_spells,
       derived,
       custom_fields
@@ -1038,6 +1232,7 @@ const SheetForm = (() => {
     render, collect,
     addMandatory, removeMandatory,
     addAdditional, removeAdditional,
+    addWeapon, removeWeapon,
     addSpell, removeSpell,
     addCustomField, removeCustomField,
     handlePortraitUpload, clearPortrait,

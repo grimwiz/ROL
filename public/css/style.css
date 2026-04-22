@@ -236,6 +236,33 @@ tr:hover td { background: var(--bg3); }
 .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.5rem; }
 .skill-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.5rem; }
 .skill-row input[type=number] { width: 70px; text-align: center; }
+.combat-skills-header,
+.combat-skill-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 84px 84px;
+  gap: 0.5rem;
+  align-items: center;
+}
+.combat-skills-header {
+  margin-bottom: 0.35rem;
+  padding: 0 0.1rem;
+}
+.combat-skills-header span {
+  font-size: 0.75rem;
+  color: var(--text2);
+}
+.combat-skills-grid {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.combat-skill-row input {
+  text-align: center;
+}
+.combat-skill-row input:first-child {
+  text-align: left;
+  background: var(--bg3);
+}
 .skill-name-wrap { display: flex; align-items: center; gap: 0.35rem; min-width: 0; }
 .skill-name-wrap .msk-name { flex: 1; min-width: 0; }
 .common-skills-grid .csk-row input[readonly] { background: var(--bg3); }
@@ -253,6 +280,49 @@ tr:hover td { background: var(--bg3); }
 }
 
 .edl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.5rem; }
+.damage-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+.damage-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.55rem 0.7rem;
+  background: var(--bg3);
+}
+.damage-toggle input {
+  margin: 0;
+}
+.damage-toggle span {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.weapons-header,
+.weapon-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) 72px 72px 100px 100px auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+.weapons-header {
+  margin-bottom: 0.35rem;
+  padding: 0 0.1rem;
+}
+.weapons-header span {
+  font-size: 0.75rem;
+  color: var(--text2);
+}
+#weapons {
+  display: grid;
+  gap: 0.5rem;
+}
+.weapon-row input {
+  min-width: 0;
+}
 
 .custom-fields .custom-field-row {
   display: grid; grid-template-columns: 1fr 2fr auto;
@@ -426,6 +496,15 @@ tr:hover td { background: var(--bg3); }
   .nav-right { gap: 0.6rem; }
   .dice-select { width: 118px; }
   .characteristics-grid { grid-template-columns: repeat(3, 1fr); }
+  .combat-skills-header,
+  .combat-skill-row,
+  .weapons-header,
+  .weapon-row {
+    grid-template-columns: 1fr;
+  }
+  .damage-grid {
+    grid-template-columns: 1fr 1fr;
+  }
   .skills-grid, .edl-grid { grid-template-columns: 1fr; }
   .custom-fields .custom-field-row { grid-template-columns: 1fr 1fr auto; }
   .sheet-personal-layout { grid-template-columns: 1fr; }

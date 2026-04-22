@@ -35,12 +35,87 @@ function modal(html, onMount) {
   return bd;
 }
 
-function summarizeSkills(skills) {
-  if (!Array.isArray(skills) || skills.length === 0) return '—';
-  return skills
-    .filter(s => s && s.name)
-    .map(s => `${s.name}${s.value ? ` (${s.value}%)` : ''}`)
-    .join(', ') || '—';
+const DEFAULT_GM_SKILL_VALUES = new Map([
+  'athletics', 'drive', 'navigate', 'observation', 'read person',
+  'research', 'sense vestigia', 'social', 'stealth',
+  'fighting', 'firearms'
+].map((name) => [name, 30]));
+
+function parsePercent(value) {
+  const n = parseInt(value, 10);
+  return Number.isFinite(n) ? n : null;
+}
+
+function getSheetSkills(d) {
+  return [
+    ...(d.combat_skills || []),
+    ...(d.common_skills || []),
+    ...(d.mandatory_skills || []),
+    ...(d.additional_skills || [])
+  ];
+}
+
+function summarizeCondition(d) {
+  const damage = d.damage || {};
+  const labels = [];
+  if (damage.down) labels.push('Down');
+  else if (damage.bloodied) labels.push('Bloodied');
+  else if (damage.hurt) labels.push('Hurt');
+  if (damage.impaired) labels.push('Impaired');
+  return labels.join(', ') || 'OK';
+}
+
+function summarizeResources(d) {
+  const out = [];
+  const hp = d.derived && d.derived.hp;
+  const mp = d.derived && d.derived.mp;
+  const luck = d.luck;
+  const mov = (d.derived && d.derived.move) || d.mov;
+  if (hp) out.push(`HP ${hp}`);
+  if (mp) out.push(`MP ${mp}`);
+  if (mov) out.push(`MOV ${mov}`);
+  if (luck) out.push(`Luck ${luck}`);
+  return out.join(', ') || '—';
+}
+
+function summarizeNotableSkills(d, limit = 6) {
+  const notable = getSheetSkills(d)
+    .filter((s) => s && s.name)
+    .map((s) => ({
+      name: String(s.name).trim(),
+      value: parsePercent(s.value)
+    }))
+    .filter((s) => s.name && s.value !== null)
+    .filter((s) => {
+      const baseline = DEFAULT_GM_SKILL_VALUES.get(s.name.toLowerCase());
+      return baseline != null ? s.value > baseline : s.value > 0;
+    })
+    .sort((a, b) => b.value - a.value || a.name.localeCompare(b.name))
+    .slice(0, limit);
+
+  return notable.map((s) => `${s.name} ${s.value}%`).join(', ') || '—';
+}
+
+function summarizeWeapons(d, limit = 3) {
+  const rows = Array.isArray(d.weapons) ? d.weapons : [];
+  const weapons = rows
+    .filter((w) => w && (w.name || w.damage || w.range))
+    .map((w) => {
+      const parts = [];
+      if (w.damage) parts.push(String(w.damage).trim());
+      if (w.range) parts.push(String(w.range).trim());
+      return `${String(w.name || 'Unnamed').trim()}${parts.length ? ` (${parts.join(', ')})` : ''}`;
+    })
+    .slice(0, limit);
+  return weapons.join(', ') || '—';
+}
+
+function summarizePlayNotes(d) {
+  const notes = [];
+  if (d.advantages) notes.push(`Adv: ${d.advantages}`);
+  if (d.magic_tradition) notes.push(`Magic: ${d.magic_tradition}`);
+  if (d.carry) notes.push(`Gear: ${d.carry}`);
+  return notes.join(' | ') || '—';
 }
 
 function hasSheetData(sheet) {
@@ -377,33 +452,27 @@ async function openMyCharacters() {
         <div class="card-header">
           <div>
             <div class="card-title">Stored Characters</div>
-            <div class="card-sub">All your characters across sessions and The Domestic.</div>
+            <div class="card-sub">Summarised for active play rather than full-sheet detail.</div>
           </div>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Session</th><th>Character</th><th>STR</th><th>CON</th><th>DEX</th><th>INT</th><th>POW</th><th>Speed</th><th>Luck</th><th>Advantages</th><th>Skills</th><th>Essential items</th><th></th>
+                <th>Session</th><th>Character</th><th>Condition</th><th>Resources</th><th>Notable skills</th><th>Weapons</th><th>Notes</th><th></th>
               </tr>
             </thead>
             <tbody>
               ${rows.map((row, i) => {
                 const d = row.data || {};
-                const allSkills = [...(d.common_skills || []), ...(d.mandatory_skills || []), ...(d.additional_skills || [])];
                 return `<tr>
                   <td><strong>${esc(row.label)}</strong></td>
                   <td>${esc(d.name || '—')}</td>
-                  <td>${esc(d.str || '—')}</td>
-                  <td>${esc(d.con || '—')}</td>
-                  <td>${esc(d.dex || '—')}</td>
-                  <td>${esc(d.int || '—')}</td>
-                  <td>${esc(d.pow || '—')}</td>
-                  <td>${esc(d.mov || (d.derived && d.derived.move) || '—')}</td>
-                  <td>${esc(d.luck || '—')}</td>
-                  <td>${esc(d.advantages || '—')}</td>
-                  <td>${esc(summarizeSkills(allSkills))}</td>
-                  <td>${esc(d.carry || '—')}</td>
+                  <td>${esc(summarizeCondition(d))}</td>
+                  <td>${esc(summarizeResources(d))}</td>
+                  <td>${esc(summarizeNotableSkills(d))}</td>
+                  <td>${esc(summarizeWeapons(d))}</td>
+                  <td>${esc(summarizePlayNotes(d))}</td>
                   <td><button class="btn btn-sm" onclick="openStoredCharacter(${i})">Open</button></td>
                 </tr>`;
               }).join('')}
@@ -616,33 +685,27 @@ async function renderGMSessionView(sessionId, preferredUserId = null) {
       <div class="card-header">
         <div>
           <div class="card-title">Session Overview</div>
-          <div class="card-sub">All characters, stats, skills, and essential items.</div>
+          <div class="card-sub">Current condition, resources, notable skills, and combat-relevant notes.</div>
         </div>
       </div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Player</th><th>Character</th><th>STR</th><th>CON</th><th>DEX</th><th>INT</th><th>POW</th><th>Speed</th><th>Luck</th><th>Advantages</th><th>Skills</th><th>Essential items</th>
+              <th>Player</th><th>Character</th><th>Condition</th><th>Resources</th><th>Notable skills</th><th>Weapons</th><th>Notes</th>
             </tr>
           </thead>
           <tbody>
             ${players.map((p) => {
               const d = (sheetMap[p.id] && sheetMap[p.id].data) || {};
-              const allSkills = [...(d.common_skills || []), ...(d.mandatory_skills || []), ...(d.additional_skills || [])];
               return `<tr>
                 <td><strong>${esc(p.username)}</strong></td>
                 <td>${esc(d.name || '—')}</td>
-                <td>${esc(d.str || '—')}</td>
-                <td>${esc(d.con || '—')}</td>
-                <td>${esc(d.dex || '—')}</td>
-                <td>${esc(d.int || '—')}</td>
-                <td>${esc(d.pow || '—')}</td>
-                <td>${esc(d.mov || '—')}</td>
-                <td>${esc(d.luck || '—')}</td>
-                <td>${esc(d.advantages || '—')}</td>
-                <td>${esc(summarizeSkills(allSkills))}</td>
-                <td>${esc(d.carry || '—')}</td>
+                <td>${esc(summarizeCondition(d))}</td>
+                <td>${esc(summarizeResources(d))}</td>
+                <td>${esc(summarizeNotableSkills(d))}</td>
+                <td>${esc(summarizeWeapons(d))}</td>
+                <td>${esc(summarizePlayNotes(d))}</td>
               </tr>`;
             }).join('')}
           </tbody>
