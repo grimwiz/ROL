@@ -764,6 +764,11 @@ async function loadDomesticTab() {
   const tab = el('tab-domestic');
   if (!tab) return;
 
+  // Re-read the solo character from the server whenever the tab is opened so
+  // returning to The Domestic cannot show stale in-memory state.
+  State.domesticSheet = null;
+  State.domesticSheetLoaded = false;
+
   tab.innerHTML = `
     <div class="page-header"><h2>The Domestic</h2></div>
     <div id="domestic-adventure-area"></div>`;
@@ -827,6 +832,7 @@ async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
       <div class="card-sub" style="margin-top:1rem">Build and track your character stats below while you play.</div>
       <div id="domestic-sheet"></div>
       <div class="sheet-actions">
+        <button class="btn btn-primary" onclick="saveDomesticSheet()">Save sheet</button>
         <button class="btn" onclick="resetDomesticSheet()">Reset adventure sheet</button>
         <span class="save-status" id="domestic-sheet-status"></span>
       </div>
@@ -888,37 +894,46 @@ async function loadDomesticSheetState() {
   }
 }
 
-function attachDomesticSheetPersistence(host) {
+async function persistDomesticSheet(data, pendingLabel = 'Saving adventure sheet…') {
   const status = el('domestic-sheet-status');
+  State.domesticSheet = data || {};
+  if (status) {
+    status.textContent = pendingLabel;
+    status.className = 'save-status';
+  }
+  try {
+    State.domesticSaveInflight = api.saveDomesticSheet(State.domesticSheet);
+    await State.domesticSaveInflight;
+    if (status) {
+      status.textContent = 'Adventure sheet saved';
+      status.className = 'save-status saved';
+    }
+  } catch (e) {
+    if (status) {
+      status.textContent = 'Unable to save adventure sheet';
+      status.className = 'save-status error';
+    }
+    throw e;
+  } finally {
+    State.domesticSaveInflight = null;
+  }
+}
+
+function attachDomesticSheetPersistence(host) {
   if (!host) return;
   const onChange = () => {
     try {
       const data = SheetForm.collect();
       State.domesticSheet = data;
-      if (status) {
-        status.textContent = 'Saving adventure sheet…';
-        status.className = 'save-status';
-      }
       if (State.domesticSaveTimer) clearTimeout(State.domesticSaveTimer);
       State.domesticSaveTimer = window.setTimeout(async () => {
         State.domesticSaveTimer = null;
         try {
-          State.domesticSaveInflight = api.saveDomesticSheet(State.domesticSheet);
-          await State.domesticSaveInflight;
-          if (status) {
-            status.textContent = 'Adventure sheet saved';
-            status.className = 'save-status saved';
-          }
-        } catch {
-          if (status) {
-            status.textContent = 'Unable to save adventure sheet';
-            status.className = 'save-status error';
-          }
-        } finally {
-          State.domesticSaveInflight = null;
-        }
+          await persistDomesticSheet(State.domesticSheet);
+        } catch {}
       }, 350);
     } catch {
+      const status = el('domestic-sheet-status');
       if (status) {
         status.textContent = 'Unable to save adventure sheet';
         status.className = 'save-status error';
@@ -931,6 +946,18 @@ function attachDomesticSheetPersistence(host) {
   });
 }
 
+async function saveDomesticSheet() {
+  if (State.domesticSaveTimer) {
+    clearTimeout(State.domesticSaveTimer);
+    State.domesticSaveTimer = null;
+  }
+  try {
+    const data = SheetForm.collect();
+    await persistDomesticSheet(data, 'Saving…');
+  } catch {}
+}
+window.saveDomesticSheet = saveDomesticSheet;
+
 async function resetDomesticSheet() {
   if (State.domesticSaveTimer) {
     clearTimeout(State.domesticSaveTimer);
@@ -942,8 +969,8 @@ async function resetDomesticSheet() {
   await api.deleteDomesticSheet();
   try { localStorage.removeItem(legacyDomesticStorageKey()); } catch {}
   State.domesticSheet = {};
-  State.domesticSheetLoaded = true;
-  openDomesticAdventure(State.domesticCurrentStep, true);
+  State.domesticSheetLoaded = false;
+  await openDomesticAdventure(State.domesticCurrentStep, true);
 }
 window.resetDomesticSheet = resetDomesticSheet;
 
