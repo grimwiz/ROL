@@ -55,6 +55,55 @@ const SheetForm = (() => {
   ];
   const ADVANTAGE_PRESET_NAMES = ADVANTAGES.map((adv) => adv.name);
 
+  // ── Portrait generation state ──────────────────────────────────────────────
+  // The raw uploaded File/Blob is kept in memory so the player can restyle or
+  // reroll without re-uploading. Only the *current* portrait (as a data URL)
+  // goes into the sheet JSON. If the page is reloaded, the in-memory original
+  // is lost and the player must re-upload to restyle again.
+  let originalBlob = null;
+  let originalUrl = null;        // blob: URL for the raw upload
+  let lastGeneratedUrl = null;   // blob: URL of latest stylised output
+  let stylising = false;
+
+  // API-format ComfyUI workflow used for Stylise/Reroll. Mirrors
+  // scripts/comfyui-portrait-workflow.json — kept inline so the browser can
+  // mutate it (image filename, prompt, seed) before posting.
+  const PORTRAIT_WORKFLOW = {
+    '1': { class_type: 'CheckpointLoaderSimple', inputs: { ckpt_name: 'aZovyaRPGArtistTools_v4VAE.safetensors' } },
+    '2': { class_type: 'LoadImage', inputs: { image: 'portrait_input.jpg' } },
+    '3': { class_type: 'PhotoMakerLoaderPlus', inputs: { photomaker_model_name: 'photomaker-v2.bin' } },
+    '4': { class_type: 'PhotoMakerInsightFaceLoader', inputs: { provider: 'CUDA' } },
+    '5': { class_type: 'PhotoMakerEncodePlus', inputs: {
+      clip: ['1', 1], photomaker: ['3', 0], image: ['2', 0],
+      trigger_word: 'img', text: '', insightface_opt: ['4', 0]
+    } },
+    '6': { class_type: 'CLIPTextEncode', inputs: {
+      clip: ['1', 1],
+      text: 'lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, 3d render, cgi, low quality'
+    } },
+    '7': { class_type: 'EmptyLatentImage', inputs: { width: 832, height: 1216, batch_size: 1 } },
+    '8': { class_type: 'KSampler', inputs: {
+      model: ['1', 0], seed: 42, steps: 28, cfg: 5.5,
+      sampler_name: 'dpmpp_2m_sde', scheduler: 'karras', denoise: 1.0,
+      positive: ['5', 0], negative: ['6', 0], latent_image: ['7', 0]
+    } },
+    '9': { class_type: 'VAEDecode', inputs: { samples: ['8', 0], vae: ['1', 2] } },
+    '10': { class_type: 'SaveImage', inputs: { images: ['9', 0], filename_prefix: 'ROL_portrait' } }
+  };
+
+  function revokeIfBlobUrl(url) {
+    if (url && typeof url === 'string' && url.startsWith('blob:')) URL.revokeObjectURL(url);
+  }
+
+  function resetPortraitState() {
+    revokeIfBlobUrl(originalUrl);
+    revokeIfBlobUrl(lastGeneratedUrl);
+    originalBlob = null;
+    originalUrl = null;
+    lastGeneratedUrl = null;
+    stylising = false;
+  }
+
   // ── Derived stat calculations ──────────────────────────────────────────────
   function getStatValue(statKey) {
     const el = document.getElementById(`sf_${statKey}`);
@@ -246,6 +295,11 @@ const SheetForm = (() => {
 
   // ── Main render ────────────────────────────────────────────────────────────
   function render(container, data, readonly) {
+    // Clear any in-memory portrait state from a previous sheet — each render
+    // starts fresh. The saved `d.portrait` data URL is what the preview shows
+    // until the player uploads something new.
+    resetPortraitState();
+
     const d = merge(data);
     const rdAttr = readonly ? ' readonly' : '';
     const derived = d.derived || {};
@@ -281,9 +335,21 @@ const SheetForm = (() => {
           <div class="portrait-controls">
             ${!readonly ? '<input type="file" id="sf_portrait_file" accept="image/*" onchange="SheetForm.handlePortraitUpload(event)">' : ''}
             <input type="hidden" id="sf_portrait" value="${esc(d.portrait)}">
-            ${!readonly ? '<button type="button" class="btn btn-sm" onclick="SheetForm.clearPortrait()">Remove picture</button>' : ''}
           </div>
-          <div class="card-sub">Upload a JPG/PNG/GIF/WebP image.</div>
+          ${!readonly ? `
+            <div id="sf_portrait_prompt_row" style="display:none;margin-top:0.5rem">
+              <label style="display:block;font-size:0.75rem;color:var(--text2);margin-bottom:0.2rem">Stylise prompt</label>
+              <textarea id="sf_portrait_prompt" rows="3" placeholder="Describe the portrait style…" style="width:100%;font-size:0.85rem"></textarea>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.5rem">
+              <button type="button" id="sf_portrait_stylise" class="btn btn-sm" style="display:none" onclick="SheetForm.stylisePortrait(false)">Stylise</button>
+              <button type="button" id="sf_portrait_reroll" class="btn btn-sm" style="display:none" onclick="SheetForm.stylisePortrait(true)">Reroll</button>
+              <button type="button" id="sf_portrait_revert" class="btn btn-sm" style="display:none" onclick="SheetForm.revertPortrait()">Revert to upload</button>
+              <button type="button" id="sf_portrait_clear" class="btn btn-sm" onclick="SheetForm.clearPortrait()">Remove picture</button>
+            </div>
+            <div id="sf_portrait_status" class="card-sub" style="margin-top:0.35rem;min-height:1em"></div>
+          ` : ''}
+          <div class="card-sub">Upload a JPG/PNG/GIF/WebP image. <em>Stylise</em> turns it into an AI portrait; <em>Reroll</em> tries again with a new seed.</div>
         </div>
       </div>
     </div>
@@ -585,28 +651,230 @@ const SheetForm = (() => {
     if (row) row.remove();
   }
 
+  // ── Portrait helpers ───────────────────────────────────────────────────────
+  function setPortraitPreview(src) {
+    const slot = document.querySelector('.sheet-portrait');
+    if (!slot) return;
+    slot.innerHTML = src
+      ? `<img src="${esc(src)}" alt="Character portrait" class="sheet-portrait-image">`
+      : '<div class="sheet-portrait-empty">No picture</div>';
+  }
+
+  function setPortraitField(dataUrl) {
+    const hidden = document.getElementById('sf_portrait');
+    if (hidden) hidden.value = dataUrl || '';
+  }
+
+  function setPortraitStatus(msg, kind) {
+    const el = document.getElementById('sf_portrait_status');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.style.color = kind === 'error'
+      ? 'var(--danger, #e74c3c)'
+      : kind === 'ok' ? 'var(--accent-light, #8cc28b)' : '';
+  }
+
+  function updatePortraitControlsVisibility() {
+    const show = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
+    show('sf_portrait_prompt_row', !!originalBlob);
+    show('sf_portrait_stylise',    !!originalBlob);
+    show('sf_portrait_reroll',     !!originalBlob && !!lastGeneratedUrl);
+    show('sf_portrait_revert',     !!originalBlob && !!lastGeneratedUrl);
+  }
+
+  function setPortraitControlsEnabled(enabled) {
+    ['sf_portrait_file', 'sf_portrait_stylise', 'sf_portrait_reroll',
+     'sf_portrait_revert', 'sf_portrait_clear', 'sf_portrait_prompt'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = !enabled;
+    });
+  }
+
+  function inferSubjectFromPronouns() {
+    const p = ((document.getElementById('sf_pronouns') || {}).value || '').toLowerCase();
+    if (/\b(she|her|hers)\b/.test(p)) return 'woman';
+    if (/\b(he|him|his)\b/.test(p))   return 'man';
+    return 'person';
+  }
+
+  function defaultPortraitPrompt() {
+    const subj = inferSubjectFromPronouns();
+    const occ = ((document.getElementById('sf_occupation') || {}).value || '').trim() || 'investigator';
+    return `head-and-shoulders portrait of a ${subj} img, ${occ}, `
+      + 'contemporary London setting, Alphonse Mucha art nouveau style, painterly linework, '
+      + 'decorative halo and floral border motifs, muted earthy palette with a single accent colour, '
+      + 'soft flat lighting, serious expression, three-quarters view, illustration, no text, no watermark';
+  }
+
+  function readBlobAsDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result || ''));
+      r.onerror = () => reject(r.error || new Error('FileReader failed'));
+      r.readAsDataURL(blob);
+    });
+  }
+
+  // ── Portrait handlers ──────────────────────────────────────────────────────
   function handlePortraitUpload(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { alert('Please upload an image file.'); event.target.value = ''; return; }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = String(reader.result || '');
-      const hidden = document.getElementById('sf_portrait');
-      if (hidden) hidden.value = dataUrl;
-      const slot = document.querySelector('.sheet-portrait');
-      if (slot) slot.innerHTML = `<img src="${esc(dataUrl)}" alt="Character portrait" class="sheet-portrait-image">`;
-    };
-    reader.readAsDataURL(file);
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file.');
+      event.target.value = '';
+      return;
+    }
+    // Keep raw upload in memory so Stylise/Reroll don't need a re-upload.
+    revokeIfBlobUrl(originalUrl);
+    revokeIfBlobUrl(lastGeneratedUrl);
+    originalBlob = file;
+    originalUrl = URL.createObjectURL(file);
+    lastGeneratedUrl = null;
+
+    // Make the uploaded image the current saved portrait straight away — if
+    // the player just wants to use it as-is, Save sheet works immediately.
+    readBlobAsDataUrl(file).then((dataUrl) => {
+      setPortraitField(dataUrl);
+      setPortraitPreview(dataUrl);
+    }).catch((err) => {
+      console.error(err);
+      setPortraitStatus('Could not read that image.', 'error');
+    });
+
+    // Pre-fill the stylise prompt from the sheet fields if empty.
+    const promptEl = document.getElementById('sf_portrait_prompt');
+    if (promptEl && !promptEl.value.trim()) promptEl.value = defaultPortraitPrompt();
+
+    setPortraitStatus('', '');
+    updatePortraitControlsVisibility();
   }
 
   function clearPortrait() {
-    const hidden = document.getElementById('sf_portrait');
-    if (hidden) hidden.value = '';
-    const slot = document.querySelector('.sheet-portrait');
-    if (slot) slot.innerHTML = '<div class="sheet-portrait-empty">No picture</div>';
+    resetPortraitState();
+    setPortraitField('');
+    setPortraitPreview('');
     const picker = document.getElementById('sf_portrait_file');
     if (picker) picker.value = '';
+    setPortraitStatus('', '');
+    updatePortraitControlsVisibility();
+  }
+
+  function revertPortrait() {
+    if (!originalBlob) return;
+    readBlobAsDataUrl(originalBlob).then((dataUrl) => {
+      setPortraitField(dataUrl);
+      setPortraitPreview(dataUrl);
+      revokeIfBlobUrl(lastGeneratedUrl);
+      lastGeneratedUrl = null;
+      setPortraitStatus('Restored original upload.', '');
+      updatePortraitControlsVisibility();
+    });
+  }
+
+  async function stylisePortrait(reroll) {
+    if (stylising) return;
+    if (!originalBlob) {
+      setPortraitStatus('Upload a photo first.', 'error');
+      return;
+    }
+    const promptEl = document.getElementById('sf_portrait_prompt');
+    const promptText = (promptEl && promptEl.value.trim()) || defaultPortraitPrompt();
+
+    stylising = true;
+    setPortraitControlsEnabled(false);
+    setPortraitStatus((reroll ? 'Rerolling' : 'Generating') + '… (can take ~1 min on first run)', '');
+
+    let statusTick = 0;
+    const ticker = setInterval(() => {
+      statusTick += 1;
+      const dots = '.'.repeat((statusTick % 4) + 1);
+      setPortraitStatus((reroll ? 'Rerolling' : 'Generating') + dots, '');
+    }, 800);
+
+    try {
+      // 1. Upload raw photo to ComfyUI via the Folly proxy.
+      const form = new FormData();
+      form.append('image', originalBlob, originalBlob.name || 'portrait_input.png');
+      form.append('overwrite', 'true');
+      const up = await fetch('/api/portrait/upload', {
+        method: 'POST', body: form, credentials: 'include'
+      });
+      if (!up.ok) throw new Error(`Upload failed (HTTP ${up.status}).`);
+      const upJson = await up.json();
+      const uploadedName = upJson && upJson.name;
+      if (!uploadedName) throw new Error('Upload returned no filename.');
+
+      // 2. Mutate a fresh copy of the workflow with image, prompt, seed.
+      const workflow = JSON.parse(JSON.stringify(PORTRAIT_WORKFLOW));
+      workflow['2'].inputs.image = uploadedName;
+      workflow['5'].inputs.text = promptText;
+      workflow['8'].inputs.seed = Math.floor(Math.random() * 2 ** 31);
+
+      // 3. Queue prompt.
+      const q = await fetch('/api/portrait/prompt', {
+        method: 'POST', credentials: 'include',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ prompt: workflow })
+      });
+      if (!q.ok) {
+        const txt = await q.text().catch(() => '');
+        throw new Error(`Queue failed (HTTP ${q.status}). ${txt.slice(0, 200)}`);
+      }
+      const qJson = await q.json();
+      const promptId = qJson && qJson.prompt_id;
+      if (!promptId) throw new Error('ComfyUI returned no prompt_id.');
+
+      // 4. Poll history until completed.
+      const started = Date.now();
+      const timeoutMs = 10 * 60 * 1000;
+      let entry = null;
+      while (Date.now() - started < timeoutMs) {
+        await new Promise((r) => setTimeout(r, 2000));
+        const h = await fetch(`/api/portrait/history/${encodeURIComponent(promptId)}`, { credentials: 'include' });
+        if (h.ok) {
+          const hJson = await h.json();
+          const e = hJson[promptId];
+          if (e && e.status && e.status.completed) { entry = e; break; }
+          if (e && e.status && e.status.status_str === 'error') {
+            throw new Error('ComfyUI reported an error running the workflow.');
+          }
+        }
+      }
+      if (!entry) throw new Error('Timed out waiting for ComfyUI.');
+
+      // 5. Locate the saved image and fetch it.
+      const outputs = entry.outputs || {};
+      const saveNode = outputs['10'] || Object.values(outputs).find((o) => o && o.images);
+      if (!saveNode || !saveNode.images || !saveNode.images.length) {
+        throw new Error('ComfyUI finished but returned no image.');
+      }
+      const img = saveNode.images[0];
+      const params = new URLSearchParams();
+      params.set('filename', img.filename);
+      if (img.subfolder) params.set('subfolder', img.subfolder);
+      params.set('type', img.type || 'output');
+      const imgRes = await fetch(`/api/portrait/view?${params.toString()}`, { credentials: 'include' });
+      if (!imgRes.ok) throw new Error(`Fetching the generated image failed (HTTP ${imgRes.status}).`);
+      const blob = await imgRes.blob();
+
+      // 6. Store as data URL in the hidden field (so Save persists it) and
+      //    keep a blob URL for cheap preview.
+      const dataUrl = await readBlobAsDataUrl(blob);
+      setPortraitField(dataUrl);
+      setPortraitPreview(dataUrl);
+      revokeIfBlobUrl(lastGeneratedUrl);
+      lastGeneratedUrl = URL.createObjectURL(blob);
+
+      setPortraitStatus(reroll ? 'Rerolled.' : 'Generated. Save the sheet to keep it.', 'ok');
+    } catch (err) {
+      console.error('Portrait generation failed:', err);
+      setPortraitStatus(`Generation failed: ${err.message || err}`, 'error');
+    } finally {
+      clearInterval(ticker);
+      stylising = false;
+      setPortraitControlsEnabled(true);
+      updatePortraitControlsVisibility();
+    }
   }
 
   // ── Collect ────────────────────────────────────────────────────────────────
@@ -681,6 +949,7 @@ const SheetForm = (() => {
     addAdditional, removeAdditional,
     addSpell, removeSpell,
     addCustomField, removeCustomField,
-    handlePortraitUpload, clearPortrait
+    handlePortraitUpload, clearPortrait,
+    stylisePortrait, revertPortrait
   };
 })();

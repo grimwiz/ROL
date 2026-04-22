@@ -5,7 +5,10 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+// Portrait data URLs can push a single sheet well past the default 100KB limit;
+// 20MB is plenty for a JPEG/PNG of a reasonable subject and leaves headroom for
+// the rest of the sheet JSON.
+app.use(express.json({ limit: '20mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/rules-files', express.static(path.join(__dirname, '..', 'Rivers_of_London')));
@@ -19,6 +22,15 @@ app.get('*', (req, res) => {
 
 app.use((err, req, res, next) => {
   console.error(err);
+  // Surface body-parser failures (oversized payload, malformed JSON) with their
+  // real status so the client can show something more useful than "Internal
+  // server error". Everything else still becomes a generic 500.
+  if (err && err.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Upload too large. Try a smaller image.' });
+  }
+  if (err && err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Malformed request body.' });
+  }
   res.status(500).json({ error: 'Internal server error' });
 });
 

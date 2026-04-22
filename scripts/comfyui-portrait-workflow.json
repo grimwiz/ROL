@@ -1,0 +1,91 @@
+{
+  "1": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "aZovyaRPGArtistTools_v4VAE.safetensors"
+    },
+    "_meta": { "title": "Load SDXL Checkpoint" }
+  },
+  "2": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "portrait_input.jpg"
+    },
+    "_meta": { "title": "Load Input Photo" }
+  },
+  "3": {
+    "class_type": "PhotoMakerLoaderPlus",
+    "inputs": {
+      "photomaker_model_name": "photomaker-v2.bin"
+    },
+    "_meta": { "title": "Load PhotoMaker v2" }
+  },
+  "4": {
+    "class_type": "PhotoMakerInsightFaceLoader",
+    "inputs": {
+      "provider": "CUDA"
+    },
+    "_meta": { "title": "Load InsightFace" }
+  },
+  "5": {
+    "class_type": "PhotoMakerEncodePlus",
+    "inputs": {
+      "clip": ["1", 1],
+      "photomaker": ["3", 0],
+      "image": ["2", 0],
+      "trigger_word": "img",
+      "text": "head-and-shoulders portrait of a man img, police officer in contemporary London, occult investigator, Alphonse Mucha art nouveau style, painterly linework, decorative halo and floral border motifs, muted earthy palette with a single accent colour, soft flat lighting, serious expression, three-quarters view",
+      "insightface_opt": ["4", 0]
+    },
+    "_meta": { "title": "PhotoMaker Encode (Positive)" }
+  },
+  "6": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": ["1", 1],
+      "text": "lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, 3d render, cgi, low quality"
+    },
+    "_meta": { "title": "Negative Prompt" }
+  },
+  "7": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 832,
+      "height": 1216,
+      "batch_size": 1
+    },
+    "_meta": { "title": "Portrait Latent" }
+  },
+  "8": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["1", 0],
+      "seed": 42,
+      "steps": 28,
+      "cfg": 5.5,
+      "sampler_name": "dpmpp_2m_sde",
+      "scheduler": "karras",
+      "denoise": 1.0,
+      "positive": ["5", 0],
+      "negative": ["6", 0],
+      "latent_image": ["7", 0]
+    },
+    "_meta": { "title": "KSampler" }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["8", 0],
+      "vae": ["1", 2]
+    },
+    "_meta": { "title": "VAE Decode" }
+  },
+  "10": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": ["9", 0],
+      "filename_prefix": "ROL_portrait"
+    },
+    "_meta": { "title": "Save Image" }
+  }
+}

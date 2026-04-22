@@ -283,4 +283,84 @@ router.get('/rules/search', requireAuth, (req, res) => {
   });
 });
 
+// ── Portrait proxy (ComfyUI + PhotoMaker) ─────────────────────────────────────
+//
+// The browser can't reach the ComfyUI server directly (it's LAN-only HTTP, and
+// mixed-content rules would block HTTPS→HTTP fetches anyway). These endpoints
+// forward the four requests the portrait test page needs through the Folly
+// server over its authenticated HTTPS origin.
+//
+// Configure with COMFYUI_URL env var (default: http://192.168.37.51:8188).
+
+const COMFYUI_URL = (process.env.COMFYUI_URL || 'http://192.168.37.51:8188').replace(/\/+$/, '');
+
+// Upload a source photo. The browser POSTs multipart/form-data here; we stream
+// the body straight through to ComfyUI's /upload/image without parsing it.
+router.post('/portrait/upload', requireAuth, async (req, res, next) => {
+  try {
+    const headers = { 'content-type': req.headers['content-type'] || 'application/octet-stream' };
+    if (req.headers['content-length']) headers['content-length'] = req.headers['content-length'];
+
+    const upstream = await fetch(`${COMFYUI_URL}/upload/image`, {
+      method: 'POST',
+      headers,
+      body: req,
+      duplex: 'half'
+    });
+    const buf = Buffer.from(await upstream.arrayBuffer());
+    res.status(upstream.status)
+       .type(upstream.headers.get('content-type') || 'application/json')
+       .send(buf);
+  } catch (e) { next(e); }
+});
+
+// Queue a workflow on ComfyUI. Body is the JSON { prompt, client_id } the
+// ComfyUI API expects; we just re-serialise whatever Folly parsed.
+router.post('/portrait/prompt', requireAuth, async (req, res, next) => {
+  try {
+    const upstream = await fetch(`${COMFYUI_URL}/prompt`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(req.body)
+    });
+    const text = await upstream.text();
+    res.status(upstream.status)
+       .type(upstream.headers.get('content-type') || 'application/json')
+       .send(text);
+  } catch (e) { next(e); }
+});
+
+// Poll for completion of a queued prompt.
+router.get('/portrait/history/:id', requireAuth, async (req, res, next) => {
+  try {
+    const upstream = await fetch(`${COMFYUI_URL}/history/${encodeURIComponent(req.params.id)}`);
+    const text = await upstream.text();
+    res.status(upstream.status)
+       .type(upstream.headers.get('content-type') || 'application/json')
+       .send(text);
+  } catch (e) { next(e); }
+});
+
+// Fetch a generated image. Streams bytes straight through.
+router.get('/portrait/view', requireAuth, async (req, res, next) => {
+  try {
+    const url = new URL(`${COMFYUI_URL}/view`);
+    for (const [k, v] of Object.entries(req.query)) {
+      if (typeof v === 'string') url.searchParams.set(k, v);
+    }
+    const upstream = await fetch(url);
+    if (!upstream.ok) {
+      return res.status(upstream.status).send(await upstream.text());
+    }
+    res.status(200).type(upstream.headers.get('content-type') || 'application/octet-stream');
+    const reader = upstream.body.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      res.write(Buffer.from(value));
+    }
+    res.end();
+  } catch (e) { next(e); }
+});
+
 module.exports = router;
