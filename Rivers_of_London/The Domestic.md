@@ -552,6 +552,8 @@ If you lose the opposed roll, go to 48 .
 
 A hairy  missile  with  teeth  launches  from  behind  the  bins. You throw yourself out of its path.
 
+![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000045_26c1901337626b30c6d81047fd4516e0a717fd3375870c782458ff2074c8c9be.png)
+
 Make a Dexterity (DEX) roll. As usual, you may spend Luck to improve your roll.
 
 If you succeed, go to 58 .
@@ -691,8 +693,6 @@ Mrs Fellaman turns her head away as you ask about the bruise. She very deliberat
 ' I walked into the door, didn't I? ' she says. ' You get like that when you're a bit older. '
 
 You find a gentle way to say that neither of you believes that. She does not relent. But she doesn't argue with you either.
-
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000045_26c1901337626b30c6d81047fd4516e0a717fd3375870c782458ff2074c8c9be.png)
 
 ![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000046_1afb39fb88c3ece99e48f3699375945eb0e151c3431f3479869376760e43148e.png)
 
@@ -1501,4 +1501,3 @@ For now, though, you have a phone call to make. What happens afterwards will not
 Well done, you've completed your first case file. Welcome to Rivers of London: the Roleplaying Game! THE END.
 
 ( 110 )
-
