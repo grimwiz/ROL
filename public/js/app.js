@@ -14,8 +14,6 @@ const State = {
   domesticSheetLoaded: false,
   domesticSaveTimer: null,
   domesticSaveInflight: null,
-  domesticProgressInflight: null,
-  domesticProgressTarget: null,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -143,7 +141,12 @@ function resetUserScopedState() {
   State.currentSession = null;
   State.currentSheetUserId = null;
   State.rulesFiles = null;
-  State.domesticAdventure = null;
+  resetDomesticRuntimeState();
+}
+
+function resetDomesticRuntimeState(options = {}) {
+  const { preserveAdventure = false } = options;
+  if (!preserveAdventure) State.domesticAdventure = null;
   State.domesticCurrentStep = null;
   State.domesticSavedStep = null;
   State.domesticProgressLoaded = false;
@@ -154,8 +157,23 @@ function resetUserScopedState() {
     State.domesticSaveTimer = null;
   }
   State.domesticSaveInflight = null;
-  State.domesticProgressInflight = null;
-  State.domesticProgressTarget = null;
+}
+
+function setDomesticSheetStatus(text, kind = '') {
+  const status = el('domestic-sheet-status');
+  if (!status) return;
+  status.textContent = text || '';
+  status.className = `save-status${kind ? ` ${kind}` : ''}`;
+}
+
+async function waitForDomesticPersistence() {
+  if (State.domesticSaveTimer) {
+    clearTimeout(State.domesticSaveTimer);
+    State.domesticSaveTimer = null;
+  }
+  if (State.domesticSaveInflight) {
+    try { await State.domesticSaveInflight; } catch {}
+  }
 }
 
 // ── Routing ───────────────────────────────────────────────────────────────────
@@ -352,7 +370,6 @@ async function switchTab(tab, options = {}) {
   updateUiStateInUrl({
     tab,
     session: tab === 'sessions' && preserveSession ? undefined : null,
-    gmPlayer: null,
     adventureStep: tab === 'domestic' ? undefined : null
   }, replaceUrl);
 
@@ -508,7 +525,7 @@ async function loadSessionsTab(options = {}) {
   State.currentSession = null;
   State.currentSheetUserId = null;
   if (!skipUrlUpdate) {
-    updateUiStateInUrl({ tab: 'sessions', session: null, gmPlayer: null }, replaceUrl);
+    updateUiStateInUrl({ tab: 'sessions', session: null }, replaceUrl);
   }
   State.sessions = await api.getSessions();
 
@@ -649,7 +666,6 @@ async function openSession(sessionId, options = {}) {
   updateUiStateInUrl({
     tab: 'sessions',
     session: sessionId,
-    gmPlayer: null,
     adventureStep: null
   }, replaceUrl);
 
@@ -886,10 +902,7 @@ async function loadDomesticTab() {
 
   // Re-read the solo character from the server whenever the tab is opened so
   // returning to The Domestic cannot show stale in-memory state.
-  State.domesticSavedStep = null;
-  State.domesticProgressLoaded = false;
-  State.domesticSheet = null;
-  State.domesticSheetLoaded = false;
+  resetDomesticRuntimeState({ preserveAdventure: true });
 
   tab.innerHTML = `
     <div class="page-header"><h2>The Domestic</h2></div>
@@ -961,7 +974,7 @@ async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
       <div id="domestic-sheet"></div>
       <div class="sheet-actions">
         <button class="btn btn-primary" onclick="saveDomesticSheet()">Save sheet</button>
-        <button class="btn" onclick="resetDomesticSheet()">Reset adventure sheet</button>
+        <button class="btn" onclick="resetDomesticSheet()">Reset adventure</button>
         <span class="save-status" id="domestic-sheet-status"></span>
       </div>
     </div>`;
@@ -998,49 +1011,20 @@ function formatAdventureText(value) {
   return html;
 }
 
-function legacyDomesticStorageKey() {
-  return `domestic_sheet_${State.user ? State.user.id : 'anon'}`;
-}
-
 async function loadDomesticSheetState() {
   const serverSheet = await api.getDomesticSheet();
-  const serverData = (serverSheet && serverSheet.data) || {};
-  if (Object.keys(serverData).length > 0) return serverData;
-
-  try {
-    const raw = localStorage.getItem(legacyDomesticStorageKey());
-    if (!raw) return {};
-    const migrated = JSON.parse(raw);
-    if (migrated && Object.keys(migrated).length > 0) {
-      await api.saveDomesticSheet(migrated);
-      localStorage.removeItem(legacyDomesticStorageKey());
-      return migrated;
-    }
-    return {};
-  } catch {
-    return {};
-  }
+  return (serverSheet && serverSheet.data) || {};
 }
 
 async function persistDomesticSheet(data, pendingLabel = 'Saving adventure sheet…') {
-  const status = el('domestic-sheet-status');
   State.domesticSheet = data || {};
-  if (status) {
-    status.textContent = pendingLabel;
-    status.className = 'save-status';
-  }
+  setDomesticSheetStatus(pendingLabel);
   try {
     State.domesticSaveInflight = api.saveDomesticSheet(State.domesticSheet);
     await State.domesticSaveInflight;
-    if (status) {
-      status.textContent = 'Adventure sheet saved';
-      status.className = 'save-status saved';
-    }
+    setDomesticSheetStatus('Adventure sheet saved', 'saved');
   } catch (e) {
-    if (status) {
-      status.textContent = 'Unable to save adventure sheet';
-      status.className = 'save-status error';
-    }
+    setDomesticSheetStatus('Unable to save adventure sheet', 'error');
     throw e;
   } finally {
     State.domesticSaveInflight = null;
@@ -1048,28 +1032,12 @@ async function persistDomesticSheet(data, pendingLabel = 'Saving adventure sheet
 }
 
 function queueDomesticProgressSave(step) {
-  if (!Number.isInteger(step)) return;
-  State.domesticCurrentStep = step;
-  State.domesticProgressTarget = step;
-  if (State.domesticSavedStep === step && !State.domesticProgressInflight) return;
-  if (State.domesticProgressInflight) return;
-
-  State.domesticProgressInflight = (async () => {
-    try {
-      while (Number.isInteger(State.domesticProgressTarget) && State.domesticSavedStep !== State.domesticProgressTarget) {
-        const target = State.domesticProgressTarget;
-        await api.saveDomesticProgress(target);
-        State.domesticSavedStep = target;
-      }
-    } catch (e) {
-      console.error('Unable to save Domestic progress:', e);
-    } finally {
-      State.domesticProgressInflight = null;
-      if (Number.isInteger(State.domesticProgressTarget) && State.domesticSavedStep !== State.domesticProgressTarget) {
-        queueDomesticProgressSave(State.domesticProgressTarget);
-      }
-    }
-  })();
+  if (!Number.isInteger(step) || State.domesticSavedStep === step) return;
+  State.domesticSavedStep = step;
+  api.saveDomesticProgress(step).catch((e) => {
+    console.error('Unable to save Domestic progress:', e);
+    if (State.domesticSavedStep === step) State.domesticSavedStep = null;
+  });
 }
 
 function attachDomesticSheetPersistence(host) {
@@ -1086,11 +1054,7 @@ function attachDomesticSheetPersistence(host) {
         } catch {}
       }, 350);
     } catch {
-      const status = el('domestic-sheet-status');
-      if (status) {
-        status.textContent = 'Unable to save adventure sheet';
-        status.className = 'save-status error';
-      }
+      setDomesticSheetStatus('Unable to save adventure sheet', 'error');
     }
   };
   host.querySelectorAll('input, textarea, select').forEach((field) => {
@@ -1100,10 +1064,7 @@ function attachDomesticSheetPersistence(host) {
 }
 
 async function saveDomesticSheet() {
-  if (State.domesticSaveTimer) {
-    clearTimeout(State.domesticSaveTimer);
-    State.domesticSaveTimer = null;
-  }
+  await waitForDomesticPersistence();
   try {
     const data = SheetForm.collect();
     await persistDomesticSheet(data, 'Saving…');
@@ -1112,18 +1073,15 @@ async function saveDomesticSheet() {
 window.saveDomesticSheet = saveDomesticSheet;
 
 async function resetDomesticSheet() {
-  if (State.domesticSaveTimer) {
-    clearTimeout(State.domesticSaveTimer);
-    State.domesticSaveTimer = null;
-  }
-  if (State.domesticSaveInflight) {
-    try { await State.domesticSaveInflight; } catch {}
-  }
-  await api.deleteDomesticSheet();
-  try { localStorage.removeItem(legacyDomesticStorageKey()); } catch {}
-  State.domesticSheet = {};
-  State.domesticSheetLoaded = false;
-  await openDomesticAdventure(State.domesticCurrentStep, true);
+  const startStep = (State.domesticAdventure && State.domesticAdventure.startStep) || 1;
+  setDomesticSheetStatus('Resetting adventure…');
+  await waitForDomesticPersistence();
+  await Promise.all([
+    api.deleteDomesticSheet(),
+    api.saveDomesticProgress(startStep)
+  ]);
+  resetDomesticRuntimeState({ preserveAdventure: true });
+  await openDomesticAdventure(startStep, true);
 }
 window.resetDomesticSheet = resetDomesticSheet;
 

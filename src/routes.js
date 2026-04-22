@@ -102,22 +102,7 @@ function getDomesticSheetRow(userId) {
 
   if (!session) session = ensureDomesticSystemSession();
 
-  let sheet = db.prepare('SELECT * FROM character_sheets WHERE session_id = ? AND user_id = ?').get(session.id, userId);
-
-  // Legacy migration from the short-lived dedicated domestic_sheets table.
-  if (!sheet) {
-    const legacy = db.prepare('SELECT * FROM domestic_sheets WHERE user_id = ?').get(userId);
-    if (legacy) {
-      db.prepare(`
-        INSERT INTO character_sheets (session_id, user_id, data, updated_at)
-        VALUES (?, ?, ?, COALESCE(?, datetime('now')))
-        ON CONFLICT(session_id, user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
-      `).run(session.id, userId, legacy.data || '{}', legacy.updated_at || null);
-      db.prepare('DELETE FROM domestic_sheets WHERE user_id = ?').run(userId);
-      sheet = db.prepare('SELECT * FROM character_sheets WHERE session_id = ? AND user_id = ?').get(session.id, userId);
-    }
-  }
-
+  const sheet = db.prepare('SELECT * FROM character_sheets WHERE session_id = ? AND user_id = ?').get(session.id, userId);
   return { session, sheet };
 }
 
@@ -371,14 +356,12 @@ router.put('/adventure/domestic/sheet', requireAuth, (req, res) => {
     VALUES (?, ?, ?, datetime('now'))
     ON CONFLICT(session_id, user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
   `).run(session.id, req.user.id, data);
-  db.prepare('DELETE FROM domestic_sheets WHERE user_id = ?').run(req.user.id);
   res.json({ ok: true, session_id: session.id });
 });
 
 router.delete('/adventure/domestic/sheet', requireAuth, (req, res) => {
   const session = ensureDomesticSystemSession();
   db.prepare('DELETE FROM character_sheets WHERE session_id = ? AND user_id = ?').run(session.id, req.user.id);
-  db.prepare('DELETE FROM domestic_sheets WHERE user_id = ?').run(req.user.id);
   res.json({ ok: true });
 });
 
