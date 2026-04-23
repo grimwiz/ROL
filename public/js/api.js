@@ -46,6 +46,7 @@ const api = (() => {
     getDomesticSheet: () => req('GET', '/adventure/domestic/sheet'),
     saveDomesticSheet: (data) => req('PUT', '/adventure/domestic/sheet', { data }),
     deleteDomesticSheet: () => req('DELETE', '/adventure/domestic/sheet'),
+    getPortraitModels: () => req('GET', '/portrait/models'),
     rollDice: (formula, preset) => req('POST', '/dice/rolls', { formula, preset }),
   };
 })();

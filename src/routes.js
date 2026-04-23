@@ -638,13 +638,37 @@ router.get('/rules/search', requireAuth, (req, res) => {
 // Configure with COMFYUI_URL env var (default: http://192.168.37.51:8188).
 
 const COMFYUI_URL = (process.env.COMFYUI_URL || 'http://192.168.37.51:8188').replace(/\/+$/, '');
-const PORTRAIT_CHECKPOINT = process.env.COMFYUI_PORTRAIT_CHECKPOINT || 'aZovyaRPGArtistTools_v4VAE.safetensors';
+const PORTRAIT_DEFAULT_MODEL = 'sd35';
+const PORTRAIT_SIZE = { width: 300, height: 300 };
+const PORTRAIT_MODEL_OPTIONS = {
+  flux1: {
+    key: 'flux1',
+    label: 'flux1',
+    checkpoint: 'flux1-dev-fp8.safetensors'
+  },
+  meichidark: {
+    key: 'meichidark',
+    label: 'Meichidark',
+    checkpoint: 'Meichidark.safetensors'
+  },
+  sd35: {
+    key: 'sd35',
+    label: 'sd3.5',
+    checkpoint: 'sd3.5_large_fp8_scaled.safetensors'
+  },
+  theallysmixiv: {
+    key: 'theallysmixiv',
+    label: 'theallysMixIV',
+    checkpoint: 'theallysMixIV_v10.safetensors'
+  }
+};
+let portraitModelCache = { expiresAt: 0, options: null };
 const PORTRAIT_NEGATIVE_PROMPT = 'lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, photo snapshot, realistic modern interior, kitchen tiles, cupboards, domestic room, plain wall, tiled wall, historical robe, flowing robe, fantasy robe, wizard robe, victorian gown, medieval costume, fantasy costume, anachronistic clothing, cgi, 3d render, low quality';
 const PORTRAIT_RANDOM_WORKFLOW_TEMPLATE = {
-  '1': { class_type: 'CheckpointLoaderSimple', inputs: { ckpt_name: PORTRAIT_CHECKPOINT } },
+  '1': { class_type: 'CheckpointLoaderSimple', inputs: { ckpt_name: '' } },
   '2': { class_type: 'CLIPTextEncode', inputs: { clip: ['1', 1], text: '' } },
   '3': { class_type: 'CLIPTextEncode', inputs: { clip: ['1', 1], text: PORTRAIT_NEGATIVE_PROMPT } },
-  '4': { class_type: 'EmptyLatentImage', inputs: { width: 768, height: 1024, batch_size: 1 } },
+  '4': { class_type: 'EmptyLatentImage', inputs: { width: PORTRAIT_SIZE.width, height: PORTRAIT_SIZE.height, batch_size: 1 } },
   '5': { class_type: 'KSampler', inputs: {
     model: ['1', 0], seed: 42, steps: 28, cfg: 5.8,
     sampler_name: 'dpmpp_2m_sde', scheduler: 'karras', denoise: 0.52,
@@ -752,6 +776,41 @@ function buildPortraitBaseConcept(sheet) {
   return parts.join(', ');
 }
 
+function normalizePortraitModelKey(value) {
+  const key = cleanPortraitText(value, 40).toLowerCase();
+  return PORTRAIT_MODEL_OPTIONS[key] ? key : PORTRAIT_DEFAULT_MODEL;
+}
+
+async function fetchAvailablePortraitModels(forceRefresh = false) {
+  const now = Date.now();
+  if (!forceRefresh && portraitModelCache.options && portraitModelCache.expiresAt > now) {
+    return portraitModelCache.options;
+  }
+  const upstream = await fetch(`${COMFYUI_URL}/models/checkpoints`);
+  if (!upstream.ok) {
+    throw new Error(`Could not query ComfyUI checkpoints (HTTP ${upstream.status}).`);
+  }
+  const payload = await upstream.json();
+  const rawNames = Array.isArray(payload) ? payload : Array.isArray(payload.models) ? payload.models : [];
+  const names = rawNames
+    .map((entry) => {
+      if (typeof entry === 'string') return entry;
+      if (entry && typeof entry === 'object') {
+        return cleanPortraitText(entry.name || entry.filename || entry.model_name, 200);
+      }
+      return '';
+    })
+    .filter(Boolean);
+  const available = Object.values(PORTRAIT_MODEL_OPTIONS)
+    .filter((option) => names.includes(option.checkpoint))
+    .map((option) => ({ ...option }));
+  portraitModelCache = {
+    expiresAt: now + 60 * 1000,
+    options: available
+  };
+  return available;
+}
+
 function inferPortraitBackdrop(occupation) {
   const text = cleanPortraitText(occupation, 120).toLowerCase();
   if (!text) return 'a subtle London backdrop suited to their profession';
@@ -845,23 +904,45 @@ function buildPortraitPromptFromSheet(sheet) {
     + `${attire}, no robes or fantasy costume, `
     + `${backdrop}, `
     + 'Art Nouveau portrait styling with a restrained Art Deco frame around the portrait, '
-    + 'clean elegant linework, muted earthy palette with antique gold accents, painterly illustration, serious expression, three-quarters view, clear face, clear eyes, '
+    + 'clean elegant linework, muted earthy palette with antique gold accents, painterly illustration, serious expression, three-quarters view, bust portrait, full head and hair fully visible, generous space above the head, clear face, clear eyes, '
     + 'not photorealistic, not modern snapshot, no text, no watermark';
 }
+
+router.get('/portrait/models', requireAuth, async (req, res, next) => {
+  try {
+    const options = await fetchAvailablePortraitModels();
+    res.json({
+      default_model: PORTRAIT_DEFAULT_MODEL,
+      width: PORTRAIT_SIZE.width,
+      height: PORTRAIT_SIZE.height,
+      options
+    });
+  } catch (e) { next(e); }
+});
 
 // Queue a tightly-controlled random portrait workflow on ComfyUI from sheet data.
 router.post('/portrait/random', requireAuth, async (req, res, next) => {
   try {
+    const availableModels = await fetchAvailablePortraitModels();
+    if (!availableModels.length) {
+      return res.status(503).json({ error: 'No supported portrait checkpoints are currently available in ComfyUI.' });
+    }
+    const requestedModelKey = normalizePortraitModelKey(req.body && req.body.model);
+    const modelOption = availableModels.find((option) => option.key === requestedModelKey)
+      || availableModels.find((option) => option.key === PORTRAIT_DEFAULT_MODEL)
+      || availableModels[0];
     const sheet = (req.body && typeof req.body.sheet === 'object' && req.body.sheet) || {};
     const workflow = JSON.parse(JSON.stringify(PORTRAIT_RANDOM_WORKFLOW_TEMPLATE));
     const promptText = buildPortraitPromptFromSheet(sheet);
     const seed = Math.floor(Math.random() * 2 ** 31);
+    workflow['1'].inputs.ckpt_name = modelOption.checkpoint;
     workflow['2'].inputs.text = promptText;
     workflow['5'].inputs.seed = seed;
 
     console.info('[portrait.random] submitting prompt', {
       userId: req.user.id,
-      checkpoint: PORTRAIT_CHECKPOINT,
+      model: modelOption.key,
+      checkpoint: modelOption.checkpoint,
       seed,
       prompt: promptText
     });

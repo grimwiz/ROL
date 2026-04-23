@@ -74,6 +74,15 @@ const SheetForm = (() => {
   let lastGeneratedUrl = null;   // blob: URL of latest stylised output
   let stylising = false;
   let portraitCameraStream = null;
+  let portraitModelState = {
+    loaded: false,
+    loadingPromise: null,
+    defaultModel: 'sd35',
+    options: []
+  };
+  const PORTRAIT_WIDTH = 300;
+  const PORTRAIT_HEIGHT = 300;
+  const PORTRAIT_BG = '#1e1e26';
 
   function revokeIfBlobUrl(url) {
     if (url && typeof url === 'string' && url.startsWith('blob:')) URL.revokeObjectURL(url);
@@ -337,6 +346,15 @@ const SheetForm = (() => {
       : '<div class="sheet-portrait-empty">No picture</div>';
   }
 
+  function renderPortraitModelSelect() {
+    const options = portraitModelState.loaded && portraitModelState.options.length
+      ? portraitModelState.options
+      : [{ key: portraitModelState.defaultModel, label: 'sd3.5' }];
+    return `<select id="sf_portrait_model">
+      ${options.map((option) => `<option value="${esc(option.key)}"${option.key === portraitModelState.defaultModel ? ' selected' : ''}>${esc(option.label)}</option>`).join('')}
+    </select>`;
+  }
+
   function renderDerivedField(field, label, value, autoValue, readonly) {
     const isAuto = !value || value === String(autoValue);
     const displayVal = isAuto ? autoValue : value;
@@ -449,6 +467,10 @@ const SheetForm = (() => {
             <input type="hidden" id="sf_portrait" value="${esc(d.portrait)}">
           </div>
           ${!readonly ? `
+            <div class="form-group" style="margin-top:0.5rem">
+              <label>Random Portrait Model</label>
+              ${renderPortraitModelSelect()}
+            </div>
             <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.5rem">
               <button type="button" id="sf_portrait_random" class="btn btn-sm" onclick="SheetForm.generateRandomPortrait()">Random</button>
               <button type="button" id="sf_portrait_revert" class="btn btn-sm" style="display:none" onclick="SheetForm.revertPortrait()">Revert to upload</button>
@@ -607,6 +629,7 @@ const SheetForm = (() => {
 
 </div>`;
     initialiseDynamicFields(readonly);
+    if (!readonly) populatePortraitModelOptions();
   }
 
   // Derived calc from raw data object (not DOM) — used during render before DOM exists
@@ -897,17 +920,53 @@ const SheetForm = (() => {
     setDisabled('sf_portrait_camera',  stylising);
     setDisabled('sf_portrait_clear',   stylising);
     setDisabled('sf_portrait_random',  stylising);
+    setDisabled('sf_portrait_model',   stylising);
     setDisabled('sf_portrait_revert',  stylising || !hasUploaded);
   }
 
   // Kept for backward-compat with callers; folded into updatePortraitControlsVisibility.
   function setPortraitControlsEnabled() { updatePortraitControlsVisibility(); }
 
-  // Resize an image blob so its longest side is at most maxDim pixels, re-encoded
-  // as JPEG. Returns the original file untouched if it's already small enough and
-  // not a runaway PNG. Falls back to the original on any decode failure.
-  async function resizeImageBlob(file, maxDim, quality) {
-    const maxBytesWithoutResize = 512 * 1024; // re-encode bigger-than-this even if dims are OK
+  async function ensurePortraitModelOptions(forceRefresh = false) {
+    if (portraitModelState.loaded && !forceRefresh) return portraitModelState;
+    if (portraitModelState.loadingPromise && !forceRefresh) return portraitModelState.loadingPromise;
+    portraitModelState.loadingPromise = api.getPortraitModels()
+      .then((payload) => {
+        const options = Array.isArray(payload && payload.options) ? payload.options : [];
+        const defaultModel = String((payload && payload.default_model) || 'sd35');
+        portraitModelState = {
+          loaded: true,
+          loadingPromise: null,
+          defaultModel,
+          options
+        };
+        return portraitModelState;
+      })
+      .catch((err) => {
+        console.warn('Could not load portrait model options:', err);
+        portraitModelState = {
+          loaded: true,
+          loadingPromise: null,
+          defaultModel: 'sd35',
+          options: [{ key: 'sd35', label: 'sd3.5' }]
+        };
+        return portraitModelState;
+      });
+    return portraitModelState.loadingPromise;
+  }
+
+  async function populatePortraitModelOptions(forceRefresh = false) {
+    const state = await ensurePortraitModelOptions(forceRefresh);
+    const select = document.getElementById('sf_portrait_model');
+    if (!select) return;
+    const current = select.value || state.defaultModel;
+    const options = state.options.length ? state.options : [{ key: state.defaultModel, label: 'sd3.5' }];
+    select.innerHTML = options.map((option) => `<option value="${esc(option.key)}">${esc(option.label)}</option>`).join('');
+    select.value = options.some((option) => option.key === current) ? current : state.defaultModel;
+  }
+
+  // Fit an image blob into the exact portrait display size and re-encode as JPEG.
+  async function fitImageBlobToPortraitSize(file, width, height, quality) {
     try {
       const url = URL.createObjectURL(file);
       const img = new Image();
@@ -923,18 +982,18 @@ const SheetForm = (() => {
       const w0 = img.naturalWidth || img.width;
       const h0 = img.naturalHeight || img.height;
       if (!w0 || !h0) return file;
-      const longest = Math.max(w0, h0);
-      const needsDownscale = longest > maxDim;
-      const needsReencode = file.size > maxBytesWithoutResize;
-      if (!needsDownscale && !needsReencode) return file;
-      const scale = needsDownscale ? maxDim / longest : 1;
-      const w = Math.max(1, Math.round(w0 * scale));
-      const h = Math.max(1, Math.round(h0 * scale));
       const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
+      canvas.width = width;
+      canvas.height = height;
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
+      ctx.fillStyle = PORTRAIT_BG;
+      ctx.fillRect(0, 0, width, height);
+      const scale = Math.min(width / w0, height / h0);
+      const drawWidth = Math.max(1, Math.round(w0 * scale));
+      const drawHeight = Math.max(1, Math.round(h0 * scale));
+      const x = Math.floor((width - drawWidth) / 2);
+      const y = Math.floor((height - drawHeight) / 2);
+      ctx.drawImage(img, x, y, drawWidth, drawHeight);
       const blob = await new Promise((resolve) => {
         canvas.toBlob((b) => resolve(b), 'image/jpeg', quality || 0.9);
       });
@@ -965,7 +1024,7 @@ const SheetForm = (() => {
       throw new Error('Please upload an image file.');
     }
     setPortraitStatus('Resizing…', '');
-    const file = await resizeImageBlob(rawFile, 1024, 0.9);
+    const file = await fitImageBlobToPortraitSize(rawFile, PORTRAIT_WIDTH, PORTRAIT_HEIGHT, 0.9);
 
     revokeIfBlobUrl(originalUrl);
     revokeIfBlobUrl(lastGeneratedUrl);
@@ -1100,6 +1159,7 @@ const SheetForm = (() => {
   async function generateRandomPortrait() {
     if (stylising) return;
     const portraitSheet = collectPortraitPromptSheet();
+    const portraitModel = ((document.getElementById('sf_portrait_model') || {}).value || portraitModelState.defaultModel || 'sd35').trim();
 
     stylising = true;
     setPortraitControlsEnabled(false);
@@ -1116,7 +1176,7 @@ const SheetForm = (() => {
       const q = await fetch('/api/portrait/random', {
         method: 'POST', credentials: 'include',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ sheet: portraitSheet })
+        body: JSON.stringify({ sheet: portraitSheet, model: portraitModel })
       });
       const qText = await q.text();
       let qJson = null;
