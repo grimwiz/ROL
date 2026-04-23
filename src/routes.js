@@ -638,7 +638,7 @@ router.get('/rules/search', requireAuth, (req, res) => {
 // Configure with COMFYUI_URL env var (default: http://192.168.37.51:8188).
 
 const COMFYUI_URL = (process.env.COMFYUI_URL || 'http://192.168.37.51:8188').replace(/\/+$/, '');
-const PORTRAIT_CHECKPOINT = process.env.COMFYUI_PORTRAIT_CHECKPOINT || 'sd3.5_large_fp8_scaled.safetensors';
+const PORTRAIT_CHECKPOINT = process.env.COMFYUI_PORTRAIT_CHECKPOINT || 'aZovyaRPGArtistTools_v4VAE.safetensors';
 const PORTRAIT_NEGATIVE_PROMPT = 'lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, photo snapshot, realistic modern interior, kitchen tiles, cupboards, domestic room, plain wall, tiled wall, historical robe, flowing robe, fantasy robe, wizard robe, victorian gown, medieval costume, fantasy costume, anachronistic clothing, cgi, 3d render, low quality';
 const PORTRAIT_RANDOM_WORKFLOW_TEMPLATE = {
   '1': { class_type: 'CheckpointLoaderSimple', inputs: { ckpt_name: PORTRAIT_CHECKPOINT } },
@@ -736,6 +736,22 @@ function collectTopPortraitStats(sheet) {
     .map((entry) => entry.label);
 }
 
+function buildPortraitBaseConcept(sheet) {
+  const subject = inferPortraitSubject(sheet.pronouns);
+  const occupation = cleanPortraitText(sheet.occupation, 80);
+  const age = cleanPortraitText(sheet.age, 20);
+  const pronouns = cleanPortraitText(sheet.pronouns, 40);
+  const presentation = inferPortraitPresentation(sheet.pronouns);
+
+  const parts = [`head-and-shoulders portrait of a ${subject}`];
+  if (occupation) parts.push(`${occupation}`);
+  else parts.push('modern Rivers of London character');
+  if (age) parts.push(`${age} years old`);
+  if (pronouns) parts.push(`pronouns ${pronouns}`);
+  else parts.push(presentation);
+  return parts.join(', ');
+}
+
 function inferPortraitBackdrop(occupation) {
   const text = cleanPortraitText(occupation, 120).toLowerCase();
   if (!text) return 'a subtle London backdrop suited to their profession';
@@ -797,10 +813,7 @@ function inferPortraitAttire(occupation) {
 }
 
 function buildPortraitPromptFromSheet(sheet) {
-  const subject = inferPortraitSubject(sheet.pronouns);
-  const presentation = inferPortraitPresentation(sheet.pronouns);
-  const pronouns = cleanPortraitText(sheet.pronouns, 40);
-  const occupation = cleanPortraitText(sheet.occupation, 80) || 'investigator';
+  const occupation = cleanPortraitText(sheet.occupation, 80);
   const age = cleanPortraitText(sheet.age, 20);
   const socialClass = cleanPortraitText(sheet.social_class, 80);
   const reputation = cleanPortraitText(sheet.reputation, 120);
@@ -814,8 +827,7 @@ function buildPortraitPromptFromSheet(sheet) {
   const magical = advantages.some((adv) => /^magical\b/i.test(adv)) || !!tradition
     || (Array.isArray(sheet.magic_spells) && sheet.magic_spells.some((spell) => cleanPortraitText(spell && spell.name, 80)));
 
-  const descriptors = [occupation];
-  if (age) descriptors.push(`${age} years old`);
+  const descriptors = [];
   if (socialClass) descriptors.push(socialClass);
   if (reputation) descriptors.push(reputation);
   if (magical && tradition) descriptors.push(`subtle signs of ${tradition} magic`);
@@ -825,12 +837,15 @@ function buildPortraitPromptFromSheet(sheet) {
   if (topStats.length) descriptors.push(topStats.join(' and '));
   if (weaponNames.length) descriptors.push(`equipped with ${weaponNames.join(' and ')}`);
 
-  return `head-and-shoulders portrait of a ${subject}, ${descriptors.join(', ')}, `
-    + `pronouns ${pronouns || 'unspecified'}, ${presentation}, `
+  const subjectPrompt = buildPortraitBaseConcept(sheet);
+  const detailPrompt = descriptors.length ? `${descriptors.join(', ')}, ` : '';
+
+  return `${subjectPrompt}, `
+    + `${detailPrompt}`
     + `${attire}, no robes or fantasy costume, `
     + `${backdrop}, `
     + 'Art Nouveau portrait styling with a restrained Art Deco frame around the portrait, '
-    + 'clean elegant linework, muted earthy palette with antique gold accents, painterly illustration, serious expression, three-quarters view, '
+    + 'clean elegant linework, muted earthy palette with antique gold accents, painterly illustration, serious expression, three-quarters view, clear face, clear eyes, '
     + 'not photorealistic, not modern snapshot, no text, no watermark';
 }
 
