@@ -666,17 +666,17 @@ const QWEN_IMAGE_MODELS = {
   vae: process.env.COMFYUI_QWEN_VAE || 'qwen_image_vae.safetensors'
 };
 let comfyModelCache = { expiresAt: 0, folders: null };
-const PORTRAIT_NEGATIVE_PROMPT = 'lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, photo snapshot, realistic modern interior, kitchen tiles, cupboards, domestic room, plain wall, tiled wall, historical robe, flowing robe, fantasy robe, wizard robe, victorian gown, medieval costume, fantasy costume, anachronistic clothing, cgi, 3d render, low quality';
+const PORTRAIT_NEGATIVE_PROMPT = '低分辨率，低画质，肢体畸形，手指畸形，画面过饱和，蜡像感，人脸无细节，过度光滑，画面具有AI感。构图混乱。文字模糊，扭曲';
 const PORTRAIT_RANDOM_WORKFLOW_TEMPLATE = {
   '1': { class_type: 'UNETLoader', inputs: { unet_name: QWEN_IMAGE_MODELS.diffusionModel, weight_dtype: 'default' } },
-  '2': { class_type: 'ModelSamplingSD3', inputs: { model: ['1', 0], shift: 3.0 } },
+  '2': { class_type: 'ModelSamplingAuraFlow', inputs: { model: ['1', 0], shift: 3.1 } },
   '3': { class_type: 'CLIPLoader', inputs: { clip_name: QWEN_IMAGE_MODELS.textEncoder, type: 'qwen_image', device: 'default' } },
   '4': { class_type: 'CLIPTextEncode', inputs: { clip: ['3', 0], text: '' } },
   '5': { class_type: 'CLIPTextEncode', inputs: { clip: ['3', 0], text: PORTRAIT_NEGATIVE_PROMPT } },
   '6': { class_type: 'VAELoader', inputs: { vae_name: QWEN_IMAGE_MODELS.vae } },
   '7': { class_type: 'EmptySD3LatentImage', inputs: { width: PORTRAIT_STORAGE_SIZE.width, height: PORTRAIT_STORAGE_SIZE.height, batch_size: 1 } },
   '8': { class_type: 'KSampler', inputs: {
-    model: ['2', 0], seed: 42, steps: 20, cfg: 4.0,
+    model: ['2', 0], seed: 42, steps: 50, cfg: 4.0,
     sampler_name: 'euler', scheduler: 'simple',
     positive: ['4', 0], negative: ['5', 0], latent_image: ['7', 0], denoise: 1
   } },

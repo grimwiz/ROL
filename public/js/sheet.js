@@ -72,6 +72,8 @@ const SheetForm = (() => {
   let originalBlob = null;
   let originalUrl = null;        // blob: URL for the raw upload
   let lastGeneratedUrl = null;   // blob: URL of latest stylised output
+  let pendingGeneratedDataUrl = null;
+  let previousPortraitDataUrl = null;
   let stylising = false;
   let portraitCameraStream = null;
   const PORTRAIT_STORAGE_WIDTH = 512;
@@ -91,6 +93,8 @@ const SheetForm = (() => {
     originalBlob = null;
     originalUrl = null;
     lastGeneratedUrl = null;
+    pendingGeneratedDataUrl = null;
+    previousPortraitDataUrl = null;
     stylising = false;
   }
 
@@ -454,7 +458,7 @@ const SheetForm = (() => {
           ${!readonly ? `
             <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.5rem">
               <button type="button" id="sf_portrait_random" class="btn btn-sm" onclick="SheetForm.generateRandomPortrait()">Random</button>
-              <button type="button" id="sf_portrait_revert" class="btn btn-sm" style="display:none" onclick="SheetForm.revertPortrait()">Revert to upload</button>
+              <button type="button" id="sf_portrait_revert" class="btn btn-sm" style="display:none" onclick="SheetForm.revertPortrait()">Discard generated</button>
               <button type="button" id="sf_portrait_clear" class="btn btn-sm" onclick="SheetForm.clearPortrait()">Remove picture</button>
             </div>
             <div id="sf_portrait_status" class="card-sub" style="margin-top:0.35rem;min-height:1em"></div>
@@ -891,16 +895,15 @@ const SheetForm = (() => {
   }
 
   function updatePortraitControlsVisibility() {
-    const hasUploaded = !!originalBlob;
-    const hasGenerated = !!lastGeneratedUrl;
+    const hasPendingGenerated = !!pendingGeneratedDataUrl;
     const show = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
-    show('sf_portrait_revert', hasGenerated && hasUploaded);
+    show('sf_portrait_revert', hasPendingGenerated);
     const setDisabled = (id, off) => { const el = document.getElementById(id); if (el) el.disabled = !!off; };
     setDisabled('sf_portrait_file',    stylising);
     setDisabled('sf_portrait_camera',  stylising);
     setDisabled('sf_portrait_clear',   stylising);
     setDisabled('sf_portrait_random',  stylising);
-    setDisabled('sf_portrait_revert',  stylising || !hasUploaded);
+    setDisabled('sf_portrait_revert',  stylising || !hasPendingGenerated);
   }
 
   // Kept for backward-compat with callers; folded into updatePortraitControlsVisibility.
@@ -972,6 +975,8 @@ const SheetForm = (() => {
     originalBlob = file;
     originalUrl = URL.createObjectURL(file);
     lastGeneratedUrl = null;
+    pendingGeneratedDataUrl = null;
+    previousPortraitDataUrl = null;
 
     const dataUrl = await readBlobAsDataUrl(file);
     setPortraitField(dataUrl);
@@ -1086,15 +1091,14 @@ const SheetForm = (() => {
   }
 
   function revertPortrait() {
-    if (!originalBlob) return;
-    readBlobAsDataUrl(originalBlob).then((dataUrl) => {
-      setPortraitField(dataUrl);
-      setPortraitPreview(dataUrl);
-      revokeIfBlobUrl(lastGeneratedUrl);
-      lastGeneratedUrl = null;
-      setPortraitStatus('Restored original upload.', '');
-      updatePortraitControlsVisibility();
-    });
+    setPortraitField(previousPortraitDataUrl || '');
+    setPortraitPreview(previousPortraitDataUrl || '');
+    revokeIfBlobUrl(lastGeneratedUrl);
+    lastGeneratedUrl = null;
+    pendingGeneratedDataUrl = null;
+    previousPortraitDataUrl = null;
+    setPortraitStatus('Discarded generated portrait.', '');
+    updatePortraitControlsVisibility();
   }
 
   async function generateRandomPortrait() {
@@ -1181,17 +1185,20 @@ const SheetForm = (() => {
       params.set('type', img.type || 'output');
       const imgRes = await fetch(`/api/portrait/view?${params.toString()}`, { credentials: 'include' });
       if (!imgRes.ok) throw new Error(`Fetching the generated image failed (HTTP ${imgRes.status}).`);
-      const blob = await imgRes.blob();
+      const rawBlob = await imgRes.blob();
+      const blob = await fitImageBlobToPortraitSize(rawBlob, PORTRAIT_STORAGE_WIDTH, PORTRAIT_STORAGE_HEIGHT, 0.92);
 
       // 6. Store as data URL in the hidden field (so Save persists it) and
       //    keep a blob URL for cheap preview.
       const dataUrl = await readBlobAsDataUrl(blob);
+      previousPortraitDataUrl = ((document.getElementById('sf_portrait') || {}).value || '').trim();
       setPortraitField(dataUrl);
       setPortraitPreview(dataUrl);
       revokeIfBlobUrl(lastGeneratedUrl);
       lastGeneratedUrl = URL.createObjectURL(blob);
+      pendingGeneratedDataUrl = dataUrl;
 
-      setPortraitStatus('Generated. Save the sheet to keep it.', 'ok');
+      setPortraitStatus('Generated preview ready. Save the sheet to keep it, or discard it.', 'ok');
     } catch (err) {
       console.error('Portrait generation failed:', err);
       setPortraitStatus(`Generation failed: ${err.message || err}`, 'error');
