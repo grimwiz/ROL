@@ -74,14 +74,8 @@ const SheetForm = (() => {
   let lastGeneratedUrl = null;   // blob: URL of latest stylised output
   let stylising = false;
   let portraitCameraStream = null;
-  let portraitModelState = {
-    loaded: false,
-    loadingPromise: null,
-    defaultModel: 'sd35',
-    options: []
-  };
-  const PORTRAIT_WIDTH = 300;
-  const PORTRAIT_HEIGHT = 300;
+  const PORTRAIT_STORAGE_WIDTH = 512;
+  const PORTRAIT_STORAGE_HEIGHT = 512;
   const PORTRAIT_BG = '#1e1e26';
 
   function revokeIfBlobUrl(url) {
@@ -346,15 +340,6 @@ const SheetForm = (() => {
       : '<div class="sheet-portrait-empty">No picture</div>';
   }
 
-  function renderPortraitModelSelect() {
-    const options = portraitModelState.loaded && portraitModelState.options.length
-      ? portraitModelState.options
-      : [{ key: portraitModelState.defaultModel, label: 'sd3.5' }];
-    return `<select id="sf_portrait_model">
-      ${options.map((option) => `<option value="${esc(option.key)}"${option.key === portraitModelState.defaultModel ? ' selected' : ''}>${esc(option.label)}</option>`).join('')}
-    </select>`;
-  }
-
   function renderDerivedField(field, label, value, autoValue, readonly) {
     const isAuto = !value || value === String(autoValue);
     const displayVal = isAuto ? autoValue : value;
@@ -467,10 +452,6 @@ const SheetForm = (() => {
             <input type="hidden" id="sf_portrait" value="${esc(d.portrait)}">
           </div>
           ${!readonly ? `
-            <div class="form-group" style="margin-top:0.5rem">
-              <label>Random Portrait Model</label>
-              ${renderPortraitModelSelect()}
-            </div>
             <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.5rem">
               <button type="button" id="sf_portrait_random" class="btn btn-sm" onclick="SheetForm.generateRandomPortrait()">Random</button>
               <button type="button" id="sf_portrait_revert" class="btn btn-sm" style="display:none" onclick="SheetForm.revertPortrait()">Revert to upload</button>
@@ -629,7 +610,6 @@ const SheetForm = (() => {
 
 </div>`;
     initialiseDynamicFields(readonly);
-    if (!readonly) populatePortraitModelOptions();
   }
 
   // Derived calc from raw data object (not DOM) — used during render before DOM exists
@@ -920,50 +900,11 @@ const SheetForm = (() => {
     setDisabled('sf_portrait_camera',  stylising);
     setDisabled('sf_portrait_clear',   stylising);
     setDisabled('sf_portrait_random',  stylising);
-    setDisabled('sf_portrait_model',   stylising);
     setDisabled('sf_portrait_revert',  stylising || !hasUploaded);
   }
 
   // Kept for backward-compat with callers; folded into updatePortraitControlsVisibility.
   function setPortraitControlsEnabled() { updatePortraitControlsVisibility(); }
-
-  async function ensurePortraitModelOptions(forceRefresh = false) {
-    if (portraitModelState.loaded && !forceRefresh) return portraitModelState;
-    if (portraitModelState.loadingPromise && !forceRefresh) return portraitModelState.loadingPromise;
-    portraitModelState.loadingPromise = api.getPortraitModels()
-      .then((payload) => {
-        const options = Array.isArray(payload && payload.options) ? payload.options : [];
-        const defaultModel = String((payload && payload.default_model) || 'sd35');
-        portraitModelState = {
-          loaded: true,
-          loadingPromise: null,
-          defaultModel,
-          options
-        };
-        return portraitModelState;
-      })
-      .catch((err) => {
-        console.warn('Could not load portrait model options:', err);
-        portraitModelState = {
-          loaded: true,
-          loadingPromise: null,
-          defaultModel: 'sd35',
-          options: [{ key: 'sd35', label: 'sd3.5' }]
-        };
-        return portraitModelState;
-      });
-    return portraitModelState.loadingPromise;
-  }
-
-  async function populatePortraitModelOptions(forceRefresh = false) {
-    const state = await ensurePortraitModelOptions(forceRefresh);
-    const select = document.getElementById('sf_portrait_model');
-    if (!select) return;
-    const current = select.value || state.defaultModel;
-    const options = state.options.length ? state.options : [{ key: state.defaultModel, label: 'sd3.5' }];
-    select.innerHTML = options.map((option) => `<option value="${esc(option.key)}">${esc(option.label)}</option>`).join('');
-    select.value = options.some((option) => option.key === current) ? current : state.defaultModel;
-  }
 
   // Fit an image blob into the exact portrait display size and re-encode as JPEG.
   async function fitImageBlobToPortraitSize(file, width, height, quality) {
@@ -1024,7 +965,7 @@ const SheetForm = (() => {
       throw new Error('Please upload an image file.');
     }
     setPortraitStatus('Resizing…', '');
-    const file = await fitImageBlobToPortraitSize(rawFile, PORTRAIT_WIDTH, PORTRAIT_HEIGHT, 0.9);
+    const file = await fitImageBlobToPortraitSize(rawFile, PORTRAIT_STORAGE_WIDTH, PORTRAIT_STORAGE_HEIGHT, 0.9);
 
     revokeIfBlobUrl(originalUrl);
     revokeIfBlobUrl(lastGeneratedUrl);
@@ -1159,7 +1100,6 @@ const SheetForm = (() => {
   async function generateRandomPortrait() {
     if (stylising) return;
     const portraitSheet = collectPortraitPromptSheet();
-    const portraitModel = ((document.getElementById('sf_portrait_model') || {}).value || portraitModelState.defaultModel || 'sd35').trim();
 
     stylising = true;
     setPortraitControlsEnabled(false);
@@ -1176,7 +1116,7 @@ const SheetForm = (() => {
       const q = await fetch('/api/portrait/random', {
         method: 'POST', credentials: 'include',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ sheet: portraitSheet, model: portraitModel })
+        body: JSON.stringify({ sheet: portraitSheet })
       });
       const qText = await q.text();
       let qJson = null;

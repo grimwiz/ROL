@@ -36,8 +36,29 @@ function getClientAddress(req) {
   return String(req.ip || req.connection?.remoteAddress || 'unknown');
 }
 
+function toSingleLineLogValue(value, maxLen = 500) {
+  if (value === undefined) return null;
+  if (value === null) return 'null';
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  let text;
+  if (typeof value === 'string') text = value;
+  else text = JSON.stringify(value);
+  if (text.length > maxLen) text = `${text.slice(0, maxLen - 3)}...`;
+  return JSON.stringify(text);
+}
+
+function logLine(tag, fields) {
+  const parts = Object.entries(fields || {})
+    .map(([key, value]) => {
+      const rendered = toSingleLineLogValue(value);
+      return rendered === null ? null : `${key}=${rendered}`;
+    })
+    .filter(Boolean);
+  console.info(`[${tag}]${parts.length ? ` ${parts.join(' ')}` : ''}`);
+}
+
 function logAudit(event, details) {
-  console.info(`[audit.${event}]`, details);
+  logLine(`audit.${event}`, details);
 }
 
 function parseStoredSheetData(value) {
@@ -638,44 +659,29 @@ router.get('/rules/search', requireAuth, (req, res) => {
 // Configure with COMFYUI_URL env var (default: http://192.168.37.51:8188).
 
 const COMFYUI_URL = (process.env.COMFYUI_URL || 'http://192.168.37.51:8188').replace(/\/+$/, '');
-const PORTRAIT_DEFAULT_MODEL = 'sd35';
-const PORTRAIT_SIZE = { width: 300, height: 300 };
-const PORTRAIT_MODEL_OPTIONS = {
-  flux1: {
-    key: 'flux1',
-    label: 'flux1',
-    checkpoint: 'flux1-dev-fp8.safetensors'
-  },
-  meichidark: {
-    key: 'meichidark',
-    label: 'Meichidark',
-    checkpoint: 'Meichidark.safetensors'
-  },
-  sd35: {
-    key: 'sd35',
-    label: 'sd3.5',
-    checkpoint: 'sd3.5_large_fp8_scaled.safetensors'
-  },
-  theallysmixiv: {
-    key: 'theallysmixiv',
-    label: 'theallysMixIV',
-    checkpoint: 'theallysMixIV_v10.safetensors'
-  }
+const PORTRAIT_STORAGE_SIZE = { width: 512, height: 512 };
+const QWEN_IMAGE_MODELS = {
+  diffusionModel: process.env.COMFYUI_QWEN_DIFFUSION_MODEL || 'qwen_image_2512_fp8_e4m3fn.safetensors',
+  textEncoder: process.env.COMFYUI_QWEN_TEXT_ENCODER || 'qwen_2.5_vl_7b_fp8_scaled.safetensors',
+  vae: process.env.COMFYUI_QWEN_VAE || 'qwen_image_vae.safetensors'
 };
-let portraitModelCache = { expiresAt: 0, options: null };
+let comfyModelCache = { expiresAt: 0, folders: null };
 const PORTRAIT_NEGATIVE_PROMPT = 'lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, photo snapshot, realistic modern interior, kitchen tiles, cupboards, domestic room, plain wall, tiled wall, historical robe, flowing robe, fantasy robe, wizard robe, victorian gown, medieval costume, fantasy costume, anachronistic clothing, cgi, 3d render, low quality';
 const PORTRAIT_RANDOM_WORKFLOW_TEMPLATE = {
-  '1': { class_type: 'CheckpointLoaderSimple', inputs: { ckpt_name: '' } },
-  '2': { class_type: 'CLIPTextEncode', inputs: { clip: ['1', 1], text: '' } },
-  '3': { class_type: 'CLIPTextEncode', inputs: { clip: ['1', 1], text: PORTRAIT_NEGATIVE_PROMPT } },
-  '4': { class_type: 'EmptyLatentImage', inputs: { width: PORTRAIT_SIZE.width, height: PORTRAIT_SIZE.height, batch_size: 1 } },
-  '5': { class_type: 'KSampler', inputs: {
-    model: ['1', 0], seed: 42, steps: 28, cfg: 5.8,
-    sampler_name: 'dpmpp_2m_sde', scheduler: 'karras', denoise: 0.52,
-    positive: ['2', 0], negative: ['3', 0], latent_image: ['4', 0]
+  '1': { class_type: 'UNETLoader', inputs: { unet_name: QWEN_IMAGE_MODELS.diffusionModel, weight_dtype: 'default' } },
+  '2': { class_type: 'ModelSamplingSD3', inputs: { model: ['1', 0], shift: 3.0 } },
+  '3': { class_type: 'CLIPLoader', inputs: { clip_name: QWEN_IMAGE_MODELS.textEncoder, type: 'qwen_image', device: 'default' } },
+  '4': { class_type: 'CLIPTextEncode', inputs: { clip: ['3', 0], text: '' } },
+  '5': { class_type: 'CLIPTextEncode', inputs: { clip: ['3', 0], text: PORTRAIT_NEGATIVE_PROMPT } },
+  '6': { class_type: 'VAELoader', inputs: { vae_name: QWEN_IMAGE_MODELS.vae } },
+  '7': { class_type: 'EmptySD3LatentImage', inputs: { width: PORTRAIT_STORAGE_SIZE.width, height: PORTRAIT_STORAGE_SIZE.height, batch_size: 1 } },
+  '8': { class_type: 'KSampler', inputs: {
+    model: ['2', 0], seed: 42, steps: 20, cfg: 4.0,
+    sampler_name: 'euler', scheduler: 'simple',
+    positive: ['4', 0], negative: ['5', 0], latent_image: ['7', 0], denoise: 1
   } },
-  '6': { class_type: 'VAEDecode', inputs: { samples: ['5', 0], vae: ['1', 2] } },
-  '7': { class_type: 'SaveImage', inputs: { images: ['6', 0], filename_prefix: 'ROL_portrait' } }
+  '9': { class_type: 'VAEDecode', inputs: { samples: ['8', 0], vae: ['6', 0] } },
+  '10': { class_type: 'SaveImage', inputs: { images: ['9', 0], filename_prefix: 'ROL_portrait' } }
 };
 
 function cleanPortraitText(value, maxLen = 120) {
@@ -776,19 +782,14 @@ function buildPortraitBaseConcept(sheet) {
   return parts.join(', ');
 }
 
-function normalizePortraitModelKey(value) {
-  const key = cleanPortraitText(value, 40).toLowerCase();
-  return PORTRAIT_MODEL_OPTIONS[key] ? key : PORTRAIT_DEFAULT_MODEL;
-}
-
-async function fetchAvailablePortraitModels(forceRefresh = false) {
+async function fetchComfyModelNames(folder, forceRefresh = false) {
   const now = Date.now();
-  if (!forceRefresh && portraitModelCache.options && portraitModelCache.expiresAt > now) {
-    return portraitModelCache.options;
+  if (!forceRefresh && comfyModelCache.folders && comfyModelCache.expiresAt > now && comfyModelCache.folders[folder]) {
+    return comfyModelCache.folders[folder];
   }
-  const upstream = await fetch(`${COMFYUI_URL}/models/checkpoints`);
+  const upstream = await fetch(`${COMFYUI_URL}/models/${encodeURIComponent(folder)}`);
   if (!upstream.ok) {
-    throw new Error(`Could not query ComfyUI checkpoints (HTTP ${upstream.status}).`);
+    throw new Error(`Could not query ComfyUI model folder ${folder} (HTTP ${upstream.status}).`);
   }
   const payload = await upstream.json();
   const rawNames = Array.isArray(payload) ? payload : Array.isArray(payload.models) ? payload.models : [];
@@ -801,14 +802,24 @@ async function fetchAvailablePortraitModels(forceRefresh = false) {
       return '';
     })
     .filter(Boolean);
-  const available = Object.values(PORTRAIT_MODEL_OPTIONS)
-    .filter((option) => names.includes(option.checkpoint))
-    .map((option) => ({ ...option }));
-  portraitModelCache = {
+  comfyModelCache = {
     expiresAt: now + 60 * 1000,
-    options: available
+    folders: { ...(comfyModelCache.folders || {}), [folder]: names }
   };
-  return available;
+  return names;
+}
+
+async function ensureQwenPortraitAssets() {
+  const [diffusionModels, textEncoders, vaes] = await Promise.all([
+    fetchComfyModelNames('diffusion_models'),
+    fetchComfyModelNames('text_encoders'),
+    fetchComfyModelNames('vae')
+  ]);
+  const missing = [];
+  if (!diffusionModels.includes(QWEN_IMAGE_MODELS.diffusionModel)) missing.push(`diffusion model ${QWEN_IMAGE_MODELS.diffusionModel}`);
+  if (!textEncoders.includes(QWEN_IMAGE_MODELS.textEncoder)) missing.push(`text encoder ${QWEN_IMAGE_MODELS.textEncoder}`);
+  if (!vaes.includes(QWEN_IMAGE_MODELS.vae)) missing.push(`vae ${QWEN_IMAGE_MODELS.vae}`);
+  return missing;
 }
 
 function inferPortraitBackdrop(occupation) {
@@ -908,41 +919,30 @@ function buildPortraitPromptFromSheet(sheet) {
     + 'not photorealistic, not modern snapshot, no text, no watermark';
 }
 
-router.get('/portrait/models', requireAuth, async (req, res, next) => {
-  try {
-    const options = await fetchAvailablePortraitModels();
-    res.json({
-      default_model: PORTRAIT_DEFAULT_MODEL,
-      width: PORTRAIT_SIZE.width,
-      height: PORTRAIT_SIZE.height,
-      options
-    });
-  } catch (e) { next(e); }
-});
-
 // Queue a tightly-controlled random portrait workflow on ComfyUI from sheet data.
 router.post('/portrait/random', requireAuth, async (req, res, next) => {
   try {
-    const availableModels = await fetchAvailablePortraitModels();
-    if (!availableModels.length) {
-      return res.status(503).json({ error: 'No supported portrait checkpoints are currently available in ComfyUI.' });
+    const missingAssets = await ensureQwenPortraitAssets();
+    if (missingAssets.length) {
+      return res.status(503).json({
+        error: `Qwen portrait workflow is not fully installed in ComfyUI: missing ${missingAssets.join(', ')}.`
+      });
     }
-    const requestedModelKey = normalizePortraitModelKey(req.body && req.body.model);
-    const modelOption = availableModels.find((option) => option.key === requestedModelKey)
-      || availableModels.find((option) => option.key === PORTRAIT_DEFAULT_MODEL)
-      || availableModels[0];
     const sheet = (req.body && typeof req.body.sheet === 'object' && req.body.sheet) || {};
     const workflow = JSON.parse(JSON.stringify(PORTRAIT_RANDOM_WORKFLOW_TEMPLATE));
     const promptText = buildPortraitPromptFromSheet(sheet);
     const seed = Math.floor(Math.random() * 2 ** 31);
-    workflow['1'].inputs.ckpt_name = modelOption.checkpoint;
-    workflow['2'].inputs.text = promptText;
-    workflow['5'].inputs.seed = seed;
+    workflow['4'].inputs.text = promptText;
+    workflow['8'].inputs.seed = seed;
 
-    console.info('[portrait.random] submitting prompt', {
+    logLine('portrait.random', {
       userId: req.user.id,
-      model: modelOption.key,
-      checkpoint: modelOption.checkpoint,
+      workflow: 'qwen_image',
+      diffusionModel: QWEN_IMAGE_MODELS.diffusionModel,
+      textEncoder: QWEN_IMAGE_MODELS.textEncoder,
+      vae: QWEN_IMAGE_MODELS.vae,
+      width: PORTRAIT_STORAGE_SIZE.width,
+      height: PORTRAIT_STORAGE_SIZE.height,
       seed,
       prompt: promptText
     });
@@ -953,6 +953,17 @@ router.post('/portrait/random', requireAuth, async (req, res, next) => {
       body: JSON.stringify({ prompt: workflow })
     });
     const text = await upstream.text();
+    try {
+      const payload = JSON.parse(text);
+      if (payload && payload.node_errors && Object.keys(payload.node_errors).length) {
+        logLine('portrait.random.queue_error', {
+          userId: req.user.id,
+          workflow: 'qwen_image',
+          prompt: promptText,
+          node_errors: payload.node_errors
+        });
+      }
+    } catch {}
     res.status(upstream.status)
        .type(upstream.headers.get('content-type') || 'application/json')
        .send(text);
@@ -964,6 +975,16 @@ router.get('/portrait/history/:id', requireAuth, async (req, res, next) => {
   try {
     const upstream = await fetch(`${COMFYUI_URL}/history/${encodeURIComponent(req.params.id)}`);
     const text = await upstream.text();
+    try {
+      const payload = JSON.parse(text);
+      const entry = payload && payload[req.params.id];
+      if (entry && entry.status && entry.status.status_str === 'error') {
+        logLine('portrait.random.history_error', {
+          promptId: req.params.id,
+          status: entry.status
+        });
+      }
+    } catch {}
     res.status(upstream.status)
        .type(upstream.headers.get('content-type') || 'application/json')
        .send(text);

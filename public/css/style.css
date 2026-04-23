@@ -13,8 +13,8 @@
   --warning: #e67e22;
   --radius: 8px;
   --radius-lg: 12px;
-  --portrait-width: 300px;
-  --portrait-height: 300px;
+  --portrait-width: 256px;
+  --portrait-height: 256px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
