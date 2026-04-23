@@ -66,10 +66,9 @@ const SheetForm = (() => {
   const ADVANTAGE_PRESET_NAMES = ADVANTAGES.map((adv) => adv.name);
 
   // ── Portrait generation state ──────────────────────────────────────────────
-  // The raw uploaded File/Blob is kept in memory so the player can restyle or
-  // reroll without re-uploading. Only the *current* portrait (as a data URL)
-  // goes into the sheet JSON. If the page is reloaded, the in-memory original
-  // is lost and the player must re-upload to restyle again.
+  // The raw uploaded File/Blob is kept in memory so the player can revert from
+  // a generated random portrait back to their uploaded/captured picture. Only
+  // the *current* portrait (as a data URL) goes into the sheet JSON.
   let originalBlob = null;
   let originalUrl = null;        // blob: URL for the raw upload
   let lastGeneratedUrl = null;   // blob: URL of latest stylised output
@@ -451,13 +450,13 @@ const SheetForm = (() => {
           </div>
           ${!readonly ? `
             <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.5rem">
-              <button type="button" id="sf_portrait_stylise" class="btn btn-sm" disabled onclick="SheetForm.stylisePortrait()" title="Upload a photo first">Stylise</button>
+              <button type="button" id="sf_portrait_random" class="btn btn-sm" onclick="SheetForm.generateRandomPortrait()">Random</button>
               <button type="button" id="sf_portrait_revert" class="btn btn-sm" style="display:none" onclick="SheetForm.revertPortrait()">Revert to upload</button>
               <button type="button" id="sf_portrait_clear" class="btn btn-sm" onclick="SheetForm.clearPortrait()">Remove picture</button>
             </div>
             <div id="sf_portrait_status" class="card-sub" style="margin-top:0.35rem;min-height:1em"></div>
           ` : ''}
-          <div class="card-sub">Upload a JPG/PNG/GIF/WebP image or take a webcam photo. <em>Stylise</em> turns it into an AI portrait using your sheet details.</div>
+          <div class="card-sub">Upload or take a photo to use directly, or click <em>Random</em> to generate a portrait from the character sheet.</div>
         </div>
       </div>
     </div>
@@ -889,18 +888,16 @@ const SheetForm = (() => {
   }
 
   function updatePortraitControlsVisibility() {
-    const hasOriginal = !!originalBlob;
+    const hasUploaded = !!originalBlob;
     const hasGenerated = !!lastGeneratedUrl;
     const show = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? '' : 'none'; };
-    show('sf_portrait_revert', hasGenerated);
+    show('sf_portrait_revert', hasGenerated && hasUploaded);
     const setDisabled = (id, off) => { const el = document.getElementById(id); if (el) el.disabled = !!off; };
     setDisabled('sf_portrait_file',    stylising);
     setDisabled('sf_portrait_camera',  stylising);
     setDisabled('sf_portrait_clear',   stylising);
-    setDisabled('sf_portrait_stylise', stylising || !hasOriginal);
-    setDisabled('sf_portrait_revert',  stylising);
-    const styliseBtn = document.getElementById('sf_portrait_stylise');
-    if (styliseBtn) styliseBtn.title = hasOriginal ? '' : 'Upload a photo first';
+    setDisabled('sf_portrait_random',  stylising);
+    setDisabled('sf_portrait_revert',  stylising || !hasUploaded);
   }
 
   // Kept for backward-compat with callers; folded into updatePortraitControlsVisibility.
@@ -981,7 +978,7 @@ const SheetForm = (() => {
     setPortraitPreview(dataUrl);
 
     const kb = Math.round(file.size / 1024);
-    setPortraitStatus(`Ready (${kb} KB). Click Stylise to generate a portrait from this photo and your sheet details, or Save the sheet to use it as-is.`, '');
+    setPortraitStatus(`Ready (${kb} KB). Save the sheet to keep this picture, or click Random to generate a new portrait from the character sheet.`, '');
     updatePortraitControlsVisibility();
   }
 
@@ -1100,14 +1097,9 @@ const SheetForm = (() => {
     });
   }
 
-  async function stylisePortrait() {
+  async function generateRandomPortrait() {
     if (stylising) return;
-    if (!originalBlob) {
-      setPortraitStatus('Upload a photo first.', 'error');
-      return;
-    }
     const portraitSheet = collectPortraitPromptSheet();
-    const reroll = !!lastGeneratedUrl;
 
     stylising = true;
     setPortraitControlsEnabled(false);
@@ -1121,24 +1113,10 @@ const SheetForm = (() => {
     }, 800);
 
     try {
-      // 1. Upload raw photo to ComfyUI via the Folly proxy.
-      const form = new FormData();
-      form.append('image', originalBlob, originalBlob.name || 'portrait_input.png');
-      form.append('overwrite', 'true');
-      const up = await fetch('/api/portrait/upload', {
-        method: 'POST', body: form, credentials: 'include'
-      });
-      if (!up.ok) throw new Error(`Upload failed (HTTP ${up.status}).`);
-      const upJson = await up.json();
-      const uploadedName = upJson && upJson.name;
-      if (!uploadedName) throw new Error('Upload returned no filename.');
-
-      // 2. Ask the server to build and queue the fixed portrait workflow from
-      //    the allowed sheet fields.
-      const q = await fetch('/api/portrait/prompt', {
+      const q = await fetch('/api/portrait/random', {
         method: 'POST', credentials: 'include',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ image: uploadedName, sheet: portraitSheet, reroll: !!reroll })
+        body: JSON.stringify({ sheet: portraitSheet })
       });
       const qText = await q.text();
       let qJson = null;
@@ -1192,7 +1170,7 @@ const SheetForm = (() => {
 
       // 5. Locate the saved image and fetch it.
       const outputs = entry.outputs || {};
-      const saveNode = outputs['8'] || Object.values(outputs).find((o) => o && o.images);
+      const saveNode = outputs['7'] || outputs['8'] || Object.values(outputs).find((o) => o && o.images);
       if (!saveNode || !saveNode.images || !saveNode.images.length) {
         throw new Error('ComfyUI finished but returned no image.');
       }
@@ -1232,6 +1210,12 @@ const SheetForm = (() => {
       pronouns: data.pronouns,
       occupation: data.occupation,
       age: data.age,
+      str: data.str,
+      con: data.con,
+      dex: data.dex,
+      int: data.int,
+      pow: data.pow,
+      siz: data.siz,
       social_class: data.social_class,
       reputation: data.reputation,
       advantages: data.advantages,
@@ -1345,7 +1329,7 @@ const SheetForm = (() => {
     addCustomField, removeCustomField,
     openPortraitCamera,
     handlePortraitUpload, clearPortrait,
-    stylisePortrait, revertPortrait
+    generateRandomPortrait, revertPortrait
   };
 })();
 

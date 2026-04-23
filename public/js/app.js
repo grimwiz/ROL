@@ -387,27 +387,16 @@ async function doLogout() {
   renderLoginPage();
 }
 
-function rollFormula(formula) {
-  const match = String(formula || '').trim().match(/^(\d+)d(\d+)([+-]\d+)?$/i);
-  if (!match) throw new Error('Unsupported dice formula');
-  const count = parseInt(match[1], 10);
-  const sides = parseInt(match[2], 10);
-  const modifier = parseInt(match[3] || '0', 10);
-  const rolls = [];
-  for (let i = 0; i < count; i += 1) {
-    rolls.push(Math.floor(Math.random() * sides) + 1);
-  }
-  const total = rolls.reduce((sum, roll) => sum + roll, 0) + modifier;
-  return { total, rolls, modifier };
-}
-
-function rollNavDice() {
+async function rollNavDice() {
   const select = el('nav-dice-select');
   const result = el('nav-dice-result');
   if (!select || !result) return;
+  result.textContent = '…';
+  result.title = 'Rolling…';
   try {
     const formula = select.value || '1d100';
-    const rolled = rollFormula(formula);
+    const preset = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : formula;
+    const rolled = await api.rollDice(formula, preset);
     result.textContent = String(rolled.total);
     const modifierText = rolled.modifier ? ` ${rolled.modifier > 0 ? '+' : '-'} ${Math.abs(rolled.modifier)}` : '';
     result.title = `${formula}: ${rolled.rolls.join(' + ')}${modifierText} = ${rolled.total}`;

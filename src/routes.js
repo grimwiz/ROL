@@ -1,5 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const db = require('./db');
@@ -12,6 +13,16 @@ const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_MAX_ATTEMPTS_PER_IP = 25;
 const LOGIN_MAX_ATTEMPTS_PER_ACCOUNT = 8;
 const loginAttemptStore = new Map();
+const ALLOWED_DICE_FORMULAS = new Set([
+  '1d100',
+  '2d10+50',
+  '1d20',
+  '1d12',
+  '1d10',
+  '1d8',
+  '1d6',
+  '1d4'
+]);
 
 function normaliseLoginName(username) {
   return String(username || '').trim().toLowerCase();
@@ -23,6 +34,84 @@ function loginStoreKey(kind, value) {
 
 function getClientAddress(req) {
   return String(req.ip || req.connection?.remoteAddress || 'unknown');
+}
+
+function logAudit(event, details) {
+  console.info(`[audit.${event}]`, details);
+}
+
+function parseStoredSheetData(value) {
+  try {
+    return JSON.parse(value || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function getSessionNameById(sessionId) {
+  const row = db.prepare('SELECT name FROM sessions WHERE id = ?').get(sessionId);
+  return row ? row.name : null;
+}
+
+function getUsernameById(userId) {
+  const row = db.prepare('SELECT username FROM users WHERE id = ?').get(userId);
+  return row ? row.username : null;
+}
+
+function summarizeSheetData(data) {
+  const sheet = data && typeof data === 'object' ? data : {};
+  const advantages = String(sheet.advantages || '')
+    .split(/,|;|\n|\band\b/gi)
+    .map((entry) => String(entry || '').trim())
+    .filter(Boolean);
+  return {
+    name: String(sheet.name || '').trim() || null,
+    occupation: String(sheet.occupation || '').trim() || null,
+    age: String(sheet.age || '').trim() || null,
+    hasPortrait: !!String(sheet.portrait || '').trim(),
+    advantagesCount: advantages.length,
+    weaponCount: Array.isArray(sheet.weapons) ? sheet.weapons.filter((weapon) => weapon && Object.values(weapon).some(Boolean)).length : 0,
+    spellCount: Array.isArray(sheet.magic_spells) ? sheet.magic_spells.filter((spell) => spell && Object.values(spell).some(Boolean)).length : 0
+  };
+}
+
+function listChangedSheetFields(previousData, nextData) {
+  const previous = previousData && typeof previousData === 'object' ? previousData : {};
+  const next = nextData && typeof nextData === 'object' ? nextData : {};
+  const keys = new Set([...Object.keys(previous), ...Object.keys(next)]);
+  return [...keys]
+    .filter((key) => JSON.stringify(previous[key] ?? null) !== JSON.stringify(next[key] ?? null))
+    .sort();
+}
+
+function parseDiceFormula(formula) {
+  const match = String(formula || '').trim().match(/^(\d+)d(\d+)([+-]\d+)?$/i);
+  if (!match) return null;
+  const count = parseInt(match[1], 10);
+  const sides = parseInt(match[2], 10);
+  const modifier = parseInt(match[3] || '0', 10);
+  if (!Number.isInteger(count) || !Number.isInteger(sides) || !Number.isInteger(modifier)) return null;
+  if (count < 1 || count > 20) return null;
+  if (sides < 2 || sides > 1000) return null;
+  if (Math.abs(modifier) > 1000) return null;
+  return { count, sides, modifier };
+}
+
+function rollDiceFormula(formula) {
+  const normalized = String(formula || '').trim().toLowerCase();
+  if (!ALLOWED_DICE_FORMULAS.has(normalized)) return null;
+  const parsed = parseDiceFormula(normalized);
+  if (!parsed) return null;
+  const rolls = [];
+  for (let i = 0; i < parsed.count; i += 1) {
+    rolls.push(crypto.randomInt(1, parsed.sides + 1));
+  }
+  return {
+    formula: normalized,
+    rolls,
+    modifier: parsed.modifier,
+    total: rolls.reduce((sum, roll) => sum + roll, 0) + parsed.modifier
+  };
 }
 
 function pruneLoginAttempts(now = Date.now()) {
@@ -114,6 +203,11 @@ router.post('/auth/login', async (req, res) => {
   const retryAfterMs = getRetryAfterMs(req, username);
   if (retryAfterMs > 0) {
     const retrySeconds = Math.max(1, Math.ceil(retryAfterMs / 1000));
+    logAudit('login.blocked', {
+      username: normaliseLoginName(username),
+      ip: getClientAddress(req),
+      retryAfterSeconds: retrySeconds
+    });
     res.set('Retry-After', String(retrySeconds));
     return res.status(429).json({ error: `Too many login attempts. Try again in ${retrySeconds} seconds.` });
   }
@@ -121,17 +215,34 @@ router.post('/auth/login', async (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
   if (!user) {
     recordLoginFailure(req, username);
+    logAudit('login.failed', {
+      username: normaliseLoginName(username),
+      ip: getClientAddress(req),
+      reason: 'invalid_credentials'
+    });
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
   const ok = await bcrypt.compare(password, user.password_hash);
   if (!ok) {
     recordLoginFailure(req, username);
+    logAudit('login.failed', {
+      username: normaliseLoginName(username),
+      ip: getClientAddress(req),
+      userId: user.id,
+      reason: 'invalid_credentials'
+    });
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
   const token = signToken(user);
   clearLoginFailures(req, username);
+  logAudit('login.success', {
+    userId: user.id,
+    username: user.username,
+    role: user.role,
+    ip: getClientAddress(req)
+  });
   res.cookie(COOKIE_NAME, token, COOKIE_OPTS);
   res.json({ id: user.id, username: user.username, role: user.role });
 });
@@ -297,12 +408,31 @@ router.put('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
   const assigned = db.prepare('SELECT 1 FROM session_players WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
   if (!assigned) return res.status(403).json({ error: 'Player not assigned to this session' });
 
-  const data = JSON.stringify(req.body.data || {});
+  const previousRow = db.prepare('SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
+  const previousData = parseStoredSheetData(previousRow && previousRow.data);
+  const nextData = (req.body && typeof req.body.data === 'object' && req.body.data) || {};
+  const data = JSON.stringify(nextData);
   db.prepare(`
     INSERT INTO character_sheets (session_id, user_id, data, updated_at)
     VALUES (?, ?, ?, datetime('now'))
     ON CONFLICT(session_id, user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
   `).run(sessionId, userId, data);
+  const changedFields = listChangedSheetFields(previousData, nextData);
+  logAudit('sheet.saved', {
+    actorUserId: req.user.id,
+    actorUsername: req.user.username,
+    actorRole: req.user.role,
+    ip: getClientAddress(req),
+    scope: 'session',
+    mode: previousRow ? 'update' : 'create',
+    sessionId: Number(sessionId),
+    sessionName: getSessionNameById(sessionId),
+    sheetUserId: Number(userId),
+    sheetUsername: getUsernameById(userId),
+    changedFieldCount: changedFields.length,
+    changedFields: changedFields.slice(0, 20),
+    summary: summarizeSheetData(nextData)
+  });
   res.json({ ok: true });
 });
 
@@ -350,19 +480,72 @@ router.get('/adventure/domestic/sheet', requireAuth, (req, res) => {
 
 router.put('/adventure/domestic/sheet', requireAuth, (req, res) => {
   const session = ensureDomesticSystemSession();
-  const data = JSON.stringify(req.body.data || {});
+  const previousRow = db.prepare('SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?').get(session.id, req.user.id);
+  const previousData = parseStoredSheetData(previousRow && previousRow.data);
+  const nextData = (req.body && typeof req.body.data === 'object' && req.body.data) || {};
+  const data = JSON.stringify(nextData);
   db.prepare(`
     INSERT INTO character_sheets (session_id, user_id, data, updated_at)
     VALUES (?, ?, ?, datetime('now'))
     ON CONFLICT(session_id, user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
   `).run(session.id, req.user.id, data);
+  const changedFields = listChangedSheetFields(previousData, nextData);
+  logAudit('sheet.saved', {
+    actorUserId: req.user.id,
+    actorUsername: req.user.username,
+    actorRole: req.user.role,
+    ip: getClientAddress(req),
+    scope: 'domestic',
+    mode: previousRow ? 'update' : 'create',
+    sessionId: session.id,
+    sessionName: session.name,
+    sheetUserId: req.user.id,
+    sheetUsername: req.user.username,
+    changedFieldCount: changedFields.length,
+    changedFields: changedFields.slice(0, 20),
+    summary: summarizeSheetData(nextData)
+  });
   res.json({ ok: true, session_id: session.id });
 });
 
 router.delete('/adventure/domestic/sheet', requireAuth, (req, res) => {
   const session = ensureDomesticSystemSession();
+  const previousRow = db.prepare('SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?').get(session.id, req.user.id);
   db.prepare('DELETE FROM character_sheets WHERE session_id = ? AND user_id = ?').run(session.id, req.user.id);
+  logAudit('sheet.deleted', {
+    actorUserId: req.user.id,
+    actorUsername: req.user.username,
+    actorRole: req.user.role,
+    ip: getClientAddress(req),
+    scope: 'domestic',
+    sessionId: session.id,
+    sessionName: session.name,
+    sheetUserId: req.user.id,
+    sheetUsername: req.user.username,
+    summary: summarizeSheetData(parseStoredSheetData(previousRow && previousRow.data))
+  });
   res.json({ ok: true });
+});
+
+router.post('/dice/rolls', requireAuth, (req, res) => {
+  const formula = String(req.body && req.body.formula || '').trim();
+  const preset = String(req.body && req.body.preset || '').trim();
+  const rolled = rollDiceFormula(formula);
+  if (!rolled) {
+    return res.status(400).json({ error: 'A valid dice formula is required.' });
+  }
+  logAudit('dice.roll', {
+    userId: req.user.id,
+    username: req.user.username,
+    role: req.user.role,
+    ip: getClientAddress(req),
+    formula: rolled.formula,
+    preset: preset || null,
+    rolls: rolled.rolls,
+    modifier: rolled.modifier,
+    total: rolled.total
+  });
+  res.json({ ok: true, ...rolled });
 });
 
 // ── Rules library ────────────────────────────────────────────────────────────
@@ -455,20 +638,20 @@ router.get('/rules/search', requireAuth, (req, res) => {
 // Configure with COMFYUI_URL env var (default: http://192.168.37.51:8188).
 
 const COMFYUI_URL = (process.env.COMFYUI_URL || 'http://192.168.37.51:8188').replace(/\/+$/, '');
+const PORTRAIT_CHECKPOINT = process.env.COMFYUI_PORTRAIT_CHECKPOINT || 'sd3.5_large_fp8_scaled.safetensors';
 const PORTRAIT_NEGATIVE_PROMPT = 'lowres, blurry, distorted face, text, watermark, signature, extra fingers, photographic, photo snapshot, realistic modern interior, kitchen tiles, cupboards, domestic room, plain wall, tiled wall, historical robe, flowing robe, fantasy robe, wizard robe, victorian gown, medieval costume, fantasy costume, anachronistic clothing, cgi, 3d render, low quality';
-const PORTRAIT_WORKFLOW_TEMPLATE = {
-  '1': { class_type: 'CheckpointLoaderSimple', inputs: { ckpt_name: 'aZovyaRPGArtistTools_v4VAE.safetensors' } },
-  '2': { class_type: 'LoadImage', inputs: { image: 'portrait_input.jpg' } },
-  '3': { class_type: 'VAEEncode', inputs: { pixels: ['2', 0], vae: ['1', 2] } },
-  '4': { class_type: 'CLIPTextEncode', inputs: { clip: ['1', 1], text: '' } },
-  '5': { class_type: 'CLIPTextEncode', inputs: { clip: ['1', 1], text: PORTRAIT_NEGATIVE_PROMPT } },
-  '6': { class_type: 'KSampler', inputs: {
+const PORTRAIT_RANDOM_WORKFLOW_TEMPLATE = {
+  '1': { class_type: 'CheckpointLoaderSimple', inputs: { ckpt_name: PORTRAIT_CHECKPOINT } },
+  '2': { class_type: 'CLIPTextEncode', inputs: { clip: ['1', 1], text: '' } },
+  '3': { class_type: 'CLIPTextEncode', inputs: { clip: ['1', 1], text: PORTRAIT_NEGATIVE_PROMPT } },
+  '4': { class_type: 'EmptyLatentImage', inputs: { width: 768, height: 1024, batch_size: 1 } },
+  '5': { class_type: 'KSampler', inputs: {
     model: ['1', 0], seed: 42, steps: 28, cfg: 5.8,
     sampler_name: 'dpmpp_2m_sde', scheduler: 'karras', denoise: 0.52,
-    positive: ['4', 0], negative: ['5', 0], latent_image: ['3', 0]
+    positive: ['2', 0], negative: ['3', 0], latent_image: ['4', 0]
   } },
-  '7': { class_type: 'VAEDecode', inputs: { samples: ['6', 0], vae: ['1', 2] } },
-  '8': { class_type: 'SaveImage', inputs: { images: ['7', 0], filename_prefix: 'ROL_portrait' } }
+  '6': { class_type: 'VAEDecode', inputs: { samples: ['5', 0], vae: ['1', 2] } },
+  '7': { class_type: 'SaveImage', inputs: { images: ['6', 0], filename_prefix: 'ROL_portrait' } }
 };
 
 function cleanPortraitText(value, maxLen = 120) {
@@ -534,6 +717,23 @@ function collectPortraitWeaponNames(sheet) {
     .map((weapon) => cleanPortraitText(weapon && weapon.name, 60))
     .filter(Boolean)
     .slice(0, 2);
+}
+
+function collectTopPortraitStats(sheet) {
+  const labels = {
+    str: 'strong',
+    con: 'hardy',
+    dex: 'agile',
+    int: 'intelligent',
+    pow: 'strong-willed',
+    siz: 'imposing'
+  };
+  return ['str', 'con', 'dex', 'int', 'pow', 'siz']
+    .map((key) => ({ key, value: parseInt(sheet && sheet[key], 10), label: labels[key] }))
+    .filter((entry) => Number.isFinite(entry.value))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 2)
+    .map((entry) => entry.label);
 }
 
 function inferPortraitBackdrop(occupation) {
@@ -607,6 +807,7 @@ function buildPortraitPromptFromSheet(sheet) {
   const tradition = cleanPortraitText(sheet.magic_tradition, 80);
   const notableSkills = collectPortraitSkillDetails(sheet);
   const weaponNames = collectPortraitWeaponNames(sheet);
+  const topStats = collectTopPortraitStats(sheet);
   const advantages = parseAdvantagesText(sheet.advantages);
   const backdrop = inferPortraitBackdrop(occupation);
   const attire = inferPortraitAttire(occupation);
@@ -621,53 +822,34 @@ function buildPortraitPromptFromSheet(sheet) {
   else if (magical) descriptors.push('subtle signs of magic');
   if (advantages.length) descriptors.push(advantages.slice(0, 2).join(' and ').toLowerCase());
   if (notableSkills.length) descriptors.push(`known for ${notableSkills.join(', ')}`);
+  if (topStats.length) descriptors.push(topStats.join(' and '));
   if (weaponNames.length) descriptors.push(`equipped with ${weaponNames.join(' and ')}`);
 
   return `head-and-shoulders portrait of a ${subject}, ${descriptors.join(', ')}, `
     + `pronouns ${pronouns || 'unspecified'}, ${presentation}, `
-    + 'preserve the same person from the source photo, preserving facial structure, apparent sex/gender presentation, age, hair, glasses, and distinctive features, '
     + `${attire}, no robes or fantasy costume, `
     + `${backdrop}, `
-    + 'replace the original photo background while keeping the person recognisable, '
     + 'Art Nouveau portrait styling with a restrained Art Deco frame around the portrait, '
     + 'clean elegant linework, muted earthy palette with antique gold accents, painterly illustration, serious expression, three-quarters view, '
     + 'not photorealistic, not modern snapshot, no text, no watermark';
 }
 
-// Upload a source photo. The browser POSTs multipart/form-data here; we stream
-// the body straight through to ComfyUI's /upload/image without parsing it.
-router.post('/portrait/upload', requireAuth, async (req, res, next) => {
+// Queue a tightly-controlled random portrait workflow on ComfyUI from sheet data.
+router.post('/portrait/random', requireAuth, async (req, res, next) => {
   try {
-    const headers = { 'content-type': req.headers['content-type'] || 'application/octet-stream' };
-    if (req.headers['content-length']) headers['content-length'] = req.headers['content-length'];
-
-    const upstream = await fetch(`${COMFYUI_URL}/upload/image`, {
-      method: 'POST',
-      headers,
-      body: req,
-      duplex: 'half'
-    });
-    const buf = Buffer.from(await upstream.arrayBuffer());
-    res.status(upstream.status)
-       .type(upstream.headers.get('content-type') || 'application/json')
-       .send(buf);
-  } catch (e) { next(e); }
-});
-
-// Queue a tightly-controlled portrait workflow on ComfyUI. The browser may
-// provide sheet fields plus the uploaded image name, but not arbitrary node
-// graphs or raw prompts.
-router.post('/portrait/prompt', requireAuth, async (req, res, next) => {
-  try {
-    const imageName = path.basename(cleanPortraitText(req.body && req.body.image, 160));
-    if (!imageName) {
-      return res.status(400).json({ error: 'Uploaded image name is required.' });
-    }
     const sheet = (req.body && typeof req.body.sheet === 'object' && req.body.sheet) || {};
-    const workflow = JSON.parse(JSON.stringify(PORTRAIT_WORKFLOW_TEMPLATE));
-    workflow['2'].inputs.image = imageName;
-    workflow['4'].inputs.text = buildPortraitPromptFromSheet(sheet);
-    workflow['6'].inputs.seed = Math.floor(Math.random() * 2 ** 31);
+    const workflow = JSON.parse(JSON.stringify(PORTRAIT_RANDOM_WORKFLOW_TEMPLATE));
+    const promptText = buildPortraitPromptFromSheet(sheet);
+    const seed = Math.floor(Math.random() * 2 ** 31);
+    workflow['2'].inputs.text = promptText;
+    workflow['5'].inputs.seed = seed;
+
+    console.info('[portrait.random] submitting prompt', {
+      userId: req.user.id,
+      checkpoint: PORTRAIT_CHECKPOINT,
+      seed,
+      prompt: promptText
+    });
 
     const upstream = await fetch(`${COMFYUI_URL}/prompt`, {
       method: 'POST',
