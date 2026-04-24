@@ -808,7 +808,27 @@ window.saveSheet = saveSheet;
 async function exportPdf() {
   try {
     const data = SheetForm.collect();
-    await SheetPDF.export(data);
+    const res = await fetch('/api/sheet/render-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ data })
+    });
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (_) {}
+      throw new Error(msg);
+    }
+    const blob = await res.blob();
+    const slug = (String(data.name || 'character')
+      .replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '')) || 'character';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${slug}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
   } catch (e) {
     alert("Export failed: " + e.message);
   }

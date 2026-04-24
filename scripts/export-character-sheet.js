@@ -636,4 +636,9 @@ async function main() {
   }
 }
 
-main().catch(e => { process.stderr.write(`error: ${e.stack || e.message}\n`); process.exit(1); });
+// Expose buildPdf so the web server can render via the same codepath.
+module.exports = { buildPdf };
+
+if (require.main === module) {
+  main().catch(e => { process.stderr.write(`error: ${e.stack || e.message}\n`); process.exit(1); });
+}

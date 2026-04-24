@@ -6,6 +6,7 @@ const path = require('path');
 const db = require('./db');
 const { signToken, requireAuth, requireGM, COOKIE_NAME, COOKIE_OPTS } = require('./auth');
 const { loadDomesticAdventure } = require('./domesticAdventure');
+const { buildPdf } = require('../scripts/export-character-sheet');
 
 const router = express.Router();
 const DOMESTIC_SYSTEM_DESCRIPTION = '__SYSTEM_DOMESTIC__';
@@ -1014,6 +1015,26 @@ router.get('/portrait/view', requireAuth, async (req, res, next) => {
     }
     res.end();
   } catch (e) { next(e); }
+});
+
+// Render an in-memory sheet to PDF using the canonical buildPdf() from
+// scripts/export-character-sheet.js. Accepts the sheet object so the browser
+// can export unsaved edits — no DB lookup needed.
+router.post('/sheet/render-pdf', requireAuth, async (req, res) => {
+  try {
+    const sheet = (req.body && typeof req.body.data === 'object' && req.body.data) || {};
+    const blankPath = path.join(__dirname, '..', 'Rivers_of_London', 'RoL_Charsheet.pdf');
+    const pdfBytes = await buildPdf(sheet, blankPath);
+    const slug = (String(sheet.name || 'character')
+      .replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '')) || 'character';
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${slug}.pdf"`);
+    res.setHeader('Content-Length', pdfBytes.length);
+    res.end(Buffer.from(pdfBytes));
+  } catch (e) {
+    console.error('PDF render failed:', e);
+    res.status(500).json({ error: e.message || 'PDF render failed' });
+  }
 });
 
 module.exports = router;
