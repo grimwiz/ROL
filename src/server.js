@@ -31,8 +31,7 @@ app.get('*', (req, res) => {
 app.use((err, req, res, next) => {
   console.error(err);
   // Surface body-parser failures (oversized payload, malformed JSON) with their
-  // real status so the client can show something more useful than "Internal
-  // server error". Everything else still becomes a generic 500.
+  // real status so the client can show something more useful than "Internal  // server error". Everything else still becomes a generic 500.
   if (err && err.type === 'entity.too.large') {
     return res.status(413).json({ error: 'Upload too large. Try a smaller image.' });
   }

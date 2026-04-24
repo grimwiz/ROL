@@ -76,8 +76,9 @@ const SheetForm = (() => {
   let previousPortraitDataUrl = null;
   let stylising = false;
   let portraitCameraStream = null;
-  const PORTRAIT_STORAGE_WIDTH = 512;
-  const PORTRAIT_STORAGE_HEIGHT = 512;
+  // 7:8 aspect to match the printed PDF portrait box (164 × 187 pt).
+  const PORTRAIT_STORAGE_WIDTH = 672;
+  const PORTRAIT_STORAGE_HEIGHT = 768;
   const PORTRAIT_BG = '#1e1e26';
 
   function revokeIfBlobUrl(url) {
@@ -932,7 +933,10 @@ const SheetForm = (() => {
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = PORTRAIT_BG;
       ctx.fillRect(0, 0, width, height);
-      const scale = Math.min(width / w0, height / h0);
+      // Cover scaling: the longest side of the image fills its matching edge of
+      // the canvas. The shorter axis overflows and is cropped equally on both
+      // ends so the subject stays centred.
+      const scale = Math.max(width / w0, height / h0);
       const drawWidth = Math.max(1, Math.round(w0 * scale));
       const drawHeight = Math.max(1, Math.round(h0 * scale));
       const x = Math.floor((width - drawWidth) / 2);

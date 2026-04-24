@@ -659,7 +659,10 @@ router.get('/rules/search', requireAuth, (req, res) => {
 // Configure with COMFYUI_URL env var (default: http://192.168.37.51:8188).
 
 const COMFYUI_URL = (process.env.COMFYUI_URL || 'http://192.168.37.51:8188').replace(/\/+$/, '');
-const PORTRAIT_STORAGE_SIZE = { width: 512, height: 512 };
+// Portrait storage size targets the printed PDF box (164 × 187 pt, ~7:8).
+// 672 × 768 is divisible by 64 for SD3 latents and renders crisply at print
+// resolution (~4× the target points).
+const PORTRAIT_STORAGE_SIZE = { width: 672, height: 768 };
 const QWEN_IMAGE_MODELS = {
   diffusionModel: process.env.COMFYUI_QWEN_DIFFUSION_MODEL || 'qwen_image_2512_fp8_e4m3fn.safetensors',
   textEncoder: process.env.COMFYUI_QWEN_TEXT_ENCODER || 'qwen_2.5_vl_7b_fp8_scaled.safetensors',
