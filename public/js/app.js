@@ -763,6 +763,7 @@ async function renderGMSessionView(sessionId, preferredUserId = null) {
     area.insertAdjacentHTML('beforeend', `
       <div class="sheet-actions">
       <button class="btn btn-primary" onclick="gmSaveSheet(${sessionId},${userId})">Save sheet</button>
+      <button class="btn" onclick="exportPdf()">Export PDF</button>
       <span class="save-status" id="save-status"></span>
     </div>`);
   }
@@ -781,6 +782,7 @@ async function renderPlayerSessionView(sessionId) {
     <div id="sheet-form-area"></div>
     <div class="sheet-actions">
       <button class="btn btn-primary" onclick="saveSheet(${sessionId})">Save sheet</button>
+      <button class="btn" onclick="exportPdf()">Export PDF</button>
       <span class="save-status" id="save-status"></span>
     </div>`;
 
@@ -802,6 +804,16 @@ async function saveSheet(sessionId) {
   }
 }
 window.saveSheet = saveSheet;
+
+async function exportPdf() {
+  try {
+    const data = SheetForm.collect();
+    await SheetPDF.export(data);
+  } catch (e) {
+    alert("Export failed: " + e.message);
+  }
+}
+window.exportPdf = exportPdf;
 
 async function removePlayerFromSession(sessionId, userId) {
   if (!confirm('Remove this player from the session? Their character sheet will also be deleted.')) return;
