@@ -106,9 +106,47 @@
 
   // ---- helpers -----------------------------------------------------------
 
+  // pdf-lib's StandardFonts.Helvetica only supports WinAnsi (Latin-1 + a few
+  // extras). Anything outside that — emoji, em dashes, smart quotes, the ⚔
+  // marker we use for combat skills — would throw on drawText. Map common
+  // characters to WinAnsi equivalents and replace the rest with '?'.
+  const WINANSI_MAP = {
+    '\u2018': "'", '\u2019': "'", '\u201A': ',', '\u201B': "'",
+    '\u201C': '"', '\u201D': '"', '\u201E': '"', '\u201F': '"',
+    '\u2013': '-', '\u2014': '-', '\u2212': '-',
+    '\u2022': '*', '\u00B7': '*',
+    '\u2026': '...',
+    '\u2694': '*',          // ⚔ crossed swords (combat marker)
+    '\u2620': '+',          // ☠ skull
+    '\u2603': '*',          // ☃ snowman
+    '\u2605': '*', '\u2606': '*',
+    '\u2192': '->', '\u2190': '<-',
+    '\u00A0': ' ',
+  };
+  // 0x20..0x7E + 0xA1..0xFF are safe; the small WinAnsi-only block 0x80..0x9F
+  // (smart quotes etc.) is partly covered by the map above.
+  function isWinAnsiSafe(cc) {
+    return (cc >= 0x20 && cc <= 0x7E) || (cc >= 0xA0 && cc <= 0xFF);
+  }
+  function sanitize(text) {
+    if (text === null || text === undefined) return '';
+    let s = String(text);
+    let out = '';
+    for (let i = 0; i < s.length; i += 1) {
+      const ch = s[i];
+      const cc = ch.charCodeAt(0);
+      if (isWinAnsiSafe(cc)) { out += ch; continue; }
+      if (WINANSI_MAP[ch]) { out += WINANSI_MAP[ch]; continue; }
+      // High surrogate (emoji) — skip its low surrogate too.
+      if (cc >= 0xD800 && cc <= 0xDBFF) { i += 1; out += '?'; continue; }
+      out += '?';
+    }
+    return out;
+  }
+
   function ellipsize(font, text, size, maxW) {
     if (!text) return '';
-    let s = String(text);
+    let s = sanitize(text);
     if (font.widthOfTextAtSize(s, size) <= maxW) return s;
     while (s.length && font.widthOfTextAtSize(s + '…', size) > maxW) {
       s = s.slice(0, -1);
@@ -120,7 +158,7 @@
   // is ellipsised on the final line.
   function wrap(font, text, size, maxW, lines) {
     if (!text) return [];
-    const words = String(text).split(/\s+/);
+    const words = sanitize(text).split(/\s+/);
     const out = [];
     let cur = '';
     for (const w of words) {
@@ -147,13 +185,15 @@
 
   function drawText(page, font, text, x, yTop, size, maxW) {
     if (text === null || text === undefined || text === '') return;
-    const s = maxW ? ellipsize(font, String(text), size, maxW) : String(text);
+    const s = maxW ? ellipsize(font, text, size, maxW) : sanitize(text);
+    if (!s) return;
     page.drawText(s, { x, y: flip(yTop), size, font });
   }
 
   function drawCenter(page, font, text, xCenter, yTop, size) {
     if (!text && text !== 0) return;
-    const s = String(text);
+    const s = sanitize(text);
+    if (!s) return;
     const w = font.widthOfTextAtSize(s, size);
     page.drawText(s, { x: xCenter - w / 2, y: flip(yTop), size, font });
   }
