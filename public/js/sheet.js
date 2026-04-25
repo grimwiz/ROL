@@ -683,7 +683,11 @@ const SheetForm = (() => {
       const name = String(row.dataset.name || '').toLowerCase();
       const valueSelect = row.querySelector('.csk-val');
       if (!valueSelect) return;
-      if (name === 'sense vestigia' && magical) valueSelect.value = '60';
+      // Only auto-bump Sense Vestigia to 60 when Magical is chosen AND the
+      // skill is still at its base 30 — preserve any manual override.
+      if (name === 'sense vestigia' && magical && Number(valueSelect.value) === 30) {
+        valueSelect.value = '60';
+      }
     });
 
     const magicRow = Array.from(commonGrid.querySelectorAll('.csk-row'))

@@ -243,10 +243,10 @@ const COORDS = {
   // Row pitch ≈ 20.4pt.
   spellY:        [738.7, 759.1, 779.5],
   spellCol1OrderX: 46,
-  spellCol1NameX:  62,   spellCol1NameMaxW: 215,
+  spellCol1NameX:  78,   spellCol1NameMaxW: 199,
   spellCol2OrderX: 325,
-  spellCol2NameX:  340,  spellCol2NameMaxW: 225,
-  spellOrderMaxW:  20,
+  spellCol2NameX:  357,  spellCol2NameMaxW: 208,
+  spellOrderMaxW:  28,
 
   // ─── Page 2 ──────────────────────────────────────────────────────────────
   // NAME white entry rectangle (top-left): pt x=104.6..291.6, y=52..67.
@@ -321,6 +321,36 @@ function wrap(font, text, size, maxW, lines) {
   return out;
 }
 
+// Compress spell order labels so they fit the narrow ORDER column on the
+// printed sheet. "1st Order" → "1st", "Higher Order" → "Higher", etc. Strips
+// any trailing " Order" so user-typed variants ("2nd Order", "third order")
+// all collapse cleanly. Anything we don't recognise is returned untouched.
+function formatSpellOrder(raw) {
+  if (raw == null) return '';
+  let s = String(raw).trim();
+  if (!s) return '';
+  // Drop " – Mastered" / " - Mastered" suffixes — they don't fit the column
+  // and the user can derive mastery from notes.
+  s = s.replace(/\s*[–-]\s*mastered\b.*$/i, '').trim();
+  // "1st Order" → "1st", "2nd Order" → "2nd", etc.
+  s = s.replace(/\s+order\b/i, '').trim();
+  return s;
+}
+
+// Derive affluence from the advantages/disadvantages text. Surfaces
+// "Rich" / "Wealthy" / "Poor" if any of those tokens appears, otherwise
+// defaults to "Average". An explicit sheet.affluence value always wins.
+function deriveAffluence(sheet) {
+  if (sheet.affluence && String(sheet.affluence).trim()) {
+    return String(sheet.affluence).trim();
+  }
+  const blob = [sheet.advantages, sheet.disadvantages].filter(Boolean).join(' ');
+  if (/\brich\b/i.test(blob))    return 'Rich';
+  if (/\bwealthy\b/i.test(blob)) return 'Wealthy';
+  if (/\bpoor\b/i.test(blob))    return 'Poor';
+  return 'Average';
+}
+
 async function buildPdf(sheet, blankPath) {
   if (!fs.existsSync(blankPath)) die(`Blank PDF not found at ${blankPath}`);
   const blankBytes = fs.readFileSync(blankPath);
@@ -342,17 +372,17 @@ async function buildPdf(sheet, blankPath) {
   dtext(p1, font, sheet.residence,   COORDS.residence.x,   COORDS.residence.y,   FS, COORDS.residence.maxW);
   dtext(p1, font, sheet.pronouns,    COORDS.pronouns.x,    COORDS.pronouns.y,    FS, COORDS.pronouns.maxW);
   dtext(p1, font, sheet.age,         COORDS.age.x,         COORDS.age.y,         FS, COORDS.age.maxW);
-  // Affluence row absorbs Social Class so they share one line.
-  const affluenceText = [sheet.affluence, sheet.social_class].filter(Boolean).join(' / ');
-  dtext(p1, font, affluenceText,     COORDS.affluence.x,   COORDS.affluence.y,   FS, COORDS.affluence.maxW);
+  // Affluence: surface sheet.affluence if set, otherwise derive from
+  // advantages/disadvantages (Rich / Wealthy / Poor / Average default).
+  dtext(p1, font, deriveAffluence(sheet), COORDS.affluence.x, COORDS.affluence.y, FS, COORDS.affluence.maxW);
 
-  // Notes rows hold backstory (glitch lives on page 2 in BACKSTORY area;
-  // social class now lives in the Affluence field above).
-  const noteLines = [];
-  if (sheet.backstory)    noteLines.push(sheet.backstory);
-  // Wrap to fit on the available 3 note lines.
+  // Notes rows hold Class + Reputation (backstory has its own page-2 area;
+  // glitch lives on page 2 in BACKSTORY area).
+  const noteParts = [];
+  if (sheet.social_class) noteParts.push(`Class: ${sheet.social_class}`);
+  if (sheet.reputation)   noteParts.push(`Rep: ${sheet.reputation}`);
   const noteW = COORDS.notes[0].maxW;
-  const flat = noteLines.join(' / ');
+  const flat = noteParts.join(' / ');
   const wrapped = wrap(font, flat, FS, noteW, COORDS.notes.length);
   for (let i = 0; i < wrapped.length; i += 1) {
     dtext(p1, font, wrapped[i], COORDS.notes[i].x, COORDS.notes[i].y, FS, noteW);
@@ -480,8 +510,9 @@ async function buildPdf(sheet, blankPath) {
     const orderX = col === 0 ? COORDS.spellCol1OrderX : COORDS.spellCol2OrderX;
     const nameX  = col === 0 ? COORDS.spellCol1NameX  : COORDS.spellCol2NameX;
     const nameW  = col === 0 ? COORDS.spellCol1NameMaxW : COORDS.spellCol2NameMaxW;
-    if (s.order !== undefined && s.order !== '') {
-      dcenter(p1, font, String(s.order), orderX, y, FSS);
+    const orderShort = formatSpellOrder(s.order);
+    if (orderShort) {
+      dcenter(p1, font, orderShort, orderX, y, FSS);
     }
     dtext(p1, font, s.name || '', nameX, y, FSS, nameW);
   }
