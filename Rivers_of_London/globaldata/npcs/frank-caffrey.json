@@ -1,0 +1,116 @@
+{
+  "name": "Frank Caffrey",
+  "scope": "global",
+  "role": "firefighter",
+  "status": "",
+  "location": "",
+  "summary": "Frank Caffrey — firefighter.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Frank Caffrey",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Firefighter",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "firefighter",
+    "portrait": "",
+    "str": "70",
+    "con": "70",
+    "dex": "50",
+    "int": "50",
+    "pow": "60",
+    "siz": "",
+    "advantages": "Damage Bonus, Natural Toughness, Steadfast",
+    "disadvantages": "",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "70"
+      },
+      {
+        "name": "Firearms",
+        "value": "80"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "60"
+      },
+      {
+        "name": "Drive",
+        "value": "50"
+      },
+      {
+        "name": "Navigate",
+        "value": "50"
+      },
+      {
+        "name": "Observation",
+        "value": "70"
+      },
+      {
+        "name": "Read Person",
+        "value": "60"
+      },
+      {
+        "name": "Research",
+        "value": "30"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "50"
+      },
+      {
+        "name": "Social",
+        "value": "60"
+      },
+      {
+        "name": "Stealth",
+        "value": "70"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Demolitions",
+        "value": "70"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: English (own)",
+        "value": "60%"
+      }
+    ],
+    "luck": "",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "",
+    "magic_notes": "",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "60",
+      "mp": "12",
+      "build": "",
+      "move": "8"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "1"
+      }
+    ]
+  }
+}

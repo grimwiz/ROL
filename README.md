@@ -1,6 +1,6 @@
 # The Folly – Investigator Case Files
 
-Rivers of London RPG character sheet management web app. Multi-user, GM/Player roles, embedded rulebook + solo adventure, AI portrait generation, and one-click export to the printed character sheet PDF.
+Rivers of London RPG character sheet management web app. Multi-user, GM/Player roles, NPC tracking, static scenario information pages, embedded rulebook + solo adventure, AI portrait generation, and one-click export to the printed character sheet PDF.
 
 ## Requirements
 
@@ -24,6 +24,9 @@ npm start
 
 # Validate The Domestic adventure parsing/reachability
 npm run check:domestic
+
+# Regenerate a session's scenario information (same Ollama path as the web app)
+npm run scenario:regenerate -- --scenario 1
 ```
 
 The app will be available on `http://localhost:3000` (or your configured port).
@@ -42,6 +45,10 @@ On first start, if no users exist, a default GM account is created:
 | Variable | Default | Description |
 |---|---|---|
 | `PORT` | `3000` | Port to listen on |
+| `HOST` | `0.0.0.0` | Interface to bind the HTTP server to |
+| `OLLAMA_URL` | LAN default | Base URL of the Ollama server used to (re)generate scenario information |
+| `OLLAMA_MODEL` | `qwen3.6_36b:codex` | Ollama model used for scenario regeneration |
+| `OLLAMA_NUM_CTX` | `262144` | Context window passed to Ollama |
 | `JWT_SECRET` | *(insecure default)* | Secret for signing JWTs — **must be set in production** |
 | `DB_PATH` | `./data/folly.db` | Path to the SQLite database file |
 | `GM_INITIAL_PASSWORD` | `changeme123` | Password for auto-created GM account (first run only) |
@@ -97,10 +104,77 @@ sudo systemctl enable --now folly
 
 ## Roles
 
-- **GM (admin-level access):** Can create, rename, and delete sessions, create/manage player accounts, assign players to sessions, and create/edit character sheets on behalf of assigned players in those sessions.
-- **Player:** Can see their assigned sessions, create and edit their character sheet for each session.
+- **GM (admin-level access):** Can create, rename, and delete case files, create/manage player accounts, assign players to case files, and create/edit character sheets on behalf of assigned players in those case files.
+- **Player:** Can see their assigned case files, create and edit their character sheet for each case file.
 
 Login is rate-limited (25 attempts per IP per 15 minutes; 8 per account) to slow down brute-force attempts.
+
+## NPCs
+
+Each GM case file view has an **NPCs** subtab for manual NPC records stored in SQLite. NPCs are attached to a specific case file and include role, status, location, summary, and GM notes.
+
+### NPC character sheets (from the rulebook)
+
+Named NPCs from the *Rivers of London* rulebook (the Rogues' Gallery and bundled case Cast — Nightingale, Peter Grant, Beverley Brook, Molly, the Domestic cast, etc.) ship as full character sheets. Each NPC card has a **Sheet** button that opens the **same** character-sheet editor and **Export PDF** mechanism players use, so a GM can read, tweak, and print an NPC sheet exactly like a player one. RoL fields with no native box (Damage Bonus, Languages, Powers/Signare/Demi-monde affinity/Vestigia, Wizard's Staff) are preserved in the sheet's Custom Fields, so the import is lossless.
+
+The data lives as one JSON file per NPC in `Rivers_of_London/globaldata/npcs/`, and is **auto-seeded into the database on server start if missing** — the same gap-filling strategy used for the global Markdown files (it never overwrites a GM's in-app edits). The round-trip is:
+
+```bash
+npm run npcs:extract   # parse the rulebook → Rivers_of_London/globaldata/npcs/*.json (best effort)
+npm run npcs:seed      # seed any missing NPCs into the DB without a restart (also runs at startup)
+npm run npcs:export    # write the DB's NPC sheets back to globaldata/npcs/*.json
+```
+
+So if a parsed sheet has an error, fix it in the web app, run `npm run npcs:export`, and the corrected JSON becomes the canonical seed copy.
+
+## Session scenario information
+
+Each case file detail view splits scenario knowledge into **Case Info**, **Player Info**, **NPC/Places/Things**, and (GM-only) **GM Info** and **Edit Files** subtabs:
+
+- **Case Info** — the "what has happened so far" analysis and per-session analysis. The model returns structured Markdown (headings, bold, bulleted beats) rendered with a clickable index; it also chooses a `presentation` mode — *scene* (the party moving through events together) or *player* (per-character threads) — favouring scene for the overall summary and per-player for sessions. Outstanding leads, in-flight actions, and open questions are woven into this prose rather than listed separately, because an explicit to-investigate checklist is itself a spoiler.
+- **Player Info** — per-character story. A player sees only their own character's story. A GM gets a player selector mirroring the Characters tab and can preview exactly what each player sees (filtered server-side via `?as_user=`).
+- **NPC/Places/Things** — player-visible Places, NPCs, and notable Things (objects/artefacts/evidence).
+- **GM Info** — GM-only `gm-analysis.json` categories.
+- **Edit Files** — GM editing of the session source markdown.
+
+It reads static generated artifacts from that session's folder:
+
+```text
+data/sessions/<session-name-slug>/output_player/scenario-info.json
+data/sessions/<session-name-slug>/output_gm/gm-analysis.json
+```
+
+The GM can edit all session markdown files in the session UI. The source layout is:
+
+```text
+data/sessions/<session-name-slug>/*.md          # session-local copies seeded from Rivers_of_London/globaldata
+data/sessions/<session-name-slug>/input/*.md    # player-visible scenario material
+data/sessions/<session-name-slug>/GM/*.md       # GM-only private material
+data/sessions/<session-name-slug>/player_sections.json
+data/sessions/<session-name-slug>/gm_sections.json
+```
+
+Root markdown and `input/` files support player-facing analysis. `GM/` files support private planning, pacing, per-player deliverables, fairness/engagement tracking, and quiet-player prompts. The global seed files are copied into the session folder when missing or empty, so a GM can empty a local seeded file to restore it from `Rivers_of_London/globaldata`. Players can read the rulebook directly in-app, so no game-overview file is seeded into sessions or fed to the model.
+
+### One generation path
+
+There is exactly one way scenario information is produced: the server sends each section's prompt to an Ollama model (`OLLAMA_URL` / `OLLAMA_MODEL`, see *Environment variables*) and writes the returned JSON back to `scenario-info.json` / `gm-analysis.json`. Each prompt embeds the allowed markdown source contents and the current section value, uses the live database roster to map players to character names, treats **Stu Bentley** as the GM, and is told to rewrite a section only on a material change. Player access is filtered by `known_by` character names; GM-only analysis is only returned to GM users. The previous "write a Claude/Codex prompt file to run by hand" path has been removed.
+
+A GM triggers regeneration from the web app:
+
+- **Regenerate** / **Revert** on any individual section card.
+- **Regenerate Page** in a subtab header — regenerates just the sections that page shows.
+- **Bulk Regenerate** on the **Edit Files** page — regenerates every section.
+
+Codex/Claude is not available on the application server, so the equivalent manual run is a script that triggers the **same** server actions (no separate code path):
+
+```bash
+npm run scenario:regenerate -- --scenario 1                                  # all sections
+npm run scenario:regenerate -- --scenario 1 --artifact player                # only player sections
+npm run scenario:regenerate -- --scenario 1 --sections player.entities.npcs  # named sections
+```
+
+Session data folders are named from the current session name. When a GM renames a session, the folder is renamed to match.
 
 ## Character sheet coverage
 
@@ -182,12 +256,16 @@ The browser and CLI go through the same `buildPdf()` function, so what you get f
 ## Front-end scripts
 
 - `public/js/api.js`: Centralised browser API client used by UI actions (`auth`, `users`, `sessions`, sheets, portrait, dice, adventure, and rules endpoints).
-- `public/js/app.js`: Main SPA logic (auth flow, session/account/rules tabs, session rename modal, player assignment, GM/player sheet interactions, GM session overview table, embedded HTML rulebook viewer, the Export-PDF button, and The Domestic top-nav solo adventure tab with URL step routing and local sheet persistence).
+- `public/js/app.js`: Main SPA logic (auth flow, case file/account/rules tabs, case file rename modal, player assignment, GM/player sheet interactions, GM session overview table, session-scoped scenario info, session NPCs, embedded HTML rulebook viewer, the Export-PDF button, and The Domestic top-nav solo adventure tab with URL step routing and local sheet persistence).
 - `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views — includes backstory support, portrait upload/camera/generation behaviour, occupation free-text, characteristic dropdowns with stat-total messaging, the advantages textbox + collapsible preset picker with stat-prereq disabling, common-skill dropdowns with the Sense-Vestigia / Magic auto-adjustments described above, expert/additional skill controls, custom-field controls, and the magic-section visibility toggle.
 
 ## Utility scripts
 
 - `npm run check:domestic` (`scripts/check-domestic-adventure.js`): Parses `Rivers_of_London/The Domestic.md`, verifies exactly 111 steps are present, and confirms all steps are reachable from the start via parsed links.
+- `npm run scenario:regenerate -- --scenario <id-or-name> [--artifact player|gm] [--sections id,id]` (`scripts/regenerate-scenario-info.js`): Runs the single Ollama-backed regeneration path — the same server action the web app's Regenerate / Regenerate Page / Bulk Regenerate buttons trigger — and writes `scenario-info.json` / `gm-analysis.json` in place, rewriting only sections with material changes.
+- `npm run npcs:extract` (`scripts/extract-rulebook-npcs.js`): Parses the bundled rulebook Markdown and writes one NPC character-sheet JSON per named NPC to `Rivers_of_London/globaldata/npcs/`.
+- `npm run npcs:seed` (`scripts/seed-npcs.js`): Inserts any missing global NPC sheets from `globaldata/npcs/` into the DB. The server also does this automatically at startup.
+- `npm run npcs:export` (`scripts/export-rulebook-npcs.js`): Writes the DB's current global NPC sheets back to `globaldata/npcs/*.json` so in-app corrections become the canonical seed copy.
 - `node scripts/export-character-sheet.js …`: Render a character sheet to PDF from the CLI by overlaying it on `Rivers_of_London/RoL_Charsheet.pdf`. Usage:
 
   ```bash
@@ -243,4 +321,4 @@ If more decorations turn up later, adding them is manual — just drop the filen
 
 ## Data
 
-SQLite database stored at `DB_PATH`. Back it up by copying the `.db` file. The schema covers users, sessions, the session ↔ player join table, character sheets (one JSON blob per (session, user) pair), and per-user *Domestic* progress.
+SQLite database stored at `DB_PATH`. Back it up by copying the `.db` file. The schema covers users, sessions, the session ↔ player join table, character sheets (one JSON blob per (session, user) pair), NPCs (including an optional full character-sheet JSON in the `sheet` column), and per-user *Domestic* progress.

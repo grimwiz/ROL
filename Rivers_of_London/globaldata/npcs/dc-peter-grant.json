@@ -1,0 +1,205 @@
+{
+  "name": "DC Peter Grant",
+  "scope": "global",
+  "role": "apprentice practitioner",
+  "status": "",
+  "location": "",
+  "summary": "DC Peter Grant — apprentice practitioner.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "DC Peter Grant",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Apprentice Practitioner",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "apprentice practitioner",
+    "portrait": "",
+    "str": "60",
+    "con": "50",
+    "dex": "40",
+    "int": "70",
+    "pow": "60",
+    "siz": "",
+    "advantages": "Magical",
+    "disadvantages": "",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "60"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "30"
+      },
+      {
+        "name": "Drive",
+        "value": "50"
+      },
+      {
+        "name": "Navigate",
+        "value": "60"
+      },
+      {
+        "name": "Observation",
+        "value": "60"
+      },
+      {
+        "name": "Read Person",
+        "value": "60"
+      },
+      {
+        "name": "Research",
+        "value": "30"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "60"
+      },
+      {
+        "name": "Social",
+        "value": "60"
+      },
+      {
+        "name": "Stealth",
+        "value": "30"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Law",
+        "value": "60"
+      },
+      {
+        "name": "Magic",
+        "value": "60"
+      },
+      {
+        "name": "Tech",
+        "value": "40"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: English (own)",
+        "value": "70%"
+      },
+      {
+        "name": "Language: German",
+        "value": "30%"
+      },
+      {
+        "name": "Language: Greek",
+        "value": "30%"
+      },
+      {
+        "name": "Language: Krio (own)",
+        "value": "35%"
+      },
+      {
+        "name": "Language: Latin",
+        "value": "60%"
+      }
+    ],
+    "luck": "50",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "Newtonian",
+    "magic_notes": "plus all the others pells listed in the Chapter 4: Newtonian Magic up to (but not including) fourth order",
+    "magic_spells": [
+      {
+        "name": "Aqua",
+        "order": "mastered",
+        "notes": ""
+      },
+      {
+        "name": "Impello",
+        "order": "mastered",
+        "notes": ""
+      },
+      {
+        "name": "Scindere",
+        "order": "mastered",
+        "notes": ""
+      },
+      {
+        "name": "Werelight",
+        "order": "mastered",
+        "notes": ""
+      },
+      {
+        "name": "Car Killer",
+        "order": "mastered",
+        "notes": ""
+      },
+      {
+        "name": "Fireball",
+        "order": "mastered",
+        "notes": ""
+      },
+      {
+        "name": "Impello palma",
+        "order": "mastered",
+        "notes": ""
+      },
+      {
+        "name": "Shield",
+        "order": "mastered",
+        "notes": ""
+      },
+      {
+        "name": "Coffin Bell",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "Telescopium",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "Clausurafrange",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "Sīphōnem",
+        "order": "",
+        "notes": ""
+      }
+    ],
+    "derived": {
+      "hp": "",
+      "san": "60",
+      "mp": "20",
+      "build": "",
+      "move": "8"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Signare",
+        "value": "This is where things get complicated. Nightingale's tick-tock precision is there, but after that, it's all over the place-music, laughter, the smell of chocolate, images of London-and, blimey, is it loud! So loud, in fact, that it hides what spell he's cueing up, meaning an adversary can't make a Magic skill roll to determine what spell he's about to fling at them"
+      }
+    ]
+  }
+}

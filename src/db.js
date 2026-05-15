@@ -58,7 +58,31 @@ db.exec(`
     updated_at TEXT DEFAULT (datetime('now'))
   );
 
+  CREATE TABLE IF NOT EXISTS npcs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    scope TEXT NOT NULL DEFAULT 'global' CHECK(scope IN ('global','scenario')),
+    session_id INTEGER REFERENCES sessions(id) ON DELETE CASCADE,
+    role TEXT,
+    status TEXT,
+    location TEXT,
+    summary TEXT,
+    notes TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now')),
+    CHECK(scope = 'global' OR session_id IS NOT NULL)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_npcs_scope_session ON npcs(scope, session_id);
+  CREATE INDEX IF NOT EXISTS idx_npcs_name ON npcs(name COLLATE NOCASE);
+
   DROP TABLE IF EXISTS domestic_sheets;
 `);
+
+// NPC character-sheet JSON (added after the table may already exist).
+const npcColumns = db.prepare("PRAGMA table_info(npcs)").all();
+if (!npcColumns.some((c) => c.name === 'sheet')) {
+  db.exec('ALTER TABLE npcs ADD COLUMN sheet TEXT');
+}
 
 module.exports = db;

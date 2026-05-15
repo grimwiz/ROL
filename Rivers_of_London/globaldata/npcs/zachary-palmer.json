@@ -1,0 +1,124 @@
+{
+  "name": "Zachary Palmer",
+  "scope": "global",
+  "role": "'goblin boy'",
+  "status": "",
+  "location": "",
+  "summary": "Zachary Palmer — 'goblin boy'.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Zachary Palmer",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "'Goblin Boy'",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "'goblin boy'",
+    "portrait": "",
+    "str": "50",
+    "con": "60",
+    "dex": "80",
+    "int": "60",
+    "pow": "80",
+    "siz": "",
+    "advantages": "Natural Toughness, Speedy",
+    "disadvantages": "",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "60"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "70"
+      },
+      {
+        "name": "Drive",
+        "value": "30"
+      },
+      {
+        "name": "Navigate",
+        "value": "60"
+      },
+      {
+        "name": "Observation",
+        "value": "30"
+      },
+      {
+        "name": "Read Person",
+        "value": "60"
+      },
+      {
+        "name": "Research",
+        "value": "40"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "70"
+      },
+      {
+        "name": "Social",
+        "value": "60"
+      },
+      {
+        "name": "Stealth",
+        "value": "80"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Locksmith",
+        "value": "60"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: English (own)",
+        "value": "60%"
+      }
+    ],
+    "luck": "80",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "",
+    "magic_notes": "",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "80",
+      "mp": "",
+      "build": "",
+      "move": "9"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Powers",
+        "value": "Luck of the Demi-monde"
+      },
+      {
+        "key": "Demi-Monde Affinity",
+        "value": "Locks. LONDON, CAPITAL CITY of the United Kingdom and home of the Society of the Wise, better known as 'the Folly'the heart of Newtonian magic in the UK, at least as far as policing is concerned! This chapter aims to give the Game Moderator (GM) and players-and their investigators-an overview of the Folly's history and associations, as well as of magical London. It is presented as an induction session given by Sergeant Anthony Finnegan, one of the Folly's recently recruited members of staff 1 , aimed at getting new officers and civilian associates up to speed. The GM can use the following sections directly as an in-character introduction for their investigators to the workings of the Society of the Wise and its headquarters, or they can paraphrase and adapt the material provided for their own purposes, such as when presenting case files. The GM is free to use the information as they will: it could be shared verbally, via player handouts, or even as computer-screen presentations during character generation or in the course of starting case files. Scattered throughout the following sections, you'll also find 'case seeds,' which suggest potential plot ideas and show how a GM can use the information provided in this chapter to design case files of their own"
+      }
+    ]
+  }
+}

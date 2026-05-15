@@ -6,6 +6,7 @@ const { requireAuth } = require('./auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 app.disable('x-powered-by');
 const trustProxy = process.env.TRUST_PROXY;
 if (trustProxy === undefined || trustProxy === '') app.set('trust proxy', 1);
@@ -41,11 +42,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(PORT, () => {
-  console.log(`The Folly case files running on port ${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`The Folly case files running on ${HOST}:${PORT}`);
 
   // Create default GM account if no users exist
   const db = require('./db');
+  const { seedGlobalNpcs } = require('./npcSeed');
+  try { seedGlobalNpcs(db); } catch (e) { console.error(`NPC seeding failed: ${e.message}`); }
   const bcrypt = require('bcryptjs');
   const existing = db.prepare('SELECT COUNT(*) as n FROM users').get();
   if (existing.n === 0) {

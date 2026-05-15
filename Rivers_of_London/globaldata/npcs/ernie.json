@@ -1,0 +1,87 @@
+{
+  "name": "Ernie",
+  "scope": "global",
+  "role": "ghost-hunting dog-in-training",
+  "status": "",
+  "location": "",
+  "summary": "Ernie — ghost-hunting dog-in-training.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Ernie",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Ghost-Hunting Dog-In-Training",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "ghost-hunting dog-in-training",
+    "portrait": "",
+    "str": "20",
+    "con": "60",
+    "dex": "80",
+    "int": "",
+    "pow": "50",
+    "siz": "",
+    "advantages": "",
+    "disadvantages": "",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "30"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Observation",
+        "value": "50"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "50"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Eat Sausages",
+        "value": "70"
+      },
+      {
+        "name": "Bite",
+        "value": "70"
+      }
+    ],
+    "additional_skills": [],
+    "luck": "",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "",
+    "magic_notes": "",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "50",
+      "mp": "",
+      "build": "",
+      "move": ""
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      }
+    ]
+  }
+}

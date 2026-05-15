@@ -1,0 +1,128 @@
+{
+  "name": "Beverley Brook",
+  "scope": "global",
+  "role": "genius loci",
+  "status": "",
+  "location": "",
+  "summary": "Beverley Brook — genius loci.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Beverley Brook",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Genius Loci",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "Traits: sometimes she casually demonstrates her power over water, such as thawing frozen food by staring at it 23 . Allegiances: Bev is party to an agreement that requires her to ask permission from the Folly before using her.",
+    "reputation": "genius loci",
+    "portrait": "",
+    "str": "40",
+    "con": "50",
+    "dex": "60",
+    "int": "70",
+    "pow": "100",
+    "siz": "",
+    "advantages": "Natural Toughness",
+    "disadvantages": "vulnerable to cold iron",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "40"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "70"
+      },
+      {
+        "name": "Drive",
+        "value": "50"
+      },
+      {
+        "name": "Navigate",
+        "value": "60"
+      },
+      {
+        "name": "Observation",
+        "value": "60"
+      },
+      {
+        "name": "Read Person",
+        "value": "60"
+      },
+      {
+        "name": "Research",
+        "value": "30"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "70"
+      },
+      {
+        "name": "Social",
+        "value": "60"
+      },
+      {
+        "name": "Stealth",
+        "value": "60"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Science (Environmental)",
+        "value": "60"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: English (own)",
+        "value": "70%"
+      },
+      {
+        "name": "Language: Yoruba (own)",
+        "value": "35%"
+      }
+    ],
+    "luck": "100",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "",
+    "magic_notes": "",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "100",
+      "mp": "",
+      "build": "",
+      "move": "8"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Powers",
+        "value": "The Glamour, Luck of the Demi-monde"
+      },
+      {
+        "key": "Demi-Monde Affinity",
+        "value": "Water"
+      }
+    ]
+  }
+}

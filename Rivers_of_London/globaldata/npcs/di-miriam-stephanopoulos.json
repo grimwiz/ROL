@@ -1,0 +1,120 @@
+{
+  "name": "DI Miriam Stephanopoulos",
+  "scope": "global",
+  "role": "senior detective",
+  "status": "",
+  "location": "",
+  "summary": "DI Miriam Stephanopoulos — senior detective.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "DI Miriam Stephanopoulos",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Senior Detective",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "senior detective",
+    "portrait": "",
+    "str": "60",
+    "con": "50",
+    "dex": "60",
+    "int": "50",
+    "pow": "60",
+    "siz": "",
+    "advantages": "Scary, Steadfast",
+    "disadvantages": "",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "60"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "30"
+      },
+      {
+        "name": "Drive",
+        "value": "60"
+      },
+      {
+        "name": "Navigate",
+        "value": "50"
+      },
+      {
+        "name": "Observation",
+        "value": "70"
+      },
+      {
+        "name": "Read Person",
+        "value": "70"
+      },
+      {
+        "name": "Research",
+        "value": "70"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "30"
+      },
+      {
+        "name": "Social",
+        "value": "60"
+      },
+      {
+        "name": "Stealth",
+        "value": "40"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Law",
+        "value": "80"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: English (own)",
+        "value": "60%"
+      },
+      {
+        "name": "Language: Greek",
+        "value": "30%"
+      }
+    ],
+    "luck": "",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "",
+    "magic_notes": "",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "60",
+      "mp": "12",
+      "build": "",
+      "move": "8"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      }
+    ]
+  }
+}

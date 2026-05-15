@@ -1,0 +1,123 @@
+{
+  "name": "Foxglove",
+  "scope": "global",
+  "role": "High Fae artist",
+  "status": "",
+  "location": "",
+  "summary": "Foxglove — High Fae artist.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Foxglove",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "High Fae Artist",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "High Fae artist",
+    "portrait": "",
+    "str": "70",
+    "con": "50",
+    "dex": "80",
+    "int": "60",
+    "pow": "80",
+    "siz": "",
+    "advantages": "Natural Toughness, Speedy",
+    "disadvantages": "vulnerable to cold iron",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "30"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "70"
+      },
+      {
+        "name": "Drive",
+        "value": "30"
+      },
+      {
+        "name": "Navigate",
+        "value": "30"
+      },
+      {
+        "name": "Observation",
+        "value": "80"
+      },
+      {
+        "name": "Read Person",
+        "value": "60"
+      },
+      {
+        "name": "Research",
+        "value": "30"
+      },
+      {
+        "name": "Social",
+        "value": "40"
+      },
+      {
+        "name": "Stealth",
+        "value": "70"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Art/Craft (Painting)",
+        "value": "80"
+      }
+    ],
+    "additional_skills": [],
+    "luck": "80",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "",
+    "magic_notes": "",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "80",
+      "mp": "",
+      "build": "",
+      "move": "9"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Languages",
+        "value": "She won't say-possibly High Fae?"
+      },
+      {
+        "key": "Powers",
+        "value": "Luck of the Demi-monde"
+      },
+      {
+        "key": "Demi-Monde Affinity",
+        "value": "Magical nullification"
+      },
+      {
+        "key": "Vestigia",
+        "value": "Nothing anyone's been able to put their finger on just yet"
+      }
+    ]
+  }
+}

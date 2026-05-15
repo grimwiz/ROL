@@ -6,6 +6,17 @@ const path = require('path');
 const db = require('./db');
 const { signToken, requireAuth, requireGM, COOKIE_NAME, COOKIE_OPTS } = require('./auth');
 const { loadDomesticAdventure } = require('./domesticAdventure');
+const {
+  ensureSessionDataFolderById,
+  renameSessionDataFolder,
+  loadSessionScenarioInfoForUser,
+  readSessionSources,
+  writeSessionSources,
+  regenerateScenarioSection,
+  regenerateScenarioSections,
+  revertScenarioSection,
+  resolveSessionAssetPath
+} = require('./scenarioInfo');
 const { buildPdf } = require('../scripts/export-character-sheet');
 
 const router = express.Router();
@@ -217,6 +228,91 @@ function getDomesticSheetRow(userId) {
   return { session, sheet };
 }
 
+function getAccessibleSession(req, res, sessionId) {
+  const session = db.prepare('SELECT * FROM sessions WHERE id = ? AND COALESCE(description, \'\') != ?').get(sessionId, DOMESTIC_SYSTEM_DESCRIPTION);
+  if (!session) {
+    res.status(404).json({ error: 'Session not found' });
+    return null;
+  }
+  if (req.user.role !== 'gm') {
+    const assigned = db.prepare('SELECT 1 FROM session_players WHERE session_id = ? AND user_id = ?').get(sessionId, req.user.id);
+    if (!assigned) {
+      res.status(403).json({ error: 'Not assigned to this session' });
+      return null;
+    }
+  }
+  return session;
+}
+
+function cleanOptionalText(value, maxLen = 10000) {
+  const text = String(value || '').trim();
+  return text ? text.slice(0, maxLen) : null;
+}
+
+function parseNpcSheet(value) {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function rowToNpc(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    scope: row.scope,
+    session_id: row.session_id,
+    session_name: row.session_name || null,
+    role: row.role || '',
+    status: row.status || '',
+    location: row.location || '',
+    summary: row.summary || '',
+    notes: row.notes || '',
+    sheet: parseNpcSheet(row.sheet),
+    created_at: row.created_at,
+    updated_at: row.updated_at
+  };
+}
+
+function readNpcPayload(body) {
+  const payload = body && typeof body === 'object' ? body : {};
+  const name = cleanOptionalText(payload.name, 200);
+  const scope = payload.scope === 'scenario' ? 'scenario' : 'global';
+  const sessionId = scope === 'scenario' ? parseInt(payload.session_id, 10) : null;
+  if (!name) return { error: 'name required' };
+  if (scope === 'scenario' && !Number.isInteger(sessionId)) {
+    return { error: 'scenario NPCs require a session_id' };
+  }
+  if (scope === 'scenario') {
+    const session = db.prepare('SELECT 1 FROM sessions WHERE id = ? AND COALESCE(description, \'\') != ?').get(sessionId, DOMESTIC_SYSTEM_DESCRIPTION);
+    if (!session) return { error: 'Session not found' };
+  }
+  const sheetProvided = Object.prototype.hasOwnProperty.call(payload, 'sheet');
+  let sheet = null;
+  if (sheetProvided && payload.sheet && typeof payload.sheet === 'object') {
+    const json = JSON.stringify(payload.sheet);
+    if (json.length > 200000) return { error: 'sheet too large' };
+    sheet = json;
+  }
+  return {
+    data: {
+      name,
+      scope,
+      session_id: sessionId,
+      role: cleanOptionalText(payload.role, 200),
+      status: cleanOptionalText(payload.status, 200),
+      location: cleanOptionalText(payload.location, 300),
+      summary: cleanOptionalText(payload.summary, 3000),
+      notes: cleanOptionalText(payload.notes, 10000),
+      sheetProvided,
+      sheet
+    }
+  };
+}
+
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 router.post('/auth/login', async (req, res) => {
@@ -318,6 +414,76 @@ router.delete('/users/:id', requireGM, (req, res) => {
   res.json({ ok: true });
 });
 
+// ── NPCs (GM only) ────────────────────────────────────────────────────────────
+
+router.get('/npcs', requireGM, (req, res) => {
+  const sessionId = req.query.session_id ? parseInt(req.query.session_id, 10) : null;
+  let rows;
+  if (Number.isInteger(sessionId)) {
+    rows = db.prepare(`
+      SELECT n.*, s.name AS session_name
+      FROM npcs n
+      LEFT JOIN sessions s ON s.id = n.session_id
+      WHERE n.scope = 'global' OR n.session_id = ?
+      ORDER BY n.scope, COALESCE(s.name, ''), n.name COLLATE NOCASE
+    `).all(sessionId);
+  } else {
+    rows = db.prepare(`
+      SELECT n.*, s.name AS session_name
+      FROM npcs n
+      LEFT JOIN sessions s ON s.id = n.session_id
+      ORDER BY n.scope, COALESCE(s.name, ''), n.name COLLATE NOCASE
+    `).all();
+  }
+  res.json(rows.map(rowToNpc));
+});
+
+router.post('/npcs', requireGM, (req, res) => {
+  const parsed = readNpcPayload(req.body);
+  if (parsed.error) return res.status(400).json({ error: parsed.error });
+  const npc = parsed.data;
+  const result = db.prepare(`
+    INSERT INTO npcs (name, scope, session_id, role, status, location, summary, notes, sheet, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+  `).run(npc.name, npc.scope, npc.session_id, npc.role, npc.status, npc.location, npc.summary, npc.notes, npc.sheet);
+  const row = db.prepare(`
+    SELECT n.*, s.name AS session_name
+    FROM npcs n
+    LEFT JOIN sessions s ON s.id = n.session_id
+    WHERE n.id = ?
+  `).get(result.lastInsertRowid);
+  res.status(201).json(rowToNpc(row));
+});
+
+router.put('/npcs/:id', requireGM, (req, res) => {
+  const parsed = readNpcPayload(req.body);
+  if (parsed.error) return res.status(400).json({ error: parsed.error });
+  const npc = parsed.data;
+  const existing = db.prepare('SELECT sheet FROM npcs WHERE id = ?').get(req.params.id);
+  if (!existing) return res.status(404).json({ error: 'NPC not found' });
+  // Preserve the stored sheet when a record-only edit omits it.
+  const sheet = npc.sheetProvided ? npc.sheet : existing.sheet;
+  const result = db.prepare(`
+    UPDATE npcs
+    SET name = ?, scope = ?, session_id = ?, role = ?, status = ?, location = ?, summary = ?, notes = ?, sheet = ?, updated_at = datetime('now')
+    WHERE id = ?
+  `).run(npc.name, npc.scope, npc.session_id, npc.role, npc.status, npc.location, npc.summary, npc.notes, sheet, req.params.id);
+  if (!result.changes) return res.status(404).json({ error: 'NPC not found' });
+  const row = db.prepare(`
+    SELECT n.*, s.name AS session_name
+    FROM npcs n
+    LEFT JOIN sessions s ON s.id = n.session_id
+    WHERE n.id = ?
+  `).get(req.params.id);
+  res.json(rowToNpc(row));
+});
+
+router.delete('/npcs/:id', requireGM, (req, res) => {
+  const result = db.prepare('DELETE FROM npcs WHERE id = ?').run(req.params.id);
+  if (!result.changes) return res.status(404).json({ error: 'NPC not found' });
+  res.json({ ok: true });
+});
+
 // ── Sessions ──────────────────────────────────────────────────────────────────
 
 router.get('/sessions', requireAuth, (req, res) => {
@@ -344,14 +510,21 @@ router.post('/sessions', requireGM, (req, res) => {
   const { name, description } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
   const result = db.prepare('INSERT INTO sessions (name, description) VALUES (?, ?)').run(name, description || null);
+  ensureSessionDataFolderById(db, result.lastInsertRowid);
   res.status(201).json({ id: result.lastInsertRowid, name, description });
 });
 
 router.put('/sessions/:id', requireGM, (req, res) => {
   const { name, description } = req.body;
   if (!name) return res.status(400).json({ error: 'name required' });
+  const previous = db.prepare('SELECT * FROM sessions WHERE id = ?').get(req.params.id);
+  if (!previous) return res.status(404).json({ error: 'Session not found' });
   const result = db.prepare('UPDATE sessions SET name = ?, description = ? WHERE id = ?').run(name, description || null, req.params.id);
   if (!result.changes) return res.status(404).json({ error: 'Session not found' });
+  if (previous.description !== DOMESTIC_SYSTEM_DESCRIPTION && description !== DOMESTIC_SYSTEM_DESCRIPTION) {
+    renameSessionDataFolder(previous.id, previous.name, name);
+    ensureSessionDataFolderById(db, previous.id);
+  }
   res.json({ ok: true });
 });
 
@@ -568,6 +741,96 @@ router.post('/dice/rolls', requireAuth, (req, res) => {
     total: rolled.total
   });
   res.json({ ok: true, ...rolled });
+});
+
+// ── Scenario information ─────────────────────────────────────────────────────
+
+router.get('/sessions/:id/scenario-info', requireAuth, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  // A GM can preview exactly what one player sees via ?as_user=<id>. The
+  // impersonated viewer is forced to the player role so GM-only fields and
+  // other players' private knowledge are filtered out server-side.
+  let effectiveUser = req.user;
+  if (req.query.as_user && req.user.role === 'gm') {
+    const target = db.prepare('SELECT id, username FROM users WHERE id = ?').get(parseInt(req.query.as_user, 10));
+    if (target) effectiveUser = { id: target.id, username: target.username, role: 'player' };
+  }
+  const payload = loadSessionScenarioInfoForUser(session.id, effectiveUser, db);
+  if (!payload) return res.status(404).json({ error: 'Session not found' });
+  res.json(payload);
+});
+
+router.get('/sessions/:id/scenario-sources', requireAuth, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const sources = readSessionSources(session);
+  if (req.user.role !== 'gm') {
+    delete sources.private_source;
+    delete sources.private_source_path;
+    sources.markdown_sources = (sources.markdown_sources || []).filter((file) => file.visibility !== 'gm');
+    sources.source_files = sources.source_files.filter((file) => file.visibility !== 'gm');
+  }
+  res.json(sources);
+});
+
+router.put('/sessions/:id/scenario-sources', requireGM, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  res.json(writeSessionSources(session, req.body));
+});
+
+// Single generation path. Body may carry { sections: [...] } for a page-level
+// regenerate or { artifact: 'player' | 'gm' }; an empty body regenerates every
+// section (bulk). The CLI script calls the same scenarioInfo function.
+router.post('/sessions/:id/scenario-info/regenerate', requireGM, async (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  try {
+    const result = await regenerateScenarioSections(session.id, db, {
+      sections: Array.isArray(req.body && req.body.sections) ? req.body.sections : null,
+      artifact: (req.body && req.body.artifact) || null
+    });
+    if (!result) return res.status(404).json({ error: 'Session not found' });
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    res.status(e.statusCode || 500).json({ error: e.message || 'Scenario regeneration failed' });
+  }
+});
+
+router.post('/sessions/:id/scenario-info/sections/:sectionId/regenerate', requireGM, async (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  try {
+    const result = await regenerateScenarioSection(session.id, req.params.sectionId, db);
+    if (!result) return res.status(404).json({ error: 'Session not found' });
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    res.status(e.statusCode || 500).json({
+      error: e.message || 'Section regeneration failed',
+      ollama_response: e.ollama_response
+    });
+  }
+});
+
+router.post('/sessions/:id/scenario-info/sections/:sectionId/revert', requireGM, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  try {
+    const result = revertScenarioSection(session.id, req.params.sectionId, db);
+    if (!result) return res.status(404).json({ error: 'Session not found' });
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    res.status(e.statusCode || 500).json({ error: e.message || 'Section revert failed' });
+  }
+});
+
+router.get('/sessions/:id/scenario-info/assets/*', requireAuth, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const filePath = resolveSessionAssetPath(session.id, req.params[0], db, req.user.role === 'gm');
+  if (!filePath) return res.status(404).json({ error: 'Scenario asset not found' });
+  res.sendFile(filePath);
 });
 
 // ── Rules library ────────────────────────────────────────────────────────────

@@ -1,0 +1,131 @@
+{
+  "name": "Father Thames",
+  "scope": "global",
+  "role": "Old Man of the River",
+  "status": "",
+  "location": "",
+  "summary": "Father Thames — Old Man of the River.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Father Thames",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Old Man Of The River",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "Old Man of the River",
+    "portrait": "",
+    "str": "60",
+    "con": "60",
+    "dex": "50",
+    "int": "70",
+    "pow": "200",
+    "siz": "",
+    "advantages": "Natural Toughness",
+    "disadvantages": "vulnerable to cold iron",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "50"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "50"
+      },
+      {
+        "name": "Drive",
+        "value": "30"
+      },
+      {
+        "name": "Navigate",
+        "value": "80"
+      },
+      {
+        "name": "Observation",
+        "value": "80"
+      },
+      {
+        "name": "Read Person",
+        "value": "90"
+      },
+      {
+        "name": "Research",
+        "value": "30"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "95"
+      },
+      {
+        "name": "Social",
+        "value": "70"
+      },
+      {
+        "name": "Stealth",
+        "value": "40"
+      }
+    ],
+    "mandatory_skills": [],
+    "additional_skills": [
+      {
+        "name": "Language: Brittonic (own)",
+        "value": "70%"
+      },
+      {
+        "name": "Language: and modern) (own)",
+        "value": "70%"
+      },
+      {
+        "name": "Language: Latin (own)",
+        "value": "70%"
+      }
+    ],
+    "luck": "200",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "",
+    "magic_notes": "",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "200",
+      "mp": "",
+      "build": "",
+      "move": "6"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Powers",
+        "value": "The Glamour, Luck of the Demi-monde"
+      },
+      {
+        "key": "Demi-Monde Affinity",
+        "value": "Water"
+      },
+      {
+        "key": "Vestigia",
+        "value": "The promise of beer and skittles, walking home on a moonlit night, a warm fireside, amorous company. Footnote: 26 Lies Sleeping"
+      }
+    ]
+  }
+}

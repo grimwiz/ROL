@@ -1,0 +1,132 @@
+{
+  "name": "Mama Thames",
+  "scope": "global",
+  "role": "Goddess of the River Thames",
+  "status": "",
+  "location": "",
+  "summary": "Mama Thames — Goddess of the River Thames.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Mama Thames",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Goddess Of The River Thames",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "Goddess of the River Thames",
+    "portrait": "",
+    "str": "40",
+    "con": "60",
+    "dex": "50",
+    "int": "70",
+    "pow": "200",
+    "siz": "",
+    "advantages": "Natural Toughness",
+    "disadvantages": "vulnerable to cold iron",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "30"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "30"
+      },
+      {
+        "name": "Drive",
+        "value": "30"
+      },
+      {
+        "name": "Navigate",
+        "value": "60"
+      },
+      {
+        "name": "Observation",
+        "value": "90"
+      },
+      {
+        "name": "Read Person",
+        "value": "80"
+      },
+      {
+        "name": "Research",
+        "value": "50"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "95"
+      },
+      {
+        "name": "Social",
+        "value": "80"
+      },
+      {
+        "name": "Stealth",
+        "value": "40"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Medicine",
+        "value": "60"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: English",
+        "value": "60%"
+      },
+      {
+        "name": "Language: Yoruba (own)",
+        "value": "70%"
+      }
+    ],
+    "luck": "200",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "",
+    "magic_notes": "",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "200",
+      "mp": "",
+      "build": "",
+      "move": "7"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Powers",
+        "value": "The Glamour, Luck of the Demi-monde"
+      },
+      {
+        "key": "Demi-Monde Affinity",
+        "value": "Water"
+      },
+      {
+        "key": "Vestigia",
+        "value": "Salt water, coffee, diesel, bananas, chocolate, fish guts"
+      }
+    ]
+  }
+}

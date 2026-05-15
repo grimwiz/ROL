@@ -1,0 +1,169 @@
+{
+  "name": "Varvara Sidorovna Tamonina",
+  "scope": "global",
+  "role": "Night Witch",
+  "status": "",
+  "location": "",
+  "summary": "Varvara Sidorovna Tamonina — Night Witch.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Varvara Sidorovna Tamonina",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Night Witch",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "Night Witch",
+    "portrait": "",
+    "str": "40",
+    "con": "50",
+    "dex": "60",
+    "int": "60",
+    "pow": "70",
+    "siz": "",
+    "advantages": "Magical, Scary, Steadfast",
+    "disadvantages": "",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "70"
+      },
+      {
+        "name": "Firearms",
+        "value": "70"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "50"
+      },
+      {
+        "name": "Drive",
+        "value": "30"
+      },
+      {
+        "name": "Navigate",
+        "value": "50"
+      },
+      {
+        "name": "Observation",
+        "value": "70"
+      },
+      {
+        "name": "Read Person",
+        "value": "70"
+      },
+      {
+        "name": "Research",
+        "value": "50"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "70"
+      },
+      {
+        "name": "Social",
+        "value": "60"
+      },
+      {
+        "name": "Stealth",
+        "value": "70"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Disguise",
+        "value": "70"
+      },
+      {
+        "name": "Magic",
+        "value": "70"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: English",
+        "value": "60%"
+      },
+      {
+        "name": "Language: Russian (own)",
+        "value": "60%"
+      }
+    ],
+    "luck": "",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "Newtonian",
+    "magic_notes": "",
+    "magic_spells": [
+      {
+        "name": "When it comes to spells",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "if it's anything to do with ice or dealing with a situation brutally and effectively",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "she knows it",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "e.g",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "Glitter Bomb",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "Ice Blast",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "Flying Ice Saw",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "etc",
+        "order": "",
+        "notes": ""
+      }
+    ],
+    "derived": {
+      "hp": "",
+      "san": "70",
+      "mp": "45",
+      "build": "",
+      "move": "8"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Signare",
+        "value": "The bite of cold metal, something yeasty like bread, and the smell of wet dog"
+      }
+    ]
+  }
+}

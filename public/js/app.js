@@ -4,7 +4,12 @@ const State = {
   sessions: [],
   users: [],
   currentSession: null,
+  currentSessionPanel: 'characters',
   currentSheetUserId: null,
+  npcs: [],
+  scenarioInfo: null,
+  scenarioSources: null,
+  scenarioSelectedSourceIndex: null,
   rulesFiles: null,
   domesticAdventure: null,
   domesticCurrentStep: null,
@@ -139,7 +144,10 @@ function resetUserScopedState() {
   State.sessions = [];
   State.users = [];
   State.currentSession = null;
+  State.currentSessionPanel = 'characters';
   State.currentSheetUserId = null;
+  State.npcs = [];
+  State.scenarioInfo = null;
   State.rulesFiles = null;
   resetDomesticRuntimeState();
 }
@@ -177,10 +185,20 @@ async function waitForDomesticPersistence() {
 }
 
 // ── Routing ───────────────────────────────────────────────────────────────────
+const APP_TABS = ['sessions', 'rules', 'domestic', 'users'];
+
 function showPage(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const pg = el(pageId);
   if (pg) pg.classList.add('active');
+}
+
+function setActiveMainTab(tab) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  APP_TABS.forEach((name) => {
+    const tabEl = el(`tab-${name}`);
+    if (tabEl) tabEl.style.display = name === tab ? '' : 'none';
+  });
 }
 
 function updateUiStateInUrl(patch, replace = false) {
@@ -328,7 +346,7 @@ async function renderMain() {
     <nav class="nav">
       <div class="nav-brand">🔮 The Folly</div>
       <div class="nav-tabs">
-        <button class="nav-tab active" data-tab="sessions" onclick="switchTab('sessions')">Sessions</button>
+        <button class="nav-tab active" data-tab="sessions" onclick="switchTab('sessions')">Case File</button>
         <button class="nav-tab" data-tab="rules" onclick="switchTab('rules')">Rules</button>
         <button class="nav-tab" data-tab="domestic" onclick="switchTab('domestic')">The Domestic</button>
         ${isGM ? `<button class="nav-tab" data-tab="users" onclick="switchTab('users')">Accounts</button>` : ''}
@@ -359,13 +377,8 @@ async function renderMain() {
 
 async function switchTab(tab, options = {}) {
   const { replaceUrl = false, preserveSession = false } = options;
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  ['sessions','users','domestic'].forEach(t => {
-    const el_ = el(`tab-${t}`);
-    if (el_) el_.style.display = t === tab ? '' : 'none';
-  });
-  const rulesTab = el('tab-rules');
-  if (rulesTab) rulesTab.style.display = tab === 'rules' ? '' : 'none';
+  if (tab === 'users' && State.user.role !== 'gm') tab = 'sessions';
+  setActiveMainTab(tab);
 
   updateUiStateInUrl({
     tab,
@@ -506,7 +519,7 @@ async function openMyCharacters() {
 }
 window.openMyCharacters = openMyCharacters;
 
-// ── Sessions tab ──────────────────────────────────────────────────────────────
+// ── Case File tab ─────────────────────────────────────────────────────────────
 async function loadSessionsTab(options = {}) {
   const { skipUrlUpdate = false, replaceUrl = false } = options;
   const tab = el('tab-sessions');
@@ -521,12 +534,12 @@ async function loadSessionsTab(options = {}) {
   const isGM = State.user.role === 'gm';
   tab.innerHTML = `
     <div class="page-header">
-      <h2>Sessions</h2>
-      ${isGM ? `<button class="btn btn-primary" onclick="openCreateSession()">+ New session</button>` : ''}
+      <h2>Case Files</h2>
+      ${isGM ? `<button class="btn btn-primary" onclick="openCreateSession()">+ New case file</button>` : ''}
     </div>
     <div id="sessions-alert"></div>
     ${State.sessions.length === 0
-      ? `<div class="empty"><div class="empty-icon">📁</div><p>No sessions yet${isGM ? ' — create one above' : ''}.</p></div>`
+      ? `<div class="empty"><div class="empty-icon">📁</div><p>No case files yet${isGM ? ' — create one above' : ''}.</p></div>`
       : `<div class="session-grid">${State.sessions.map(renderSessionCard).join('')}</div>`
     }`;
 }
@@ -550,9 +563,9 @@ function renderSessionCard(s) {
 
 function openCreateSession() {
   const m = modal(`
-    <h3>New session</h3>
+    <h3>New case file</h3>
     <div id="modal-alert"></div>
-    <div class="form-group"><label>Session name</label><input type="text" id="m-sname" placeholder="e.g. Case 01 – The River Knows"></div>
+    <div class="form-group"><label>Case file name</label><input type="text" id="m-sname" placeholder="e.g. Case 01 – The River Knows"></div>
     <div class="form-group"><label>Description (optional)</label><textarea id="m-sdesc" rows="2"></textarea></div>
     <div class="modal-actions">
       <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Cancel</button>
@@ -578,9 +591,9 @@ function openEditSession(sessionId) {
   const session = State.sessions.find(s => s.id === sessionId);
   if (!session) return;
   modal(`
-    <h3>Edit session</h3>
+    <h3>Edit case file</h3>
     <div id="modal-alert"></div>
-    <div class="form-group"><label>Session name</label><input type="text" id="m-sname" value="${esc(session.name)}"></div>
+    <div class="form-group"><label>Case file name</label><input type="text" id="m-sname" value="${esc(session.name)}"></div>
     <div class="form-group"><label>Description (optional)</label><textarea id="m-sdesc" rows="2">${esc(session.description || '')}</textarea></div>
     <div class="modal-actions">
       <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Cancel</button>
@@ -603,7 +616,7 @@ async function updateSession(sessionId, btn) {
 }
 
 async function deleteSession(id) {
-  if (!confirm('Delete this session and all its character sheets?')) return;
+  if (!confirm('Delete this case file and all its character sheets?')) return;
   try {
     await api.deleteSession(id);
     await loadSessionsTab();
@@ -641,16 +654,11 @@ async function openSession(sessionId, options = {}) {
     return;
   }
   State.currentSession = sessionId;
+  State.currentSessionPanel = 'characters';
   const tab = el('tab-sessions');
   const isGM = State.user.role === 'gm';
 
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'sessions'));
-  ['sessions','users','domestic'].forEach(t => {
-    const el_ = el(`tab-${t}`);
-    if (el_) el_.style.display = t === 'sessions' ? '' : 'none';
-  });
-  const rulesTab = el('tab-rules');
-  if (rulesTab) rulesTab.style.display = 'none';
+  setActiveMainTab('sessions');
 
   updateUiStateInUrl({
     tab: 'sessions',
@@ -668,8 +676,61 @@ async function openSession(sessionId, options = {}) {
       ${isGM ? `<button class="btn btn-primary btn-sm" onclick="openAssignPlayer(${sessionId})">+ Assign player</button>` : ''}
     </div>
     <div id="session-alert"></div>
+    <div class="sheet-tabs session-subtabs">
+      <div class="sheet-tab active" data-session-panel="characters" onclick="switchSessionPanel(${sessionId}, 'characters')">Characters</div>
+      <div class="sheet-tab" data-session-panel="case-info" onclick="switchSessionPanel(${sessionId}, 'case-info')">Case Info</div>
+      <div class="sheet-tab" data-session-panel="player-info" onclick="switchSessionPanel(${sessionId}, 'player-info')">Player Info</div>
+      <div class="sheet-tab" data-session-panel="entities" onclick="switchSessionPanel(${sessionId}, 'entities')">NPC/Places/Things</div>
+      ${isGM ? `<div class="sheet-tab" data-session-panel="gm-info" onclick="switchSessionPanel(${sessionId}, 'gm-info')">GM Info</div>` : ''}
+      ${isGM ? `<div class="sheet-tab" data-session-panel="raw-data" onclick="switchSessionPanel(${sessionId}, 'raw-data')">Edit Files</div>` : ''}
+      ${isGM ? `<div class="sheet-tab" data-session-panel="npcs" onclick="switchSessionPanel(${sessionId}, 'npcs')">NPCs</div>` : ''}
+    </div>
     <div id="session-content"><p style="color:var(--text2)">Loading…</p></div>`;
 
+  await renderSessionCharacters(sessionId);
+}
+
+function setSessionPanelActive(panel) {
+  document.querySelectorAll('[data-session-panel]').forEach((tab) => {
+    tab.classList.toggle('active', tab.dataset.sessionPanel === panel);
+  });
+}
+
+async function switchSessionPanel(sessionId, panel) {
+  State.currentSessionPanel = panel;
+  setSessionPanelActive(panel);
+  const content = el('session-content');
+  if (content) content.innerHTML = '<p style="color:var(--text2)">Loading…</p>';
+  if (panel === 'case-info') {
+    await renderSessionCaseInfo(sessionId);
+    return;
+  }
+  if (panel === 'player-info') {
+    await renderSessionPlayerInfo(sessionId);
+    return;
+  }
+  if (panel === 'entities') {
+    await renderSessionEntities(sessionId);
+    return;
+  }
+  if (panel === 'gm-info') {
+    await renderSessionScenarioInfo(sessionId, 'gm');
+    return;
+  }
+  if (panel === 'raw-data') {
+    await renderSessionScenarioInfo(sessionId, 'raw');
+    return;
+  }
+  if (panel === 'npcs') {
+    await renderSessionNpcs(sessionId);
+    return;
+  }
+  await renderSessionCharacters(sessionId);
+}
+window.switchSessionPanel = switchSessionPanel;
+
+async function renderSessionCharacters(sessionId) {
+  const isGM = State.user.role === 'gm';
   if (isGM) {
     await renderGMSessionView(sessionId, readStoredGmPlayerId(sessionId));
   } else {
@@ -886,6 +947,1045 @@ async function assignPlayer(sessionId, btn) {
   }
 }
 window.assignPlayer = assignPlayer;
+
+// ── Scenario information tab ─────────────────────────────────────────────────
+function scenarioArray(value) {
+  if (Array.isArray(value)) return value.filter((item) => item !== null && item !== undefined && String(item).trim() !== '');
+  if (value === null || value === undefined || value === '') return [];
+  return [value];
+}
+
+function scenarioText(value) {
+  if (value === null || value === undefined) return '';
+  if (Array.isArray(value)) return value.map(scenarioText).filter(Boolean).join('\n');
+  if (typeof value === 'object') return scenarioText(value.body || value.details || value.summary || JSON.stringify(value));
+  return String(value);
+}
+
+function renderScenarioText(value) {
+  const text = scenarioText(value).trim();
+  if (!text) return '';
+  return text
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p>${esc(paragraph).replace(/\n/g, '<br>')}</p>`)
+    .join('');
+}
+
+function scenarioAssetUrl(filePath, sessionId = State.currentSession) {
+  const clean = String(filePath || '').replace(/^\/+/, '');
+  return `/api/sessions/${encodeURIComponent(sessionId)}/scenario-info/assets/${clean.split('/').map(encodeURIComponent).join('/')}`;
+}
+
+function renderScenarioMedia(media) {
+  const items = scenarioArray(media);
+  if (!items.length) return '';
+  return `<div class="scenario-media-grid">${items.map((item) => {
+    const path = typeof item === 'string' ? item : item.path;
+    if (!path) return '';
+    const caption = typeof item === 'object' ? item.caption : '';
+    const lower = path.toLowerCase();
+    const url = scenarioAssetUrl(path);
+    if (/\.(png|jpe?g|gif|webp|svg)$/.test(lower)) {
+      return `<figure><img src="${esc(url)}" alt="${esc(caption || path)}">${caption ? `<figcaption>${esc(caption)}</figcaption>` : ''}</figure>`;
+    }
+    return `<a class="btn btn-sm" href="${esc(url)}" target="_blank" rel="noopener">${esc(caption || path)}</a>`;
+  }).join('')}</div>`;
+}
+
+function renderScenarioTags(items) {
+  const values = scenarioArray(items);
+  if (!values.length) return '';
+  return `<div class="tag-list">${values.map((item) => `<span>${esc(scenarioText(item))}</span>`).join('')}</div>`;
+}
+
+function renderScenarioSources(sources) {
+  const entries = scenarioArray(sources);
+  if (!entries.length) return '';
+  return `<div class="scenario-sources">${entries.map((source) => {
+    const path = typeof source === 'string' ? source : source.path;
+    const note = typeof source === 'object' ? source.note || source.line || '' : '';
+    return path ? `<span>${esc(path)}${note ? ` ${esc(note)}` : ''}</span>` : '';
+  }).join('')}</div>`;
+}
+
+function renderScenarioSectionActions(sectionId) {
+  if (!sectionId || State.user.role !== 'gm') return '';
+  return `
+    <div class="scenario-section-actions">
+      <button class="btn btn-sm" onclick="regenerateScenarioSection('${esc(sectionId)}', this)">Regenerate</button>
+      <button class="btn btn-sm" onclick="revertScenarioSection('${esc(sectionId)}', this)">Revert</button>
+    </div>`;
+}
+
+function renderScenarioEntry(entry, fallbackTitle = 'Entry') {
+  const data = entry && typeof entry === 'object' ? entry : { body: entry };
+  const title = data.name || data.title || data.character || data.deliverable || fallbackTitle;
+  const meta = [
+    data.character && data.title ? `Character: ${data.character}` : '',
+    data.player ? `Player: ${data.player}` : '',
+    data.priority ? `Priority: ${data.priority}` : '',
+    data.spotlight ? `Spotlight: ${data.spotlight}` : '',
+    data.engagement ? `Engagement: ${data.engagement}` : '',
+    data.timing ? `Timing: ${data.timing}` : '',
+    data.role,
+    data.status,
+    data.location,
+    data.owner ? `Owner: ${data.owner}` : '',
+    data.session
+  ].filter(Boolean);
+  const aspects = data.aspects || data.interesting_aspects || data.key_facts || data.planned_beats || data.needs_to_keep_on_track || data.risks;
+  const relationships = data.relationships || data.links;
+  const body = data.summary || data.details || data.body || data.notes || data.evidence || data.suggested_prompt || data.prompt || data.purpose || data.deliverable;
+  return `
+    <div class="card scenario-entry-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${esc(title)}</div>
+          ${meta.length ? `<div class="card-sub">${esc(meta.join(' | '))}</div>` : ''}
+        </div>
+      </div>
+      <div class="scenario-body">${renderScenarioText(body)}</div>
+      ${renderScenarioTags(aspects)}
+      ${relationships ? `<div class="scenario-subtitle">Relationships</div>${renderScenarioTags(relationships)}` : ''}
+      ${renderScenarioMedia(data.media)}
+      ${renderScenarioSources(data.sources)}
+    </div>`;
+}
+
+function renderScenarioSection(title, entries, emptyText, sectionId = '') {
+  const list = scenarioArray(entries);
+  return `
+    <section class="scenario-section">
+      <div class="scenario-section-header">
+        <h3>${esc(title)}</h3>
+        ${renderScenarioSectionActions(sectionId)}
+      </div>
+      ${list.length
+        ? `<div class="scenario-grid">${list.map((entry) => renderScenarioEntry(entry, title)).join('')}</div>`
+        : `<div class="empty scenario-empty"><p>${esc(emptyText)}</p></div>`}
+    </section>`;
+}
+
+// GM-only page-level regenerate button. `sectionsCsv` lists the section ids the
+// page shows; an empty string means "all sections" (the bulk path).
+function scenarioPageButton(sectionsCsv, label) {
+  if (State.user.role !== 'gm') return '';
+  return `<button class="btn btn-primary" onclick="regenerateScenarioPage(this, '${esc(sectionsCsv || '')}', '${esc(label)}')">${esc(label)}</button>`;
+}
+
+// ── Lightweight, safe Markdown → HTML ────────────────────────────────────────
+// The LLM returns Markdown for the case/session prose. We never inject raw model
+// HTML: every line is HTML-escaped first, then only our own tags are introduced,
+// so this is XSS-safe by construction.
+function mdSlug(text, used) {
+  let base = String(text || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'sec';
+  let s = base;
+  let n = 2;
+  while (used[s]) { s = `${base}-${n}`; n += 1; }
+  used[s] = true;
+  return s;
+}
+
+function mdInline(s) {
+  return String(s)
+    .replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__([^_]+?)__/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>')
+    .replace(/`([^`]+?)`/g, '<code>$1</code>');
+}
+
+function markdownToHtml(md, anchorPrefix) {
+  const used = {};
+  const headings = [];
+  const lines = String(md == null ? '' : md).replace(/\r\n?/g, '\n').split('\n');
+  const out = [];
+  let para = [];
+  let inList = false;
+  let inQuote = false;
+  const flushPara = () => { if (para.length) { out.push(`<p>${mdInline(esc(para.join(' ')))}</p>`); para = []; } };
+  const closeList = () => { if (inList) { out.push('</ul>'); inList = false; } };
+  const closeQuote = () => { if (inQuote) { out.push('</blockquote>'); inQuote = false; } };
+  for (const rawLine of lines) {
+    const trimmed = rawLine.trim();
+    if (!trimmed) { flushPara(); closeList(); closeQuote(); continue; }
+
+    const h = trimmed.match(/^(#{2,4})\s+(.*)$/);
+    if (h) {
+      flushPara(); closeList(); closeQuote();
+      const level = h[1].length;
+      const text = h[2].replace(/#+\s*$/, '').trim();
+      const id = `${anchorPrefix}-${mdSlug(text, used)}`;
+      headings.push({ id, text, level });
+      const tag = level === 2 ? 'h4' : (level === 3 ? 'h5' : 'h6');
+      out.push(`<${tag} id="${esc(id)}" class="summary-h summary-h${level}">${mdInline(esc(text))}</${tag}>`);
+      continue;
+    }
+
+    const bullet = trimmed.match(/^[-*+]\s+(.*)$/);
+    if (bullet) {
+      flushPara(); closeQuote();
+      if (!inList) { out.push('<ul class="summary-points">'); inList = true; }
+      out.push(`<li>${mdInline(esc(bullet[1].trim()))}</li>`);
+      continue;
+    }
+
+    const quote = trimmed.match(/^>\s?(.*)$/);
+    if (quote) {
+      flushPara(); closeList();
+      if (!inQuote) { out.push('<blockquote>'); inQuote = true; }
+      out.push(`${mdInline(esc(quote[1].trim()))} `);
+      continue;
+    }
+
+    closeList(); closeQuote();
+    para.push(trimmed);
+  }
+  flushPara(); closeList(); closeQuote();
+  return { html: out.join('\n'), headings };
+}
+
+function renderSummaryIndex(headings) {
+  const items = (headings || []).filter((h) => h.level <= 3);
+  if (items.length < 2) return '';
+  return `<nav class="case-index" aria-label="Contents">
+      <div class="case-index-title">Index</div>
+      <ul>${items.map((h) => `<li class="ci-l${h.level}"><a href="#${esc(h.id)}" onclick="scrollToAnchor(event,'${esc(h.id)}')">${esc(h.text)}</a></li>`).join('')}</ul>
+    </nav>`;
+}
+
+function presentationBadge(p) {
+  const mode = p === 'player' ? 'player' : (p === 'scene' ? 'scene' : '');
+  if (!mode) return '';
+  return `<span class="presentation-badge pb-${mode}">${mode === 'player' ? 'Per-player threads' : 'Scene timeline'}</span>`;
+}
+
+function scrollToAnchor(ev, id) {
+  if (ev) ev.preventDefault();
+  const target = document.getElementById(id);
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+window.scrollToAnchor = scrollToAnchor;
+
+// Renders a structured-summary object: { title?, presentation?, content(md), sources? }.
+// Falls back to legacy { body|summary } prose if no Markdown content is present.
+function renderStructuredSummary(obj, anchorPrefix) {
+  if (!obj || typeof obj !== 'object') {
+    return `<div class="scenario-body">${renderScenarioText(obj)}</div>`;
+  }
+  const md = typeof obj.content === 'string' ? obj.content
+    : (typeof obj.body === 'string' && /[#*\->]/.test(obj.body) ? obj.body : '');
+  if (md) {
+    const { html, headings } = markdownToHtml(md, anchorPrefix);
+    return `${presentationBadge(obj.presentation)}
+      ${renderSummaryIndex(headings)}
+      <div class="summary-content">${html}</div>
+      ${renderScenarioSources(obj.sources)}`;
+  }
+  return `${presentationBadge(obj.presentation)}
+    <div class="scenario-body">${renderScenarioText(obj.body || obj.summary || obj)}</div>
+    ${renderScenarioSources(obj.sources)}`;
+}
+
+function renderWhatHappenedSection(whatHappened) {
+  const actions = renderScenarioSectionActions('player.summary.what_has_happened');
+  if (!whatHappened) {
+    return `
+      <section class="scenario-section">
+        <div class="scenario-section-header"><h3>What Has Happened So Far</h3>${actions}</div>
+        <div class="empty scenario-empty"><p>No case summary has been generated yet.</p></div>
+      </section>`;
+  }
+  return `
+    <section class="scenario-section">
+      <div class="scenario-section-header">
+        <h3>${esc(whatHappened.title || 'What Has Happened So Far')}</h3>
+        ${actions}
+      </div>
+      <div class="card scenario-summary-card">
+        ${renderStructuredSummary(whatHappened, 'wh')}
+      </div>
+    </section>`;
+}
+
+function renderSessionAnalysis(entries) {
+  const actions = renderScenarioSectionActions('player.summary.session_summaries');
+  const list = scenarioArray(entries);
+  return `
+    <section class="scenario-section">
+      <div class="scenario-section-header">
+        <h3>Session Analysis</h3>
+        ${actions}
+      </div>
+      ${list.length
+        ? list.map((entry, i) => `
+          <div class="card scenario-summary-card session-analysis-card">
+            <div class="session-analysis-title">${esc((entry && (entry.title || entry.name)) || `Session ${i + 1}`)}</div>
+            ${renderStructuredSummary(entry, `s${i + 1}`)}
+          </div>`).join('')
+        : `<div class="empty scenario-empty"><p>No session analysis has been generated yet.</p></div>`}
+    </section>`;
+}
+
+// Strict, case-insensitive match of a character story entry to a viewer's own
+// character name(s). Strict on purpose: a player must never see another
+// player's story, so an unmatched entry is simply hidden.
+function matchesCharacter(entry, viewerNames) {
+  if (!entry || typeof entry !== 'object') return false;
+  const names = (viewerNames || []).map((n) => String(n).trim().toLowerCase()).filter(Boolean);
+  if (!names.length) return false;
+  const ids = [entry.name, entry.character, entry.title]
+    .map((v) => String(v || '').trim().toLowerCase())
+    .filter(Boolean);
+  return ids.some((id) => names.includes(id));
+}
+
+function renderGmAnalysisList(title, entries, emptyText, sectionId = '') {
+  return renderScenarioSection(title, entries, emptyText, sectionId);
+}
+
+function renderGmAnalysis(info) {
+  if (State.user.role !== 'gm') return '';
+  const analysis = info.gm_analysis || {};
+  return `
+    <section class="scenario-section gm-private-analysis">
+      <div class="scenario-section-header"><h3>GM Private Analysis</h3></div>
+      ${analysis.error ? `<div class="alert alert-danger">${esc(analysis.error)}</div>` : ''}
+      ${analysis.generated === false ? `<div class="empty scenario-empty"><p>No GM-only analysis has been generated yet.</p></div>` : ''}
+      ${renderGmAnalysisList('Scenario Progress', analysis.scenario_progress, 'No progress assessment generated yet.', 'gm.scenario_progress')}
+      ${renderGmAnalysisList('Plans By Player', analysis.plans_by_player, 'No player plans generated yet.', 'gm.plans_by_player')}
+      ${renderGmAnalysisList('Next Deliverables', analysis.next_deliverables, 'No next deliverables generated yet.', 'gm.next_deliverables')}
+      ${renderGmAnalysisList('Fairness / Engagement', analysis.fairness_engagement, 'No engagement tracking generated yet.', 'gm.fairness_engagement')}
+      ${renderGmAnalysisList('Quiet Players', analysis.quiet_players, 'No quiet-player prompts generated yet.', 'gm.quiet_players')}
+      ${renderGmAnalysisList('GM Actions', analysis.gm_actions, 'No GM actions generated yet.', 'gm.gm_actions')}
+    </section>`;
+}
+
+function renderScenarioSourceEditor(sources) {
+  const markdownSources = scenarioArray(sources.markdown_sources);
+  if (State.user.role !== 'gm') {
+    return `
+      <div class="card scenario-summary-card">
+        <div class="card-title">Player-Visible Sources</div>
+        ${markdownSources.length ? markdownSources.map((source) => `
+          <div class="scenario-subtitle">${esc(source.relative_path || source.path || 'Source')}</div>
+          <div class="scenario-body">${renderScenarioText(source.content || '')}</div>
+        `).join('') : '<p class="card-sub">No player-visible source files are available.</p>'}
+      </div>`;
+  }
+
+  const editableSources = (markdownSources.length ? markdownSources : [
+    {
+      path: sources.public_source_path,
+      relative_path: sources.public_source_path,
+      visibility: 'player',
+      content: sources.public_source || ''
+    },
+    {
+      path: sources.private_source_path,
+      relative_path: sources.private_source_path,
+      visibility: 'gm',
+      content: sources.private_source || ''
+    }
+  ].filter((source) => source.path)).map((source, index) => ({ ...source, index }));
+  const preferredIndex = editableSources.find((source) => {
+    const relative = source.relative_path || source.path || '';
+    return relative === 'input/player.md' || relative.endsWith('/input/player.md');
+  }) || editableSources[0] || null;
+  State.scenarioSelectedSourceIndex = preferredIndex ? preferredIndex.index : null;
+
+  return `
+    <div class="card scenario-source-editor">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Edit Files</div>
+          <div class="card-sub">Select one file, edit its contents, then save that file only. Revert discards unsaved edits in the editor.</div>
+        </div>
+      </div>
+      <div class="scenario-file-editor">
+        <div class="scenario-file-list" role="list">
+          ${editableSources.map((source) => `
+            <button type="button" data-source-index="${source.index}" class="${source.index === State.scenarioSelectedSourceIndex ? 'active' : ''}" onclick="selectScenarioSource(${source.index})">
+              <span>${esc(source.relative_path || source.path || `Source ${source.index + 1}`)}</span>
+              <small>${source.visibility === 'gm' ? 'GM only' : 'player-visible'}</small>
+            </button>
+          `).join('')}
+        </div>
+        <div class="scenario-file-panel">
+          ${preferredIndex ? `
+            <div class="scenario-file-meta">
+              <strong id="scenario-source-title">${esc(preferredIndex.relative_path || preferredIndex.path || 'Source')}</strong>
+              <span id="scenario-source-visibility">${preferredIndex.visibility === 'gm' ? 'GM only' : 'player-visible'}</span>
+            </div>
+            <textarea id="scenario-source-editor" data-source-index="${preferredIndex.index}" rows="18">${esc(preferredIndex.content || '')}</textarea>
+            <div class="scenario-source-actions">
+              <button class="btn btn-primary" onclick="saveSessionScenarioSources(${State.currentSession}, this)">Save file</button>
+              <button class="btn" onclick="revertScenarioSourceEditor()">Revert</button>
+              <span class="save-status" id="scenario-source-status"></span>
+            </div>
+          ` : '<div class="empty scenario-empty"><p>No editable markdown files are available.</p></div>'}
+        </div>
+      </div>
+    </div>`;
+}
+
+function scenarioSourceEditorDirty() {
+  const area = el('scenario-source-editor');
+  if (!area) return false;
+  const index = Number(area.dataset.sourceIndex);
+  const source = scenarioArray(State.scenarioSources && State.scenarioSources.markdown_sources)[index];
+  return !!source && area.value !== (source.content || '');
+}
+
+function selectScenarioSource(sourceIndex) {
+  const area = el('scenario-source-editor');
+  if (!area) return;
+  if (scenarioSourceEditorDirty() && !confirm('Discard unsaved edits to the current file?')) return;
+  const sources = scenarioArray(State.scenarioSources && State.scenarioSources.markdown_sources);
+  const source = sources[Number(sourceIndex)];
+  if (!source) return;
+  State.scenarioSelectedSourceIndex = Number(sourceIndex);
+  area.dataset.sourceIndex = String(sourceIndex);
+  area.value = source.content || '';
+  const title = el('scenario-source-title');
+  if (title) title.textContent = source.relative_path || source.path || 'Source';
+  const visibility = el('scenario-source-visibility');
+  if (visibility) visibility.textContent = source.visibility === 'gm' ? 'GM only' : 'player-visible';
+  document.querySelectorAll('.scenario-file-list button').forEach((button) => button.classList.remove('active'));
+  const selectedButton = document.querySelector(`.scenario-file-list button[data-source-index="${Number(sourceIndex)}"]`);
+  if (selectedButton) selectedButton.classList.add('active');
+}
+window.selectScenarioSource = selectScenarioSource;
+
+function revertScenarioSourceEditor() {
+  const area = el('scenario-source-editor');
+  if (!area) return;
+  const index = Number(area.dataset.sourceIndex);
+  const source = scenarioArray(State.scenarioSources && State.scenarioSources.markdown_sources)[index];
+  if (!source) return;
+  area.value = source.content || '';
+  const status = el('scenario-source-status');
+  if (status) {
+    status.textContent = 'Unsaved edits reverted';
+    status.className = 'save-status';
+  }
+}
+window.revertScenarioSourceEditor = revertScenarioSourceEditor;
+
+async function loadScenarioInfo(sessionId, asUser) {
+  const info = await api.getSessionScenarioInfo(sessionId, asUser);
+  if (!asUser) State.scenarioInfo = info;
+  return info;
+}
+
+async function renderSessionScenarioInfo(sessionId, mode = 'gm') {
+  const tab = el('session-content');
+  if (!tab) return;
+  tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading scenario information…</p>';
+
+  let sources = null;
+  let info = {};
+  try {
+    if (mode === 'raw') {
+      sources = await api.getSessionScenarioSources(sessionId);
+      State.scenarioSources = sources;
+    } else {
+      info = await loadScenarioInfo(sessionId);
+    }
+  } catch (e) {
+    tab.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+    return;
+  }
+
+  if (mode === 'raw') {
+    // The Edit Files page holds no AI-generated artifacts, so its action is the
+    // full bulk regenerate (empty section list = all sections).
+    tab.innerHTML = `
+      <div class="page-header">
+        <div>
+          <h2>Edit Files</h2>
+          <p class="card-sub">Edit player-visible source files and GM-only source files separately.</p>
+        </div>
+        ${scenarioPageButton('', 'Bulk Regenerate')}
+      </div>
+      <div id="scenario-alert"></div>
+      ${renderScenarioSourceEditor(sources || {})}`;
+    return;
+  }
+
+  tab.innerHTML = `
+    <div class="page-header">
+      <div>
+        <h2>GM Scenario Information</h2>
+        ${info.gm_analysis && info.gm_analysis.generated_at ? `<p class="card-sub">Generated ${esc(new Date(info.gm_analysis.generated_at).toLocaleString('en-GB'))}</p>` : ''}
+      </div>
+      ${scenarioPageButton('gm.scenario_progress,gm.plans_by_player,gm.next_deliverables,gm.fairness_engagement,gm.quiet_players,gm.gm_actions', 'Regenerate Page')}
+    </div>
+    <div id="scenario-alert"></div>
+    ${renderGmAnalysis(info)}`;
+}
+
+async function renderSessionCaseInfo(sessionId) {
+  const tab = el('session-content');
+  if (!tab) return;
+  tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading case info…</p>';
+  let info;
+  try {
+    info = await loadScenarioInfo(sessionId);
+  } catch (e) {
+    tab.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+    return;
+  }
+  const summary = info.summary || {};
+  const whatHappened = summary.what_has_happened || info.what_has_happened;
+  tab.innerHTML = `
+    <div class="page-header">
+      <div>
+        <h2>Case Info</h2>
+        ${info.generated_at ? `<p class="card-sub">Generated ${esc(new Date(info.generated_at).toLocaleString('en-GB'))}</p>` : ''}
+      </div>
+      ${scenarioPageButton('player.summary.what_has_happened,player.summary.session_summaries', 'Regenerate Page')}
+    </div>
+    <div id="scenario-alert"></div>
+    ${info.error ? `<div class="alert alert-danger">${esc(info.error)}</div>` : ''}
+    ${info.generated === false
+      ? `<div class="card scenario-summary-card"><div class="card-title">No case information generated yet</div><p class="card-sub">A GM can run the scenario regeneration to populate this from the session sources.</p></div>`
+      : `${renderWhatHappenedSection(whatHappened)}
+         ${renderSessionAnalysis(summary.session_summaries)}`}`;
+}
+
+async function renderSessionPlayerInfo(sessionId) {
+  const tab = el('session-content');
+  if (!tab) return;
+  tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading player info…</p>';
+  const isGM = State.user.role === 'gm';
+
+  if (!isGM) {
+    let info;
+    try {
+      info = await loadScenarioInfo(sessionId);
+    } catch (e) {
+      tab.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+      return;
+    }
+    const viewerNames = (info.viewer && info.viewer.character_names) || [];
+    const mine = scenarioArray(info.entities && info.entities.characters)
+      .filter((c) => matchesCharacter(c, viewerNames));
+    tab.innerHTML = `
+      <div class="page-header">
+        <div><h2>Player Info</h2><p class="card-sub">Your character's story so far${viewerNames.length ? ` — ${esc(viewerNames.join(', '))}` : ''}.</p></div>
+      </div>
+      <div id="scenario-alert"></div>
+      ${renderScenarioSection('Your Story', mine, 'No story for your character has been generated yet.', '')}`;
+    return;
+  }
+
+  let players;
+  try {
+    players = await api.getSessionPlayers(sessionId);
+  } catch (e) {
+    tab.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+    return;
+  }
+
+  const pageButton = scenarioPageButton('player.entities.characters', 'Regenerate Page');
+  if (!players.length) {
+    tab.innerHTML = `
+      <div class="page-header"><div><h2>Player Info</h2></div>${pageButton}</div>
+      <div id="scenario-alert"></div>
+      <div class="empty"><div class="empty-icon">👥</div><p>No players assigned to this session yet.</p></div>`;
+    return;
+  }
+
+  tab.innerHTML = `
+    <div class="page-header">
+      <div><h2>Player Info</h2><p class="card-sub">Select a player to see exactly what they see.</p></div>
+      ${pageButton}
+    </div>
+    <div id="scenario-alert"></div>
+    <div style="margin-bottom:1rem">
+      <div class="sheet-tabs" id="scenario-player-tabs">
+        ${players.map((p, i) => `<div class="sheet-tab${i === 0 ? ' active' : ''}" id="sptab_${p.id}" onclick="scenarioSelectPlayer(${sessionId}, ${p.id}, '${esc(p.username)}')">${esc(p.username)}</div>`).join('')}
+      </div>
+    </div>
+    <div id="scenario-player-area"><p style="color:var(--text2)">Loading…</p></div>`;
+
+  const preferred = players.find((p) => p.id === readStoredGmPlayerId(sessionId)) || players[0];
+  await scenarioSelectPlayer(sessionId, preferred.id, preferred.username);
+}
+
+async function scenarioSelectPlayer(sessionId, userId, username) {
+  storeGmPlayerId(sessionId, userId);
+  document.querySelectorAll('#scenario-player-tabs .sheet-tab').forEach((t) => t.classList.remove('active'));
+  const tabBtn = el(`sptab_${userId}`);
+  if (tabBtn) tabBtn.classList.add('active');
+  const area = el('scenario-player-area');
+  if (!area) return;
+  area.innerHTML = '<p style="color:var(--text2)">Loading…</p>';
+  let info;
+  try {
+    info = await api.getSessionScenarioInfo(sessionId, userId);
+  } catch (e) {
+    area.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+    return;
+  }
+  const viewerNames = (info.viewer && info.viewer.character_names) || [];
+  const mine = scenarioArray(info.entities && info.entities.characters)
+    .filter((c) => matchesCharacter(c, viewerNames));
+  area.innerHTML = `
+    <div class="scenario-viewer">Viewing as ${esc(username)}${viewerNames.length ? ` — ${esc(viewerNames.join(', '))}` : ''}</div>
+    ${renderScenarioSection('Player Story', mine, 'No story for this player has been generated yet.', '')}`;
+}
+window.scenarioSelectPlayer = scenarioSelectPlayer;
+
+async function renderSessionEntities(sessionId) {
+  const tab = el('session-content');
+  if (!tab) return;
+  tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading NPC/Places/Things…</p>';
+  let info;
+  try {
+    info = await loadScenarioInfo(sessionId);
+  } catch (e) {
+    tab.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+    return;
+  }
+  const entities = info.entities || {};
+  tab.innerHTML = `
+    <div class="page-header">
+      <div>
+        <h2>NPC/Places/Things</h2>
+        ${info.generated_at ? `<p class="card-sub">Generated ${esc(new Date(info.generated_at).toLocaleString('en-GB'))}</p>` : ''}
+      </div>
+      ${scenarioPageButton('player.entities.locations,player.entities.npcs,player.entities.items', 'Regenerate Page')}
+    </div>
+    <div id="scenario-alert"></div>
+    ${info.error ? `<div class="alert alert-danger">${esc(info.error)}</div>` : ''}
+    ${info.generated === false
+      ? `<div class="card scenario-summary-card"><div class="card-title">Nothing generated yet</div><p class="card-sub">A GM can run the scenario regeneration to populate places, NPCs, and notable things.</p></div>`
+      : `${renderScenarioSection('Places', entities.locations || info.locations, 'No places have been generated yet.', 'player.entities.locations')}
+         ${renderScenarioSection('NPCs', entities.npcs || info.npcs, 'No NPCs have been generated yet.', 'player.entities.npcs')}
+         ${renderScenarioSection('Things', entities.items || info.items, 'No notable things have been generated yet.', 'player.entities.items')}`}`;
+}
+
+async function reloadCurrentSessionPanel() {
+  if (!State.currentSession) return;
+  await switchSessionPanel(State.currentSession, State.currentSessionPanel || 'case-info');
+}
+
+async function regenerateScenarioSection(sectionId, btn) {
+  if (!State.currentSession) return;
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Regenerating…';
+  try {
+    await api.regenerateScenarioSection(State.currentSession, sectionId);
+    showAlert('Section regenerated', 'success', 'scenario-alert');
+    await reloadCurrentSessionPanel();
+  } catch (e) {
+    showAlert(e.message, 'danger', 'scenario-alert');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+window.regenerateScenarioSection = regenerateScenarioSection;
+
+async function revertScenarioSection(sectionId, btn) {
+  if (!State.currentSession) return;
+  if (!confirm('Revert this section to the previous generated value?')) return;
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Reverting…';
+  try {
+    await api.revertScenarioSection(State.currentSession, sectionId);
+    showAlert('Section reverted', 'success', 'scenario-alert');
+    await reloadCurrentSessionPanel();
+  } catch (e) {
+    showAlert(e.message, 'danger', 'scenario-alert');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+window.revertScenarioSection = revertScenarioSection;
+
+async function saveSessionScenarioSources(sessionId, btn) {
+  const status = el('scenario-source-status');
+  if (status) {
+    status.textContent = 'Saving…';
+    status.className = 'save-status';
+  }
+  btn.disabled = true;
+  try {
+    const allSources = scenarioArray(State.scenarioSources && State.scenarioSources.markdown_sources);
+    const area = el('scenario-source-editor');
+    const source = area ? allSources[Number(area.dataset.sourceIndex)] : null;
+    if (!area || !source) throw new Error('Select a source file first.');
+    await api.saveSessionScenarioSources(sessionId, {
+      markdown_sources: [{
+        path: source.path,
+        relative_path: source.relative_path,
+        content: area.value || ''
+      }]
+    });
+    source.content = area.value || '';
+    if (status) {
+      status.textContent = 'File saved';
+      status.className = 'save-status saved';
+    }
+  } catch (e) {
+    if (status) {
+      status.textContent = e.message;
+      status.className = 'save-status error';
+    }
+  } finally {
+    btn.disabled = false;
+  }
+}
+window.saveSessionScenarioSources = saveSessionScenarioSources;
+
+// Single generation path from the web app. `sectionsCsv` is the page's section
+// ids; an empty string regenerates everything (bulk). Each section is one Ollama
+// call server-side, so this can take a while — the button stays disabled until
+// the run finishes.
+async function regenerateScenarioPage(btn, sectionsCsv, label) {
+  if (!State.currentSession) return;
+  const sections = String(sectionsCsv || '').split(',').map((s) => s.trim()).filter(Boolean);
+  const body = sections.length ? { sections } : {};
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = `${label || 'Regenerating'}…`;
+  try {
+    const result = await api.regenerateScenarioSections(State.currentSession, body);
+    const ok = scenarioArray(result.regenerated).length;
+    const errs = scenarioArray(result.errors);
+    if (errs.length) {
+      const detail = errs.map((e) => `${e.section_id}: ${e.error}`).join('; ');
+      showAlert(`Regenerated ${ok} section(s); ${errs.length} failed — ${detail}`, 'danger', 'scenario-alert');
+    } else {
+      showAlert(`Regenerated ${ok} section(s)`, 'success', 'scenario-alert');
+    }
+    await reloadCurrentSessionPanel();
+  } catch (e) {
+    showAlert(e.message, 'danger', 'scenario-alert');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+window.regenerateScenarioPage = regenerateScenarioPage;
+
+// ── NPC tab (GM) ─────────────────────────────────────────────────────────────
+function renderNpcScope(npc) {
+  if (npc.scope === 'scenario') return npc.session_name ? `Scenario: ${npc.session_name}` : 'Scenario';
+  return 'Global';
+}
+
+function renderNpcCard(npc) {
+  const meta = [renderNpcScope(npc), npc.role, npc.status, npc.location].filter(Boolean);
+  return `
+    <div class="card npc-card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${esc(npc.name)}</div>
+          ${meta.length ? `<div class="card-sub">${esc(meta.join(' | '))}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button class="btn btn-sm" onclick="openNpcDetails(${npc.id})">View</button>
+          <button class="btn btn-sm" onclick="openNpcEditor(${npc.id})">Edit</button>
+          <button class="btn btn-sm" onclick="openNpcSheet(${npc.id})">Sheet${npc.sheet ? '' : ' +'}</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteNpcRecord(${npc.id})">Delete</button>
+        </div>
+      </div>
+      ${npc.summary ? `<p>${esc(npc.summary)}</p>` : '<p class="card-sub">No summary recorded.</p>'}
+    </div>`;
+}
+
+async function renderSessionNpcs(sessionId) {
+  const tab = el('session-content');
+  if (!tab) return;
+  tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading NPCs…</p>';
+  try {
+    const [npcs, sessions] = await Promise.all([
+      api.getNpcs(sessionId),
+      State.sessions.length ? Promise.resolve(State.sessions) : api.getSessions()
+    ]);
+    State.sessions = sessions;
+    // The API already scopes this to global + this session's NPCs.
+    State.npcs = npcs;
+  } catch (e) {
+    tab.innerHTML = `
+      <div class="page-header"><h2>NPCs</h2></div>
+      <div class="alert alert-danger">${esc(e.message)}</div>`;
+    return;
+  }
+
+  const globalNpcs = State.npcs.filter((npc) => npc.scope === 'global');
+  const sessionNpcs = State.npcs.filter((npc) => Number(npc.session_id) === Number(sessionId));
+  const group = (title, list, emptyText) => `
+    <div class="scenario-subtitle">${esc(title)}</div>
+    ${list.length
+      ? `<div class="npc-grid">${list.map(renderNpcCard).join('')}</div>`
+      : `<div class="empty"><div class="empty-icon">👤</div><p>${esc(emptyText)}</p></div>`}`;
+
+  tab.innerHTML = `
+    <div class="page-header">
+      <h2>NPCs</h2>
+      <button class="btn btn-primary" onclick="openNpcEditor()">+ New NPC</button>
+    </div>
+    <div id="npcs-alert"></div>
+    ${group(`This Case (${sessionNpcs.length})`, sessionNpcs, 'No NPCs specific to this case yet.')}
+    ${group(`Rulebook / Global NPCs (${globalNpcs.length})`, globalNpcs, 'No global NPCs. Run npm run npcs:seed.')}`;
+}
+
+async function loadNpcsTab() {
+  const tab = el('tab-npcs');
+  if (!tab) return;
+  tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading…</p>';
+  try {
+    const [npcs, sessions] = await Promise.all([
+      api.getNpcs(),
+      State.sessions.length ? Promise.resolve(State.sessions) : api.getSessions()
+    ]);
+    State.npcs = npcs;
+    State.sessions = sessions;
+  } catch (e) {
+    tab.innerHTML = `
+      <div class="page-header"><h2>NPCs</h2></div>
+      <div class="alert alert-danger">${esc(e.message)}</div>`;
+    return;
+  }
+
+  tab.innerHTML = `
+    <div class="page-header">
+      <h2>NPCs</h2>
+      <button class="btn btn-primary" onclick="openNpcEditor()">+ New NPC</button>
+    </div>
+    <div id="npcs-alert"></div>
+    ${State.npcs.length
+      ? `<div class="npc-grid">${State.npcs.map(renderNpcCard).join('')}</div>`
+      : `<div class="empty"><div class="empty-icon">👤</div><p>No NPCs recorded yet.</p></div>`}`;
+}
+
+function openNpcDetails(npcId) {
+  const npc = State.npcs.find((entry) => entry.id === npcId);
+  if (!npc) return;
+  modal(`
+    <h3>${esc(npc.name)}</h3>
+    <div class="npc-detail-meta">${esc([renderNpcScope(npc), npc.role, npc.status, npc.location].filter(Boolean).join(' | '))}</div>
+    ${npc.summary ? `<div class="scenario-body">${renderScenarioText(npc.summary)}</div>` : ''}
+    ${npc.notes ? `<div class="scenario-subtitle">GM Notes</div><div class="scenario-body">${renderScenarioText(npc.notes)}</div>` : ''}
+    <div class="modal-actions">
+      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Close</button>
+      <button class="btn btn-primary" onclick="this.closest('.modal-backdrop').remove();openNpcEditor(${npc.id})">Edit</button>
+    </div>`, (bd) => {
+      const modalEl = bd.querySelector('.modal');
+      if (modalEl) modalEl.style.maxWidth = '680px';
+    });
+}
+window.openNpcDetails = openNpcDetails;
+
+function renderNpcSessionOptions(selectedId) {
+  return State.sessions.map((session) => `<option value="${session.id}"${Number(selectedId) === Number(session.id) ? ' selected' : ''}>${esc(session.name)}</option>`).join('');
+}
+
+// New NPCs get the standard character sheet (same as players), with just the
+// required record metadata (name/scope/scenario) on top. Editing an existing
+// NPC's record metadata stays in the lightweight modal below; its sheet is
+// edited via the card's "Sheet" button.
+function openNpcCreator() {
+  const data = State.currentSession ? { scope: 'scenario', session_id: State.currentSession } : { scope: 'global' };
+  modal(`
+    <h3>New NPC</h3>
+    <div id="modal-alert"></div>
+    <div class="form-row" style="display:flex;gap:0.75rem;flex-wrap:wrap">
+      <div class="form-group" style="flex:2;min-width:200px"><label>Name</label><input type="text" id="m-npc-name" placeholder="Full name"></div>
+      <div class="form-group" style="flex:1;min-width:140px">
+        <label>Scope</label>
+        <select id="m-npc-scope" onchange="toggleNpcScopeField()">
+          <option value="global"${data.scope !== 'scenario' ? ' selected' : ''}>Global</option>
+          <option value="scenario"${data.scope === 'scenario' ? ' selected' : ''}>Scenario</option>
+        </select>
+      </div>
+      <div class="form-group" id="m-npc-session-wrap" style="flex:1;min-width:160px">
+        <label>Scenario</label>
+        <select id="m-npc-session">${renderNpcSessionOptions(data.session_id)}</select>
+      </div>
+    </div>
+    <div id="npc-sheet-area"><p style="color:var(--text2)">Loading sheet…</p></div>
+    <div class="sheet-actions">
+      <button class="btn btn-primary" onclick="saveNewNpc(this)">Create NPC</button>
+      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Cancel</button>
+      <span class="save-status" id="npc-sheet-status"></span>
+    </div>`, (root) => {
+    const modalEl = root.querySelector('.modal');
+    if (modalEl) { modalEl.style.maxWidth = '1100px'; modalEl.style.maxHeight = '92vh'; modalEl.style.overflowY = 'auto'; }
+    toggleNpcScopeField();
+    const area = root.querySelector('#npc-sheet-area');
+    area.innerHTML = '';
+    SheetForm.render(area, {}, false);
+  });
+}
+window.openNpcCreator = openNpcCreator;
+
+async function saveNewNpc(btn) {
+  const scope = el('m-npc-scope').value;
+  const name = el('m-npc-name').value.trim();
+  const sessionId = scope === 'scenario' ? el('m-npc-session').value : null;
+  if (!name) return showAlert('Name required', 'danger', 'modal-alert');
+  if (scope === 'scenario' && !sessionId) return showAlert('Choose a scenario', 'danger', 'modal-alert');
+  const sheet = SheetForm.collect();
+  if (!sheet.name) sheet.name = name;
+  const status = el('npc-sheet-status');
+  if (status) { status.textContent = 'Saving…'; status.className = 'save-status'; }
+  btn.disabled = true;
+  try {
+    await api.createNpc({ name, scope, session_id: sessionId, role: sheet.occupation || '', status: '', location: '', summary: '', notes: '', sheet });
+    btn.closest('.modal-backdrop').remove();
+    if (State.currentSession) await renderSessionNpcs(State.currentSession);
+    else await loadNpcsTab();
+  } catch (e) {
+    if (status) { status.textContent = `✕ ${e.message}`; status.className = 'save-status error'; }
+    showAlert(e.message, 'danger', 'modal-alert');
+    btn.disabled = false;
+  }
+}
+window.saveNewNpc = saveNewNpc;
+
+function openNpcEditor(npcId = null) {
+  if (!npcId) return openNpcCreator();
+  const npc = State.npcs.find((entry) => entry.id === npcId);
+  const data = npc || (State.currentSession ? { scope: 'scenario', session_id: State.currentSession } : { scope: 'global' });
+  modal(`
+    <h3>${npc ? 'Edit NPC' : 'New NPC'}</h3>
+    <div id="modal-alert"></div>
+    <div class="form-group"><label>Name</label><input type="text" id="m-npc-name" value="${esc(data.name || '')}"></div>
+    <div class="form-group">
+      <label>Scope</label>
+      <select id="m-npc-scope" onchange="toggleNpcScopeField()">
+        <option value="global"${data.scope !== 'scenario' ? ' selected' : ''}>Global</option>
+        <option value="scenario"${data.scope === 'scenario' ? ' selected' : ''}>Scenario</option>
+      </select>
+    </div>
+    <div class="form-group" id="m-npc-session-wrap">
+      <label>Scenario</label>
+      <select id="m-npc-session">${renderNpcSessionOptions(data.session_id)}</select>
+    </div>
+    <div class="form-group"><label>Role / type</label><input type="text" id="m-npc-role" value="${esc(data.role || '')}"></div>
+    <div class="form-group"><label>Status</label><input type="text" id="m-npc-status" value="${esc(data.status || '')}"></div>
+    <div class="form-group"><label>Location</label><input type="text" id="m-npc-location" value="${esc(data.location || '')}"></div>
+    <div class="form-group"><label>Summary</label><textarea id="m-npc-summary" rows="4">${esc(data.summary || '')}</textarea></div>
+    <div class="form-group"><label>GM notes</label><textarea id="m-npc-notes" rows="5">${esc(data.notes || '')}</textarea></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNpc(${npc ? npc.id : 'null'}, this)">Save</button>
+    </div>`, () => toggleNpcScopeField());
+}
+window.openNpcEditor = openNpcEditor;
+
+function toggleNpcScopeField() {
+  const scope = el('m-npc-scope');
+  const wrap = el('m-npc-session-wrap');
+  if (!scope || !wrap) return;
+  wrap.style.display = scope.value === 'scenario' ? '' : 'none';
+}
+window.toggleNpcScopeField = toggleNpcScopeField;
+
+async function saveNpc(npcId, btn) {
+  const scope = el('m-npc-scope').value;
+  const payload = {
+    name: el('m-npc-name').value.trim(),
+    scope,
+    session_id: scope === 'scenario' ? el('m-npc-session').value : null,
+    role: el('m-npc-role').value.trim(),
+    status: el('m-npc-status').value.trim(),
+    location: el('m-npc-location').value.trim(),
+    summary: el('m-npc-summary').value.trim(),
+    notes: el('m-npc-notes').value.trim()
+  };
+  if (!payload.name) return showAlert('Name required', 'danger', 'modal-alert');
+  if (scope === 'scenario' && !payload.session_id) return showAlert('Choose a scenario', 'danger', 'modal-alert');
+  btn.disabled = true;
+  try {
+    if (npcId) await api.updateNpc(npcId, payload);
+    else await api.createNpc(payload);
+    btn.closest('.modal-backdrop').remove();
+    if (State.currentSession) await renderSessionNpcs(State.currentSession);
+    else await loadNpcsTab();
+  } catch (e) {
+    showAlert(e.message, 'danger', 'modal-alert');
+    btn.disabled = false;
+  }
+}
+window.saveNpc = saveNpc;
+
+async function deleteNpcRecord(npcId) {
+  if (!confirm('Delete this NPC?')) return;
+  try {
+    await api.deleteNpc(npcId);
+    if (State.currentSession) await renderSessionNpcs(State.currentSession);
+    else await loadNpcsTab();
+  } catch (e) {
+    showAlert(e.message, 'danger', 'npcs-alert');
+  }
+}
+window.deleteNpcRecord = deleteNpcRecord;
+
+// Full character sheet for an NPC — same SheetForm + PDF mechanism as players.
+function openNpcSheet(npcId) {
+  const npc = State.npcs.find((entry) => entry.id === npcId);
+  if (!npc) return;
+  const bd = modal(`
+    <h3>${esc(npc.name)} — Character Sheet</h3>
+    <div id="modal-alert"></div>
+    <div id="npc-sheet-area"><p style="color:var(--text2)">Loading…</p></div>
+    <div class="sheet-actions">
+      <button class="btn btn-primary" onclick="saveNpcSheet(${npc.id}, this)">Save sheet</button>
+      <button class="btn" onclick="exportPdf()">Export PDF</button>
+      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Close</button>
+      <span class="save-status" id="npc-sheet-status"></span>
+    </div>`, (root) => {
+    const modalEl = root.querySelector('.modal');
+    if (modalEl) {
+      modalEl.style.maxWidth = '1100px';
+      modalEl.style.maxHeight = '92vh';
+      modalEl.style.overflowY = 'auto';
+    }
+    const area = root.querySelector('#npc-sheet-area');
+    area.innerHTML = '';
+    SheetForm.render(area, npc.sheet || {}, false);
+  });
+  return bd;
+}
+window.openNpcSheet = openNpcSheet;
+
+async function saveNpcSheet(npcId, btn) {
+  const npc = State.npcs.find((entry) => entry.id === npcId);
+  if (!npc) return;
+  const status = el('npc-sheet-status');
+  if (status) { status.textContent = 'Saving…'; status.className = 'save-status'; }
+  btn.disabled = true;
+  try {
+    await api.updateNpc(npcId, {
+      name: npc.name,
+      scope: npc.scope,
+      session_id: npc.session_id,
+      role: npc.role,
+      status: npc.status,
+      location: npc.location,
+      summary: npc.summary,
+      notes: npc.notes,
+      sheet: SheetForm.collect()
+    });
+    if (State.currentSession) await renderSessionNpcs(State.currentSession);
+    else await loadNpcsTab();
+    if (status) { status.textContent = '✓ Saved'; status.className = 'save-status saved'; }
+  } catch (e) {
+    if (status) { status.textContent = `✕ ${e.message}`; status.className = 'save-status error'; }
+  } finally {
+    btn.disabled = false;
+  }
+}
+window.saveNpcSheet = saveNpcSheet;
 
 // ── Rules tab ────────────────────────────────────────────────────────────────
 async function loadRulesTab() {

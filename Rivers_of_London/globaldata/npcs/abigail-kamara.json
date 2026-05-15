@@ -1,0 +1,153 @@
+{
+  "name": "Abigail Kamara",
+  "scope": "global",
+  "role": "apprentice practitioner",
+  "status": "",
+  "location": "",
+  "summary": "Abigail Kamara — apprentice practitioner.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Abigail Kamara",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Apprentice Practitioner",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "apprentice practitioner",
+    "portrait": "",
+    "str": "40",
+    "con": "60",
+    "dex": "40",
+    "int": "70",
+    "pow": "70",
+    "siz": "",
+    "advantages": "Magical",
+    "disadvantages": "",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "30"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "30"
+      },
+      {
+        "name": "Drive",
+        "value": "30"
+      },
+      {
+        "name": "Navigate",
+        "value": "30"
+      },
+      {
+        "name": "Observation",
+        "value": "60"
+      },
+      {
+        "name": "Read Person",
+        "value": "60"
+      },
+      {
+        "name": "Research",
+        "value": "60"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "60"
+      },
+      {
+        "name": "Social",
+        "value": "60"
+      },
+      {
+        "name": "Stealth",
+        "value": "60"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Magic",
+        "value": "60"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: English (own)",
+        "value": "70%"
+      },
+      {
+        "name": "Language: Greek",
+        "value": "30%"
+      },
+      {
+        "name": "Language: Latin",
+        "value": "60%"
+      },
+      {
+        "name": "Language: Russian",
+        "value": "30%"
+      }
+    ],
+    "luck": "",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "Newtonian",
+    "magic_notes": "the choice is left to the GM-we suggest choosing at least one other first order and one second order spell from the selection in Chapter 4: Newtonian Magic",
+    "magic_spells": [
+      {
+        "name": "Werelight",
+        "order": "mastered",
+        "notes": ""
+      },
+      {
+        "name": "other than that",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "no one's entirely certain which spells Abigail's managed to learn so",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "for now",
+        "order": "",
+        "notes": ""
+      }
+    ],
+    "derived": {
+      "hp": "",
+      "san": "70",
+      "mp": "15",
+      "build": "",
+      "move": "8"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Signare",
+        "value": "Hasn't yet solidified, but you definitely get a little bit of Nightingale's clockwork orrery mixed with whatever has caught Abigail's interest in the last few months; plus: fox fur, a blast of cold, and something that might be the opening bars of a popular British talent show's theme tune. Footnote: 4 Moon Over Soho"
+      }
+    ]
+  }
+}

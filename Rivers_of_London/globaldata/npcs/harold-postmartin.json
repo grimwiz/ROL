@@ -1,0 +1,144 @@
+{
+  "name": "Harold Postmartin",
+  "scope": "global",
+  "role": "curator",
+  "status": "",
+  "location": "",
+  "summary": "Harold Postmartin — curator.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Harold Postmartin",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Curator",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "curator",
+    "portrait": "",
+    "str": "40",
+    "con": "40",
+    "dex": "50",
+    "int": "90",
+    "pow": "60",
+    "siz": "",
+    "advantages": "Steadfast",
+    "disadvantages": "",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "30"
+      },
+      {
+        "name": "Firearms",
+        "value": "60"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "30"
+      },
+      {
+        "name": "Drive",
+        "value": "50"
+      },
+      {
+        "name": "Navigate",
+        "value": "60"
+      },
+      {
+        "name": "Observation",
+        "value": "80"
+      },
+      {
+        "name": "Read Person",
+        "value": "60"
+      },
+      {
+        "name": "Research",
+        "value": "90"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "40"
+      },
+      {
+        "name": "Social",
+        "value": "60"
+      },
+      {
+        "name": "Stealth",
+        "value": "60"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "History",
+        "value": "80"
+      },
+      {
+        "name": "Law",
+        "value": "60"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: Ancient Greek",
+        "value": "70%"
+      },
+      {
+        "name": "Language: English (own)",
+        "value": "90%"
+      },
+      {
+        "name": "Language: French",
+        "value": "70%"
+      },
+      {
+        "name": "Language: German",
+        "value": "60%"
+      },
+      {
+        "name": "Language: Latin",
+        "value": "80%"
+      },
+      {
+        "name": "Language: Sanskrit",
+        "value": "40%"
+      },
+      {
+        "name": "Language: Spanish",
+        "value": "50%"
+      }
+    ],
+    "luck": "",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "",
+    "magic_notes": "",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "60",
+      "mp": "12",
+      "build": "",
+      "move": "4"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      }
+    ]
+  }
+}

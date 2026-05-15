@@ -1,0 +1,120 @@
+{
+  "name": "Saffron Jackson",
+  "scope": "global",
+  "role": "bookshop manager",
+  "status": "",
+  "location": "",
+  "summary": "Saffron Jackson — bookshop manager.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Saffron Jackson",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Bookshop Manager",
+    "social_class": "",
+    "age": "36",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "bookshop manager",
+    "portrait": "",
+    "str": "40",
+    "con": "50",
+    "dex": "50",
+    "int": "70",
+    "pow": "70",
+    "siz": "",
+    "advantages": "Steadfast",
+    "disadvantages": "",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "30"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "30"
+      },
+      {
+        "name": "Drive",
+        "value": "30"
+      },
+      {
+        "name": "Navigate",
+        "value": "30"
+      },
+      {
+        "name": "Observation",
+        "value": "60"
+      },
+      {
+        "name": "Read Person",
+        "value": "60"
+      },
+      {
+        "name": "Research",
+        "value": "60"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "30"
+      },
+      {
+        "name": "Social",
+        "value": "60"
+      },
+      {
+        "name": "Stealth",
+        "value": "30"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Accounting",
+        "value": "60"
+      },
+      {
+        "name": "History",
+        "value": "60"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: English (own)",
+        "value": "70%"
+      }
+    ],
+    "luck": "",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "",
+    "magic_notes": "",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "70",
+      "mp": "14",
+      "build": "",
+      "move": "8"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      }
+    ]
+  }
+}

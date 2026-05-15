@@ -1,0 +1,143 @@
+{
+  "name": "Michael Cheung",
+  "scope": "global",
+  "role": "legendary swordsman",
+  "status": "",
+  "location": "",
+  "summary": "Michael Cheung — legendary swordsman.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Michael Cheung",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Legendary Swordsman",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "legendary swordsman",
+    "portrait": "",
+    "str": "60",
+    "con": "50",
+    "dex": "60",
+    "int": "60",
+    "pow": "60",
+    "siz": "",
+    "advantages": "Magical*",
+    "disadvantages": "",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "80"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "80"
+      },
+      {
+        "name": "Drive",
+        "value": "30"
+      },
+      {
+        "name": "Navigate",
+        "value": "40"
+      },
+      {
+        "name": "Observation",
+        "value": "60"
+      },
+      {
+        "name": "Read Person",
+        "value": "50"
+      },
+      {
+        "name": "Research",
+        "value": "40"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "60"
+      },
+      {
+        "name": "Social",
+        "value": "60"
+      },
+      {
+        "name": "Stealth",
+        "value": "70"
+      }
+    ],
+    "mandatory_skills": [],
+    "additional_skills": [
+      {
+        "name": "Language: Cantonese (own)",
+        "value": "60%"
+      },
+      {
+        "name": "Language: English (own)",
+        "value": "60%"
+      },
+      {
+        "name": "Language: Mandarin",
+        "value": "60%"
+      }
+    ],
+    "luck": "",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "Newtonian",
+    "magic_notes": "",
+    "magic_spells": [
+      {
+        "name": "None from the Newtonian tradition",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "that's for sure",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "but apparently based on movement",
+        "order": "",
+        "notes": ""
+      }
+    ],
+    "derived": {
+      "hp": "",
+      "san": "60",
+      "mp": "20",
+      "build": "",
+      "move": "8"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Sword",
+        "value": "Michael possesses a Wizard's Sword (page 235). This sword contains a store of 20 magic points."
+      },
+      {
+        "key": "Signare",
+        "value": "Unsurprisingly, seeing as he's the one teaching Sahra, the sound of ripping silk when he strikes. - *Michael's version of the Magical advantage is slightly different to that available to investigators and most NPCs, and manifests itself as the Mystic Art of Fighting (page 234)"
+      }
+    ]
+  }
+}

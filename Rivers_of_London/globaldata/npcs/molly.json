@@ -1,0 +1,131 @@
+{
+  "name": "Molly",
+  "scope": "global",
+  "role": "Folly housekeeper",
+  "status": "",
+  "location": "",
+  "summary": "Molly — Folly housekeeper.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Molly",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Folly Housekeeper",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "Folly housekeeper",
+    "portrait": "",
+    "str": "70",
+    "con": "50",
+    "dex": "80",
+    "int": "60",
+    "pow": "80",
+    "siz": "",
+    "advantages": "Natural Toughness, Speedy",
+    "disadvantages": "vulnerable to cold iron",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "60"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "60"
+      },
+      {
+        "name": "Drive",
+        "value": "30"
+      },
+      {
+        "name": "Navigate",
+        "value": "30"
+      },
+      {
+        "name": "Observation",
+        "value": "85"
+      },
+      {
+        "name": "Read Person",
+        "value": "60"
+      },
+      {
+        "name": "Research",
+        "value": "50"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "80"
+      },
+      {
+        "name": "Social",
+        "value": "50"
+      },
+      {
+        "name": "Stealth",
+        "value": "80"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Art/Craft (Cooking)",
+        "value": "60"
+      },
+      {
+        "name": "Art/Craft (Housekeeping)",
+        "value": "70"
+      }
+    ],
+    "additional_skills": [],
+    "luck": "80",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "",
+    "magic_notes": "",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "80",
+      "mp": "",
+      "build": "",
+      "move": "9"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Languages",
+        "value": "Comprehends and can write English; speaks only in hisses"
+      },
+      {
+        "key": "Powers",
+        "value": "Luck of the Demi-monde"
+      },
+      {
+        "key": "Demi-Monde Affinity",
+        "value": "Blood (haemomancy)"
+      },
+      {
+        "key": "Vestigia",
+        "value": "Nothing that Peter could remember"
+      }
+    ]
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "name": "Lady Cecelia Tyburn Thames",
+  "scope": "global",
+  "role": "genius loci",
+  "status": "",
+  "location": "",
+  "summary": "Lady Cecelia Tyburn Thames — genius loci.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Lady Cecelia Tyburn Thames",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Genius Loci",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "genius loci",
+    "portrait": "",
+    "str": "40",
+    "con": "50",
+    "dex": "60",
+    "int": "70",
+    "pow": "120",
+    "siz": "",
+    "advantages": "Natural Toughness, Scary",
+    "disadvantages": "vulnerable to cold iron",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "30"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "60"
+      },
+      {
+        "name": "Drive",
+        "value": "40"
+      },
+      {
+        "name": "Navigate",
+        "value": "60"
+      },
+      {
+        "name": "Observation",
+        "value": "70"
+      },
+      {
+        "name": "Read Person",
+        "value": "80"
+      },
+      {
+        "name": "Research",
+        "value": "60"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "90"
+      },
+      {
+        "name": "Social",
+        "value": "80"
+      },
+      {
+        "name": "Stealth",
+        "value": "60"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "History",
+        "value": "80"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: English (own)",
+        "value": "70%"
+      },
+      {
+        "name": "Language: Italian",
+        "value": "80%"
+      },
+      {
+        "name": "Language: Yoruba (own)",
+        "value": "35%"
+      }
+    ],
+    "luck": "120",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "",
+    "magic_notes": "",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "120",
+      "mp": "",
+      "build": "",
+      "move": "8"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Powers",
+        "value": "The Glamour, Luck of the Demi-monde"
+      },
+      {
+        "key": "Demi-Monde Affinity",
+        "value": "Water"
+      },
+      {
+        "key": "Vestigia",
+        "value": "The rope, the crowd, and the final drop into oblivion; the smell of cigars, horses, furniture polish, Stilton, and Belgian chocolate"
+      }
+    ]
+  }
+}

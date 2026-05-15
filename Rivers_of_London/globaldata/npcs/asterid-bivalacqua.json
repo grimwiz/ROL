@@ -1,0 +1,143 @@
+{
+  "name": "Asterid Bivalacqua",
+  "scope": "global",
+  "role": "green-fingered OAP*",
+  "status": "",
+  "location": "",
+  "summary": "Asterid Bivalacqua — green-fingered OAP*.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Asterid Bivalacqua",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Green-Fingered OAP*",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "green-fingered OAP*",
+    "portrait": "",
+    "str": "40",
+    "con": "50",
+    "dex": "60",
+    "int": "60",
+    "pow": "70",
+    "siz": "",
+    "advantages": "Magical, Scary",
+    "disadvantages": "",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "60"
+      },
+      {
+        "name": "Firearms",
+        "value": "60"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "30"
+      },
+      {
+        "name": "Drive",
+        "value": "30"
+      },
+      {
+        "name": "Navigate",
+        "value": "50"
+      },
+      {
+        "name": "Observation",
+        "value": "70"
+      },
+      {
+        "name": "Read Person",
+        "value": "70"
+      },
+      {
+        "name": "Research",
+        "value": "60"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "70"
+      },
+      {
+        "name": "Social",
+        "value": "60"
+      },
+      {
+        "name": "Stealth",
+        "value": "60"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Art/Craft (Horticulture)",
+        "value": "90"
+      },
+      {
+        "name": "Magic",
+        "value": "70"
+      },
+      {
+        "name": "Science (Pharmacy)",
+        "value": "60"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: English (own)",
+        "value": "60%"
+      },
+      {
+        "name": "Language: Jamaican Patois (own)",
+        "value": "60%"
+      }
+    ],
+    "luck": "",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "Newtonian",
+    "magic_notes": "and her magic is definitely non-Newtonian. If Nightingale knows what she's capable of",
+    "magic_spells": [
+      {
+        "name": "She's a woman of mysterious power",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "he isn't saying. Has an affinity for growing things",
+        "order": "",
+        "notes": ""
+      }
+    ],
+    "derived": {
+      "hp": "",
+      "san": "70",
+      "mp": "22",
+      "build": "",
+      "move": "5"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Signare",
+        "value": "The burning taste of Scotch bonnet peppers and the fragrance of expensive rum on a warm summer's evening. Footnotes: 9 Night Witch, 10 Black Mould , 11 Action at a Distance"
+      }
+    ]
+  }
+}

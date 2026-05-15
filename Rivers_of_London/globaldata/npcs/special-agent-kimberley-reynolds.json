@@ -1,0 +1,116 @@
+{
+  "name": "Special Agent Kimberley Reynolds",
+  "scope": "global",
+  "role": "FBI",
+  "status": "",
+  "location": "",
+  "summary": "Special Agent Kimberley Reynolds — FBI.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "Special Agent Kimberley Reynolds",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "FBI",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "FBI",
+    "portrait": "",
+    "str": "60",
+    "con": "50",
+    "dex": "60",
+    "int": "70",
+    "pow": "50",
+    "siz": "",
+    "advantages": "Fast Reactions, Signature Firearm (Glock 9mm service pistol)",
+    "disadvantages": "",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "60"
+      },
+      {
+        "name": "Firearms",
+        "value": "70"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "50"
+      },
+      {
+        "name": "Drive",
+        "value": "60"
+      },
+      {
+        "name": "Navigate",
+        "value": "40"
+      },
+      {
+        "name": "Observation",
+        "value": "70"
+      },
+      {
+        "name": "Read Person",
+        "value": "60"
+      },
+      {
+        "name": "Research",
+        "value": "50"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "40"
+      },
+      {
+        "name": "Social",
+        "value": "60"
+      },
+      {
+        "name": "Stealth",
+        "value": "40"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Law",
+        "value": "60"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: English (own)",
+        "value": "70%"
+      }
+    ],
+    "luck": "",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "",
+    "magic_notes": "",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "50",
+      "mp": "10",
+      "build": "",
+      "move": "8"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      }
+    ]
+  }
+}

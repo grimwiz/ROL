@@ -1,0 +1,164 @@
+{
+  "name": "DCI Thomas Nightingale",
+  "scope": "global",
+  "role": "master practitioner",
+  "status": "",
+  "location": "",
+  "summary": "DCI Thomas Nightingale — master practitioner.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "DCI Thomas Nightingale",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Master Practitioner",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "Traits: I'd describe him as thoughtful and serious, though his dry sense of humour sometimes breaks through. He approaches problems in a rational and calm manner, but don't let that deceive you-when he needs to, he can throw down against the best of them!.",
+    "reputation": "master practitioner",
+    "portrait": "",
+    "str": "50",
+    "con": "50",
+    "dex": "40",
+    "int": "70",
+    "pow": "80",
+    "siz": "",
+    "advantages": "Magical, Steadfast, The Knowledge (London)",
+    "disadvantages": "",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "60"
+      },
+      {
+        "name": "Firearms",
+        "value": "60"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "50"
+      },
+      {
+        "name": "Drive",
+        "value": "80"
+      },
+      {
+        "name": "Navigate",
+        "value": "70"
+      },
+      {
+        "name": "Observation",
+        "value": "80"
+      },
+      {
+        "name": "Read Person",
+        "value": "80"
+      },
+      {
+        "name": "Research",
+        "value": "70"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "95"
+      },
+      {
+        "name": "Social",
+        "value": "60"
+      },
+      {
+        "name": "Stealth",
+        "value": "80"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Art/Craft (Blacksmithing)",
+        "value": "70"
+      },
+      {
+        "name": "Law",
+        "value": "90"
+      },
+      {
+        "name": "Magic",
+        "value": "95"
+      },
+      {
+        "name": "Ride",
+        "value": "60"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: Arabic",
+        "value": "50%"
+      },
+      {
+        "name": "Language: Brittonic",
+        "value": "40%"
+      },
+      {
+        "name": "Language: Danish",
+        "value": "40%"
+      },
+      {
+        "name": "Language: English (own)",
+        "value": "80%"
+      },
+      {
+        "name": "Language: Greek",
+        "value": "60%"
+      },
+      {
+        "name": "Language: German",
+        "value": "50%"
+      },
+      {
+        "name": "Language: Latin",
+        "value": "70%"
+      },
+      {
+        "name": "Language: Welsh",
+        "value": "40%"
+      }
+    ],
+    "luck": "",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "Newtonian",
+    "magic_notes": "All the spells listed in Chapter 4: Newtonian Magic , all mastered, plus a few more we haven't made rules up for yet",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "80",
+      "mp": "60",
+      "build": "",
+      "move": "7"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Wizard's Staff",
+        "value": "Nightingale has a silver-topped walking cane that acts as his wizard's staff (see page 324 for further details on what a wizard's staff does). This staff contains a store of 60 magic points."
+      },
+      {
+        "key": "Signare",
+        "value": "A clockwork tick, the smell of willow, and a whispering clash like the sound of cymbals-as heavy as a mallet and as sharp and controlled as the point of a needle"
+      }
+    ]
+  }
+}

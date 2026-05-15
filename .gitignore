@@ -1,8 +1,5 @@
 /node_modules
-/data/*.db
-/data/*.db-journal
-/data/*.db-shm
-/data/*.db-wal
+/data/
 /comfyui-output.png
 Rivers_of_London/test_write
 tim.json

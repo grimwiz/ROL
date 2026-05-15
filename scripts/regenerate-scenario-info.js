@@ -1,0 +1,67 @@
+#!/usr/bin/env node
+
+// Manual entry point for the single scenario-information generation path.
+// Codex/Claude is not available on the application server, so this script runs
+// exactly the same Ollama-backed regeneration the web app triggers — there is
+// no separate "write a prompt file" path any more.
+//
+// Usage:
+//   npm run scenario:regenerate -- --scenario <id-or-name>
+//   npm run scenario:regenerate -- --scenario 1 --artifact player
+//   npm run scenario:regenerate -- --scenario 1 --sections player.entities.npcs,player.entities.items
+
+const db = require('../src/db');
+const {
+  findSessionByToken,
+  regenerateScenarioSections
+} = require('../src/scenarioInfo');
+
+function readFlag(argv, ...names) {
+  for (const name of names) {
+    const idx = argv.indexOf(name);
+    if (idx !== -1) return argv[idx + 1];
+  }
+  return undefined;
+}
+
+const argv = process.argv.slice(2);
+const sessionArg = readFlag(argv, '--scenario', '--session', '-s')
+  || argv.find((arg) => !arg.startsWith('-'))
+  || '';
+
+if (!sessionArg) {
+  console.error('Usage: npm run scenario:regenerate -- --scenario <id-or-name> [--artifact player|gm] [--sections id,id]');
+  process.exit(1);
+}
+
+const session = findSessionByToken(db, sessionArg);
+if (!session) {
+  console.error(`No matching non-system session found for: ${sessionArg}`);
+  process.exit(1);
+}
+
+const sectionsArg = readFlag(argv, '--sections', '--section');
+const options = {
+  artifact: readFlag(argv, '--artifact') || null,
+  sections: sectionsArg ? sectionsArg.split(',').map((s) => s.trim()).filter(Boolean) : null
+};
+
+(async () => {
+  console.log(`Session: ${session.name} (${session.id})`);
+  console.log(options.sections ? `Sections: ${options.sections.join(', ')}`
+    : options.artifact ? `Artifact: ${options.artifact} (all sections)`
+    : 'Regenerating all sections');
+
+  const result = await regenerateScenarioSections(session.id, db, options);
+  for (const item of result.regenerated || []) {
+    console.log(`  ✓ ${item.section_id} → ${item.output_path}`);
+  }
+  for (const failure of result.errors || []) {
+    console.error(`  ✗ ${failure.section_id}: ${failure.error}`);
+  }
+  console.log(`Done: ${result.regenerated.length} regenerated, ${result.errors.length} failed.`);
+  process.exit(result.errors.length ? 1 : 0);
+})().catch((e) => {
+  console.error(e.message || e);
+  process.exit(1);
+});

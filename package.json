@@ -7,6 +7,10 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "check:domestic": "node scripts/check-domestic-adventure.js",
+    "scenario:regenerate": "node scripts/regenerate-scenario-info.js",
+    "npcs:extract": "node scripts/extract-rulebook-npcs.js",
+    "npcs:seed": "node scripts/seed-npcs.js",
+    "npcs:export": "node scripts/export-rulebook-npcs.js",
     "compare:sheets": "python3 scripts/compare-character-sheet-dbs.py"
   },
   "dependencies": {

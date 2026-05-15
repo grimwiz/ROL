@@ -1,0 +1,95 @@
+{
+  "name": "The Spirit of Books and Reading",
+  "scope": "global",
+  "role": "lonely genius loci",
+  "status": "",
+  "location": "",
+  "summary": "The Spirit of Books and Reading — lonely genius loci.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "The Spirit of Books and Reading",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Lonely Genius Loci",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "lonely genius loci",
+    "portrait": "",
+    "str": "50",
+    "con": "40",
+    "dex": "30",
+    "int": "60",
+    "pow": "80",
+    "siz": "",
+    "advantages": "Natural Toughness",
+    "disadvantages": "vulnerable to cold iron",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "30"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Sense Vestigia",
+        "value": "60"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Throw",
+        "value": "90"
+      }
+    ],
+    "additional_skills": [],
+    "luck": "80",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "",
+    "magic_notes": "",
+    "magic_spells": [],
+    "derived": {
+      "hp": "",
+      "san": "80",
+      "mp": "",
+      "build": "",
+      "move": "4"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Languages",
+        "value": "Non-verbal; it does understand English, though, and its spelling ability is equivalent that of a five-year old"
+      },
+      {
+        "key": "Powers",
+        "value": "Luck of the Demi-monde"
+      },
+      {
+        "key": "Demi-Monde Affinity",
+        "value": "Books and reading"
+      },
+      {
+        "key": "Vestigia",
+        "value": "The smell of blood, the taste of plasticine, and the sensation of crossed legs and chicken feathers. MOV: 10 MP: - LUCK: -"
+      }
+    ]
+  }
+}

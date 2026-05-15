@@ -1,0 +1,155 @@
+{
+  "name": "DS Sahra Guleed",
+  "scope": "global",
+  "role": "ninja-in-training",
+  "status": "",
+  "location": "",
+  "summary": "DS Sahra Guleed — ninja-in-training.",
+  "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
+  "sheet": {
+    "name": "DS Sahra Guleed",
+    "pronouns": "",
+    "birthplace": "",
+    "residence": "",
+    "occupation": "Ninja-In-Training",
+    "social_class": "",
+    "age": "",
+    "affluence": "",
+    "glitch": "",
+    "backstory": "",
+    "reputation": "ninja-in-training",
+    "portrait": "",
+    "str": "50",
+    "con": "40",
+    "dex": "70",
+    "int": "60",
+    "pow": "60",
+    "siz": "",
+    "advantages": "Magical*",
+    "disadvantages": "",
+    "combat_skills": [
+      {
+        "name": "Fighting",
+        "value": "60"
+      },
+      {
+        "name": "Firearms",
+        "value": "30"
+      }
+    ],
+    "common_skills": [
+      {
+        "name": "Athletics",
+        "value": "70"
+      },
+      {
+        "name": "Drive",
+        "value": "50"
+      },
+      {
+        "name": "Navigate",
+        "value": "30"
+      },
+      {
+        "name": "Observation",
+        "value": "60"
+      },
+      {
+        "name": "Read Person",
+        "value": "60"
+      },
+      {
+        "name": "Research",
+        "value": "30"
+      },
+      {
+        "name": "Sense Vestigia",
+        "value": "60"
+      },
+      {
+        "name": "Social",
+        "value": "30"
+      },
+      {
+        "name": "Stealth",
+        "value": "60"
+      }
+    ],
+    "mandatory_skills": [
+      {
+        "name": "Law",
+        "value": "60"
+      },
+      {
+        "name": "Magic",
+        "value": "60"
+      }
+    ],
+    "additional_skills": [
+      {
+        "name": "Language: Arabic",
+        "value": "30%"
+      },
+      {
+        "name": "Language: Cantonese",
+        "value": "30%"
+      },
+      {
+        "name": "Language: English (own)",
+        "value": "60%"
+      },
+      {
+        "name": "Language: Mandarin",
+        "value": "30%"
+      },
+      {
+        "name": "Language: Somali (own)",
+        "value": "30%"
+      }
+    ],
+    "luck": "",
+    "damage": {
+      "hurt": false,
+      "bloodied": false,
+      "down": false,
+      "impaired": false
+    },
+    "weapons": [],
+    "carry": "",
+    "magic_tradition": "Newtonian",
+    "magic_notes": "",
+    "magic_spells": [
+      {
+        "name": "None that she's admitted to-yet. Given who her teacher is",
+        "order": "",
+        "notes": ""
+      },
+      {
+        "name": "any she does know are going to be non-Newtonian and most likely movement-based",
+        "order": "",
+        "notes": ""
+      }
+    ],
+    "derived": {
+      "hp": "",
+      "san": "60",
+      "mp": "12",
+      "build": "",
+      "move": "8"
+    },
+    "custom_fields": [
+      {
+        "key": "Damage Bonus (DB)",
+        "value": "0"
+      },
+      {
+        "key": "Sword",
+        "value": "Sahra possesses a Wizard's Sword (page 235). This sword contains a store of 10 magic points."
+      },
+      {
+        "key": "Signare",
+        "value": "The sound of ripping silk whenever she wields her sword. *Sahra's version of the Magical advantage is slightly different to that available to investigators and most NPCs, and manifests itself as the Mystic Art of Fighting (nearby). Footnote: 2 Moon Over Soho"
+      }
+    ]
+  }
+}
