@@ -185,7 +185,7 @@ async function waitForDomesticPersistence() {
 }
 
 // ── Routing ───────────────────────────────────────────────────────────────────
-const APP_TABS = ['sessions', 'rules', 'domestic', 'users'];
+const APP_TABS = ['sessions', 'rules', 'admin'];
 
 function showPage(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -232,6 +232,7 @@ function readUiStateFromUrl() {
   return {
     tab: tab || 'sessions',
     sessionId: parseIntParam('session'),
+    sessionRaw: url.searchParams.get('session'),
     adventureStep: parseIntParam('adventureStep')
   };
 }
@@ -242,10 +243,18 @@ function readAdventureStepFromUrl() {
 
 async function restoreUiFromUrl(replace = false) {
   const route = readUiStateFromUrl();
-  const allowedTabs = new Set(['sessions', 'rules', 'domestic', 'users']);
+
+  // The Domestic now lives inside the Case File page. `?session=domestic` is the
+  // canonical marker; `?tab=domestic` is kept working for old bookmarks.
+  if (route.tab === 'domestic' || route.sessionRaw === 'domestic') {
+    await openDomestic({ replaceUrl: replace });
+    return;
+  }
+
+  const allowedTabs = new Set(['sessions', 'rules', 'admin']);
   const targetTab = allowedTabs.has(route.tab) ? route.tab : 'sessions';
 
-  if (targetTab === 'users' && State.user.role !== 'gm') {
+  if (targetTab === 'admin' && State.user.role !== 'gm') {
     await switchTab('sessions', { replaceUrl: true });
     return;
   }
@@ -348,8 +357,7 @@ async function renderMain() {
       <div class="nav-tabs">
         <button class="nav-tab active" data-tab="sessions" onclick="switchTab('sessions')">Case File</button>
         <button class="nav-tab" data-tab="rules" onclick="switchTab('rules')">Rules</button>
-        <button class="nav-tab" data-tab="domestic" onclick="switchTab('domestic')">The Domestic</button>
-        ${isGM ? `<button class="nav-tab" data-tab="users" onclick="switchTab('users')">Accounts</button>` : ''}
+        ${isGM ? `<button class="nav-tab" data-tab="admin" onclick="switchTab('admin')">Admin</button>` : ''}
       </div>
       <div class="nav-right">
         <div class="dice-roller" title="Quick dice roller">
@@ -368,8 +376,7 @@ async function renderMain() {
     </nav>
     <div id="tab-sessions" class="main"></div>
     <div id="tab-rules" class="main" style="display:none"></div>
-    <div id="tab-domestic" class="main" style="display:none"></div>
-    ${isGM ? `<div id="tab-users" class="main" style="display:none"></div>` : ''}`;
+    ${isGM ? `<div id="tab-admin" class="main" style="display:none"></div>` : ''}`;
 
   showPage('main-page');
   await restoreUiFromUrl(true);
@@ -377,19 +384,18 @@ async function renderMain() {
 
 async function switchTab(tab, options = {}) {
   const { replaceUrl = false, preserveSession = false } = options;
-  if (tab === 'users' && State.user.role !== 'gm') tab = 'sessions';
+  if (tab === 'admin' && State.user.role !== 'gm') tab = 'sessions';
   setActiveMainTab(tab);
 
   updateUiStateInUrl({
     tab,
     session: tab === 'sessions' && preserveSession ? undefined : null,
-    adventureStep: tab === 'domestic' ? undefined : null
+    adventureStep: null
   }, replaceUrl);
 
   if (tab === 'sessions') await loadSessionsTab({ skipUrlUpdate: true });
-  if (tab === 'users') await loadUsersTab();
+  if (tab === 'admin') await loadAdminTab();
   if (tab === 'rules') await loadRulesTab();
-  if (tab === 'domestic') await loadDomesticTab();
 }
 
 async function doLogout() {
@@ -463,7 +469,7 @@ async function openMyCharacters() {
         label: 'The Domestic',
         route: async () => {
           view.remove();
-          await switchTab('domestic');
+          await openDomestic();
         },
         data: domesticSheet.data
       });
@@ -527,7 +533,7 @@ async function loadSessionsTab(options = {}) {
   State.currentSession = null;
   State.currentSheetUserId = null;
   if (!skipUrlUpdate) {
-    updateUiStateInUrl({ tab: 'sessions', session: null }, replaceUrl);
+    updateUiStateInUrl({ tab: 'sessions', session: null, adventureStep: null }, replaceUrl);
   }
   State.sessions = await api.getSessions();
 
@@ -538,10 +544,28 @@ async function loadSessionsTab(options = {}) {
       ${isGM ? `<button class="btn btn-primary" onclick="openCreateSession()">+ New case file</button>` : ''}
     </div>
     <div id="sessions-alert"></div>
+    <div class="session-grid">
+      ${renderDomesticCard()}
+      ${State.sessions.map(renderSessionCard).join('')}
+    </div>
     ${State.sessions.length === 0
-      ? `<div class="empty"><div class="empty-icon">📁</div><p>No case files yet${isGM ? ' — create one above' : ''}.</p></div>`
-      : `<div class="session-grid">${State.sessions.map(renderSessionCard).join('')}</div>`
-    }`;
+      ? `<p class="card-sub" style="margin-top:0.85rem">No GM case files yet${isGM ? ' — create one above' : ''}. The Domestic solo adventure is always available.</p>`
+      : ''}`;
+}
+
+// The Domestic is a built-in solo case file, not a GM-created one, so it gets a
+// fixed card at the front of the grid rather than coming from /sessions.
+function renderDomesticCard() {
+  return `<div class="card session-card domestic-card" onclick="openDomestic()">
+    <div class="card-header">
+      <div>
+        <div class="card-title">The Domestic</div>
+        <div class="card-sub">Solo adventure — play through the case and build your character as you go.</div>
+      </div>
+      <span class="badge-gm" style="background:var(--accent)">Solo</span>
+    </div>
+    <p class="player-count">📖 Step-by-step · autosaved progress</p>
+  </div>`;
 }
 
 function renderSessionCard(s) {
@@ -654,9 +678,9 @@ async function openSession(sessionId, options = {}) {
     return;
   }
   State.currentSession = sessionId;
-  State.currentSessionPanel = 'characters';
-  const tab = el('tab-sessions');
   const isGM = State.user.role === 'gm';
+  State.currentSessionPanel = isGM ? 'overview' : 'characters';
+  const tab = el('tab-sessions');
 
   setActiveMainTab('sessions');
 
@@ -677,7 +701,8 @@ async function openSession(sessionId, options = {}) {
     </div>
     <div id="session-alert"></div>
     <div class="sheet-tabs session-subtabs">
-      <div class="sheet-tab active" data-session-panel="characters" onclick="switchSessionPanel(${sessionId}, 'characters')">Characters</div>
+      ${isGM ? `<div class="sheet-tab active" data-session-panel="overview" onclick="switchSessionPanel(${sessionId}, 'overview')">Overview</div>` : ''}
+      <div class="sheet-tab${isGM ? '' : ' active'}" data-session-panel="characters" onclick="switchSessionPanel(${sessionId}, 'characters')">Characters</div>
       <div class="sheet-tab" data-session-panel="case-info" onclick="switchSessionPanel(${sessionId}, 'case-info')">Case Info</div>
       <div class="sheet-tab" data-session-panel="player-info" onclick="switchSessionPanel(${sessionId}, 'player-info')">Player Info</div>
       <div class="sheet-tab" data-session-panel="entities" onclick="switchSessionPanel(${sessionId}, 'entities')">NPC/Places/Things</div>
@@ -687,7 +712,8 @@ async function openSession(sessionId, options = {}) {
     </div>
     <div id="session-content"><p style="color:var(--text2)">Loading…</p></div>`;
 
-  await renderSessionCharacters(sessionId);
+  if (isGM) await renderSessionOverview(sessionId);
+  else await renderSessionCharacters(sessionId);
 }
 
 function setSessionPanelActive(panel) {
@@ -725,6 +751,10 @@ async function switchSessionPanel(sessionId, panel) {
     await renderSessionNpcs(sessionId);
     return;
   }
+  if (panel === 'overview') {
+    await renderSessionOverview(sessionId);
+    return;
+  }
   await renderSessionCharacters(sessionId);
 }
 window.switchSessionPanel = switchSessionPanel;
@@ -736,6 +766,81 @@ async function renderSessionCharacters(sessionId) {
   } else {
     await renderPlayerSessionView(sessionId);
   }
+}
+
+// Shared overview table — identical columns for player characters and NPCs.
+function renderOverviewTable(title, sub, rows, emptyText) {
+  return `
+    <div class="card gm-overview-pane">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${esc(title)}</div>
+          <div class="card-sub">${esc(sub)}</div>
+        </div>
+      </div>
+      ${rows.length ? `<div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Player</th><th>Character</th><th>Condition</th><th>Resources</th><th>Notable skills</th><th>Weapons</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            ${rows.map((r) => {
+              const d = r.d || {};
+              return `<tr>
+                <td><strong>${esc(r.col1 || '—')}</strong></td>
+                <td>${esc(r.name || d.name || '—')}</td>
+                <td>${esc(summarizeCondition(d))}</td>
+                <td>${esc(summarizeResources(d))}</td>
+                <td>${esc(summarizeNotableSkills(d))}</td>
+                <td>${esc(summarizeWeapons(d))}</td>
+                <td>${esc(summarizePlayNotes(d))}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>` : `<div class="empty" style="padding:1rem"><p>${esc(emptyText)}</p></div>`}
+    </div>`;
+}
+
+async function renderSessionOverview(sessionId) {
+  const content = el('session-content');
+  if (!content) return;
+  content.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading overview…</p>';
+  let players;
+  let sheets;
+  let npcs;
+  try {
+    [players, sheets, npcs] = await Promise.all([
+      api.getSessionPlayers(sessionId),
+      api.getSheets(sessionId),
+      api.getNpcs(sessionId)
+    ]);
+  } catch (e) {
+    content.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+    return;
+  }
+  const sheetMap = {};
+  sheets.forEach((s) => { sheetMap[s.user_id] = s; });
+  const playerRows = players.map((p) => ({
+    col1: p.username,
+    name: (sheetMap[p.id] && sheetMap[p.id].data && sheetMap[p.id].data.name) || '—',
+    d: (sheetMap[p.id] && sheetMap[p.id].data) || {}
+  }));
+  const npcRows = npcs.map((n) => ({
+    col1: (n.sheet && n.sheet.occupation) || n.role || 'NPC',
+    name: n.name,
+    d: n.sheet || {}
+  }));
+  content.innerHTML = `
+    <div class="page-header">
+      <div>
+        <h2>Session Overview</h2>
+        <p class="card-sub">At-a-glance condition, resources, notable skills, and combat notes for everyone in this case.</p>
+      </div>
+    </div>
+    <div id="session-alert"></div>
+    ${renderOverviewTable('Player Characters', 'Assigned players in this case.', playerRows, 'No players assigned to this case yet.')}
+    ${renderOverviewTable('NPCs', 'NPCs allocated to this case.', npcRows, 'No NPCs allocated to this case yet.')}`;
 }
 
 async function renderGMSessionView(sessionId, preferredUserId = null) {
@@ -755,37 +860,6 @@ async function renderGMSessionView(sessionId, preferredUserId = null) {
   window.gmSheetMap = sheetMap;
 
   content.innerHTML = `
-    <div class="card gm-overview-pane">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Session Overview</div>
-          <div class="card-sub">Current condition, resources, notable skills, and combat-relevant notes.</div>
-        </div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Player</th><th>Character</th><th>Condition</th><th>Resources</th><th>Notable skills</th><th>Weapons</th><th>Notes</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${players.map((p) => {
-              const d = (sheetMap[p.id] && sheetMap[p.id].data) || {};
-              return `<tr>
-                <td><strong>${esc(p.username)}</strong></td>
-                <td>${esc(d.name || '—')}</td>
-                <td>${esc(summarizeCondition(d))}</td>
-                <td>${esc(summarizeResources(d))}</td>
-                <td>${esc(summarizeNotableSkills(d))}</td>
-                <td>${esc(summarizeWeapons(d))}</td>
-                <td>${esc(summarizePlayNotes(d))}</td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
     <div style="margin-bottom:1rem">
       <div class="sheet-tabs" id="gm-sheet-tabs">
         ${players.map((p, i) => `
@@ -1675,133 +1749,178 @@ async function regenerateScenarioPage(btn, sectionsCsv, label) {
 window.regenerateScenarioPage = regenerateScenarioPage;
 
 // ── NPC tab (GM) ─────────────────────────────────────────────────────────────
-function renderNpcScope(npc) {
-  if (npc.scope === 'scenario') return npc.session_name ? `Scenario: ${npc.session_name}` : 'Scenario';
-  return 'Global';
+function npcCaseSummary(entry) {
+  const names = (entry.sessions || []).map((s) => s.name);
+  if (!names.length) return 'Unallocated';
+  if (names.length <= 2) return names.join(', ');
+  return `${names.slice(0, 2).join(', ')} +${names.length - 2}`;
 }
 
-// An NPC is a character sheet. The sheet's own Name field is authoritative;
-// only Scope/Scenario sit outside it. (No minimal-record editor any more.)
-function renderNpcCard(npc) {
-  const occupation = (npc.sheet && npc.sheet.occupation) || npc.role || '';
-  const meta = [renderNpcScope(npc), occupation].filter(Boolean);
-  return `
-    <div class="card npc-card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">${esc(npc.name)}</div>
-          ${meta.length ? `<div class="card-sub">${esc(meta.join(' | '))}</div>` : ''}
-        </div>
-        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-          <button class="btn btn-sm" onclick="openNpcSheet(${npc.id})">Edit</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteNpcRecord(${npc.id})">Delete</button>
-        </div>
-      </div>
-      ${(npc.sheet && npc.sheet.reputation) ? `<p class="card-sub">${esc(npc.sheet.reputation)}</p>` : ''}
-    </div>`;
-}
-
+// ── Per-case NPC detail view (read-only) ─────────────────────────────────────
+// Shows the NPCs allocated to this case. Management/allocation is in Admin.
 async function renderSessionNpcs(sessionId) {
   const tab = el('session-content');
   if (!tab) return;
   tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading NPCs…</p>';
+  let npcs;
   try {
-    const [npcs, sessions] = await Promise.all([
-      api.getNpcs(sessionId),
-      State.sessions.length ? Promise.resolve(State.sessions) : api.getSessions()
-    ]);
-    State.sessions = sessions;
-    // The API already scopes this to global + this session's NPCs.
+    npcs = await api.getNpcs(sessionId);
     State.npcs = npcs;
   } catch (e) {
-    tab.innerHTML = `
-      <div class="page-header"><h2>NPCs</h2></div>
-      <div class="alert alert-danger">${esc(e.message)}</div>`;
+    tab.innerHTML = `<div class="page-header"><h2>NPCs</h2></div><div class="alert alert-danger">${esc(e.message)}</div>`;
     return;
   }
 
-  const globalNpcs = State.npcs.filter((npc) => npc.scope === 'global');
-  const sessionNpcs = State.npcs.filter((npc) => Number(npc.session_id) === Number(sessionId));
-  const group = (title, list, emptyText) => `
-    <div class="scenario-subtitle">${esc(title)}</div>
-    ${list.length
-      ? `<div class="npc-grid">${list.map(renderNpcCard).join('')}</div>`
-      : `<div class="empty"><div class="empty-icon">👤</div><p>${esc(emptyText)}</p></div>`}`;
+  const card = (npc) => {
+    const occupation = (npc.sheet && npc.sheet.occupation) || npc.role || '';
+    const meta = [occupation, npc.sheet ? null : 'no sheet'].filter(Boolean);
+    return `
+      <div class="card npc-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">${esc(npc.name)}</div>
+            ${meta.length ? `<div class="card-sub">${esc(meta.join(' | '))}</div>` : ''}
+          </div>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="openNpcSheetView(${npc.id})"${npc.sheet ? '' : ' disabled'}>View sheet</button>
+          </div>
+        </div>
+        ${(npc.sheet && npc.sheet.reputation) ? `<p class="card-sub">${esc(npc.sheet.reputation)}</p>` : ''}
+      </div>`;
+  };
 
+  const isGM = State.user.role === 'gm';
   tab.innerHTML = `
     <div class="page-header">
-      <h2>NPCs</h2>
-      <button class="btn btn-primary" onclick="openNpcSheet()">+ New NPC</button>
+      <div>
+        <h2>NPCs</h2>
+        <p class="card-sub">NPCs allocated to this case. Create and edit sheets in <strong>Admin → NPCs</strong>.</p>
+      </div>
+      ${isGM ? `<button class="btn btn-primary" onclick="openSessionNpcAssign(${sessionId})">Assign NPCs…</button>` : ''}
     </div>
     <div id="npcs-alert"></div>
-    ${group(`This Case (${sessionNpcs.length})`, sessionNpcs, 'No NPCs specific to this case yet.')}
-    ${group(`Rulebook / Global NPCs (${globalNpcs.length})`, globalNpcs, 'No global NPCs. Run npm run npcs:seed.')}`;
+    ${npcs.length
+      ? `<div class="npc-grid">${npcs.map(card).join('')}</div>`
+      : `<div class="empty"><div class="empty-icon">👤</div><p>No NPCs allocated to this case yet.</p></div>`}`;
 }
 
-async function loadNpcsTab() {
-  const tab = el('tab-npcs');
-  if (!tab) return;
-  tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading…</p>';
+// Pick which NPCs belong to this case, from the case screen.
+async function openSessionNpcAssign(sessionId) {
+  let all;
   try {
-    const [npcs, sessions] = await Promise.all([
-      api.getNpcs(),
-      State.sessions.length ? Promise.resolve(State.sessions) : api.getSessions()
-    ]);
+    all = await api.getNpcs();
+  } catch (e) {
+    return showAlert(e.message, 'danger', 'npcs-alert');
+  }
+  if (!all.length) {
+    return modal(`
+      <h3>Assign NPCs</h3>
+      <p class="card-sub">No NPCs exist yet. Create them in Admin → NPCs.</p>
+      <div class="modal-actions"><button class="btn" onclick="this.closest('.modal-backdrop').remove()">Close</button></div>`);
+  }
+  const selected = new Set(all.filter((n) => (n.session_ids || []).map(Number).includes(Number(sessionId))).map((n) => n.id));
+  modal(`
+    <h3>Assign NPCs to this case</h3>
+    <div id="modal-alert"></div>
+    <p class="card-sub" style="margin-bottom:0.5rem">Tick the NPCs that appear in this case.</p>
+    <div class="case-allocation">${all.map((n) => `
+      <label class="case-allocation-row">
+        <input type="checkbox" value="${n.id}"${selected.has(n.id) ? ' checked' : ''}>
+        <span>${esc(n.name)}${(n.sheet && n.sheet.occupation) ? ` <em style="color:var(--text2)">${esc(n.sheet.occupation)}</em>` : ''}</span>
+      </label>`).join('')}</div>
+    <div class="modal-actions">
+      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSessionNpcAssign(${sessionId}, this)">Save</button>
+    </div>`);
+}
+window.openSessionNpcAssign = openSessionNpcAssign;
+
+async function saveSessionNpcAssign(sessionId, btn) {
+  const root = btn.closest('.modal-backdrop');
+  const npcIds = [...root.querySelectorAll('.case-allocation input:checked')].map((c) => Number(c.value));
+  btn.disabled = true;
+  try {
+    await api.setSessionNpcs(sessionId, npcIds);
+    root.remove();
+    await renderSessionNpcs(sessionId);
+  } catch (e) {
+    showAlert(e.message, 'danger', 'modal-alert');
+    btn.disabled = false;
+  }
+}
+window.saveSessionNpcAssign = saveSessionNpcAssign;
+
+// Read-only sheet view for the per-case NPC detail.
+function openNpcSheetView(npcId) {
+  const npc = State.npcs.find((entry) => entry.id === npcId);
+  if (!npc) return;
+  modal(`
+    <h3>${esc(npc.name)} — Character Sheet</h3>
+    <div id="npc-sheet-area"><p style="color:var(--text2)">Loading…</p></div>
+    <div class="sheet-actions">
+      <button class="btn" onclick="exportPdf()">Export PDF</button>
+      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Close</button>
+    </div>`, (root) => {
+    const modalEl = root.querySelector('.modal');
+    if (modalEl) { modalEl.style.maxWidth = '1100px'; modalEl.style.maxHeight = '92vh'; modalEl.style.overflowY = 'auto'; }
+    const area = root.querySelector('#npc-sheet-area');
+    area.innerHTML = '';
+    SheetForm.render(area, npc.sheet || {}, true);
+  });
+}
+window.openNpcSheetView = openNpcSheetView;
+
+// ── Admin: NPC management + case allocation ──────────────────────────────────
+async function renderAdminNpcs() {
+  const host = el('admin-content');
+  if (!host) return;
+  host.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading NPCs…</p>';
+  try {
+    const [npcs, sessions] = await Promise.all([api.getNpcs(), api.getSessions()]);
     State.npcs = npcs;
     State.sessions = sessions;
   } catch (e) {
-    tab.innerHTML = `
-      <div class="page-header"><h2>NPCs</h2></div>
-      <div class="alert alert-danger">${esc(e.message)}</div>`;
+    host.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
     return;
   }
-
-  tab.innerHTML = `
+  const card = (npc) => {
+    const occupation = (npc.sheet && npc.sheet.occupation) || npc.role || '';
+    const meta = [occupation, `Cases: ${esc(npcCaseSummary(npc))}`].filter(Boolean);
+    return `
+      <div class="card npc-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">${esc(npc.name)}</div>
+            <div class="card-sub">${meta.join(' | ')}</div>
+          </div>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="openNpcSheet(${npc.id})">Edit</button>
+            <button class="btn btn-sm" onclick="openNpcCases(${npc.id})">Cases…</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteNpcRecord(${npc.id})">Delete</button>
+          </div>
+        </div>
+        ${(npc.sheet && npc.sheet.reputation) ? `<p class="card-sub">${esc(npc.sheet.reputation)}</p>` : ''}
+      </div>`;
+  };
+  host.innerHTML = `
     <div class="page-header">
       <h2>NPCs</h2>
       <button class="btn btn-primary" onclick="openNpcSheet()">+ New NPC</button>
     </div>
     <div id="npcs-alert"></div>
     ${State.npcs.length
-      ? `<div class="npc-grid">${State.npcs.map(renderNpcCard).join('')}</div>`
-      : `<div class="empty"><div class="empty-icon">👤</div><p>No NPCs recorded yet.</p></div>`}`;
+      ? `<div class="npc-grid">${State.npcs.map(card).join('')}</div>`
+      : `<div class="empty"><div class="empty-icon">👤</div><p>No NPCs yet. Create one, or run <code>npm run npcs:seed</code> for the rulebook NPCs.</p></div>`}`;
 }
 
-function renderNpcSessionOptions(selectedId) {
-  return State.sessions.map((session) => `<option value="${session.id}"${Number(selectedId) === Number(session.id) ? ' selected' : ''}>${esc(session.name)}</option>`).join('');
-}
-
-function toggleNpcScopeField() {
-  const scope = el('m-npc-scope');
-  const wrap = el('m-npc-session-wrap');
-  if (!scope || !wrap) return;
-  wrap.style.display = scope.value === 'scenario' ? '' : 'none';
-}
-window.toggleNpcScopeField = toggleNpcScopeField;
-
-// Single NPC editor — create (no id) or edit — using the standard SheetForm and
-// the same Export PDF path as players.
+// Single NPC editor (Admin) — create (no id) or edit. The sheet's own Name
+// field is authoritative; case allocation is done via "Cases…".
 function openNpcSheet(npcId) {
   const npc = npcId ? State.npcs.find((entry) => entry.id === npcId) : null;
-  const scope = npc ? npc.scope : (State.currentSession ? 'scenario' : 'global');
-  const sessionId = (npc && npc.session_id) || State.currentSession || '';
   modal(`
     <h3>${npc ? `${esc(npc.name)} — Character Sheet` : 'New NPC — Character Sheet'}</h3>
     <div id="modal-alert"></div>
-    <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
-      <div class="form-group" style="flex:1;min-width:140px">
-        <label>Scope</label>
-        <select id="m-npc-scope" onchange="toggleNpcScopeField()">
-          <option value="global"${scope !== 'scenario' ? ' selected' : ''}>Global</option>
-          <option value="scenario"${scope === 'scenario' ? ' selected' : ''}>Scenario</option>
-        </select>
-      </div>
-      <div class="form-group" id="m-npc-session-wrap" style="flex:1;min-width:160px">
-        <label>Scenario</label>
-        <select id="m-npc-session">${renderNpcSessionOptions(sessionId)}</select>
-      </div>
-    </div>
-    <p class="card-sub" style="margin:0 0 0.5rem">Set the NPC's name in the sheet below (Personal Info → Name).</p>
+    <p class="card-sub" style="margin:0 0 0.5rem">Set the NPC's name in the sheet below (Personal Info → Name). Allocate to cases with the “Cases…” button.</p>
     <div id="npc-sheet-area"><p style="color:var(--text2)">Loading sheet…</p></div>
     <div class="sheet-actions">
       <button class="btn btn-primary" onclick="saveNpcSheetForm(${npc ? npc.id : 'null'}, this)">${npc ? 'Save sheet' : 'Create NPC'}</button>
@@ -1811,7 +1930,6 @@ function openNpcSheet(npcId) {
     </div>`, (root) => {
     const modalEl = root.querySelector('.modal');
     if (modalEl) { modalEl.style.maxWidth = '1100px'; modalEl.style.maxHeight = '92vh'; modalEl.style.overflowY = 'auto'; }
-    toggleNpcScopeField();
     const area = root.querySelector('#npc-sheet-area');
     area.innerHTML = '';
     SheetForm.render(area, (npc && npc.sheet) || {}, false);
@@ -1820,22 +1938,18 @@ function openNpcSheet(npcId) {
 window.openNpcSheet = openNpcSheet;
 
 async function saveNpcSheetForm(npcId, btn) {
-  const scope = el('m-npc-scope').value;
-  const sessionId = scope === 'scenario' ? el('m-npc-session').value : null;
   const sheet = SheetForm.collect();
   const name = String(sheet.name || '').trim();
   if (!name) return showAlert('Enter the NPC name in the sheet (Personal Info → Name).', 'danger', 'modal-alert');
-  if (scope === 'scenario' && !sessionId) return showAlert('Choose a scenario.', 'danger', 'modal-alert');
   const status = el('npc-sheet-status');
   if (status) { status.textContent = 'Saving…'; status.className = 'save-status'; }
   btn.disabled = true;
   try {
-    const payload = { name, scope, session_id: sessionId, role: sheet.occupation || '', status: '', location: '', summary: '', notes: '', sheet };
+    const payload = { name, role: sheet.occupation || '', sheet };
     if (npcId) await api.updateNpc(npcId, payload);
     else await api.createNpc(payload);
     btn.closest('.modal-backdrop').remove();
-    if (State.currentSession) await renderSessionNpcs(State.currentSession);
-    else await loadNpcsTab();
+    await renderAdminNpcs();
   } catch (e) {
     if (status) { status.textContent = `✕ ${e.message}`; status.className = 'save-status error'; }
     showAlert(e.message, 'danger', 'modal-alert');
@@ -1848,13 +1962,117 @@ async function deleteNpcRecord(npcId) {
   if (!confirm('Delete this NPC?')) return;
   try {
     await api.deleteNpc(npcId);
-    if (State.currentSession) await renderSessionNpcs(State.currentSession);
-    else await loadNpcsTab();
+    await renderAdminNpcs();
   } catch (e) {
     showAlert(e.message, 'danger', 'npcs-alert');
   }
 }
 window.deleteNpcRecord = deleteNpcRecord;
+
+// ── Case allocation modal (shared by NPCs and Accounts) ──────────────────────
+function caseCheckboxes(selectedIds, list) {
+  const set = new Set((selectedIds || []).map(Number));
+  const cases = list || State.sessions || [];
+  if (!cases.length) return '<p class="card-sub">No case files exist yet.</p>';
+  return `<div class="case-allocation">${cases.map((s) => `
+    <label class="case-allocation-row">
+      <input type="checkbox" value="${s.id}"${set.has(Number(s.id)) ? ' checked' : ''}>
+      <span>${esc(s.name)}${s.domestic ? ' <em style="color:var(--text2)">(solo)</em>' : ''}</span>
+    </label>`).join('')}</div>`;
+}
+
+function selectedCaseIds(root) {
+  return [...root.querySelectorAll('.case-allocation input:checked')].map((c) => Number(c.value));
+}
+
+// NPCs can be allocated to any case including The Domestic, so use the
+// dedicated allocatable-cases list rather than the visible Case Files list.
+async function openNpcCases(npcId) {
+  const npc = State.npcs.find((entry) => entry.id === npcId);
+  if (!npc) return;
+  let cases;
+  try {
+    cases = await api.getAllocatableCases();
+    State.allocatableCases = cases;
+  } catch (e) {
+    return showAlert(e.message, 'danger', 'npcs-alert');
+  }
+  modal(`
+    <h3>${esc(npc.name)} — Cases</h3>
+    <div id="modal-alert"></div>
+    <p class="card-sub" style="margin-bottom:0.5rem">Allocate this NPC to any cases (or none).</p>
+    ${caseCheckboxes(npc.session_ids, cases)}
+    <div class="modal-actions">
+      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNpcCases(${npc.id}, this)">Save</button>
+    </div>`);
+}
+window.openNpcCases = openNpcCases;
+
+async function saveNpcCases(npcId, btn) {
+  const root = btn.closest('.modal-backdrop');
+  btn.disabled = true;
+  try {
+    await api.setNpcSessions(npcId, selectedCaseIds(root));
+    root.remove();
+    await renderAdminNpcs();
+  } catch (e) {
+    showAlert(e.message, 'danger', 'modal-alert');
+    btn.disabled = false;
+  }
+}
+window.saveNpcCases = saveNpcCases;
+
+function openUserCases(userId) {
+  const user = State.users.find((entry) => entry.id === userId);
+  if (!user) return;
+  modal(`
+    <h3>${esc(user.username)} — Cases</h3>
+    <div id="modal-alert"></div>
+    <p class="card-sub" style="margin-bottom:0.5rem">Allocate this account to any cases (or none).</p>
+    ${caseCheckboxes(user.session_ids)}
+    <div class="modal-actions">
+      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUserCases(${user.id}, this)">Save</button>
+    </div>`);
+}
+window.openUserCases = openUserCases;
+
+async function saveUserCases(userId, btn) {
+  const root = btn.closest('.modal-backdrop');
+  btn.disabled = true;
+  try {
+    await api.setUserSessions(userId, selectedCaseIds(root));
+    root.remove();
+    await renderAdminAccounts();
+  } catch (e) {
+    showAlert(e.message, 'danger', 'modal-alert');
+    btn.disabled = false;
+  }
+}
+window.saveUserCases = saveUserCases;
+
+// ── Admin shell ──────────────────────────────────────────────────────────────
+async function loadAdminTab() {
+  const tab = el('tab-admin');
+  if (!tab) return;
+  tab.innerHTML = `
+    <div class="page-header"><h2>Admin</h2></div>
+    <div class="sheet-tabs">
+      <div class="sheet-tab active" data-admin="accounts" onclick="adminShow('accounts')">Accounts</div>
+      <div class="sheet-tab" data-admin="npcs" onclick="adminShow('npcs')">NPCs</div>
+    </div>
+    <div id="admin-content"><p style="color:var(--text2);padding:1rem">Loading…</p></div>`;
+  await adminShow('accounts');
+}
+window.loadAdminTab = loadAdminTab;
+
+async function adminShow(section) {
+  document.querySelectorAll('[data-admin]').forEach((t) => t.classList.toggle('active', t.dataset.admin === section));
+  if (section === 'npcs') await renderAdminNpcs();
+  else await renderAdminAccounts();
+}
+window.adminShow = adminShow;
 
 // ── Rules tab ────────────────────────────────────────────────────────────────
 async function loadRulesTab() {
@@ -1886,16 +2104,29 @@ async function loadRulesTab() {
     </div>`;
 }
 
-async function loadDomesticTab() {
-  const tab = el('tab-domestic');
+// The Domestic opens inside the Case File page, like any other case file.
+async function openDomestic(options = {}) {
+  const { replaceUrl = false } = options;
+  const tab = el('tab-sessions');
   if (!tab) return;
+  State.currentSession = null;
+  State.currentSheetUserId = null;
+  setActiveMainTab('sessions');
+  updateUiStateInUrl({ tab: 'sessions', session: 'domestic' }, replaceUrl);
 
-  // Re-read the solo character from the server whenever the tab is opened so
+  // Re-read the solo character from the server whenever it is opened so
   // returning to The Domestic cannot show stale in-memory state.
   resetDomesticRuntimeState({ preserveAdventure: true });
 
   tab.innerHTML = `
-    <div class="page-header"><h2>The Domestic</h2></div>
+    <div class="page-header">
+      <div>
+        <button class="btn btn-sm" onclick="loadSessionsTab()" style="margin-bottom:0.5rem">← Back</button>
+        <h2>The Domestic</h2>
+        <p style="color:var(--text2);font-size:0.88rem">Solo adventure — play through the case and build your character as you go.</p>
+      </div>
+    </div>
+    <div id="session-alert"></div>
     <div id="domestic-adventure-area"></div>`;
 
   const stepFromUrl = readAdventureStepFromUrl();
@@ -1905,6 +2136,7 @@ async function loadDomesticTab() {
   }
   await openDomesticAdventure();
 }
+window.openDomestic = openDomestic;
 
 async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
   const host = el('domestic-adventure-area');
@@ -2076,13 +2308,20 @@ async function resetDomesticSheet() {
 window.resetDomesticSheet = resetDomesticSheet;
 
 // ── Accounts tab (GM) ─────────────────────────────────────────────────────────
-async function loadUsersTab() {
-  const tab = el('tab-users');
-  if (!tab) return;
-  tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading…</p>';
-  State.users = await api.getUsers();
+async function renderAdminAccounts() {
+  const host = el('admin-content');
+  if (!host) return;
+  host.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading…</p>';
+  try {
+    const [users, sessions] = await Promise.all([api.getUsers(), api.getSessions()]);
+    State.users = users;
+    State.sessions = sessions;
+  } catch (e) {
+    host.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+    return;
+  }
 
-  tab.innerHTML = `
+  host.innerHTML = `
     <div class="page-header">
       <h2>Accounts</h2>
       <button class="btn btn-primary" onclick="openCreateUser()">+ New account</button>
@@ -2091,14 +2330,16 @@ async function loadUsersTab() {
     <div class="card">
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Username</th><th>Role</th><th>Created</th><th></th></tr></thead>
+          <thead><tr><th>Username</th><th>Role</th><th>Cases</th><th>Created</th><th></th></tr></thead>
           <tbody>
             ${State.users.map(u => `
               <tr>
                 <td><strong>${esc(u.username)}</strong></td>
                 <td>${u.role === 'gm' ? '<span class="badge-gm">GM</span>' : 'Player'}</td>
+                <td style="color:var(--text2);font-size:0.85rem">${esc(((u.sessions || []).map(s => s.name).join(', ')) || 'None')}</td>
                 <td style="color:var(--text2);font-size:0.82rem">${new Date(u.created_at).toLocaleDateString('en-GB')}</td>
-                <td style="text-align:right">
+                <td style="text-align:right;white-space:nowrap">
+                  <button class="btn btn-sm" onclick="openUserCases(${u.id})">Cases…</button>
                   <button class="btn btn-sm" onclick="openChangePassword(${u.id},'${esc(u.username)}')">Change password</button>
                   ${u.id !== State.user.id ? `<button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">Delete</button>` : ''}
                 </td>
@@ -2139,7 +2380,7 @@ async function createUser(btn) {
   try {
     await api.createUser({ username, password, role });
     btn.closest('.modal-backdrop').remove();
-    await loadUsersTab();
+    await renderAdminAccounts();
   } catch (e) {
     showAlert(e.message, 'danger', 'modal-alert');
     btn.disabled = false;
@@ -2195,7 +2436,7 @@ async function deleteUser(id) {
   if (!confirm('Delete this account? This will also remove their character sheets.')) return;
   try {
     await api.deleteUser(id);
-    await loadUsersTab();
+    await renderAdminAccounts();
   } catch (e) { showAlert(e.message, 'danger', 'users-alert'); }
 }
 window.deleteUser = deleteUser;

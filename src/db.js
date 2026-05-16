@@ -76,6 +76,14 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_npcs_scope_session ON npcs(scope, session_id);
   CREATE INDEX IF NOT EXISTS idx_npcs_name ON npcs(name COLLATE NOCASE);
 
+  -- NPCs are allocated to arbitrary cases (or none), the same way players are.
+  CREATE TABLE IF NOT EXISTS npc_sessions (
+    npc_id INTEGER NOT NULL REFERENCES npcs(id) ON DELETE CASCADE,
+    session_id INTEGER NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    PRIMARY KEY (npc_id, session_id)
+  );
+  CREATE INDEX IF NOT EXISTS idx_npc_sessions_session ON npc_sessions(session_id);
+
   DROP TABLE IF EXISTS domestic_sheets;
 `);
 

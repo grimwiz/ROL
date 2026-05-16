@@ -15,7 +15,8 @@ const {
   regenerateScenarioSection,
   regenerateScenarioSections,
   revertScenarioSection,
-  resolveSessionAssetPath
+  resolveSessionAssetPath,
+  regenerateNpcSummaries
 } = require('./scenarioInfo');
 const { buildPdf } = require('../scripts/export-character-sheet');
 
@@ -259,37 +260,75 @@ function parseNpcSheet(value) {
   }
 }
 
+// NPCs may be allocated to any case, including the built-in The Domestic.
+function npcSessionInfo(npcId) {
+  const sessions = db.prepare(`
+    SELECT s.id, s.name
+    FROM npc_sessions ns
+    JOIN sessions s ON s.id = ns.session_id
+    WHERE ns.npc_id = ?
+    ORDER BY s.name COLLATE NOCASE
+  `).all(npcId);
+  return { sessions, session_ids: sessions.map((s) => s.id) };
+}
+
 function rowToNpc(row) {
+  const { sessions, session_ids } = npcSessionInfo(row.id);
   return {
     id: row.id,
     name: row.name,
-    scope: row.scope,
-    session_id: row.session_id,
-    session_name: row.session_name || null,
     role: row.role || '',
     status: row.status || '',
     location: row.location || '',
     summary: row.summary || '',
     notes: row.notes || '',
     sheet: parseNpcSheet(row.sheet),
+    sessions,
+    session_ids,
     created_at: row.created_at,
     updated_at: row.updated_at
   };
 }
 
+function npcSessionIds(npcId) {
+  return db.prepare('SELECT session_id FROM npc_sessions WHERE npc_id = ?').all(npcId).map((r) => r.session_id);
+}
+
+// Replace an NPC's case allocations. Any real case is allowed, including the
+// built-in The Domestic. Every case that gained or lost this NPC gets its
+// NPC.md refreshed.
+function setNpcSessions(npcId, sessionIds) {
+  if (!Array.isArray(sessionIds)) return;
+  const before = npcSessionIds(npcId);
+  const valid = db.prepare('SELECT id FROM sessions WHERE id = ?');
+  const ids = [...new Set(sessionIds.map((v) => parseInt(v, 10)).filter(Number.isInteger))]
+    .filter((id) => valid.get(id));
+  const tx = db.transaction(() => {
+    db.prepare('DELETE FROM npc_sessions WHERE npc_id = ?').run(npcId);
+    const ins = db.prepare('INSERT OR IGNORE INTO npc_sessions (npc_id, session_id) VALUES (?, ?)');
+    for (const id of ids) ins.run(npcId, id);
+  });
+  tx();
+  regenerateNpcSummaries(db, [...before, ...ids]);
+}
+
+function setUserSessions(userId, sessionIds) {
+  if (!Array.isArray(sessionIds)) return;
+  const valid = db.prepare("SELECT id FROM sessions WHERE id = ? AND COALESCE(description, '') != ?");
+  const ids = [...new Set(sessionIds.map((v) => parseInt(v, 10)).filter(Number.isInteger))]
+    .filter((id) => valid.get(id, DOMESTIC_SYSTEM_DESCRIPTION));
+  const tx = db.transaction(() => {
+    db.prepare('DELETE FROM session_players WHERE user_id = ?').run(userId);
+    const ins = db.prepare('INSERT OR IGNORE INTO session_players (session_id, user_id) VALUES (?, ?)');
+    for (const id of ids) ins.run(id, userId);
+  });
+  tx();
+}
+
 function readNpcPayload(body) {
   const payload = body && typeof body === 'object' ? body : {};
   const name = cleanOptionalText(payload.name, 200);
-  const scope = payload.scope === 'scenario' ? 'scenario' : 'global';
-  const sessionId = scope === 'scenario' ? parseInt(payload.session_id, 10) : null;
   if (!name) return { error: 'name required' };
-  if (scope === 'scenario' && !Number.isInteger(sessionId)) {
-    return { error: 'scenario NPCs require a session_id' };
-  }
-  if (scope === 'scenario') {
-    const session = db.prepare('SELECT 1 FROM sessions WHERE id = ? AND COALESCE(description, \'\') != ?').get(sessionId, DOMESTIC_SYSTEM_DESCRIPTION);
-    if (!session) return { error: 'Session not found' };
-  }
   const sheetProvided = Object.prototype.hasOwnProperty.call(payload, 'sheet');
   let sheet = null;
   if (sheetProvided && payload.sheet && typeof payload.sheet === 'object') {
@@ -297,18 +336,18 @@ function readNpcPayload(body) {
     if (json.length > 200000) return { error: 'sheet too large' };
     sheet = json;
   }
+  const sessionIds = Array.isArray(payload.session_ids) ? payload.session_ids : null;
   return {
     data: {
       name,
-      scope,
-      session_id: sessionId,
       role: cleanOptionalText(payload.role, 200),
       status: cleanOptionalText(payload.status, 200),
       location: cleanOptionalText(payload.location, 300),
       summary: cleanOptionalText(payload.summary, 3000),
       notes: cleanOptionalText(payload.notes, 10000),
       sheetProvided,
-      sheet
+      sheet,
+      sessionIds
     }
   };
 }
@@ -379,7 +418,31 @@ router.get('/auth/me', requireAuth, (req, res) => {
 
 router.get('/users', requireGM, (req, res) => {
   const users = db.prepare('SELECT id, username, role, created_at FROM users ORDER BY role, username').all();
-  res.json(users);
+  const sessionsFor = db.prepare(`
+    SELECT s.id, s.name
+    FROM session_players sp
+    JOIN sessions s ON s.id = sp.session_id
+    WHERE sp.user_id = ? AND COALESCE(s.description, '') != ?
+    ORDER BY s.name COLLATE NOCASE
+  `);
+  res.json(users.map((u) => {
+    const sessions = sessionsFor.all(u.id, DOMESTIC_SYSTEM_DESCRIPTION);
+    return { ...u, sessions, session_ids: sessions.map((s) => s.id) };
+  }));
+});
+
+// Allocate a user to arbitrary cases (same model NPCs use).
+router.put('/users/:id/sessions', requireGM, (req, res) => {
+  const user = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  setUserSessions(user.id, (req.body && req.body.session_ids) || []);
+  const sessions = db.prepare(`
+    SELECT s.id, s.name FROM session_players sp
+    JOIN sessions s ON s.id = sp.session_id
+    WHERE sp.user_id = ? AND COALESCE(s.description, '') != ?
+    ORDER BY s.name COLLATE NOCASE
+  `).all(user.id, DOMESTIC_SYSTEM_DESCRIPTION);
+  res.json({ ok: true, sessions, session_ids: sessions.map((s) => s.id) });
 });
 
 router.post('/users', requireGM, async (req, res) => {
@@ -420,20 +483,15 @@ router.get('/npcs', requireGM, (req, res) => {
   const sessionId = req.query.session_id ? parseInt(req.query.session_id, 10) : null;
   let rows;
   if (Number.isInteger(sessionId)) {
+    // NPCs allocated to one case (the per-case detail view).
     rows = db.prepare(`
-      SELECT n.*, s.name AS session_name
-      FROM npcs n
-      LEFT JOIN sessions s ON s.id = n.session_id
-      WHERE n.scope = 'global' OR n.session_id = ?
-      ORDER BY n.scope, COALESCE(s.name, ''), n.name COLLATE NOCASE
+      SELECT n.* FROM npcs n
+      JOIN npc_sessions ns ON ns.npc_id = n.id
+      WHERE ns.session_id = ?
+      ORDER BY n.name COLLATE NOCASE
     `).all(sessionId);
   } else {
-    rows = db.prepare(`
-      SELECT n.*, s.name AS session_name
-      FROM npcs n
-      LEFT JOIN sessions s ON s.id = n.session_id
-      ORDER BY n.scope, COALESCE(s.name, ''), n.name COLLATE NOCASE
-    `).all();
+    rows = db.prepare('SELECT * FROM npcs ORDER BY name COLLATE NOCASE').all();
   }
   res.json(rows.map(rowToNpc));
 });
@@ -444,14 +502,10 @@ router.post('/npcs', requireGM, (req, res) => {
   const npc = parsed.data;
   const result = db.prepare(`
     INSERT INTO npcs (name, scope, session_id, role, status, location, summary, notes, sheet, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-  `).run(npc.name, npc.scope, npc.session_id, npc.role, npc.status, npc.location, npc.summary, npc.notes, npc.sheet);
-  const row = db.prepare(`
-    SELECT n.*, s.name AS session_name
-    FROM npcs n
-    LEFT JOIN sessions s ON s.id = n.session_id
-    WHERE n.id = ?
-  `).get(result.lastInsertRowid);
+    VALUES (?, 'global', NULL, ?, ?, ?, ?, ?, ?, datetime('now'))
+  `).run(npc.name, npc.role, npc.status, npc.location, npc.summary, npc.notes, npc.sheet);
+  if (npc.sessionIds) setNpcSessions(result.lastInsertRowid, npc.sessionIds);
+  const row = db.prepare('SELECT * FROM npcs WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json(rowToNpc(row));
 });
 
@@ -463,25 +517,46 @@ router.put('/npcs/:id', requireGM, (req, res) => {
   if (!existing) return res.status(404).json({ error: 'NPC not found' });
   // Preserve the stored sheet when a record-only edit omits it.
   const sheet = npc.sheetProvided ? npc.sheet : existing.sheet;
-  const result = db.prepare(`
+  db.prepare(`
     UPDATE npcs
-    SET name = ?, scope = ?, session_id = ?, role = ?, status = ?, location = ?, summary = ?, notes = ?, sheet = ?, updated_at = datetime('now')
+    SET name = ?, role = ?, status = ?, location = ?, summary = ?, notes = ?, sheet = ?, updated_at = datetime('now')
     WHERE id = ?
-  `).run(npc.name, npc.scope, npc.session_id, npc.role, npc.status, npc.location, npc.summary, npc.notes, sheet, req.params.id);
-  if (!result.changes) return res.status(404).json({ error: 'NPC not found' });
-  const row = db.prepare(`
-    SELECT n.*, s.name AS session_name
-    FROM npcs n
-    LEFT JOIN sessions s ON s.id = n.session_id
-    WHERE n.id = ?
-  `).get(req.params.id);
+  `).run(npc.name, npc.role, npc.status, npc.location, npc.summary, npc.notes, sheet, req.params.id);
+  if (npc.sessionIds) setNpcSessions(parseInt(req.params.id, 10), npc.sessionIds);
+  // The sheet may have changed; refresh NPC.md for every case this NPC is in.
+  regenerateNpcSummaries(db, npcSessionIds(req.params.id));
+  const row = db.prepare('SELECT * FROM npcs WHERE id = ?').get(req.params.id);
   res.json(rowToNpc(row));
 });
 
+// Allocate an NPC to arbitrary cases.
+router.put('/npcs/:id/sessions', requireGM, (req, res) => {
+  const npc = db.prepare('SELECT * FROM npcs WHERE id = ?').get(req.params.id);
+  if (!npc) return res.status(404).json({ error: 'NPC not found' });
+  setNpcSessions(npc.id, (req.body && req.body.session_ids) || []);
+  res.json(rowToNpc(db.prepare('SELECT * FROM npcs WHERE id = ?').get(npc.id)));
+});
+
 router.delete('/npcs/:id', requireGM, (req, res) => {
+  const affected = npcSessionIds(req.params.id);
   const result = db.prepare('DELETE FROM npcs WHERE id = ?').run(req.params.id);
   if (!result.changes) return res.status(404).json({ error: 'NPC not found' });
+  regenerateNpcSummaries(db, affected);
   res.json({ ok: true });
+});
+
+// Cases an NPC/account can be allocated to: every GM case plus the built-in
+// The Domestic (which is otherwise hidden from the normal case lists).
+router.get('/allocatable-cases', requireGM, (req, res) => {
+  const regular = db.prepare(`
+    SELECT id, name FROM sessions
+    WHERE COALESCE(description, '') != ?
+    ORDER BY name COLLATE NOCASE
+  `).all(DOMESTIC_SYSTEM_DESCRIPTION).map((s) => ({ ...s, domestic: false }));
+  const domestic = ensureDomesticSystemSession();
+  const cases = [...regular];
+  if (domestic) cases.push({ id: domestic.id, name: domestic.name || 'The Domestic', domestic: true });
+  res.json(cases);
 });
 
 // ── Sessions ──────────────────────────────────────────────────────────────────
@@ -566,6 +641,28 @@ router.post('/sessions/:id/players', requireGM, (req, res) => {
 router.delete('/sessions/:id/players/:userId', requireGM, (req, res) => {
   db.prepare('DELETE FROM session_players WHERE session_id = ? AND user_id = ?').run(req.params.id, req.params.userId);
   res.json({ ok: true });
+});
+
+// Set which NPCs are allocated to this case (assign NPCs from the case screen).
+// Only this case's membership is changed; each NPC's other allocations are kept.
+router.put('/sessions/:id/npcs', requireGM, (req, res) => {
+  const session = db.prepare('SELECT id FROM sessions WHERE id = ?').get(req.params.id);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
+  const npcExists = db.prepare('SELECT 1 FROM npcs WHERE id = ?');
+  const ids = [...new Set((((req.body && req.body.npc_ids) || []).map((v) => parseInt(v, 10)).filter(Number.isInteger)))]
+    .filter((id) => npcExists.get(id));
+  const tx = db.transaction(() => {
+    db.prepare('DELETE FROM npc_sessions WHERE session_id = ?').run(session.id);
+    const ins = db.prepare('INSERT OR IGNORE INTO npc_sessions (npc_id, session_id) VALUES (?, ?)');
+    for (const npcId of ids) ins.run(npcId, session.id);
+  });
+  tx();
+  regenerateNpcSummaries(db, [session.id]);
+  const rows = db.prepare(`
+    SELECT n.* FROM npcs n JOIN npc_sessions ns ON ns.npc_id = n.id
+    WHERE ns.session_id = ? ORDER BY n.name COLLATE NOCASE
+  `).all(session.id);
+  res.json(rows.map(rowToNpc));
 });
 
 // ── Character Sheets ──────────────────────────────────────────────────────────

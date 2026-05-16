@@ -1331,6 +1331,76 @@ function resolveSessionAssetPath(sessionId, requestPath, db, isGM = false) {
   return fullPath;
 }
 
+function npcStatLine(sheet) {
+  if (!sheet || typeof sheet !== 'object') return '';
+  const derived = sheet.derived || {};
+  const base = ['str', 'con', 'dex', 'int', 'pow', 'siz']
+    .map((k) => (sheet[k] ? `${k.toUpperCase()} ${sheet[k]}` : '')).filter(Boolean).join(', ');
+  const der = ['hp', 'san', 'mp', 'build', 'move']
+    .map((k) => (derived[k] ? `${k.toUpperCase()} ${derived[k]}` : '')).filter(Boolean).join(', ');
+  return [base, der].filter(Boolean).join(' · ');
+}
+
+function npcSkillLine(sheet) {
+  const pick = (arr) => (Array.isArray(arr) ? arr : [])
+    .filter((s) => s && s.name).map((s) => `${s.name} ${s.value}`).join(', ');
+  return [pick(sheet.common_skills), pick(sheet.mandatory_skills), pick(sheet.combat_skills)]
+    .filter(Boolean).join('; ');
+}
+
+// Writes data/sessions/<slug>/NPC.md summarising the NPCs allocated to a case so
+// the scenario LLM can see who is on the team. Regenerated whenever a case's NPC
+// allocations change or an allocated NPC's sheet is edited.
+function writeSessionNpcSummary(sessionId, db) {
+  const session = getSessionById(db, sessionId);
+  if (!session) return false;
+  const paths = ensureSessionDataFolders(session);
+  const rows = db.prepare(`
+    SELECT n.* FROM npcs n
+    JOIN npc_sessions ns ON ns.npc_id = n.id
+    WHERE ns.session_id = ?
+    ORDER BY n.name COLLATE NOCASE
+  `).all(session.id);
+
+  const lines = [
+    `# NPCs — ${session.name}`,
+    '',
+    '_Auto-generated from the Admin NPC allocations whenever this case\'s NPCs change. Edits here are overwritten._',
+    ''
+  ];
+  if (!rows.length) {
+    lines.push('No NPCs are currently allocated to this case.');
+  } else {
+    for (const row of rows) {
+      let sheet = null;
+      try { sheet = row.sheet ? JSON.parse(row.sheet) : null; } catch { sheet = null; }
+      const occupation = (sheet && sheet.occupation) || row.role || '';
+      lines.push(`## ${row.name}${occupation ? ` — ${occupation}` : ''}`, '');
+      const blurb = (sheet && (sheet.reputation || sheet.backstory)) || row.summary || '';
+      if (blurb) lines.push(blurb, '');
+      const stats = npcStatLine(sheet);
+      if (stats) lines.push(`**Stats:** ${stats}`, '');
+      const traits = sheet ? [sheet.advantages, sheet.disadvantages].filter(Boolean).join('; ') : '';
+      if (traits) lines.push(`**Advantages / Flaws:** ${traits}`, '');
+      const skills = sheet ? npcSkillLine(sheet) : '';
+      if (skills) lines.push(`**Skills:** ${skills}`, '');
+      const spells = sheet && Array.isArray(sheet.magic_spells)
+        ? sheet.magic_spells.filter((s) => s && s.name).map((s) => (s.order ? `${s.name} (${s.order})` : s.name)).join(', ')
+        : '';
+      if (spells) lines.push(`**Spells:** ${spells}`, '');
+    }
+  }
+  fs.writeFileSync(path.join(paths.root, 'NPC.md'), `${lines.join('\n').trim()}\n`, 'utf8');
+  return true;
+}
+
+function regenerateNpcSummaries(db, sessionIds) {
+  const ids = [...new Set((sessionIds || []).map(Number).filter((n) => Number.isInteger(n)))];
+  for (const id of ids) {
+    try { writeSessionNpcSummary(id, db); } catch { /* non-fatal: a bad case must not block the NPC write */ }
+  }
+}
+
 module.exports = {
   DATA_ROOT,
   SESSIONS_ROOT,
@@ -1355,5 +1425,7 @@ module.exports = {
   regenerateScenarioSection,
   regenerateScenarioSections,
   revertScenarioSection,
-  resolveSessionAssetPath
+  resolveSessionAssetPath,
+  writeSessionNpcSummary,
+  regenerateNpcSummaries
 };

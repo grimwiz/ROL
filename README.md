@@ -38,7 +38,7 @@ On first start, if no users exist, a default GM account is created:
 - **Username:** `gm`
 - **Password:** the value of `GM_INITIAL_PASSWORD` env var, or `changeme123` if not set
 
-**Change this password immediately** via Accounts → Change password.
+**Change this password immediately** via Admin → Accounts → Change password.
 
 ## Environment variables
 
@@ -109,13 +109,22 @@ sudo systemctl enable --now folly
 
 Login is rate-limited (25 attempts per IP per 15 minutes; 8 per account) to slow down brute-force attempts.
 
+## Admin (GM only)
+
+GM-only management lives under the top-level **Admin** tab, with two sections:
+
+- **Accounts** — create accounts, change passwords, delete accounts, and **allocate each account to any number of cases** (or none). Player↔case assignment can also still be done in-case via a case file's **+ Assign player** button; both write the same data.
+- **NPCs** — create/edit/print NPC character sheets and **allocate each NPC to any number of cases** (or none), exactly the way accounts are allocated. The allocation list includes the built-in **The Domestic** as a case.
+
+NPCs and accounts are both first-class, case-independent records: an NPC or account exists on its own and is *allocated* to arbitrary cases.
+
 ## NPCs
 
-Each GM case file view has an **NPCs** subtab for manual NPC records stored in SQLite. NPCs are attached to a specific case file and include role, status, location, summary, and GM notes.
+NPCs are full character sheets stored in SQLite. They are created, edited and printed from **Admin → NPCs** (the sheet's own Name field is authoritative). Allocation to cases works both ways: per-NPC via Admin → NPCs → **Cases…** (this list includes **The Domestic**), or per-case from a case file's **NPCs** subtab via **Assign NPCs…** (tick which NPCs are in this case). The subtab otherwise shows a read-only detail view of the NPCs allocated to that case with a printable sheet viewer. Whenever a case's NPC set changes, its `NPC.md` is regenerated.
 
 ### NPC character sheets (from the rulebook)
 
-Named NPCs from the *Rivers of London* rulebook (the Rogues' Gallery and bundled case Cast — Nightingale, Peter Grant, Beverley Brook, Molly, the Domestic cast, etc.) ship as full character sheets. Each NPC card has a **Sheet** button that opens the **same** character-sheet editor and **Export PDF** mechanism players use, so a GM can read, tweak, and print an NPC sheet exactly like a player one. RoL fields with no native box (Damage Bonus, Languages, Powers/Signare/Demi-monde affinity/Vestigia, Wizard's Staff) are preserved in the sheet's Custom Fields, so the import is lossless.
+Named NPCs from the *Rivers of London* rulebook (the Rogues' Gallery and bundled case Cast — Nightingale, Peter Grant, Beverley Brook, Molly, the Domestic cast, etc.) ship as full character sheets. In **Admin → NPCs**, **Edit** opens the **same** character-sheet editor and **Export PDF** mechanism players use, so a GM can read, tweak, and print an NPC sheet exactly like a player one. RoL fields with no native box (Damage Bonus, Languages, Powers/Signare/Demi-monde affinity/Vestigia, Wizard's Staff) are preserved in the sheet's Custom Fields, so the import is lossless.
 
 The data lives as one JSON file per NPC in `Rivers_of_London/globaldata/npcs/`, and is **auto-seeded into the database on server start if missing** — the same gap-filling strategy used for the global Markdown files (it never overwrites a GM's in-app edits). The round-trip is:
 
@@ -230,7 +239,7 @@ Player-defined key/value pairs that don't fit the canonical sheet — handy for 
 
 ### GM session view
 
-Consolidated table showing every assigned player's character identity, all six base stats plus derived HP/SAN/MP/Build, Move/Luck, advantages, skills, and essential items — readable at a glance during play.
+A case file's first subtab (GM only), **Overview**, is the at-a-glance session board: one card for **Player Characters** and a second, identically-formatted card for the **NPCs** allocated to this case (condition, resources, notable skills, weapons, play notes per row). The **Characters** subtab (now to the right of Overview) holds the per-player sheet tabs and the full editable sheet.
 
 ## Portrait generation (Qwen via ComfyUI)
 
@@ -256,7 +265,7 @@ The browser and CLI go through the same `buildPdf()` function, so what you get f
 ## Front-end scripts
 
 - `public/js/api.js`: Centralised browser API client used by UI actions (`auth`, `users`, `sessions`, sheets, portrait, dice, adventure, and rules endpoints).
-- `public/js/app.js`: Main SPA logic (auth flow, case file/account/rules tabs, case file rename modal, player assignment, GM/player sheet interactions, GM session overview table, session-scoped scenario info, session NPCs, embedded HTML rulebook viewer, the Export-PDF button, and The Domestic top-nav solo adventure tab with URL step routing and local sheet persistence).
+- `public/js/app.js`: Main SPA logic (auth flow, case file/account/rules tabs, case file rename modal, player assignment, GM/player sheet interactions, GM session overview table, session-scoped scenario info, session NPCs, embedded HTML rulebook viewer, the Export-PDF button, and The Domestic solo adventure presented as a built-in case file with URL step routing and local sheet persistence).
 - `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views — includes backstory support, portrait upload/camera/generation behaviour, occupation free-text, characteristic dropdowns with stat-total messaging, the advantages textbox + collapsible preset picker with stat-prereq disabling, common-skill dropdowns with the Sense-Vestigia / Magic auto-adjustments described above, expert/additional skill controls, custom-field controls, and the magic-section visibility toggle.
 
 ## Utility scripts
@@ -301,8 +310,8 @@ The browser and CLI go through the same `buildPdf()` function, so what you get f
 
 ## The Domestic solo adventure in-app
 
-- Open **The Domestic** from the top navigation to use the step-by-step solo adventure inside The Folly app.
-- The current step is written to `?adventureStep=<n>` in the URL so players can bookmark/share their progress point. Step progress is also persisted server-side per user.
+- **The Domestic** is a built-in solo case file: open it from its card on the **Case File** page (it always appears first, even with no GM-created cases). It is a special case file — instead of the GM/player scenario subtabs it shows the step-by-step solo adventure.
+- The canonical URL is `?session=domestic` (the legacy `?tab=domestic` still works); the current step is written to `?adventureStep=<n>` so players can bookmark/share their progress point. Step progress is also persisted server-side per user.
 - Forward links are rendered as primary action buttons from the step text's `go to` instructions.
 - Traceback links are rendered as subtle back buttons from the step's parenthesised trace references.
 - A local character sheet is embedded under each step and autosaved per logged-in user.
@@ -321,4 +330,4 @@ If more decorations turn up later, adding them is manual — just drop the filen
 
 ## Data
 
-SQLite database stored at `DB_PATH`. Back it up by copying the `.db` file. The schema covers users, sessions, the session ↔ player join table, character sheets (one JSON blob per (session, user) pair), NPCs (including an optional full character-sheet JSON in the `sheet` column), and per-user *Domestic* progress.
+SQLite database stored at `DB_PATH`. Back it up by copying the `.db` file. The schema covers users, sessions, the session ↔ player join table, character sheets (one JSON blob per (session, user) pair), NPCs (including an optional full character-sheet JSON in the `sheet` column), the NPC↔case allocation join table (`npc_sessions`), and per-user *Domestic* progress.

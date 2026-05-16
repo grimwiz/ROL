@@ -26,11 +26,15 @@ const api = (() => {
     createUser: (data) => req('POST', '/users', data),
     updatePassword: (id, password) => req('PUT', `/users/${id}/password`, { password }),
     deleteUser: (id) => req('DELETE', `/users/${id}`),
+    setUserSessions: (id, sessionIds) => req('PUT', `/users/${id}/sessions`, { session_ids: sessionIds }),
 
     getNpcs: (sessionId) => req('GET', sessionId ? `/npcs?session_id=${encodeURIComponent(sessionId)}` : '/npcs'),
     createNpc: (data) => req('POST', '/npcs', data),
     updateNpc: (id, data) => req('PUT', `/npcs/${id}`, data),
     deleteNpc: (id) => req('DELETE', `/npcs/${id}`),
+    setNpcSessions: (id, sessionIds) => req('PUT', `/npcs/${id}/sessions`, { session_ids: sessionIds }),
+    getAllocatableCases: () => req('GET', '/allocatable-cases'),
+    setSessionNpcs: (sessionId, npcIds) => req('PUT', `/sessions/${sessionId}/npcs`, { npc_ids: npcIds }),
 
     getSessions: () => req('GET', '/sessions'),
     createSession: (data) => req('POST', '/sessions', data),
