@@ -1225,7 +1225,7 @@ function extractJsonCandidate(text) {
 // Streaming is the actual fix for "fetch failed": with stream:false a big
 // section returns nothing until generation completes, so undici tears the
 // socket down on headersTimeout. `options.signal` lets a caller cancel.
-async function callOllama(prompt, { signal, label, onProgress } = {}) {
+async function callOllama(prompt, { signal, label, onProgress, onToken, messages } = {}) {
   const startedMs = Date.now();
   const controller = new AbortController();
   const linkAbort = () => controller.abort(signal && signal.reason);
@@ -1255,7 +1255,7 @@ async function callOllama(prompt, { signal, label, onProgress } = {}) {
           num_ctx: Number.isInteger(OLLAMA_NUM_CTX) ? OLLAMA_NUM_CTX : 262144,
           temperature: 0.2
         },
-        messages: [
+        messages: Array.isArray(messages) && messages.length ? messages : [
           {
             role: 'system',
             content: 'You update structured JSON artifacts for a Rivers of London tabletop RPG web app. You obey data visibility boundaries exactly and return only valid JSON when asked.'
@@ -1282,7 +1282,12 @@ async function callOllama(prompt, { signal, label, onProgress } = {}) {
       let obj;
       try { obj = JSON.parse(trimmed); } catch { return; }
       if (obj.error) throw new Error(`Ollama error: ${obj.error}`);
-      if (obj.message && typeof obj.message.content === 'string') content += obj.message.content;
+      if (obj.message && typeof obj.message.content === 'string' && obj.message.content) {
+        content += obj.message.content;
+        if (typeof onToken === 'function') {
+          try { onToken(obj.message.content); } catch { /* token sink is best-effort */ }
+        }
+      }
     };
     let lastTick = 0;
     let firstByte = false;
@@ -1406,6 +1411,77 @@ async function regenerateScenarioSections(sessionId, db, options = {}) {
     regenerated,
     errors
   };
+}
+
+// GM-only brainstorming assistant grounded in the full case material.
+function buildGmChatSystemPrompt(session, db) {
+  const paths = ensureSessionDataFolders(session);
+  const sourceFiles = listSessionSourceFiles(session, { includePrivate: true });
+  const scenarioInfo = readExistingJsonForPrompt(paths.scenarioInfo) || {};
+  const gmAnalysis = readExistingJsonForPrompt(paths.gmAnalysis) || {};
+
+  return [
+    `# GM Brainstorming Assistant — ${session.name}`,
+    '',
+    'You are a Game Master\'s private brainstorming partner for this Rivers of London tabletop case. This conversation is GM-only and is never shown to players, so you may freely discuss secrets, hidden causes, villain plans, twists, and pacing.',
+    '',
+    '## How to help',
+    '- Be a practical collaborator: offer concrete options, next beats, NPC motivations, clue placement, contingencies, and consequences.',
+    '- Ground statements about what has actually happened in the Authoritative Case Sources below. You may speculate and invent freely when brainstorming, but clearly mark invention/speculation as such versus what the sources establish.',
+    '- Do not claim the investigators met, went, found, or were told something unless the case sources show it. Proposing that they *could* is fine — label it as a suggestion.',
+    '- Be concise and useful. This is prep, not prose for players.',
+    '',
+    renderCommonPromptContext(session, db, sourceFiles),
+    '',
+    '## Current Player-Facing Scenario Info (what players can currently see)',
+    '',
+    renderJsonBlock(scenarioInfo),
+    '',
+    '## Current GM-Only Analysis',
+    '',
+    renderJsonBlock(gmAnalysis),
+    '',
+    renderPromptFileBundle(sourceFiles)
+  ].join('\n');
+}
+
+function sanitiseChatMessages(raw) {
+  if (!Array.isArray(raw)) return [];
+  const cleaned = [];
+  for (const m of raw) {
+    if (!m || typeof m !== 'object') continue;
+    const role = m.role === 'assistant' ? 'assistant' : (m.role === 'user' ? 'user' : null);
+    const content = String(m.content == null ? '' : m.content).trim();
+    if (!role || !content) continue;
+    cleaned.push({ role, content: content.slice(0, 8000) });
+  }
+  return cleaned.slice(-24);
+}
+
+// Streams a GM chat reply. opts.onToken receives text deltas; opts.signal cancels.
+async function streamGmChat(sessionId, db, clientMessages, opts = {}) {
+  const session = getSessionById(db, sessionId);
+  if (!session) {
+    const error = new Error('Session not found');
+    error.statusCode = 404;
+    throw error;
+  }
+  const history = sanitiseChatMessages(clientMessages);
+  if (!history.some((m) => m.role === 'user')) {
+    const error = new Error('A user message is required');
+    error.statusCode = 400;
+    throw error;
+  }
+  const messages = [
+    { role: 'system', content: buildGmChatSystemPrompt(session, db) },
+    ...history
+  ];
+  return callOllama(null, {
+    messages,
+    label: `gm-chat:${session.id}`,
+    signal: opts.signal,
+    onToken: opts.onToken
+  });
 }
 
 function revertScenarioSection(sessionId, sectionId, db) {
@@ -1548,5 +1624,6 @@ module.exports = {
   resolveSessionAssetPath,
   writeSessionNpcSummary,
   regenerateNpcSummaries,
-  ollamaStatus
+  ollamaStatus,
+  streamGmChat
 };

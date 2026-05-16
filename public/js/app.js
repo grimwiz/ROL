@@ -709,6 +709,7 @@ async function openSession(sessionId, options = {}) {
       ${isGM ? `<div class="sheet-tab" data-session-panel="gm-info" onclick="switchSessionPanel(${sessionId}, 'gm-info')">GM Info</div>` : ''}
       ${isGM ? `<div class="sheet-tab" data-session-panel="raw-data" onclick="switchSessionPanel(${sessionId}, 'raw-data')">Edit Files</div>` : ''}
       ${isGM ? `<div class="sheet-tab" data-session-panel="npcs" onclick="switchSessionPanel(${sessionId}, 'npcs')">NPCs</div>` : ''}
+      ${isGM ? `<div class="sheet-tab" data-session-panel="gm-chat" onclick="switchSessionPanel(${sessionId}, 'gm-chat')">GM Chat</div>` : ''}
     </div>
     <div id="session-content"><p style="color:var(--text2)">Loading…</p></div>`;
 
@@ -753,6 +754,10 @@ async function switchSessionPanel(sessionId, panel) {
   }
   if (panel === 'overview') {
     await renderSessionOverview(sessionId);
+    return;
+  }
+  if (panel === 'gm-chat') {
+    await renderSessionGmChat(sessionId);
     return;
   }
   await renderSessionCharacters(sessionId);
@@ -801,6 +806,154 @@ function renderOverviewTable(title, sub, rows, emptyText) {
       </div>` : `<div class="empty" style="padding:1rem"><p>${esc(emptyText)}</p></div>`}
     </div>`;
 }
+
+// ── GM brainstorming chat (per case, GM only, ephemeral in memory) ───────────
+const gmChatState = {};
+function gmChat(sessionId) {
+  if (!gmChatState[sessionId]) gmChatState[sessionId] = { messages: [], streaming: false, controller: null };
+  return gmChatState[sessionId];
+}
+
+function gmChatLogHtml(sessionId) {
+  const st = gmChat(sessionId);
+  if (!st.messages.length) {
+    return '<div class="empty" style="padding:1.5rem"><p>Ask for plot ideas, NPC motives, the next beat, contingencies… This chat sees the full GM material for this case and is never shown to players.</p></div>';
+  }
+  return st.messages.map((m) => {
+    const who = m.role === 'user' ? 'You' : 'Assistant';
+    const body = esc(m.content || '') + (m.streaming ? '<span class="gmchat-caret">▍</span>' : '');
+    return `<div class="gmchat-msg gmchat-${m.role}"><div class="gmchat-who">${who}</div><div class="gmchat-body">${body || '<em style="color:var(--text2)">…</em>'}</div></div>`;
+  }).join('');
+}
+
+function renderGmChatLog(sessionId) {
+  const log = el('gmchat-log');
+  if (!log) return;
+  log.innerHTML = gmChatLogHtml(sessionId);
+  log.scrollTop = log.scrollHeight;
+}
+
+function setGmChatStreaming(on) {
+  const send = el('gmchat-send');
+  const stop = el('gmchat-stop');
+  const text = el('gmchat-text');
+  if (send) send.style.display = on ? 'none' : '';
+  if (stop) stop.style.display = on ? '' : 'none';
+  if (text) text.disabled = on;
+}
+
+async function renderSessionGmChat(sessionId) {
+  const tab = el('session-content');
+  if (!tab) return;
+  const st = gmChat(sessionId);
+  tab.innerHTML = `
+    <div class="page-header">
+      <div>
+        <h2>GM Chat</h2>
+        <p class="card-sub">Private brainstorming grounded in this case's GM material. Never shown to players; ephemeral (cleared on reload).</p>
+      </div>
+      <button class="btn btn-sm" onclick="clearGmChat(${sessionId})">Clear</button>
+    </div>
+    <div id="gmchat-alert"></div>
+    <div class="gmchat-log" id="gmchat-log"></div>
+    <div class="gmchat-compose">
+      <textarea id="gmchat-text" rows="3" placeholder="Ask for ideas, NPC motives, the next beat, a twist, contingencies…" onkeydown="gmChatKey(event, ${sessionId})"></textarea>
+      <div class="gmchat-actions">
+        <button class="btn btn-primary" id="gmchat-send" onclick="sendGmChat(${sessionId})">Send</button>
+        <button class="btn" id="gmchat-stop" onclick="stopGmChat(${sessionId})" style="display:none">Stop</button>
+      </div>
+    </div>`;
+  renderGmChatLog(sessionId);
+  setGmChatStreaming(st.streaming);
+}
+
+function gmChatKey(ev, sessionId) {
+  if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) {
+    ev.preventDefault();
+    sendGmChat(sessionId);
+  }
+}
+window.gmChatKey = gmChatKey;
+
+async function sendGmChat(sessionId) {
+  const st = gmChat(sessionId);
+  if (st.streaming) return;
+  const textEl = el('gmchat-text');
+  const text = (textEl && textEl.value || '').trim();
+  if (!text) return;
+  textEl.value = '';
+  st.messages.push({ role: 'user', content: text });
+  const reply = { role: 'assistant', content: '', streaming: true };
+  st.messages.push(reply);
+  renderGmChatLog(sessionId);
+
+  const payload = st.messages.slice(0, -1).map(({ role, content }) => ({ role, content }));
+  st.controller = new AbortController();
+  st.streaming = true;
+  setGmChatStreaming(true);
+  try {
+    const res = await fetch(`/api/sessions/${sessionId}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ messages: payload }),
+      signal: st.controller.signal
+    });
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (_) {}
+      throw new Error(msg);
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    const handle = (line) => {
+      const t = line.trim();
+      if (!t) return;
+      let obj;
+      try { obj = JSON.parse(t); } catch { return; }
+      if (obj.delta) { reply.content += obj.delta; renderGmChatLog(sessionId); }
+      else if (obj.error) { showAlert(obj.error, 'danger', 'gmchat-alert'); }
+    };
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let nl;
+      while ((nl = buffer.indexOf('\n')) >= 0) {
+        handle(buffer.slice(0, nl));
+        buffer = buffer.slice(nl + 1);
+      }
+    }
+    handle(buffer);
+  } catch (e) {
+    if (e.name !== 'AbortError') showAlert(e.message || 'Chat failed', 'danger', 'gmchat-alert');
+  } finally {
+    reply.streaming = false;
+    if (!reply.content) st.messages = st.messages.filter((m) => m !== reply);
+    st.streaming = false;
+    st.controller = null;
+    setGmChatStreaming(false);
+    renderGmChatLog(sessionId);
+  }
+}
+window.sendGmChat = sendGmChat;
+
+function stopGmChat(sessionId) {
+  const st = gmChat(sessionId);
+  if (st.controller) st.controller.abort();
+}
+window.stopGmChat = stopGmChat;
+
+function clearGmChat(sessionId) {
+  const st = gmChat(sessionId);
+  if (st.streaming) return;
+  if (!st.messages.length || confirm('Clear this chat?')) {
+    st.messages = [];
+    renderGmChatLog(sessionId);
+  }
+}
+window.clearGmChat = clearGmChat;
 
 async function renderSessionOverview(sessionId) {
   const content = el('session-content');

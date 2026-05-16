@@ -16,7 +16,8 @@ const {
   regenerateScenarioSections,
   revertScenarioSection,
   resolveSessionAssetPath,
-  regenerateNpcSummaries
+  regenerateNpcSummaries,
+  streamGmChat
 } = require('./scenarioInfo');
 const { buildPdf } = require('../scripts/export-character-sheet');
 
@@ -928,6 +929,29 @@ router.get('/sessions/:id/scenario-info/assets/*', requireAuth, (req, res) => {
   const filePath = resolveSessionAssetPath(session.id, req.params[0], db, req.user.role === 'gm');
   if (!filePath) return res.status(404).json({ error: 'Scenario asset not found' });
   res.sendFile(filePath);
+});
+
+// GM-only brainstorming chat for a case. Streams NDJSON: {delta} lines then
+// {done:true}, or {error}. Aborts the Ollama call if the client disconnects.
+router.post('/sessions/:id/chat', requireGM, async (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const controller = new AbortController();
+  req.on('close', () => { if (!res.writableEnded) controller.abort(new Error('client disconnected')); });
+  res.setHeader('Content-Type', 'application/x-ndjson');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+  try {
+    await streamGmChat(session.id, db, req.body && req.body.messages, {
+      signal: controller.signal,
+      onToken: (delta) => res.write(`${JSON.stringify({ delta })}\n`)
+    });
+    res.write(`${JSON.stringify({ done: true })}\n`);
+  } catch (e) {
+    res.write(`${JSON.stringify({ error: e.message || 'Chat failed' })}\n`);
+  }
+  res.end();
 });
 
 // ── Rules library ────────────────────────────────────────────────────────────

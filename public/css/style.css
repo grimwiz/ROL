@@ -843,3 +843,36 @@ tr:hover td { background: var(--bg3); }
 .case-allocation { display: flex; flex-direction: column; gap: 0.35rem; max-height: 320px; overflow-y: auto; margin: 0.25rem 0 0.75rem; }
 .case-allocation-row { display: flex; align-items: center; gap: 0.55rem; font-size: 0.9rem; color: var(--text); cursor: pointer; }
 .case-allocation-row input { margin: 0; }
+
+/* ── GM brainstorm chat ── */
+.gmchat-log {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg2);
+  padding: 0.75rem;
+  height: 52vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.gmchat-msg { display: flex; flex-direction: column; gap: 0.2rem; max-width: 90%; }
+.gmchat-user { align-self: flex-end; align-items: flex-end; }
+.gmchat-assistant { align-self: flex-start; }
+.gmchat-who { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text2); }
+.gmchat-body {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+}
+.gmchat-user .gmchat-body { background: rgba(124, 111, 212, 0.16); border-color: var(--accent); }
+.gmchat-caret { color: var(--accent2); animation: gmchat-blink 1s steps(1) infinite; }
+@keyframes gmchat-blink { 50% { opacity: 0; } }
+.gmchat-compose { margin-top: 0.75rem; }
+.gmchat-compose textarea { width: 100%; resize: vertical; }
+.gmchat-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }

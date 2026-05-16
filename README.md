@@ -145,6 +145,7 @@ Each case file detail view splits scenario knowledge into **Case Info**, **Playe
 - **NPC/Places/Things** — player-visible Places, NPCs, and notable Things (objects/artefacts/evidence).
 - **GM Info** — GM-only `gm-analysis.json` categories.
 - **Edit Files** — GM editing of the session source markdown.
+- **GM Chat** — GM-only streaming brainstorming chat grounded in this case's full GM material (sources + current player/GM artifacts). Never shown to players; conversation is ephemeral (in-memory, cleared on reload). Reuses the streamed Ollama path with a Stop button (client `AbortController` → server aborts the Ollama call on disconnect). `Ctrl/Cmd+Enter` sends.
 
 It reads static generated artifacts from that session's folder:
 
