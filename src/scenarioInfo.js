@@ -329,7 +329,7 @@ const SCENARIO_SECTIONS = {
     artifact: 'player',
     path: ['summary', 'session_summaries'],
     type: 'array',
-    goal: 'Maintain per-session player-safe analysis, extending the overall "what has happened" section with the specific facts, decisions, clues, actions, and implications from each session, as readable structured Markdown. Indicate unresolved leads, in-flight actions, and open questions inside each session\'s prose rather than as a separate list.',
+    goal: 'Maintain a FULL, detailed per-session player-safe account — for each session, everything meaningful that happened: every action taken, place visited, person spoken to, clue found, decision made, conversation of substance, and its consequence. This is the players\' only record of the session, so it must be thorough, not a 2–3 line digest; multiple paragraphs and sub-headings per session are expected. Indicate unresolved leads, in-flight actions, and open questions inside the prose rather than as a separate list.',
     schemaHint: [
       'Return a JSON array, preserving chronological order and stable ids. Each element:',
       '```json',
@@ -344,6 +344,7 @@ const SCENARIO_SECTIONS = {
       '```',
       '- For each session prefer `"presentation":"player"`: one `##` heading per player character covering what they did and where their thread stands. Use `"scene"` only if that whole session was played as one shared scene.',
       '- `content` is GitHub-flavoured Markdown: `##` headings (turned into the index), `###` sub-points, `**bold**`, `-` bullets, `>` quotes. No raw HTML, no tables, no separate to-investigate list.',
+      '- DEPTH: each session\'s `content` must be a thorough narrative of that session — do not compress it to a few lines. Cover every meaningful beat, who did what, what was learned, and what it changed. Err on the side of more detail.',
       '- Player-safe only. Preserve existing sessions unchanged unless the sources materially change them.'
     ].join('\n')
   },
@@ -353,7 +354,15 @@ const SCENARIO_SECTIONS = {
     artifact: 'player',
     path: ['entities', 'locations'],
     type: 'array',
-    goal: 'Extract locations with interesting aspects, current state, relationships, story significance, source references, and known_by access.'
+    goal: 'Maintain a full player-safe entry for every location of note: what it is, what has happened there in this case, its current state, who/what is connected to it, and why it matters. Be specific and complete, not a one-liner.',
+    schemaHint: [
+      'Return a JSON array. Each element:',
+      '```json',
+      '{ "id": "loc-slug", "name": "Location name", "known_by": ["all"], "content": "Markdown", "sources": [ { "path": "..." } ] }',
+      '```',
+      '- `content` is GitHub-flavoured Markdown (**bold**, `-` bullets, optional `###` sub-headings). Cover: what the place is, everything that has happened there in THIS case, its current state, connected people/things, and its significance to the investigation.',
+      '- Be thorough — this is the players\' only record. Every top-level item needs `known_by` (["all"] or exact roster character names). Never invent places or events not in the case sources.'
+    ].join('\n')
   },
   'player.entities.npcs': {
     id: 'player.entities.npcs',
@@ -361,7 +370,15 @@ const SCENARIO_SECTIONS = {
     artifact: 'player',
     path: ['entities', 'npcs'],
     type: 'array',
-    goal: 'Extract NPCs known to players with interesting aspects, relationships, current state, story significance, source references, and known_by access.'
+    goal: 'Maintain a full player-safe entry for every NPC the players know of: who they are, every interaction the party has had with them, what they want or did, relationships, current state, and significance. Specific and complete, not a one-liner.',
+    schemaHint: [
+      'Return a JSON array. Each element:',
+      '```json',
+      '{ "id": "npc-slug", "name": "NPC name", "known_by": ["all"], "content": "Markdown", "sources": [ { "path": "..." } ] }',
+      '```',
+      '- `content` is GitHub-flavoured Markdown. Cover: who they are (as the players understand it), every interaction the investigators have had with them, what they appear to want, relationships, current status/whereabouts, and why they matter.',
+      '- Be thorough. Every item needs `known_by` (["all"] or exact roster character names). Only include NPCs and facts the players have actually encountered; never import people from the world-reference files.'
+    ].join('\n')
   },
   'player.entities.items': {
     id: 'player.entities.items',
@@ -369,7 +386,15 @@ const SCENARIO_SECTIONS = {
     artifact: 'player',
     path: ['entities', 'items'],
     type: 'array',
-    goal: 'Extract notable objects, artefacts, documents, and pieces of evidence known to players: interesting aspects, current state and whereabouts, who holds or controls them, story significance, source references, and known_by access.'
+    goal: 'Maintain a full player-safe entry for every notable object, artefact, document, or piece of evidence: what it is, how the party came to know of it, what it does or reveals, where it is and who controls it, and why it matters. Specific and complete.',
+    schemaHint: [
+      'Return a JSON array. Each element:',
+      '```json',
+      '{ "id": "item-slug", "name": "Thing name", "known_by": ["all"], "content": "Markdown", "sources": [ { "path": "..." } ] }',
+      '```',
+      '- `content` is GitHub-flavoured Markdown. Cover: what it is, how/when it entered the case, what it does or reveals, current whereabouts and who holds/controls it, and its significance.',
+      '- Be thorough. Every item needs `known_by` (["all"] or exact roster character names). Only include things established in the case sources.'
+    ].join('\n')
   },
   'player.entities.characters': {
     id: 'player.entities.characters',
@@ -377,7 +402,16 @@ const SCENARIO_SECTIONS = {
     artifact: 'player',
     path: ['entities', 'characters'],
     type: 'array',
-    goal: 'Extract individual player-character story records: what each character has been up to, interactions with the GM or scenario, current involvement, active threads, and known_by access.'
+    goal: 'Maintain one EXHAUSTIVE per-player-character story — fuller than the session analysis. For each character: everything they have personally done, found, said, and decided across the whole case; who they have interacted with; what they are carrying or hold; and exactly where each of their threads now stands. This is the deepest player-facing record; multiple paragraphs and sub-headings per character are expected.',
+    schemaHint: [
+      'Return a JSON array, one element per player character (use the roster). Each element:',
+      '```json',
+      '{ "id": "char-slug", "name": "Character name", "known_by": ["Character name"], "content": "Markdown", "sources": [ { "path": "..." } ] }',
+      '```',
+      '- `content` is GitHub-flavoured Markdown with `###` sub-headings (e.g. What they\'ve done, Relationships, Where their threads stand), `**bold**`, `-` bullets.',
+      '- EXHAUSTIVE and chronological where it helps: do not summarise to a few lines — this must be the fullest account of that character\'s personal involvement, richer than the per-session analysis.',
+      '- Default `known_by` to just that character\'s own name (their personal story is theirs); use ["all"] only for parts the whole table plainly shares. Never invent actions the sources do not show.'
+    ].join('\n')
   },
   'gm.scenario_progress': {
     id: 'gm.scenario_progress',
@@ -385,7 +419,14 @@ const SCENARIO_SECTIONS = {
     artifact: 'gm',
     path: ['scenario_progress'],
     type: 'array',
-    goal: 'Assess how the scenario is progressing, what is drifting or stalled, and what the GM should do to keep it on track.'
+    goal: 'Assess how the scenario is progressing, what is drifting or stalled, and what the GM should do to keep it on track — written out as readable guidance prose, not bare labels.',
+    schemaHint: [
+      'Return a JSON array. Each element:',
+      '```json',
+      '{ "id": "progress-slug", "title": "Short heading", "content": "Markdown analysis" }',
+      '```',
+      '- `content` is the actual GM analysis as GitHub-flavoured Markdown prose (`**bold**`, `-` bullets). Write it out so the GM can read it — assessment, what is drifting/stalled, why, and concrete recommended actions. Do not return terse tag-like fields with no prose.'
+    ].join('\n')
   },
   'gm.plans_by_player': {
     id: 'gm.plans_by_player',
@@ -393,7 +434,14 @@ const SCENARIO_SECTIONS = {
     artifact: 'gm',
     path: ['plans_by_player'],
     type: 'array',
-    goal: 'Identify private planned beats, risks, and notes for each player character.'
+    goal: 'For each player character, lay out the private planned beats, hooks, risks, and GM notes as readable prose guidance.',
+    schemaHint: [
+      'Return a JSON array, one element per player character. Each element:',
+      '```json',
+      '{ "character": "Character name", "content": "Markdown analysis" }',
+      '```',
+      '- `content` is prose Markdown the GM reads: planned beats/hooks for them, risks, and notes. Use `-` bullets for the beats. Write it out; do not return only short label fields.'
+    ].join('\n')
   },
   'gm.next_deliverables': {
     id: 'gm.next_deliverables',
@@ -401,7 +449,14 @@ const SCENARIO_SECTIONS = {
     artifact: 'gm',
     path: ['next_deliverables'],
     type: 'array',
-    goal: 'Identify useful next clues, scenes, prompts, or deliverables for each player character.'
+    goal: 'For each player character, the useful next clues, scenes, prompts, or deliverables — written as actionable prose.',
+    schemaHint: [
+      'Return a JSON array. Each element:',
+      '```json',
+      '{ "character": "Character name", "timing": "next session | when they ask | ...", "content": "Markdown analysis" }',
+      '```',
+      '- `content` is prose Markdown: what to give them next, why, and how it moves their thread. Concrete and readable, not bare labels.'
+    ].join('\n')
   },
   'gm.fairness_engagement': {
     id: 'gm.fairness_engagement',
@@ -409,7 +464,14 @@ const SCENARIO_SECTIONS = {
     artifact: 'gm',
     path: ['fairness_engagement'],
     type: 'array',
-    goal: 'Track spotlight, engagement, quiet players, overloaded players, and evidence for those assessments.'
+    goal: 'Per player character, assess spotlight/engagement (quiet, balanced, overloaded) with the evidence and what to do about it, as prose.',
+    schemaHint: [
+      'Return a JSON array, one element per player character. Each element:',
+      '```json',
+      '{ "character": "Character name", "spotlight": "low|balanced|high", "engagement": "quiet|active|overloaded", "content": "Markdown analysis" }',
+      '```',
+      '- `content` is prose Markdown: the evidence from the sources for this assessment and a concrete suggestion. Write it out.'
+    ].join('\n')
   },
   'gm.quiet_players': {
     id: 'gm.quiet_players',
@@ -417,7 +479,14 @@ const SCENARIO_SECTIONS = {
     artifact: 'gm',
     path: ['quiet_players'],
     type: 'array',
-    goal: 'Identify players or characters who may need a nudge and draft concrete GM prompts.'
+    goal: 'Identify characters who may need a nudge, why, and a concrete drafted prompt — as prose.',
+    schemaHint: [
+      'Return a JSON array. Each element:',
+      '```json',
+      '{ "character": "Character name", "content": "Markdown analysis" }',
+      '```',
+      '- `content` is prose Markdown: why they may need a nudge and a concrete, ready-to-use GM prompt/message (quote it). Write it out.'
+    ].join('\n')
   },
   'gm.gm_actions': {
     id: 'gm.gm_actions',
@@ -425,7 +494,14 @@ const SCENARIO_SECTIONS = {
     artifact: 'gm',
     path: ['gm_actions'],
     type: 'array',
-    goal: 'Extract concrete GM actions for the next session or async update, including priority and rationale.'
+    goal: 'Concrete GM actions for the next session or async update, with priority and rationale, as prose.',
+    schemaHint: [
+      'Return a JSON array. Each element:',
+      '```json',
+      '{ "id": "action-slug", "title": "Short action title", "priority": "low|medium|high", "content": "Markdown analysis" }',
+      '```',
+      '- `content` is prose Markdown: what to do, why, and how. Actionable and readable, not a bare label.'
+    ].join('\n')
   }
 };
 

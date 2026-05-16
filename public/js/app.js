@@ -1185,8 +1185,41 @@ function scenarioArray(value) {
 function scenarioText(value) {
   if (value === null || value === undefined) return '';
   if (Array.isArray(value)) return value.map(scenarioText).filter(Boolean).join('\n');
-  if (typeof value === 'object') return scenarioText(value.body || value.details || value.summary || JSON.stringify(value));
+  if (typeof value === 'object') {
+    return scenarioText(value.content || value.description || value.body || value.details
+      || value.summary || value.text || value.analysis || value.story || JSON.stringify(value));
+  }
   return String(value);
+}
+
+let _richSeq = 0;
+function looksMarkdown(s) {
+  return /(^|\n)\s{0,3}#{1,4}\s|\*\*[^*\n]+\*\*|(^|\n)\s*[-*+]\s+|(^|\n)\s*>\s+|`[^`]+`/.test(s);
+}
+function stripPara(html) {
+  return String(html).replace(/^\s*<p>/, '').replace(/<\/p>\s*$/, '');
+}
+// Renders a value as prose. Strings with Markdown get the rich renderer
+// (headings/bold/lists) so record cards read like the "what has happened" page.
+function renderRichText(value) {
+  if (value === null || value === undefined) return '';
+  if (Array.isArray(value)) {
+    const items = value.filter((v) => v !== null && v !== undefined && String(v).trim() !== '');
+    if (!items.length) return '';
+    return `<ul class="scenario-list">${items.map((v) => `<li>${stripPara(renderRichText(v))}</li>`).join('')}</ul>`;
+  }
+  if (typeof value === 'object') {
+    const inner = value.content || value.description || value.body || value.summary
+      || value.details || value.text || value.analysis || value.story;
+    return inner ? renderRichText(inner) : renderScenarioText(value);
+  }
+  const s = String(value).trim();
+  if (!s) return '';
+  if (looksMarkdown(s)) {
+    _richSeq += 1;
+    return `<div class="summary-content">${markdownToHtml(s, `e${_richSeq}`).html}</div>`;
+  }
+  return renderScenarioText(s);
 }
 
 function renderScenarioText(value) {
@@ -1260,9 +1293,27 @@ function renderScenarioEntry(entry, fallbackTitle = 'Entry') {
     data.owner ? `Owner: ${data.owner}` : '',
     data.session
   ].filter(Boolean);
-  const aspects = data.aspects || data.interesting_aspects || data.key_facts || data.planned_beats || data.needs_to_keep_on_track || data.risks;
-  const relationships = data.relationships || data.links;
-  const body = data.summary || data.details || data.body || data.notes || data.evidence || data.suggested_prompt || data.prompt || data.purpose || data.deliverable;
+
+  // Main narrative — accept whatever field the model used, render Markdown richly.
+  const bodyKeys = ['content', 'description', 'summary', 'analysis', 'story', 'narrative', 'details', 'body', 'text', 'notes'];
+  let bodyKey = bodyKeys.find((k) => data[k] != null && String(data[k]).trim() !== '');
+  const bodyHtml = bodyKey ? renderRichText(data[bodyKey]) : '';
+
+  // Everything else meaningful, surfaced as labelled prose/lists (not just tag
+  // chips) — this is what makes GM Info readable rather than a wall of tags.
+  const used = new Set([...bodyKeys, 'name', 'title', 'character', 'player', 'priority', 'spotlight',
+    'engagement', 'timing', 'role', 'status', 'location', 'owner', 'session', 'id',
+    'known_by', 'visible_to', 'access', 'gm_only', 'gmOnly', 'media', 'sources', 'presentation']);
+  if (bodyKey) used.add(bodyKey);
+  const labelFor = (k) => k.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  const blocks = [];
+  for (const [key, value] of Object.entries(data)) {
+    if (used.has(key)) continue;
+    if (value == null || (Array.isArray(value) && !value.length) || String(value).trim() === '') continue;
+    const html = renderRichText(value);
+    if (html) blocks.push(`<div class="scenario-subtitle">${esc(labelFor(key))}</div>${html}`);
+  }
+
   return `
     <div class="card scenario-entry-card">
       <div class="card-header">
@@ -1271,9 +1322,8 @@ function renderScenarioEntry(entry, fallbackTitle = 'Entry') {
           ${meta.length ? `<div class="card-sub">${esc(meta.join(' | '))}</div>` : ''}
         </div>
       </div>
-      <div class="scenario-body">${renderScenarioText(body)}</div>
-      ${renderScenarioTags(aspects)}
-      ${relationships ? `<div class="scenario-subtitle">Relationships</div>${renderScenarioTags(relationships)}` : ''}
+      ${bodyHtml ? `<div class="scenario-body">${bodyHtml}</div>` : ''}
+      ${blocks.join('')}
       ${renderScenarioMedia(data.media)}
       ${renderScenarioSources(data.sources)}
     </div>`;
