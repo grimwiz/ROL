@@ -10,6 +10,35 @@ const GM_NAME = 'Stu Bentley';
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://openwebui37.dragon-net.local:11434';
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3.6_36b:codex';
 const OLLAMA_NUM_CTX = parseInt(process.env.OLLAMA_NUM_CTX || '262144', 10);
+// Hard upper bound for a single section generation (default 30 min). Streaming
+// keeps the connection alive during generation; this only catches a truly
+// stuck call. Also the seam a future "cancel" button drives.
+const OLLAMA_TIMEOUT_MS = parseInt(process.env.OLLAMA_TIMEOUT_MS || '1800000', 10);
+const OLLAMA_KEEP_ALIVE = process.env.OLLAMA_KEEP_ALIVE || '30m';
+
+// Best-effort no-timeout dispatcher. Node's global fetch is undici; with
+// stream:false a long generation never sends headers before undici's ~5 min
+// headersTimeout fires ("fetch failed"). We both stream AND (if undici is
+// importable) drop the header/body timeouts entirely.
+let ollamaDispatcher = null;
+try {
+  const { Agent } = require('undici');
+  ollamaDispatcher = new Agent({ headersTimeout: 0, bodyTimeout: 0, connectTimeout: 60000 });
+} catch {
+  ollamaDispatcher = null;
+}
+
+// In-process view of whether a generation is running, for a future busyness
+// monitor. Kept here so the single Ollama path owns the truth.
+const ollamaActivity = { active: 0, startedAt: null, lastSection: null };
+function ollamaStatus() {
+  return {
+    busy: ollamaActivity.active > 0,
+    active: ollamaActivity.active,
+    started_at: ollamaActivity.startedAt,
+    last_section: ollamaActivity.lastSection
+  };
+}
 
 const MARKDOWN_EXTENSIONS = new Set(['.md', '.markdown']);
 const GRAPHIC_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg']);
@@ -1044,26 +1073,42 @@ function sortPromptSources(sourceFiles) {
   });
 }
 
+function isCaseSourceFile(file) {
+  // What actually happened in THIS game: the WhatsApp transcript + GM-authored
+  // case material live under input/ and GM/. The seeded session-root files are
+  // generic Rivers of London world reference, not events.
+  const p = String(file && file.path || '');
+  return p.includes('/input/') || p.includes('/GM/');
+}
+
 function renderPromptFileBundle(sourceFiles) {
   const ordered = sortPromptSources(sourceFiles);
   const markdownFiles = ordered.filter((file) => file.kind === 'markdown');
   const otherFiles = ordered.filter((file) => file.kind !== 'markdown');
+  const caseFiles = markdownFiles.filter(isCaseSourceFile);
+  const worldFiles = markdownFiles.filter((f) => !isCaseSourceFile(f));
   const sections = [];
-  if (markdownFiles.length) {
-    sections.push('## Source File Contents');
-    for (const file of markdownFiles) {
-      const fullPath = path.join(REPO_ROOT, file.path);
-      sections.push(`### ${file.path}`);
-      sections.push('');
-      sections.push('````markdown');
-      sections.push(readTextForPrompt(fullPath));
-      sections.push('````');
+
+  const dumpFiles = (files) => {
+    for (const file of files) {
+      sections.push(`### ${file.path}`, '', '````markdown', readTextForPrompt(path.join(REPO_ROOT, file.path)), '````');
     }
-  } else {
-    sections.push('## Source File Contents');
-    sections.push('');
-    sections.push('No markdown source file contents were found.');
-  }
+  };
+
+  sections.push('## Authoritative Case Sources — what actually happened');
+  sections.push('');
+  sections.push('Everything the investigators have done, found, said, met, or been told comes ONLY from these files (the WhatsApp play transcript and GM-authored case material). Every statement you write about events, people met, places visited, clues, and timing must be grounded here.');
+  sections.push('');
+  if (caseFiles.length) dumpFiles(caseFiles);
+  else sections.push('_No case source files were found._');
+
+  sections.push('');
+  sections.push('## World Reference — background definitions only (NOT events)');
+  sections.push('');
+  sections.push('These describe what people, places, organisations, and terms *are* in the Rivers of London setting generally. They are NOT a record of this game. Do NOT assert that any investigator met, visited, knows, contacted, or interacted with anyone or anywhere because it appears here. Use them only to briefly clarify a name or term that already appears in the Authoritative Case Sources, and never let them introduce people, locations, meetings, or timeline that the case sources do not establish.');
+  sections.push('');
+  if (worldFiles.length) dumpFiles(worldFiles);
+  else sections.push('_No world reference files were found._');
 
   if (otherFiles.length) {
     sections.push('');
@@ -1131,24 +1176,21 @@ ${config.schemaHint}
 ## Rules
 
 - Return only valid JSON for this one section. No markdown fences, commentary, planning text, or wrapper object.
-- This is an analysis task, not a brief summary task. Surface all pertinent information from the authoritative source set for this section, including details that earlier generated sections glossed over.
-- The section you are regenerating is authoritative for its own topic. It should represent all relevant provided information for that topic, not just highlights.
-- Use existing generated sections as context. Extend them, reconcile them, and fill gaps; do not let an earlier concise section cause you to omit important detail from this section.
-- Source priority matters. GM-authored player-visible case files and curated session files are primary for player output; GM-only files are also primary for GM output. The WhatsApp-derived session transcript is nearly as important and should be followed carefully. Global reference files are only for filling world/background gaps; do not let them dominate case-specific facts.
-- The session transcript comes from WhatsApp. Message headings identify the user and time, and message linkage/replies can clarify the thread of conversation. Follow those conversational threads instead of treating headings as story events.
+- GROUNDING: every statement about what happened — who did or found something, who met whom, where they went, what they were told, and when — must trace to the **Authoritative Case Sources** (the WhatsApp transcript and GM-authored case files). If the case sources do not establish it, do not write it. Never introduce people, places, organisations, meetings, relationships, or timeline from the World Reference; those files only explain what an already-mentioned name or term *is*. When in doubt, leave it out rather than guess.
+- COMPLETENESS: this is the players' primary record of the case — they do not read the raw files. Surface ALL pertinent case information for this section: facts, decisions, clues, leads, who did what, current state, and consequences. Do not omit relevant detail to be brief; for case facts, favour completeness over concision. It is an analysis task, not a terse summary.
+- COHESION: the whole artifact must read as one consistent account. Treat "what has happened" as the spine; this section must agree with it and with the other sections — reuse the exact same entity names and IDs, do not contradict them, and reflect cross-references (e.g., a location entry should reflect what the summary says happened there).
+- The session transcript comes from WhatsApp. Message headings identify the speaker and time, and replies/linkage clarify the thread of conversation. Follow those conversational threads; do not treat a message heading as a story event in itself.
 - Do not create generic timeline fields or timeline paragraphs. If chronology matters, write it naturally inside the analysis for the item.
-- Preserve stable IDs from the current section where an item still represents the same thing.
-- Keep useful existing facts unless the sources make them stale, unsafe, or incorrect.
-- Prefer factual prose over speculation. Be economical, but do not omit pertinent case information merely to be brief.
-- Preserve ambiguity explicitly: "unknown", "unconfirmed", or "requires sign-off".
-- Cite sources with repo-relative paths in sources[].path.
+- Preserve stable IDs from the current section where an item still represents the same thing. Keep useful existing facts unless the sources make them stale, unsafe, or incorrect.
+- Prefer factual prose over speculation. Preserve ambiguity explicitly: "unknown", "unconfirmed", or "requires sign-off".
+- Cite sources with repo-relative paths in sources[].path, preferring the Authoritative Case Sources.
 ${accessRules}
 
 ${renderCommonPromptContext(session, db, sourceFiles)}
 
 ## Current Complete Artifact
 
-Use this for continuity, stable IDs, and context from earlier/later sections. For example, the current "what has happened" section should inform session summaries, and session summaries should inform entities and thread analysis.
+This is the rest of the player/GM record. Make this section cohere with it: same names, same IDs, no contradictions. "What has happened" is the spine — session summaries extend it, and entities/threads must be consistent with both. Extend and reconcile; do not regress detail another section already captured.
 
 ${renderJsonBlock(artifact)}
 
@@ -1177,39 +1219,95 @@ function extractJsonCandidate(text) {
   return end >= start ? raw.slice(start, end + 1).trim() : raw.slice(start).trim();
 }
 
-async function callOllama(prompt) {
-  const response = await fetch(`${OLLAMA_URL.replace(/\/+$/, '')}/api/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: OLLAMA_MODEL,
-      stream: false,
-      options: {
-        num_ctx: Number.isInteger(OLLAMA_NUM_CTX) ? OLLAMA_NUM_CTX : 262144,
-        temperature: 0.2
-      },
-      messages: [
-        {
-          role: 'system',
-          content: 'You update structured JSON artifacts for a Rivers of London tabletop RPG web app. You obey data visibility boundaries exactly and return only valid JSON when asked.'
-        },
-        { role: 'user', content: prompt }
-      ]
-    })
-  });
+// Streams Ollama's /api/chat NDJSON and accumulates the assistant text.
+// Streaming is the actual fix for "fetch failed": with stream:false a big
+// section returns nothing until generation completes, so undici tears the
+// socket down on headersTimeout. `options.signal` lets a caller cancel.
+async function callOllama(prompt, { signal, label } = {}) {
+  const controller = new AbortController();
+  const linkAbort = () => controller.abort(signal && signal.reason);
+  if (signal) {
+    if (signal.aborted) controller.abort(signal.reason);
+    else signal.addEventListener('abort', linkAbort, { once: true });
+  }
+  const timer = OLLAMA_TIMEOUT_MS > 0
+    ? setTimeout(() => controller.abort(new Error(`Ollama timed out after ${Math.round(OLLAMA_TIMEOUT_MS / 1000)}s`)), OLLAMA_TIMEOUT_MS)
+    : null;
 
-  const text = await response.text();
-  let payload = null;
+  ollamaActivity.active += 1;
+  ollamaActivity.startedAt = ollamaActivity.startedAt || new Date().toISOString();
+  if (label) ollamaActivity.lastSection = label;
+
   try {
-    payload = text ? JSON.parse(text) : null;
-  } catch {
-    payload = null;
+    const response = await fetch(`${OLLAMA_URL.replace(/\/+$/, '')}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      ...(ollamaDispatcher ? { dispatcher: ollamaDispatcher } : {}),
+      body: JSON.stringify({
+        model: OLLAMA_MODEL,
+        stream: true,
+        keep_alive: OLLAMA_KEEP_ALIVE,
+        options: {
+          num_ctx: Number.isInteger(OLLAMA_NUM_CTX) ? OLLAMA_NUM_CTX : 262144,
+          temperature: 0.2
+        },
+        messages: [
+          {
+            role: 'system',
+            content: 'You update structured JSON artifacts for a Rivers of London tabletop RPG web app. You obey data visibility boundaries exactly and return only valid JSON when asked.'
+          },
+          { role: 'user', content: prompt }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '');
+      let detail = errText;
+      try { const j = JSON.parse(errText); if (j && j.error) detail = j.error; } catch { /* keep raw */ }
+      throw new Error(`Ollama request failed (${response.status}): ${detail}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let content = '';
+    const consume = (line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+      let obj;
+      try { obj = JSON.parse(trimmed); } catch { return; }
+      if (obj.error) throw new Error(`Ollama error: ${obj.error}`);
+      if (obj.message && typeof obj.message.content === 'string') content += obj.message.content;
+    };
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let nl;
+      while ((nl = buffer.indexOf('\n')) >= 0) {
+        consume(buffer.slice(0, nl));
+        buffer = buffer.slice(nl + 1);
+      }
+    }
+    consume(buffer);
+    if (!content.trim()) throw new Error('Ollama returned an empty response');
+    return content;
+  } catch (e) {
+    if (controller.signal.aborted) {
+      const reason = controller.signal.reason;
+      const err = new Error(reason && reason.message ? reason.message : 'Ollama request cancelled');
+      err.cancelled = true;
+      throw err;
+    }
+    throw e;
+  } finally {
+    if (timer) clearTimeout(timer);
+    if (signal) signal.removeEventListener('abort', linkAbort);
+    ollamaActivity.active = Math.max(0, ollamaActivity.active - 1);
+    if (ollamaActivity.active === 0) ollamaActivity.startedAt = null;
   }
-  if (!response.ok) {
-    const detail = payload && payload.error ? payload.error : text;
-    throw new Error(`Ollama request failed (${response.status}): ${detail}`);
-  }
-  return payload && payload.message && payload.message.content ? payload.message.content : text;
 }
 
 async function regenerateScenarioSection(sessionId, sectionId, db) {
@@ -1224,7 +1322,7 @@ async function regenerateScenarioSection(sessionId, sectionId, db) {
   const { config, paths, artifact, value: currentValue } = section;
   const sourceFiles = listSessionSourceFiles(session, { includePrivate: config.artifact === 'gm' });
   const prompt = renderSectionPrompt(session, db, config, artifact, currentValue, sourceFiles);
-  const raw = await callOllama(prompt);
+  const raw = await callOllama(prompt, { label: config.id });
   let parsed;
   try {
     parsed = JSON.parse(extractJsonCandidate(raw));
@@ -1427,5 +1525,6 @@ module.exports = {
   revertScenarioSection,
   resolveSessionAssetPath,
   writeSessionNpcSummary,
-  regenerateNpcSummaries
+  regenerateNpcSummaries,
+  ollamaStatus
 };
