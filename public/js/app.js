@@ -1680,8 +1680,11 @@ function renderNpcScope(npc) {
   return 'Global';
 }
 
+// An NPC is a character sheet. The sheet's own Name field is authoritative;
+// only Scope/Scenario sit outside it. (No minimal-record editor any more.)
 function renderNpcCard(npc) {
-  const meta = [renderNpcScope(npc), npc.role, npc.status, npc.location].filter(Boolean);
+  const occupation = (npc.sheet && npc.sheet.occupation) || npc.role || '';
+  const meta = [renderNpcScope(npc), occupation].filter(Boolean);
   return `
     <div class="card npc-card">
       <div class="card-header">
@@ -1690,13 +1693,11 @@ function renderNpcCard(npc) {
           ${meta.length ? `<div class="card-sub">${esc(meta.join(' | '))}</div>` : ''}
         </div>
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-          <button class="btn btn-sm" onclick="openNpcDetails(${npc.id})">View</button>
-          <button class="btn btn-sm" onclick="openNpcEditor(${npc.id})">Edit</button>
-          <button class="btn btn-sm" onclick="openNpcSheet(${npc.id})">Sheet${npc.sheet ? '' : ' +'}</button>
+          <button class="btn btn-sm" onclick="openNpcSheet(${npc.id})">Edit</button>
           <button class="btn btn-sm btn-danger" onclick="deleteNpcRecord(${npc.id})">Delete</button>
         </div>
       </div>
-      ${npc.summary ? `<p>${esc(npc.summary)}</p>` : '<p class="card-sub">No summary recorded.</p>'}
+      ${(npc.sheet && npc.sheet.reputation) ? `<p class="card-sub">${esc(npc.sheet.reputation)}</p>` : ''}
     </div>`;
 }
 
@@ -1730,7 +1731,7 @@ async function renderSessionNpcs(sessionId) {
   tab.innerHTML = `
     <div class="page-header">
       <h2>NPCs</h2>
-      <button class="btn btn-primary" onclick="openNpcEditor()">+ New NPC</button>
+      <button class="btn btn-primary" onclick="openNpcSheet()">+ New NPC</button>
     </div>
     <div id="npcs-alert"></div>
     ${group(`This Case (${sessionNpcs.length})`, sessionNpcs, 'No NPCs specific to this case yet.')}
@@ -1758,7 +1759,7 @@ async function loadNpcsTab() {
   tab.innerHTML = `
     <div class="page-header">
       <h2>NPCs</h2>
-      <button class="btn btn-primary" onclick="openNpcEditor()">+ New NPC</button>
+      <button class="btn btn-primary" onclick="openNpcSheet()">+ New NPC</button>
     </div>
     <div id="npcs-alert"></div>
     ${State.npcs.length
@@ -1766,121 +1767,9 @@ async function loadNpcsTab() {
       : `<div class="empty"><div class="empty-icon">👤</div><p>No NPCs recorded yet.</p></div>`}`;
 }
 
-function openNpcDetails(npcId) {
-  const npc = State.npcs.find((entry) => entry.id === npcId);
-  if (!npc) return;
-  modal(`
-    <h3>${esc(npc.name)}</h3>
-    <div class="npc-detail-meta">${esc([renderNpcScope(npc), npc.role, npc.status, npc.location].filter(Boolean).join(' | '))}</div>
-    ${npc.summary ? `<div class="scenario-body">${renderScenarioText(npc.summary)}</div>` : ''}
-    ${npc.notes ? `<div class="scenario-subtitle">GM Notes</div><div class="scenario-body">${renderScenarioText(npc.notes)}</div>` : ''}
-    <div class="modal-actions">
-      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Close</button>
-      <button class="btn btn-primary" onclick="this.closest('.modal-backdrop').remove();openNpcEditor(${npc.id})">Edit</button>
-    </div>`, (bd) => {
-      const modalEl = bd.querySelector('.modal');
-      if (modalEl) modalEl.style.maxWidth = '680px';
-    });
-}
-window.openNpcDetails = openNpcDetails;
-
 function renderNpcSessionOptions(selectedId) {
   return State.sessions.map((session) => `<option value="${session.id}"${Number(selectedId) === Number(session.id) ? ' selected' : ''}>${esc(session.name)}</option>`).join('');
 }
-
-// New NPCs get the standard character sheet (same as players), with just the
-// required record metadata (name/scope/scenario) on top. Editing an existing
-// NPC's record metadata stays in the lightweight modal below; its sheet is
-// edited via the card's "Sheet" button.
-function openNpcCreator() {
-  const data = State.currentSession ? { scope: 'scenario', session_id: State.currentSession } : { scope: 'global' };
-  modal(`
-    <h3>New NPC</h3>
-    <div id="modal-alert"></div>
-    <div class="form-row" style="display:flex;gap:0.75rem;flex-wrap:wrap">
-      <div class="form-group" style="flex:2;min-width:200px"><label>Name</label><input type="text" id="m-npc-name" placeholder="Full name"></div>
-      <div class="form-group" style="flex:1;min-width:140px">
-        <label>Scope</label>
-        <select id="m-npc-scope" onchange="toggleNpcScopeField()">
-          <option value="global"${data.scope !== 'scenario' ? ' selected' : ''}>Global</option>
-          <option value="scenario"${data.scope === 'scenario' ? ' selected' : ''}>Scenario</option>
-        </select>
-      </div>
-      <div class="form-group" id="m-npc-session-wrap" style="flex:1;min-width:160px">
-        <label>Scenario</label>
-        <select id="m-npc-session">${renderNpcSessionOptions(data.session_id)}</select>
-      </div>
-    </div>
-    <div id="npc-sheet-area"><p style="color:var(--text2)">Loading sheet…</p></div>
-    <div class="sheet-actions">
-      <button class="btn btn-primary" onclick="saveNewNpc(this)">Create NPC</button>
-      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Cancel</button>
-      <span class="save-status" id="npc-sheet-status"></span>
-    </div>`, (root) => {
-    const modalEl = root.querySelector('.modal');
-    if (modalEl) { modalEl.style.maxWidth = '1100px'; modalEl.style.maxHeight = '92vh'; modalEl.style.overflowY = 'auto'; }
-    toggleNpcScopeField();
-    const area = root.querySelector('#npc-sheet-area');
-    area.innerHTML = '';
-    SheetForm.render(area, {}, false);
-  });
-}
-window.openNpcCreator = openNpcCreator;
-
-async function saveNewNpc(btn) {
-  const scope = el('m-npc-scope').value;
-  const name = el('m-npc-name').value.trim();
-  const sessionId = scope === 'scenario' ? el('m-npc-session').value : null;
-  if (!name) return showAlert('Name required', 'danger', 'modal-alert');
-  if (scope === 'scenario' && !sessionId) return showAlert('Choose a scenario', 'danger', 'modal-alert');
-  const sheet = SheetForm.collect();
-  if (!sheet.name) sheet.name = name;
-  const status = el('npc-sheet-status');
-  if (status) { status.textContent = 'Saving…'; status.className = 'save-status'; }
-  btn.disabled = true;
-  try {
-    await api.createNpc({ name, scope, session_id: sessionId, role: sheet.occupation || '', status: '', location: '', summary: '', notes: '', sheet });
-    btn.closest('.modal-backdrop').remove();
-    if (State.currentSession) await renderSessionNpcs(State.currentSession);
-    else await loadNpcsTab();
-  } catch (e) {
-    if (status) { status.textContent = `✕ ${e.message}`; status.className = 'save-status error'; }
-    showAlert(e.message, 'danger', 'modal-alert');
-    btn.disabled = false;
-  }
-}
-window.saveNewNpc = saveNewNpc;
-
-function openNpcEditor(npcId = null) {
-  if (!npcId) return openNpcCreator();
-  const npc = State.npcs.find((entry) => entry.id === npcId);
-  const data = npc || (State.currentSession ? { scope: 'scenario', session_id: State.currentSession } : { scope: 'global' });
-  modal(`
-    <h3>${npc ? 'Edit NPC' : 'New NPC'}</h3>
-    <div id="modal-alert"></div>
-    <div class="form-group"><label>Name</label><input type="text" id="m-npc-name" value="${esc(data.name || '')}"></div>
-    <div class="form-group">
-      <label>Scope</label>
-      <select id="m-npc-scope" onchange="toggleNpcScopeField()">
-        <option value="global"${data.scope !== 'scenario' ? ' selected' : ''}>Global</option>
-        <option value="scenario"${data.scope === 'scenario' ? ' selected' : ''}>Scenario</option>
-      </select>
-    </div>
-    <div class="form-group" id="m-npc-session-wrap">
-      <label>Scenario</label>
-      <select id="m-npc-session">${renderNpcSessionOptions(data.session_id)}</select>
-    </div>
-    <div class="form-group"><label>Role / type</label><input type="text" id="m-npc-role" value="${esc(data.role || '')}"></div>
-    <div class="form-group"><label>Status</label><input type="text" id="m-npc-status" value="${esc(data.status || '')}"></div>
-    <div class="form-group"><label>Location</label><input type="text" id="m-npc-location" value="${esc(data.location || '')}"></div>
-    <div class="form-group"><label>Summary</label><textarea id="m-npc-summary" rows="4">${esc(data.summary || '')}</textarea></div>
-    <div class="form-group"><label>GM notes</label><textarea id="m-npc-notes" rows="5">${esc(data.notes || '')}</textarea></div>
-    <div class="modal-actions">
-      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveNpc(${npc ? npc.id : 'null'}, this)">Save</button>
-    </div>`, () => toggleNpcScopeField());
-}
-window.openNpcEditor = openNpcEditor;
 
 function toggleNpcScopeField() {
   const scope = el('m-npc-scope');
@@ -1890,33 +1779,70 @@ function toggleNpcScopeField() {
 }
 window.toggleNpcScopeField = toggleNpcScopeField;
 
-async function saveNpc(npcId, btn) {
+// Single NPC editor — create (no id) or edit — using the standard SheetForm and
+// the same Export PDF path as players.
+function openNpcSheet(npcId) {
+  const npc = npcId ? State.npcs.find((entry) => entry.id === npcId) : null;
+  const scope = npc ? npc.scope : (State.currentSession ? 'scenario' : 'global');
+  const sessionId = (npc && npc.session_id) || State.currentSession || '';
+  modal(`
+    <h3>${npc ? `${esc(npc.name)} — Character Sheet` : 'New NPC — Character Sheet'}</h3>
+    <div id="modal-alert"></div>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+      <div class="form-group" style="flex:1;min-width:140px">
+        <label>Scope</label>
+        <select id="m-npc-scope" onchange="toggleNpcScopeField()">
+          <option value="global"${scope !== 'scenario' ? ' selected' : ''}>Global</option>
+          <option value="scenario"${scope === 'scenario' ? ' selected' : ''}>Scenario</option>
+        </select>
+      </div>
+      <div class="form-group" id="m-npc-session-wrap" style="flex:1;min-width:160px">
+        <label>Scenario</label>
+        <select id="m-npc-session">${renderNpcSessionOptions(sessionId)}</select>
+      </div>
+    </div>
+    <p class="card-sub" style="margin:0 0 0.5rem">Set the NPC's name in the sheet below (Personal Info → Name).</p>
+    <div id="npc-sheet-area"><p style="color:var(--text2)">Loading sheet…</p></div>
+    <div class="sheet-actions">
+      <button class="btn btn-primary" onclick="saveNpcSheetForm(${npc ? npc.id : 'null'}, this)">${npc ? 'Save sheet' : 'Create NPC'}</button>
+      <button class="btn" onclick="exportPdf()">Export PDF</button>
+      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Close</button>
+      <span class="save-status" id="npc-sheet-status"></span>
+    </div>`, (root) => {
+    const modalEl = root.querySelector('.modal');
+    if (modalEl) { modalEl.style.maxWidth = '1100px'; modalEl.style.maxHeight = '92vh'; modalEl.style.overflowY = 'auto'; }
+    toggleNpcScopeField();
+    const area = root.querySelector('#npc-sheet-area');
+    area.innerHTML = '';
+    SheetForm.render(area, (npc && npc.sheet) || {}, false);
+  });
+}
+window.openNpcSheet = openNpcSheet;
+
+async function saveNpcSheetForm(npcId, btn) {
   const scope = el('m-npc-scope').value;
-  const payload = {
-    name: el('m-npc-name').value.trim(),
-    scope,
-    session_id: scope === 'scenario' ? el('m-npc-session').value : null,
-    role: el('m-npc-role').value.trim(),
-    status: el('m-npc-status').value.trim(),
-    location: el('m-npc-location').value.trim(),
-    summary: el('m-npc-summary').value.trim(),
-    notes: el('m-npc-notes').value.trim()
-  };
-  if (!payload.name) return showAlert('Name required', 'danger', 'modal-alert');
-  if (scope === 'scenario' && !payload.session_id) return showAlert('Choose a scenario', 'danger', 'modal-alert');
+  const sessionId = scope === 'scenario' ? el('m-npc-session').value : null;
+  const sheet = SheetForm.collect();
+  const name = String(sheet.name || '').trim();
+  if (!name) return showAlert('Enter the NPC name in the sheet (Personal Info → Name).', 'danger', 'modal-alert');
+  if (scope === 'scenario' && !sessionId) return showAlert('Choose a scenario.', 'danger', 'modal-alert');
+  const status = el('npc-sheet-status');
+  if (status) { status.textContent = 'Saving…'; status.className = 'save-status'; }
   btn.disabled = true;
   try {
+    const payload = { name, scope, session_id: sessionId, role: sheet.occupation || '', status: '', location: '', summary: '', notes: '', sheet };
     if (npcId) await api.updateNpc(npcId, payload);
     else await api.createNpc(payload);
     btn.closest('.modal-backdrop').remove();
     if (State.currentSession) await renderSessionNpcs(State.currentSession);
     else await loadNpcsTab();
   } catch (e) {
+    if (status) { status.textContent = `✕ ${e.message}`; status.className = 'save-status error'; }
     showAlert(e.message, 'danger', 'modal-alert');
     btn.disabled = false;
   }
 }
-window.saveNpc = saveNpc;
+window.saveNpcSheetForm = saveNpcSheetForm;
 
 async function deleteNpcRecord(npcId) {
   if (!confirm('Delete this NPC?')) return;
@@ -1929,63 +1855,6 @@ async function deleteNpcRecord(npcId) {
   }
 }
 window.deleteNpcRecord = deleteNpcRecord;
-
-// Full character sheet for an NPC — same SheetForm + PDF mechanism as players.
-function openNpcSheet(npcId) {
-  const npc = State.npcs.find((entry) => entry.id === npcId);
-  if (!npc) return;
-  const bd = modal(`
-    <h3>${esc(npc.name)} — Character Sheet</h3>
-    <div id="modal-alert"></div>
-    <div id="npc-sheet-area"><p style="color:var(--text2)">Loading…</p></div>
-    <div class="sheet-actions">
-      <button class="btn btn-primary" onclick="saveNpcSheet(${npc.id}, this)">Save sheet</button>
-      <button class="btn" onclick="exportPdf()">Export PDF</button>
-      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Close</button>
-      <span class="save-status" id="npc-sheet-status"></span>
-    </div>`, (root) => {
-    const modalEl = root.querySelector('.modal');
-    if (modalEl) {
-      modalEl.style.maxWidth = '1100px';
-      modalEl.style.maxHeight = '92vh';
-      modalEl.style.overflowY = 'auto';
-    }
-    const area = root.querySelector('#npc-sheet-area');
-    area.innerHTML = '';
-    SheetForm.render(area, npc.sheet || {}, false);
-  });
-  return bd;
-}
-window.openNpcSheet = openNpcSheet;
-
-async function saveNpcSheet(npcId, btn) {
-  const npc = State.npcs.find((entry) => entry.id === npcId);
-  if (!npc) return;
-  const status = el('npc-sheet-status');
-  if (status) { status.textContent = 'Saving…'; status.className = 'save-status'; }
-  btn.disabled = true;
-  try {
-    await api.updateNpc(npcId, {
-      name: npc.name,
-      scope: npc.scope,
-      session_id: npc.session_id,
-      role: npc.role,
-      status: npc.status,
-      location: npc.location,
-      summary: npc.summary,
-      notes: npc.notes,
-      sheet: SheetForm.collect()
-    });
-    if (State.currentSession) await renderSessionNpcs(State.currentSession);
-    else await loadNpcsTab();
-    if (status) { status.textContent = '✓ Saved'; status.className = 'save-status saved'; }
-  } catch (e) {
-    if (status) { status.textContent = `✕ ${e.message}`; status.className = 'save-status error'; }
-  } finally {
-    btn.disabled = false;
-  }
-}
-window.saveNpcSheet = saveNpcSheet;
 
 // ── Rules tab ────────────────────────────────────────────────────────────────
 async function loadRulesTab() {
