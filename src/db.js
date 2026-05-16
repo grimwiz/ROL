@@ -84,6 +84,40 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_npc_sessions_session ON npc_sessions(session_id);
 
+  -- Per-case settings (extensible). advantage_mode governs how the GM-assigned
+  -- roll handles advantage/disadvantage.
+  CREATE TABLE IF NOT EXISTS session_settings (
+    session_id INTEGER PRIMARY KEY REFERENCES sessions(id) ON DELETE CASCADE,
+    advantage_mode TEXT NOT NULL DEFAULT 'rol' CHECK(advantage_mode IN ('simple','rol')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+
+  -- GM-assigned rolls a player resolves in-app. luck_spent / restored_at are
+  -- inert in P1 (the Luck ledger is P2) but present so P2 needs no migration.
+  CREATE TABLE IF NOT EXISTS session_rolls (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    character_name TEXT,
+    skill_label TEXT NOT NULL,
+    skill_value INTEGER,
+    difficulty TEXT NOT NULL DEFAULT 'regular' CHECK(difficulty IN ('regular','hard','extreme')),
+    modifier TEXT NOT NULL DEFAULT 'none' CHECK(modifier IN ('none','advantage','disadvantage')),
+    comment TEXT,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','resolved','cancelled')),
+    rolls TEXT,
+    result INTEGER,
+    outcome TEXT,
+    passed INTEGER,
+    luck_spent INTEGER NOT NULL DEFAULT 0,
+    restored_at TEXT,
+    created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TEXT DEFAULT (datetime('now')),
+    resolved_at TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_session_rolls_session ON session_rolls(session_id);
+  CREATE INDEX IF NOT EXISTS idx_session_rolls_user ON session_rolls(session_id, user_id);
+
   DROP TABLE IF EXISTS domestic_sheets;
 `);
 

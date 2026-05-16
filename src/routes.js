@@ -20,6 +20,7 @@ const {
   streamGmChat,
   writeGmChatExport
 } = require('./scenarioInfo');
+const sessionRolls = require('./sessionRolls');
 const { buildPdf } = require('../scripts/export-character-sheet');
 
 const router = express.Router();
@@ -968,6 +969,53 @@ router.post('/sessions/:id/chat/export', requireGM, (req, res) => {
   } catch (e) {
     res.status(e.statusCode || 500).json({ error: e.message || 'Export failed' });
   }
+});
+
+// ── Per-case settings + assigned rolls ───────────────────────────────────────
+router.get('/sessions/:id/settings', requireGM, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  res.json(sessionRolls.getSettings(db, session.id));
+});
+
+router.put('/sessions/:id/settings', requireGM, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  res.json(sessionRolls.setSettings(db, session.id, req.body && req.body.advantage_mode));
+});
+
+router.get('/sessions/:id/rolls', requireAuth, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const opts = req.user.role === 'gm' ? {} : { userId: req.user.id };
+  res.json(sessionRolls.listRolls(db, session.id, opts));
+});
+
+router.post('/sessions/:id/rolls', requireGM, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const out = sessionRolls.createRoll(db, session.id, req.user.id, req.body);
+  if (out.error) return res.status(400).json({ error: out.error });
+  sessionRolls.writeRollMirrors(db, session.id);
+  res.status(201).json(out.roll);
+});
+
+router.post('/sessions/:id/rolls/:rollId/resolve', requireAuth, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const out = sessionRolls.resolveRoll(db, session.id, req.params.rollId, req.user);
+  if (out.error) return res.status(out.statusCode || 400).json({ error: out.error });
+  sessionRolls.writeRollMirrors(db, session.id);
+  res.json(out.roll);
+});
+
+router.post('/sessions/:id/rolls/:rollId/cancel', requireGM, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const out = sessionRolls.cancelRoll(db, session.id, req.params.rollId);
+  if (out.error) return res.status(out.statusCode || 400).json({ error: out.error });
+  sessionRolls.writeRollMirrors(db, session.id);
+  res.json({ ok: true });
 });
 
 // ── Rules library ────────────────────────────────────────────────────────────

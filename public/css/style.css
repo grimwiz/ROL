@@ -887,3 +887,15 @@ tr:hover td { background: var(--bg3); }
 .gmchat-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
 
 .gmchat-error { margin-top: 0.5rem; color: var(--danger); font-size: 0.85rem; }
+
+/* ── Assigned rolls ── */
+.roll-form { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.roll-form select, .roll-form input { margin: 0; }
+.roll-form input[type="text"] { min-width: 180px; flex: 1 1 180px; }
+.roll-form input[type="number"] { width: 140px; }
+.roll-grid { display: flex; flex-direction: column; gap: 0.6rem; margin: 0.4rem 0 0.6rem; }
+.roll-card { padding: 0.7rem 0.9rem; }
+.roll-badge { display: inline-block; font-size: 0.82rem; font-weight: 600; padding: 0.1rem 0.5rem; border-radius: 999px; border: 1px solid var(--border); color: var(--text2); }
+.roll-badge.roll-pending { color: var(--warning); border-color: var(--warning); }
+.roll-badge.roll-pass { color: #5fd49a; border-color: #2f6f4f; background: rgba(39,174,96,0.12); }
+.roll-badge.roll-fail { color: #e88; border-color: var(--danger); background: rgba(192,57,43,0.12); }

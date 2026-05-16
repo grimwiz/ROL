@@ -145,6 +145,9 @@ Each case file detail view splits scenario knowledge into **Case Info**, **Playe
 - **NPC/Places/Things** — player-visible Places, NPCs, and notable Things (objects/artefacts/evidence).
 - **GM Info** — GM-only `gm-analysis.json` categories.
 - **Edit Files** — GM editing of the session source markdown.
+- **Rolls** — the GM assigns a roll to a player (skill/label, optional target %, difficulty Regular/Hard/Extreme, modifier none/advantage/disadvantage, optional comment). The player resolves it in-app: the server rolls, applies the per-case advantage handling, and reports the success level and whether it meets the assigned difficulty. Target % auto-fills from the player's sheet when the label matches a skill/characteristic. Rolls are mirrored to a GM-only `GM/rolls.md` ledger (incl. comments) and resolved outcomes to a shared `rolls.md` (player + LLM visible). *(Phase 1; the Luck ledger is Phase 2.)*
+
+Advantage/disadvantage handling is a per-case setting under **Admin → Case Settings**: *RoL bonus/penalty die* (roll the tens die twice, keep the better/worse tens) or *Simple* (roll two d100s, take best/worst).
 - **GM Chat** — GM-only streaming brainstorming chat grounded in this case's full GM material (sources + current player/GM artifacts). Never shown to players; conversation is ephemeral (in-memory, cleared on reload). Reuses the streamed Ollama path with a Stop button (client `AbortController` → server aborts the Ollama call on disconnect). `Ctrl/Cmd+Enter` sends. The large case-context system prompt is frozen for the life of a conversation so the prompt prefix is byte-stable — Ollama reuses its KV cache and only the first turn pays the full context cost; later turns are fast. **Clear** starts a new conversation and rebuilds the context (picking up edited files / regenerated artifacts). Note: a section regeneration or other large model call between turns can evict Ollama's cache, making the next chat turn slow once while it reprocesses the context.
 
 It reads static generated artifacts from that session's folder:
@@ -331,4 +334,4 @@ If more decorations turn up later, adding them is manual — just drop the filen
 
 ## Data
 
-SQLite database stored at `DB_PATH`. Back it up by copying the `.db` file. The schema covers users, sessions, the session ↔ player join table, character sheets (one JSON blob per (session, user) pair), NPCs (including an optional full character-sheet JSON in the `sheet` column), the NPC↔case allocation join table (`npc_sessions`), and per-user *Domestic* progress.
+SQLite database stored at `DB_PATH`. Back it up by copying the `.db` file. The schema covers users, sessions, the session ↔ player join table, character sheets (one JSON blob per (session, user) pair), NPCs (including an optional full character-sheet JSON in the `sheet` column), the NPC↔case allocation join table (`npc_sessions`), per-case settings (`session_settings`), GM-assigned rolls (`session_rolls`), and per-user *Domestic* progress.
