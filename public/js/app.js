@@ -821,7 +821,8 @@ function gmChatLogHtml(sessionId) {
   }
   return st.messages.map((m) => {
     const who = m.role === 'user' ? 'You' : 'Assistant';
-    const body = esc(m.content || '') + (m.streaming ? '<span class="gmchat-caret">▍</span>' : '');
+    let body = esc(m.content || '') + (m.streaming ? '<span class="gmchat-caret">▍</span>' : '');
+    if (m.error) body += `<div class="gmchat-error">⚠ ${esc(m.error)}</div>`;
     return `<div class="gmchat-msg gmchat-${m.role}"><div class="gmchat-who">${who}</div><div class="gmchat-body">${body || '<em style="color:var(--text2)">…</em>'}</div></div>`;
   }).join('');
 }
@@ -902,6 +903,7 @@ async function sendGmChat(sessionId) {
     if (!res.ok) {
       let msg = `HTTP ${res.status}`;
       try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (_) {}
+      if (res.status === 404) msg = 'Chat endpoint not found (HTTP 404) — the server is running older code; restart it to pick up GM Chat.';
       throw new Error(msg);
     }
     const reader = res.body.getReader();
@@ -913,7 +915,7 @@ async function sendGmChat(sessionId) {
       let obj;
       try { obj = JSON.parse(t); } catch { return; }
       if (obj.delta) { reply.content += obj.delta; renderGmChatLog(sessionId); }
-      else if (obj.error) { showAlert(obj.error, 'danger', 'gmchat-alert'); }
+      else if (obj.error) { reply.error = obj.error; }
     };
     for (;;) {
       const { done, value } = await reader.read();
@@ -927,10 +929,13 @@ async function sendGmChat(sessionId) {
     }
     handle(buffer);
   } catch (e) {
-    if (e.name !== 'AbortError') showAlert(e.message || 'Chat failed', 'danger', 'gmchat-alert');
+    if (e.name === 'AbortError') reply.error = reply.content ? null : 'Stopped.';
+    else reply.error = e.message || 'Chat failed';
   } finally {
     reply.streaming = false;
-    if (!reply.content) st.messages = st.messages.filter((m) => m !== reply);
+    // Keep a failed turn visible (persistent, in-context) instead of relying on
+    // the auto-dismissing banner; only drop a truly empty, error-free reply.
+    if (!reply.content && !reply.error) st.messages = st.messages.filter((m) => m !== reply);
     st.streaming = false;
     st.controller = null;
     setGmChatStreaming(false);

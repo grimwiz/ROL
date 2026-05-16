@@ -937,7 +937,10 @@ router.post('/sessions/:id/chat', requireGM, async (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
   const controller = new AbortController();
-  req.on('close', () => { if (!res.writableEnded) controller.abort(new Error('client disconnected')); });
+  // Detect a real client disconnect via the RESPONSE close (guarded by
+  // writableEnded). req 'close' fires as soon as the request body is read,
+  // which would abort the generation immediately.
+  res.on('close', () => { if (!res.writableEnded) controller.abort(new Error('client disconnected')); });
   res.setHeader('Content-Type', 'application/x-ndjson');
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('X-Accel-Buffering', 'no');

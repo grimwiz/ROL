@@ -876,3 +876,5 @@ tr:hover td { background: var(--bg3); }
 .gmchat-compose { margin-top: 0.75rem; }
 .gmchat-compose textarea { width: 100%; resize: vertical; }
 .gmchat-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+
+.gmchat-error { margin-top: 0.5rem; color: var(--danger); font-size: 0.85rem; }
