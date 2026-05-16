@@ -19,6 +19,8 @@ const State = {
   domesticSheetLoaded: false,
   domesticSaveTimer: null,
   domesticSaveInflight: null,
+  llmBusy: false,
+  llmPollTimer: null,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -360,6 +362,9 @@ async function renderMain() {
         ${isGM ? `<button class="nav-tab" data-tab="admin" onclick="switchTab('admin')">Admin</button>` : ''}
       </div>
       <div class="nav-right">
+        <span id="nav-llm-status" class="llm-status" hidden title="The language model is generating content">
+          <span class="llm-dot"></span><span class="llm-text">Generating…</span>
+        </span>
         <div class="dice-roller" title="Quick dice roller">
           <select id="nav-dice-select" class="dice-select" aria-label="Dice preset">
             ${DICE_PRESETS.map((preset) => `<option value="${preset.value}"${preset.value === '1d100' ? ' selected' : ''}>${preset.label}</option>`).join('')}
@@ -379,7 +384,46 @@ async function renderMain() {
     ${isGM ? `<div id="tab-admin" class="main" style="display:none"></div>` : ''}`;
 
   showPage('main-page');
+  startLlmStatusPolling();
   await restoreUiFromUrl(true);
+}
+
+// ── LLM busyness indicator ────────────────────────────────────────────────────
+// The single Ollama path tracks in-process generation activity; we poll it so a
+// GM gets unmistakable feedback (status by the dice roller + regenerate buttons
+// disabled) instead of clicking Bulk Regenerate again and again.
+function applyLlmBusyUI(status) {
+  const busy = !!(status && status.busy);
+  State.llmBusy = busy;
+  const box = el('nav-llm-status');
+  if (box) {
+    box.hidden = !busy;
+    const txt = box.querySelector('.llm-text');
+    if (txt) {
+      const where = status && status.last_section ? ` · ${status.last_section}` : '';
+      txt.textContent = `Generating${where}`;
+    }
+  }
+  document.querySelectorAll('.js-regen').forEach((b) => {
+    if (busy) {
+      if (!b.disabled) { b.disabled = true; b.dataset.llmDisabled = '1'; }
+    } else if (b.dataset.llmDisabled) {
+      b.disabled = false;
+      delete b.dataset.llmDisabled;
+    }
+  });
+}
+
+async function pollLlmStatusOnce() {
+  try {
+    applyLlmBusyUI(await api.getLlmStatus());
+  } catch { /* transient — keep last known state */ }
+}
+
+function startLlmStatusPolling() {
+  if (State.llmPollTimer) return;
+  pollLlmStatusOnce();
+  State.llmPollTimer = setInterval(pollLlmStatusOnce, 3000);
 }
 
 async function switchTab(tab, options = {}) {
@@ -1369,10 +1413,12 @@ async function renderSessionOverview(sessionId) {
 }
 
 async function renderGMSessionView(sessionId, preferredUserId = null) {
-  const [players, sheets] = await Promise.all([
+  const [players, sheets, settings] = await Promise.all([
     api.getSessionPlayers(sessionId),
-    api.getSheets(sessionId)
+    api.getSheets(sessionId),
+    api.getSessionSettings(sessionId).catch(() => ({ ruleset: 'rol' }))
   ]);
+  const sessionRuleset = (settings && settings.ruleset) || 'rol';
 
   const content = el('session-content');
   if (players.length === 0) {
@@ -1419,6 +1465,7 @@ async function renderGMSessionView(sessionId, preferredUserId = null) {
     area.innerHTML = '<p style="color:var(--text2)">Loading sheet…</p>';
     const sheet = sheetMap[userId];
     area.innerHTML = '';
+    SheetForm.setRuleset((sheet && sheet.ruleset) || sessionRuleset);
     SheetForm.render(area, sheet ? sheet.data : {}, false);
     area.insertAdjacentHTML('beforeend', `
       <div class="sheet-actions">
@@ -1447,6 +1494,7 @@ async function renderPlayerSessionView(sessionId) {
       <span class="save-status" id="save-status"></span>
     </div>`;
 
+  SheetForm.setRuleset((sheet && sheet.ruleset) || 'rol');
   SheetForm.render(el('sheet-form-area'), hasSheet ? sheet.data : {}, false);
   try { attachSkillRollButtons(el('sheet-form-area'), await buildSkillRollCtx(sessionId, State.user.id, false)); } catch (e) { /* non-fatal */ }
 }
@@ -1646,7 +1694,7 @@ function renderScenarioSectionActions(sectionId) {
   if (!sectionId || State.user.role !== 'gm') return '';
   return `
     <div class="scenario-section-actions">
-      <button class="btn btn-sm" onclick="regenerateScenarioSection('${esc(sectionId)}', this)">Regenerate</button>
+      <button class="btn btn-sm js-regen" onclick="regenerateScenarioSection('${esc(sectionId)}', this)">Regenerate</button>
       <button class="btn btn-sm" onclick="revertScenarioSection('${esc(sectionId)}', this)">Revert</button>
     </div>`;
 }
@@ -1721,7 +1769,7 @@ function renderScenarioSection(title, entries, emptyText, sectionId = '') {
 // page shows; an empty string means "all sections" (the bulk path).
 function scenarioPageButton(sectionsCsv, label) {
   if (State.user.role !== 'gm') return '';
-  return `<button class="btn btn-primary" onclick="regenerateScenarioPage(this, '${esc(sectionsCsv || '')}', '${esc(label)}')">${esc(label)}</button>`;
+  return `<button class="btn btn-primary js-regen" onclick="regenerateScenarioPage(this, '${esc(sectionsCsv || '')}', '${esc(label)}')">${esc(label)}</button>`;
 }
 
 // ── Lightweight, safe Markdown → HTML ────────────────────────────────────────
@@ -2344,9 +2392,14 @@ async function reloadCurrentSessionPanel() {
 
 async function regenerateScenarioSection(sectionId, btn) {
   if (!State.currentSession) return;
+  if (State.llmBusy) {
+    showAlert('A generation is already running — wait for it to finish.', 'danger', 'scenario-alert');
+    return;
+  }
   const original = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Regenerating…';
+  pollLlmStatusOnce();
   try {
     await api.regenerateScenarioSection(State.currentSession, sectionId);
     showAlert('Section regenerated', 'success', 'scenario-alert');
@@ -2356,6 +2409,7 @@ async function regenerateScenarioSection(sectionId, btn) {
   } finally {
     btn.disabled = false;
     btn.textContent = original;
+    pollLlmStatusOnce();
   }
 }
 window.regenerateScenarioSection = regenerateScenarioSection;
@@ -2420,11 +2474,16 @@ window.saveSessionScenarioSources = saveSessionScenarioSources;
 // the run finishes.
 async function regenerateScenarioPage(btn, sectionsCsv, label) {
   if (!State.currentSession) return;
+  if (State.llmBusy) {
+    showAlert('A generation is already running — wait for it to finish.', 'danger', 'scenario-alert');
+    return;
+  }
   const sections = String(sectionsCsv || '').split(',').map((s) => s.trim()).filter(Boolean);
   const body = sections.length ? { sections } : {};
   const original = btn.textContent;
   btn.disabled = true;
   btn.textContent = `${label || 'Regenerating'}…`;
+  pollLlmStatusOnce();
   try {
     const result = await api.regenerateScenarioSections(State.currentSession, body);
     const ok = scenarioArray(result.regenerated).length;
@@ -2441,6 +2500,7 @@ async function regenerateScenarioPage(btn, sectionsCsv, label) {
   } finally {
     btn.disabled = false;
     btn.textContent = original;
+    pollLlmStatusOnce();
   }
 }
 window.regenerateScenarioPage = regenerateScenarioPage;
@@ -2562,6 +2622,7 @@ function openNpcSheetView(npcId) {
     if (modalEl) { modalEl.style.maxWidth = '1100px'; modalEl.style.maxHeight = '92vh'; modalEl.style.overflowY = 'auto'; }
     const area = root.querySelector('#npc-sheet-area');
     area.innerHTML = '';
+    SheetForm.setRuleset('rol');
     SheetForm.render(area, npc.sheet || {}, true);
   });
 }
@@ -2629,6 +2690,7 @@ function openNpcSheet(npcId) {
     if (modalEl) { modalEl.style.maxWidth = '1100px'; modalEl.style.maxHeight = '92vh'; modalEl.style.overflowY = 'auto'; }
     const area = root.querySelector('#npc-sheet-area');
     area.innerHTML = '';
+    SheetForm.setRuleset('rol');
     SheetForm.render(area, (npc && npc.sheet) || {}, false);
   });
 }
@@ -2780,8 +2842,11 @@ async function renderAdminCases() {
   let sessions;
   try {
     sessions = await api.getSessions();
-    const settings = await Promise.all(sessions.map((s) => api.getSessionSettings(s.id).catch(() => ({ advantage_mode: 'rol' }))));
-    sessions.forEach((s, i) => { s._adv = (settings[i] && settings[i].advantage_mode) || 'rol'; });
+    const settings = await Promise.all(sessions.map((s) => api.getSessionSettings(s.id).catch(() => ({ advantage_mode: 'rol', ruleset: 'rol' }))));
+    sessions.forEach((s, i) => {
+      s._adv = (settings[i] && settings[i].advantage_mode) || 'rol';
+      s._ruleset = (settings[i] && settings[i].ruleset) || 'rol';
+    });
   } catch (e) {
     host.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
     return;
@@ -2790,12 +2855,16 @@ async function renderAdminCases() {
     <div class="page-header"><h2>Case Settings</h2></div>
     <div id="cases-alert"></div>
     ${sessions.length ? `<div class="card"><div class="table-wrap"><table>
-      <thead><tr><th>Case</th><th>Advantage / disadvantage handling</th></tr></thead>
+      <thead><tr><th>Case</th><th>Advantage / disadvantage handling</th><th>Ruleset</th></tr></thead>
       <tbody>${sessions.map((s) => `<tr>
         <td><strong>${esc(s.name)}</strong></td>
         <td><select onchange="saveCaseAdvantage(${s.id}, this.value, this)">
           <option value="rol"${s._adv !== 'simple' ? ' selected' : ''}>RoL bonus/penalty die (roll the tens die twice)</option>
           <option value="simple"${s._adv === 'simple' ? ' selected' : ''}>Simple (roll two d100s, take best/worst)</option>
+        </select></td>
+        <td><select onchange="saveCaseRuleset(${s.id}, this.value, this)">
+          <option value="rol"${s._ruleset !== 'coc' ? ' selected' : ''}>Rivers of London (no SIZ; no HP/Build)</option>
+          <option value="coc"${s._ruleset === 'coc' ? ' selected' : ''}>CoC-style (SIZ, plus SIZ-derived HP &amp; Build)</option>
         </select></td>
       </tr>`).join('')}</tbody>
     </table></div></div>` : '<div class="empty"><p>No GM case files yet.</p></div>'}`;
@@ -2804,7 +2873,7 @@ async function renderAdminCases() {
 async function saveCaseAdvantage(sessionId, mode, sel) {
   sel.disabled = true;
   try {
-    await api.setSessionSettings(sessionId, mode);
+    await api.setSessionSettings(sessionId, { advantage_mode: mode });
     showAlert('Saved.', 'success', 'cases-alert');
   } catch (e) {
     showAlert(e.message, 'danger', 'cases-alert');
@@ -2813,6 +2882,19 @@ async function saveCaseAdvantage(sessionId, mode, sel) {
   }
 }
 window.saveCaseAdvantage = saveCaseAdvantage;
+
+async function saveCaseRuleset(sessionId, ruleset, sel) {
+  sel.disabled = true;
+  try {
+    await api.setSessionSettings(sessionId, { ruleset });
+    showAlert('Saved. Re-open a character sheet for this case to see the change.', 'success', 'cases-alert');
+  } catch (e) {
+    showAlert(e.message, 'danger', 'cases-alert');
+  } finally {
+    sel.disabled = false;
+  }
+}
+window.saveCaseRuleset = saveCaseRuleset;
 
 // ── Rules tab ────────────────────────────────────────────────────────────────
 async function loadRulesTab() {
@@ -2942,6 +3024,7 @@ async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
     </div>`;
 
   const sheetHost = el('domestic-sheet');
+  SheetForm.setRuleset('rol');
   SheetForm.render(sheetHost, State.domesticSheet || {}, false);
   attachDomesticSheetPersistence(sheetHost);
 }

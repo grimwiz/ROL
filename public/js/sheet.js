@@ -29,8 +29,17 @@ const SheetForm = (() => {
     ],
     carry: '',
     magic_spells: [],
+    signare: { sound: '', smell: '', sensation: '', notes: '' },
+    languages: [{ name: '', value: '', own: false }],
     custom_fields: []
   };
+
+  // Per-case ruleset. 'rol' (default) follows Rivers of London: no SIZ
+  // characteristic and no CoC-style SIZ-derived HP/Build. 'coc' restores
+  // SIZ and those derivations for groups running CoC-style play.
+  let _ruleset = 'rol';
+  function setRuleset(r) { _ruleset = r === 'coc' ? 'coc' : 'rol'; }
+  function sizEnabled() { return _ruleset === 'coc'; }
 
   const STAT_OPTIONS = [10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90];
   const SKILL_PERCENT_OPTIONS = [20,25,30,35,40,45,50,55,60,65,70,75,80];
@@ -117,10 +126,11 @@ const SheetForm = (() => {
     const siz = getStatValue('siz');
     const pow = getStatValue('pow');
     const str = getStatValue('str');
-    const hp = siz && con ? Math.round((con + siz) / 10) : '';
+    const rol = !sizEnabled();
+    const hp = (!rol && siz && con) ? Math.round((con + siz) / 10) : '';
     const san = pow ? pow : '';
     const mp  = pow ? Math.round(pow / 5) : '';
-    const buildRaw = str && siz ? str + siz : null;
+    const buildRaw = (!rol && str && siz) ? str + siz : null;
     let build = '';
     if (buildRaw !== null) {
       if (buildRaw <= 64)       build = '-2';
@@ -282,6 +292,12 @@ const SheetForm = (() => {
     const _extra = cleanExtraSkills(base.mandatory_skills, base.additional_skills);
     base.mandatory_skills = _extra.mandatory;
     base.additional_skills = _extra.additional;
+    if (!base.signare || typeof base.signare !== 'object' || Array.isArray(base.signare)) base.signare = {};
+    base.signare = Object.assign({ sound: '', smell: '', sensation: '', notes: '' }, base.signare);
+    base.languages = (Array.isArray(base.languages) ? base.languages : [])
+      .filter((l) => l && typeof l === 'object')
+      .map((l) => ({ name: String(l.name || '').trim(), value: String(l.value == null ? '' : l.value).trim(), own: !!l.own }));
+    if (!base.languages.length) base.languages = [{ name: '', value: '', own: false }];
     base.damage = normaliseDamage(base.damage);
     base.weapons = normaliseWeapons(base.weapons);
     base.advantages = parseAdvantages(base.advantages).join(', ');
@@ -419,6 +435,17 @@ const SheetForm = (() => {
     </div>`;
   }
 
+  function renderLanguageRow(lg, i, readonly) {
+    const rdAttr = readonly ? ' readonly' : '';
+    const dis = readonly ? ' disabled' : '';
+    return `<div class="language-row">
+      <input type="text" class="lang-name" value="${esc(lg.name || '')}" placeholder="e.g. Latin"${rdAttr}>
+      <input type="number" class="lang-val" value="${esc(lg.value || '')}" placeholder="%" min="0" max="100"${rdAttr}>
+      <label class="lang-own" title="Mother tongue — a free starting language"><input type="checkbox" class="lang-own-cb"${lg.own ? ' checked' : ''}${dis}> Own</label>
+      ${!readonly ? `<button type="button" class="btn btn-inline-remove" title="Remove language" onclick="SheetForm.removeLanguage(this)">✕</button>` : '<span></span>'}
+    </div>`;
+  }
+
   function hasMagicData(d) {
     return !!(
       (d.magic_tradition && String(d.magic_tradition).trim()) ||
@@ -509,24 +536,25 @@ const SheetForm = (() => {
     <div class="sheet-section-body">
       <label style="display:block;margin-bottom:0.5rem;font-size:0.78rem;font-weight:700;color:var(--text2);">BASE STATS</label>
       <div class="characteristics-grid characteristics-grid-6">
-        ${['str','con','dex','int','pow','siz'].map(s => `
+        ${(sizEnabled() ? ['str','con','dex','int','pow','siz'] : ['str','con','dex','int','pow']).map(s => `
           <div class="char-field form-group">
             <label>${s.toUpperCase()}</label>
             ${renderStatSelect(s, d[s], readonly)}
           </div>`).join('')}
       </div>
+      ${sizEnabled() ? '' : `<input type="hidden" id="sf_siz" value="${esc(d.siz || '')}">`}
       <div id="stat-allocation-note" class="card-sub" style="margin-top:0.5rem"></div>
 
       <label style="display:block;margin:1.25rem 0 0.5rem;font-size:0.78rem;font-weight:700;color:var(--text2);">DERIVED STATS</label>
       <div class="derived-grid">
-        ${renderDerivedField('hp',    'HP',      derived.hp    || '', autoD.hp,    readonly)}
+        ${sizEnabled() ? renderDerivedField('hp', 'HP', derived.hp || '', autoD.hp, readonly) : ''}
         ${renderDerivedField('san',   'SAN',     derived.san   || '', autoD.san,   readonly)}
         ${renderDerivedField('mp',    'MP',      derived.mp    || '', autoD.mp,    readonly)}
-        ${renderDerivedField('build', 'Build',   derived.build || '', autoD.build, readonly)}
+        ${sizEnabled() ? renderDerivedField('build', 'Build', derived.build || '', autoD.build, readonly) : ''}
         ${fg('Move', `<input type="text" id="sf_derived_move" value="${esc(derived.move || d.mov || '')}" placeholder="e.g. 8"${rdAttr}>`)}
         ${renderDerivedField('luck', 'Luck', d.luck || '', (d.luck && String(d.luck).trim()) ? d.luck : rollStartingLuck(), readonly)}
       </div>
-      ${!readonly ? `<p class="card-sub" style="margin-top:0.35rem">HP, SAN, MP and Build are auto-calculated from base stats; Luck "Auto" rolls 2D10+50. Click "Manual" to override.</p>` : ''}
+      ${!readonly ? `<p class="card-sub" style="margin-top:0.35rem">${sizEnabled() ? 'HP, SAN, MP and Build are auto-calculated from base stats' : 'SAN and MP are auto-calculated from POW'}; Luck "Auto" rolls 2D10+50. Click "Manual" to override.</p>` : ''}
     </div>
   </div>
 
@@ -552,7 +580,7 @@ const SheetForm = (() => {
 
       <label style="display:block;margin:1rem 0 0.75rem;font-size:0.78rem;font-weight:700;color:var(--text2);">EXPERT SKILLS</label>
       <div class="skills-grid" id="mandatory-skills">
-        ${d.mandatory_skills.map((sk, i) => `
+        ${d.mandatory_skills.concat(d.additional_skills || []).map((sk, i) => `
           <div class="skill-row">
             <div class="skill-name-wrap">
               <input type="text" id="sf_msk_name_${i}" class="msk-name" value="${esc(sk.name)}" placeholder="Skill name"${rdAttr}>
@@ -563,18 +591,15 @@ const SheetForm = (() => {
       </div>
       ${!readonly ? `<button type="button" class="btn btn-sm" style="margin-top:0.5rem" onclick="SheetForm.addMandatory()">+ Add expert skill</button>` : ''}
 
-      <label style="display:block;margin:1rem 0 0.75rem;font-size:0.78rem;font-weight:700;color:var(--text2);">ADDITIONAL SKILLS</label>
-      <div class="skills-grid" id="additional-skills">
-        ${d.additional_skills.map((sk, i) => `
-          <div class="skill-row">
-            <div class="skill-name-wrap">
-              <input type="text" id="sf_ask_name_${i}" class="ask-name" value="${esc(sk.name)}" placeholder="Skill name"${rdAttr}>
-              ${!readonly ? `<button type="button" class="btn btn-inline-remove" title="Remove skill" onclick="SheetForm.removeAdditional(this)">✕</button>` : ''}
-            </div>
-            <input type="number" id="sf_ask_val_${i}" class="ask-val" value="${esc(sk.value)}" placeholder="%" min="0" max="100"${rdAttr}>
-          </div>`).join('')}
+      <label style="display:block;margin:1.25rem 0 0.4rem;font-size:0.78rem;font-weight:700;color:var(--text2);">LANGUAGES</label>
+      <p class="card-sub" style="margin:0 0 0.6rem">Your mother tongue is free at INT or 60% (whichever is higher) — tick "Own". RoL records languages in the Expert Skills space, so these print there on the sheet.</p>
+      <div class="languages-header">
+        <span>Language</span><span>%</span><span>Mother tongue</span><span></span>
       </div>
-      ${!readonly ? `<button type="button" class="btn btn-sm" style="margin-top:0.5rem" onclick="SheetForm.addAdditional()">+ Add skill</button>` : ''}
+      <div id="languages">
+        ${d.languages.map((lg, i) => renderLanguageRow(lg, i, readonly)).join('')}
+      </div>
+      ${!readonly ? `<button type="button" class="btn btn-sm" style="margin-top:0.5rem" onclick="SheetForm.addLanguage()">+ Add language</button>` : ''}
     </div>
   </div>
 
@@ -594,6 +619,13 @@ const SheetForm = (() => {
       </div>
       ${!readonly ? `<button type="button" class="btn btn-sm" style="margin-top:0.5rem" onclick="SheetForm.addSpell()">+ Add spell / technique</button>` : ''}
       ${fg('Magic Notes', `<textarea id="sf_magic_notes" rows="3" placeholder="General notes on your magical practice, limitations, or discoveries…"${rdAttr}>${esc(d.magic_notes || '')}</textarea>`)}
+
+      <label style="display:block;margin:1rem 0 0.5rem;font-size:0.78rem;font-weight:700;color:var(--text2);">SIGNARE</label>
+      <p class="card-sub" style="margin:-0.25rem 0 0.6rem">Your magical signature — one sound, one smell, and one other sensation (RoL Table 10).</p>
+      ${fg('Sound', `<input type="text" id="sf_signare_sound" value="${esc(d.signare.sound)}" placeholder="e.g. distant church bells"${rdAttr}>`)}
+      ${fg('Smell', `<input type="text" id="sf_signare_smell" value="${esc(d.signare.smell)}" placeholder="e.g. wet earth after rain"${rdAttr}>`)}
+      ${fg('Other Sensation', `<input type="text" id="sf_signare_sensation" value="${esc(d.signare.sensation)}" placeholder="e.g. a prickle at the back of the neck"${rdAttr}>`)}
+      ${fg('Notes', `<textarea id="sf_signare_notes" rows="2" placeholder="Optional — origin, who trained you, how it manifests…"${rdAttr}>${esc(d.signare.notes || '')}</textarea>`)}
     </div>
   </div>
 
@@ -657,10 +689,11 @@ const SheetForm = (() => {
     const siz = parseInt(d.siz, 10) || 0;
     const pow = parseInt(d.pow, 10) || 0;
     const str = parseInt(d.str, 10) || 0;
-    const hp  = siz && con ? Math.round((con + siz) / 10) : '';
+    const rol = !sizEnabled();
+    const hp  = (!rol && siz && con) ? Math.round((con + siz) / 10) : '';
     const san = pow || '';
     const mp  = pow ? Math.round(pow / 5) : '';
-    const buildRaw = str && siz ? str + siz : null;
+    const buildRaw = (!rol && str && siz) ? str + siz : null;
     let build = '';
     if (buildRaw !== null) {
       if (buildRaw <= 64)       build = '-2';
@@ -836,6 +869,19 @@ const SheetForm = (() => {
     const row = btn && btn.closest('.skill-row');
     if (row) row.remove();
     updateMagicSectionVisibility();
+  }
+
+  function addLanguage() {
+    const wrap = document.getElementById('languages');
+    if (!wrap) return;
+    const div = document.createElement('div');
+    div.innerHTML = renderLanguageRow({ name: '', value: '', own: false }, Date.now(), false);
+    wrap.appendChild(div.firstElementChild);
+  }
+
+  function removeLanguage(btn) {
+    const row = btn && btn.closest('.language-row');
+    if (row) row.remove();
   }
 
   function addAdditional() {
@@ -1336,6 +1382,21 @@ const SheetForm = (() => {
     const luckEl = document.getElementById('sf_derived_luck');
     const luckVal = luckEl ? luckEl.value.trim() : g('luck');
 
+    const signare = {
+      sound: g('signare_sound'),
+      smell: g('signare_smell'),
+      sensation: g('signare_sensation'),
+      notes: g('signare_notes')
+    };
+
+    const languages = [];
+    document.querySelectorAll('#languages .language-row').forEach((row) => {
+      const name = ((row.querySelector('.lang-name') || {}).value || '').trim();
+      const value = ((row.querySelector('.lang-val') || {}).value || '').trim();
+      const own = !!((row.querySelector('.lang-own-cb') || {}).checked);
+      if (name || value) languages.push({ name, value, own });
+    });
+
     const damage = {
       hurt: !!((document.getElementById('sf_damage_hurt') || {}).checked),
       bloodied: !!((document.getElementById('sf_damage_bloodied') || {}).checked),
@@ -1367,15 +1428,17 @@ const SheetForm = (() => {
       combat_skills, common_skills, mandatory_skills: _extra.mandatory, additional_skills: _extra.additional,
       luck: luckVal, damage, weapons, carry: g('carry'),
       magic_tradition: g('magic_tradition'), magic_notes: g('magic_notes'), magic_spells,
+      signare, languages,
       derived,
       custom_fields
     };
   }
 
   return {
-    render, collect,
+    render, collect, setRuleset,
     addMandatory, removeMandatory,
     addAdditional, removeAdditional,
+    addLanguage, removeLanguage,
     addWeapon, removeWeapon,
     addSpell, removeSpell,
     addCustomField, removeCustomField,

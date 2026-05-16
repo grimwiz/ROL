@@ -89,6 +89,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS session_settings (
     session_id INTEGER PRIMARY KEY REFERENCES sessions(id) ON DELETE CASCADE,
     advantage_mode TEXT NOT NULL DEFAULT 'rol' CHECK(advantage_mode IN ('simple','rol')),
+    ruleset TEXT NOT NULL DEFAULT 'rol' CHECK(ruleset IN ('rol','coc')),
     updated_at TEXT DEFAULT (datetime('now'))
   );
 
@@ -157,6 +158,13 @@ if (!npcColumns.some((c) => c.name === 'sheet')) {
 const adjColumns = db.prepare("PRAGMA table_info(session_luck_adjustments)").all();
 if (adjColumns.length && !adjColumns.some((c) => c.name === 'stat')) {
   db.exec("ALTER TABLE session_luck_adjustments ADD COLUMN stat TEXT NOT NULL DEFAULT 'luck'");
+}
+
+// Per-case ruleset. 'rol' (default) hides SIZ and its CoC-style HP/Build
+// derivations; 'coc' keeps them for groups running Call-of-Cthulhu-style play.
+const setColumns = db.prepare("PRAGMA table_info(session_settings)").all();
+if (setColumns.length && !setColumns.some((c) => c.name === 'ruleset')) {
+  db.exec("ALTER TABLE session_settings ADD COLUMN ruleset TEXT NOT NULL DEFAULT 'rol'");
 }
 
 module.exports = db;

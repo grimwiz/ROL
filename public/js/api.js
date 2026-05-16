@@ -55,7 +55,7 @@ const api = (() => {
     revertScenarioSection: (sessionId, sectionId) => req('POST', `/sessions/${sessionId}/scenario-info/sections/${encodeURIComponent(sectionId)}/revert`),
     exportGmChat: (sessionId, messages) => req('POST', `/sessions/${sessionId}/chat/export`, { messages }),
     getSessionSettings: (sessionId) => req('GET', `/sessions/${sessionId}/settings`),
-    setSessionSettings: (sessionId, advantageMode) => req('PUT', `/sessions/${sessionId}/settings`, { advantage_mode: advantageMode }),
+    setSessionSettings: (sessionId, patch) => req('PUT', `/sessions/${sessionId}/settings`, patch || {}),
     getSessionRolls: (sessionId) => req('GET', `/sessions/${sessionId}/rolls`),
     createSessionRoll: (sessionId, data) => req('POST', `/sessions/${sessionId}/rolls`, data),
     createSelfRoll: (sessionId, data) => req('POST', `/sessions/${sessionId}/rolls/self`, data),
@@ -75,5 +75,6 @@ const api = (() => {
     saveDomesticSheet: (data) => req('PUT', '/adventure/domestic/sheet', { data }),
     deleteDomesticSheet: () => req('DELETE', '/adventure/domestic/sheet'),
     rollDice: (formula, preset) => req('POST', '/dice/rolls', { formula, preset }),
+    getLlmStatus: () => req('GET', '/llm/status'),
   };
 })();

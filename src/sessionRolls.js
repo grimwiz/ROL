@@ -85,17 +85,30 @@ function skillValueFromSheet(sheet, label) {
 
 // ── Settings ─────────────────────────────────────────────────────────────────
 function getSettings(db, sessionId) {
-  const row = db.prepare('SELECT advantage_mode FROM session_settings WHERE session_id = ?').get(sessionId);
-  return { advantage_mode: (row && row.advantage_mode) || 'rol' };
+  const row = db.prepare('SELECT advantage_mode, ruleset FROM session_settings WHERE session_id = ?').get(sessionId);
+  return {
+    advantage_mode: (row && row.advantage_mode) || 'rol',
+    ruleset: (row && row.ruleset) || 'rol'
+  };
 }
 
-function setSettings(db, sessionId, advantageMode) {
-  const mode = advantageMode === 'simple' ? 'simple' : 'rol';
+// `patch` may carry advantage_mode and/or ruleset; unspecified keys keep their
+// current value (defaults applied for a brand-new row).
+function setSettings(db, sessionId, patch) {
+  patch = patch || {};
+  const cur = getSettings(db, sessionId);
+  const mode = (patch.advantage_mode !== undefined ? patch.advantage_mode : cur.advantage_mode) === 'simple'
+    ? 'simple' : 'rol';
+  const ruleset = (patch.ruleset !== undefined ? patch.ruleset : cur.ruleset) === 'coc'
+    ? 'coc' : 'rol';
   db.prepare(`
-    INSERT INTO session_settings (session_id, advantage_mode, updated_at)
-    VALUES (?, ?, datetime('now'))
-    ON CONFLICT(session_id) DO UPDATE SET advantage_mode = excluded.advantage_mode, updated_at = datetime('now')
-  `).run(sessionId, mode);
+    INSERT INTO session_settings (session_id, advantage_mode, ruleset, updated_at)
+    VALUES (?, ?, ?, datetime('now'))
+    ON CONFLICT(session_id) DO UPDATE SET
+      advantage_mode = excluded.advantage_mode,
+      ruleset = excluded.ruleset,
+      updated_at = datetime('now')
+  `).run(sessionId, mode, ruleset);
   return getSettings(db, sessionId);
 }
 

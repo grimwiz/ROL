@@ -90,6 +90,13 @@
     spellOrderX:315,  spellOrderMaxW:150,
     spellNotesX:470,  spellNotesMaxW: 95,
 
+    // SIGNARE box — on page index 1 (the back page), left column below
+    // CONTACTS and left of MAGIC SPELLS. Derived from the page-1 image
+    // transform; tweak signareY pitch/offset if printed alignment drifts.
+    signareX:    30,
+    signareMaxW: 250,
+    signareY:    [236, 254, 272],
+
     // Damage track checkboxes (top-down y & xs). These are approximate —
     // the blank has four tick-boxes on the right of the char block.
     damageBoxes: [
@@ -219,6 +226,7 @@
 
     const pages = pdf.getPages();
     const p1 = pages[0];
+    const p2 = pages[1] || p1; // back page (NAME/CONTACTS/SIGNARE/…)
 
     const FS = 10;       // body font size
     const FSS = 9;       // smaller cells
@@ -296,7 +304,10 @@
     }
 
     // ---- Common skills ---------------------------------------------------
-    const commons = Array.isArray(sheet.mandatory_skills) ? sheet.mandatory_skills : [];
+    // The blank sheet pre-prints the 9 common-skill labels in COMMON_SKILL
+    // order, so we fill values from common_skills (the form keeps them in
+    // that canonical order).
+    const commons = Array.isArray(sheet.common_skills) ? sheet.common_skills : [];
     for (let i = 0; i < Math.min(commons.length, 9); i++) {
       const y = COORDS.skillY0 + i * COORDS.skillPitch;
       const s = commons[i] || {};
@@ -310,8 +321,18 @@
 
     // ---- Expert / Combat skills (reuse right column of page 1) ----------
     // Expert skills go into the right half rows below the characteristics.
-    // If we overflow, cascade onto the skills grid on page 2.
-    const experts = Array.isArray(sheet.additional_skills) ? sheet.additional_skills : [];
+    // The form folded the old "additional skills" into the expert list, so
+    // print the combined set (legacy sheets may still carry additional_skills).
+    // RoL records languages in the Expert Skills space (rulebook p52/233),
+    // formatted like the NPC stat blocks: "Latin", "English (own)".
+    const langs = (Array.isArray(sheet.languages) ? sheet.languages : [])
+      .filter(l => l && l.name)
+      .map(l => ({ name: l.name + (l.own ? ' (own)' : ''), value: l.value }));
+    const experts = []
+      .concat(Array.isArray(sheet.mandatory_skills) ? sheet.mandatory_skills : [])
+      .concat(Array.isArray(sheet.additional_skills) ? sheet.additional_skills : [])
+      .concat(langs)
+      .filter(s => s && s.name);
     const combats = Array.isArray(sheet.combat_skills) ? sheet.combat_skills : [];
     const rightCol = experts.slice(0, 9).map(s => ['E', s]).concat(combats.slice(0, 3).map(s => ['C', s]));
     for (let i = 0; i < Math.min(rightCol.length, 9); i++) {
@@ -344,6 +365,18 @@
       drawText(p1, font, s.name  || '', COORDS.spellNameX,  y, FSS, COORDS.spellNameMaxW);
       drawText(p1, font, s.order || '', COORDS.spellOrderX, y, FSS, COORDS.spellOrderMaxW);
       drawText(p1, font, s.notes || '', COORDS.spellNotesX, y, FSS, COORDS.spellNotesMaxW);
+    }
+
+    // ---- Signare (back page) ---------------------------------------------
+    const sig = sheet.signare || {};
+    const sigLines = [
+      sig.sound      ? 'Sound: '  + sig.sound      : '',
+      sig.smell      ? 'Smell: '  + sig.smell      : '',
+      sig.sensation  ? 'Other: '  + sig.sensation  : '',
+      sig.notes      ? sig.notes                   : '',
+    ].filter(Boolean);
+    for (let i = 0; i < Math.min(sigLines.length, COORDS.signareY.length); i++) {
+      drawText(p2, font, sigLines[i], COORDS.signareX, COORDS.signareY[i], FSS, COORDS.signareMaxW);
     }
 
     // ---- Portrait --------------------------------------------------------

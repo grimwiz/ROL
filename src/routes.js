@@ -18,7 +18,8 @@ const {
   resolveSessionAssetPath,
   regenerateNpcSummaries,
   streamGmChat,
-  writeGmChatExport
+  writeGmChatExport,
+  ollamaStatus
 } = require('./scenarioInfo');
 const sessionRolls = require('./sessionRolls');
 const { buildPdf } = require('../scripts/export-character-sheet');
@@ -682,7 +683,8 @@ router.get('/sessions/:id/sheets', requireAuth, (req, res) => {
     JOIN users u ON cs.user_id = u.id
     WHERE cs.session_id = ? ORDER BY u.username
   `).all(sessionId);
-  res.json(sheets.map(s => ({ ...s, data: JSON.parse(s.data) })));
+  const ruleset = sessionRolls.getSettings(db, sessionId).ruleset;
+  res.json(sheets.map(s => ({ ...s, data: JSON.parse(s.data), ruleset })));
 });
 
 router.get('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
@@ -690,9 +692,10 @@ router.get('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
   if (req.user.role !== 'gm' && req.user.id !== parseInt(userId)) {
     return res.status(403).json({ error: 'Access denied' });
   }
+  const ruleset = sessionRolls.getSettings(db, sessionId).ruleset;
   const sheet = db.prepare('SELECT * FROM character_sheets WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
-  if (!sheet) return res.json({ data: {} });
-  res.json({ ...sheet, data: JSON.parse(sheet.data) });
+  if (!sheet) return res.json({ data: {}, ruleset });
+  res.json({ ...sheet, data: JSON.parse(sheet.data), ruleset });
 });
 
 router.put('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
@@ -898,6 +901,12 @@ router.post('/sessions/:id/scenario-info/regenerate', requireGM, async (req, res
   }
 });
 
+// Lightweight LLM busyness probe so the UI can show generation progress and
+// stop GMs from firing duplicate regenerations.
+router.get('/llm/status', requireAuth, (req, res) => {
+  res.json(ollamaStatus());
+});
+
 router.post('/sessions/:id/scenario-info/sections/:sectionId/regenerate', requireGM, async (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
@@ -981,7 +990,7 @@ router.get('/sessions/:id/settings', requireGM, (req, res) => {
 router.put('/sessions/:id/settings', requireGM, (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
-  res.json(sessionRolls.setSettings(db, session.id, req.body && req.body.advantage_mode));
+  res.json(sessionRolls.setSettings(db, session.id, req.body || {}));
 });
 
 router.get('/sessions/:id/rolls', requireAuth, (req, res) => {
