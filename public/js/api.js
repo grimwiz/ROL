@@ -53,6 +53,7 @@ const api = (() => {
     regenerateScenarioSections: (sessionId, body) => req('POST', `/sessions/${sessionId}/scenario-info/regenerate`, body || {}),
     regenerateScenarioSection: (sessionId, sectionId) => req('POST', `/sessions/${sessionId}/scenario-info/sections/${encodeURIComponent(sectionId)}/regenerate`),
     revertScenarioSection: (sessionId, sectionId) => req('POST', `/sessions/${sessionId}/scenario-info/sections/${encodeURIComponent(sectionId)}/revert`),
+    exportGmChat: (sessionId, messages) => req('POST', `/sessions/${sessionId}/chat/export`, { messages }),
     getRules: () => req('GET', '/rules'),
     searchRules: (query) => req('GET', `/rules/search?q=${encodeURIComponent(query)}`),
     getDomesticAdventure: () => req('GET', '/adventure/domestic'),

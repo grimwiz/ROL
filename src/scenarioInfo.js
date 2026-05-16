@@ -1580,6 +1580,45 @@ async function streamGmChat(sessionId, db, clientMessages, opts = {}) {
   });
 }
 
+// Writes the GM chat verbatim as a Markdown transcript into the session's GM/
+// folder. It then appears in Edit Files (GM-editable) and in GM/LLM context.
+function writeGmChatExport(sessionId, db, clientMessages) {
+  const session = getSessionById(db, sessionId);
+  if (!session) {
+    const e = new Error('Session not found');
+    e.statusCode = 404;
+    throw e;
+  }
+  const turns = (Array.isArray(clientMessages) ? clientMessages : [])
+    .map((m) => ({
+      role: m && m.role === 'assistant' ? 'assistant' : (m && m.role === 'user' ? 'user' : null),
+      content: String(m && m.content == null ? '' : m.content).trim()
+    }))
+    .filter((m) => m.role && m.content);
+  if (!turns.length) {
+    const e = new Error('Nothing to export — the chat is empty');
+    e.statusCode = 400;
+    throw e;
+  }
+  const paths = ensureSessionDataFolders(session);
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+  const lines = [
+    `# GM Chat — ${session.name}`,
+    '',
+    `_Exported ${now.toISOString()} from the GM brainstorming chat. GM-only; editable here in Edit Files._`,
+    ''
+  ];
+  for (const t of turns) {
+    lines.push(t.role === 'user' ? '## GM' : '## Assistant', '', t.content, '');
+  }
+  const file = `gm-chat-${stamp}.md`;
+  const fullPath = path.join(paths.gmInput, file);
+  fs.writeFileSync(fullPath, `${lines.join('\n').trim()}\n`, 'utf8');
+  return { path: repoRelative(fullPath), file };
+}
+
 function revertScenarioSection(sessionId, sectionId, db) {
   const session = getSessionById(db, sessionId);
   if (!session) return null;
@@ -1721,5 +1760,6 @@ module.exports = {
   writeSessionNpcSummary,
   regenerateNpcSummaries,
   ollamaStatus,
-  streamGmChat
+  streamGmChat,
+  writeGmChatExport
 };

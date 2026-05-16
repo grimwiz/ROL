@@ -853,15 +853,20 @@ async function renderSessionGmChat(sessionId) {
         <h2>GM Chat</h2>
         <p class="card-sub">Private brainstorming grounded in this case's GM material. Never shown to players; ephemeral (cleared on reload).</p>
       </div>
-      <button class="btn btn-sm" onclick="clearGmChat(${sessionId})">Clear</button>
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-sm" onclick="exportGmChat(${sessionId}, this)">Save to GM notes</button>
+        <button class="btn btn-sm" onclick="clearGmChat(${sessionId})">Clear</button>
+      </div>
     </div>
     <div id="gmchat-alert"></div>
-    <div class="gmchat-log" id="gmchat-log"></div>
-    <div class="gmchat-compose">
-      <textarea id="gmchat-text" rows="3" placeholder="Ask for ideas, NPC motives, the next beat, a twist, contingencies…" onkeydown="gmChatKey(event, ${sessionId})"></textarea>
-      <div class="gmchat-actions">
-        <button class="btn btn-primary" id="gmchat-send" onclick="sendGmChat(${sessionId})">Send</button>
-        <button class="btn" id="gmchat-stop" onclick="stopGmChat(${sessionId})" style="display:none">Stop</button>
+    <div class="gmchat-wrap">
+      <div class="gmchat-log" id="gmchat-log"></div>
+      <div class="gmchat-compose">
+        <textarea id="gmchat-text" rows="3" placeholder="Ask for ideas, NPC motives, the next beat, a twist, contingencies…" onkeydown="gmChatKey(event, ${sessionId})"></textarea>
+        <div class="gmchat-actions">
+          <button class="btn btn-primary" id="gmchat-send" onclick="sendGmChat(${sessionId})">Send</button>
+          <button class="btn" id="gmchat-stop" onclick="stopGmChat(${sessionId})" style="display:none">Stop</button>
+        </div>
       </div>
     </div>`;
   renderGmChatLog(sessionId);
@@ -959,6 +964,25 @@ function clearGmChat(sessionId) {
   }
 }
 window.clearGmChat = clearGmChat;
+
+async function exportGmChat(sessionId, btn) {
+  const st = gmChat(sessionId);
+  if (st.streaming) return showAlert('Wait for the reply to finish before saving.', 'danger', 'gmchat-alert');
+  if (!st.messages.length) return showAlert('Nothing to save yet.', 'danger', 'gmchat-alert');
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  try {
+    const r = await api.exportGmChat(sessionId, st.messages.map(({ role, content }) => ({ role, content })));
+    showAlert(`Saved to ${r.path} — edit it in the Edit Files tab.`, 'success', 'gmchat-alert');
+  } catch (e) {
+    showAlert(e.message || 'Save failed', 'danger', 'gmchat-alert');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+window.exportGmChat = exportGmChat;
 
 async function renderSessionOverview(sessionId) {
   const content = el('session-content');

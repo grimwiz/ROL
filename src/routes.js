@@ -17,7 +17,8 @@ const {
   revertScenarioSection,
   resolveSessionAssetPath,
   regenerateNpcSummaries,
-  streamGmChat
+  streamGmChat,
+  writeGmChatExport
 } = require('./scenarioInfo');
 const { buildPdf } = require('../scripts/export-character-sheet');
 
@@ -955,6 +956,18 @@ router.post('/sessions/:id/chat', requireGM, async (req, res) => {
     res.write(`${JSON.stringify({ error: e.message || 'Chat failed' })}\n`);
   }
   res.end();
+});
+
+// Save the current GM chat verbatim as a Markdown file in the session GM/ area.
+router.post('/sessions/:id/chat/export', requireGM, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  try {
+    const result = writeGmChatExport(session.id, db, req.body && req.body.messages);
+    res.json({ ok: true, ...result });
+  } catch (e) {
+    res.status(e.statusCode || 500).json({ error: e.message || 'Export failed' });
+  }
 });
 
 // ── Rules library ────────────────────────────────────────────────────────────
