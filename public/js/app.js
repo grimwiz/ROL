@@ -1890,25 +1890,145 @@ function matchesCharacter(entry, viewerNames) {
   return ids.some((id) => names.includes(id));
 }
 
-function renderGmAnalysisList(title, entries, emptyText, sectionId = '') {
-  return renderScenarioSection(title, entries, emptyText, sectionId);
+function gmNorm(s) { return String(s == null ? '' : s).trim().toLowerCase(); }
+function gmSlug(s) { return gmNorm(s).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'x'; }
+
+// Compact status badge. `kind` drives the colour family via CSS
+// (.gm-pill-<kind>--<value>); value text is shown verbatim.
+function gmPill(kind, value, prefix = '') {
+  const v = String(value == null ? '' : value).trim();
+  if (!v) return '';
+  return `<span class="gm-pill gm-pill-${esc(kind)} gm-pill-${esc(kind)}--${esc(gmSlug(v))}">${esc(prefix)}${esc(v)}</span>`;
+}
+
+function gmPriorityRank(p) {
+  const m = { high: 0, urgent: 0, medium: 1, med: 1, normal: 1, low: 2 };
+  const r = m[gmNorm(p)];
+  return r === undefined ? 1 : r;
+}
+
+// Join the four per-character GM arrays into one record per character so each
+// player gets a single consolidated brief instead of being scattered across
+// four flat lists. Order follows plans_by_player, then any stragglers.
+function gmCharIndex(analysis) {
+  const order = [];
+  const map = new Map();
+  const get = (rawName) => {
+    const key = gmNorm(rawName);
+    if (!key) return null;
+    if (!map.has(key)) {
+      map.set(key, { name: String(rawName).trim(), plan: null, deliverable: null, fairness: null, quiet: null });
+      order.push(key);
+    }
+    return map.get(key);
+  };
+  scenarioArray(analysis.plans_by_player).forEach((e) => { const c = get(e && (e.character || e.name)); if (c) c.plan = e; });
+  scenarioArray(analysis.next_deliverables).forEach((e) => { const c = get(e && (e.character || e.name)); if (c) c.deliverable = e; });
+  scenarioArray(analysis.fairness_engagement).forEach((e) => { const c = get(e && (e.character || e.name)); if (c) c.fairness = e; });
+  scenarioArray(analysis.quiet_players).forEach((e) => { const c = get(e && (e.character || e.name)); if (c) c.quiet = e; });
+  return order.map((k) => map.get(k));
+}
+
+function gmCharChips(c) {
+  const sp = c.fairness && c.fairness.spotlight;
+  const en = c.fairness && c.fairness.engagement;
+  return `${gmPill('spotlight', sp, 'Spotlight: ')}${gmPill('engagement', en, 'Engagement: ')}${c.quiet ? '<span class="gm-pill gm-pill-quiet">Needs a nudge</span>' : ''}`;
+}
+
+// One consolidated, scannable brief for a single character.
+function gmCharBrief(c, active) {
+  const slug = gmSlug(c.name);
+  const block = (label, html, extra = '') => html
+    ? `<div class="gm-brief-block"><div class="scenario-subtitle">${esc(label)}${extra}</div>${html}</div>`
+    : '';
+  const dl = c.deliverable || {};
+  const dlTiming = dl.timing ? ` <span class="gm-when">${esc(dl.timing)}</span>` : '';
+  return `
+    <div class="gm-brief" id="gmbrief_${slug}" ${active ? '' : 'hidden'}>
+      <div class="card gm-brief-card">
+        <div class="gm-brief-head">
+          <div class="card-title">${esc(c.name)}</div>
+          <div class="state-chips">${gmCharChips(c)}</div>
+        </div>
+        ${block('Next deliverable', renderRichText(dl.content), dlTiming)}
+        ${c.quiet ? block('Quiet-player nudge', renderRichText(c.quiet.content || c.quiet)) : ''}
+        ${block('Plans &amp; hooks', renderRichText(c.plan && (c.plan.content || c.plan)))}
+        ${block('Fairness &amp; engagement', renderRichText(c.fairness && c.fairness.content))}
+        ${!dl.content && !c.quiet && !(c.plan && (c.plan.content || c.plan)) && !(c.fairness && c.fairness.content)
+          ? '<p class="card-sub">No analysis generated for this character yet.</p>' : ''}
+      </div>
+    </div>`;
+}
+
+function gmInfoSelectChar(slug) {
+  document.querySelectorAll('#gm-brief-tabs .sheet-tab').forEach((t) => t.classList.toggle('active', t.dataset.char === slug));
+  document.querySelectorAll('#gm-brief-area .gm-brief').forEach((b) => { b.hidden = (b.id !== `gmbrief_${slug}`); });
+}
+window.gmInfoSelectChar = gmInfoSelectChar;
+
+function renderGmActions(actions) {
+  const list = scenarioArray(actions).slice().sort((a, b) => gmPriorityRank(a && a.priority) - gmPriorityRank(b && b.priority));
+  if (!list.length) return '<div class="empty scenario-empty"><p>No GM actions generated yet.</p></div>';
+  return `<div class="gm-actions">${list.map((a) => `
+    <div class="card gm-action-card gm-prio-${esc(gmSlug(a.priority || 'normal'))}">
+      <div class="gm-action-head">
+        <div class="card-title">${esc(a.title || a.name || 'Action')}</div>
+        ${gmPill('priority', a.priority)}
+      </div>
+      ${renderRichText(a.content || a.description || a)}
+    </div>`).join('')}</div>`;
 }
 
 function renderGmAnalysis(info) {
   if (State.user.role !== 'gm') return '';
   const analysis = info.gm_analysis || {};
-  return `
-    <section class="scenario-section gm-private-analysis">
-      <div class="scenario-section-header"><h3>GM Private Analysis</h3></div>
-      ${analysis.error ? `<div class="alert alert-danger">${esc(analysis.error)}</div>` : ''}
-      ${analysis.generated === false ? `<div class="empty scenario-empty"><p>No GM-only analysis has been generated yet.</p></div>` : ''}
-      ${renderGmAnalysisList('Scenario Progress', analysis.scenario_progress, 'No progress assessment generated yet.', 'gm.scenario_progress')}
-      ${renderGmAnalysisList('Plans By Player', analysis.plans_by_player, 'No player plans generated yet.', 'gm.plans_by_player')}
-      ${renderGmAnalysisList('Next Deliverables', analysis.next_deliverables, 'No next deliverables generated yet.', 'gm.next_deliverables')}
-      ${renderGmAnalysisList('Fairness / Engagement', analysis.fairness_engagement, 'No engagement tracking generated yet.', 'gm.fairness_engagement')}
-      ${renderGmAnalysisList('Quiet Players', analysis.quiet_players, 'No quiet-player prompts generated yet.', 'gm.quiet_players')}
-      ${renderGmAnalysisList('GM Actions', analysis.gm_actions, 'No GM actions generated yet.', 'gm.gm_actions')}
+  if (analysis.error) return `<div class="alert alert-danger">${esc(analysis.error)}</div>`;
+  if (analysis.generated === false) {
+    return `<div class="empty scenario-empty"><p>No GM-only analysis has been generated yet. Use “Regenerate Page” to build it from the session sources.</p></div>`;
+  }
+
+  const progress = scenarioArray(analysis.scenario_progress);
+  const chars = gmCharIndex(analysis);
+  const briefsButton = scenarioPageButton('gm.plans_by_player,gm.next_deliverables,gm.fairness_engagement,gm.quiet_players', 'Regenerate Briefs');
+
+  const pacing = `
+    <section class="scenario-section">
+      <div class="scenario-section-header">
+        <h3>Scenario Pacing</h3>
+        ${renderScenarioSectionActions('gm.scenario_progress')}
+      </div>
+      ${progress.length
+        ? progress.map((e, i) => `<div class="card scenario-summary-card">${(e && (e.title || e.name)) ? `<div class="session-analysis-title">${esc(e.title || e.name)}</div>` : ''}${renderStructuredSummary(e, `gp${i + 1}`)}</div>`).join('')
+        : '<div class="empty scenario-empty"><p>No pacing assessment generated yet.</p></div>'}
     </section>`;
+
+  const actionsSection = `
+    <section class="scenario-section">
+      <div class="scenario-section-header">
+        <h3>Priority Actions</h3>
+        ${renderScenarioSectionActions('gm.gm_actions')}
+      </div>
+      ${renderGmActions(analysis.gm_actions)}
+    </section>`;
+
+  const briefsSection = `
+    <section class="scenario-section">
+      <div class="scenario-section-header">
+        <h3>Player Briefs</h3>
+        ${briefsButton}
+      </div>
+      ${chars.length ? `
+        <div class="gm-signal-strip">
+          ${chars.map((c) => `<button type="button" class="gm-signal" onclick="gmInfoSelectChar('${esc(gmSlug(c.name))}')"><span class="gm-signal-name">${esc(c.name)}</span>${gmCharChips(c)}</button>`).join('')}
+        </div>
+        <div class="sheet-tabs" id="gm-brief-tabs">
+          ${chars.map((c, i) => `<div class="sheet-tab${i === 0 ? ' active' : ''}" data-char="${esc(gmSlug(c.name))}" onclick="gmInfoSelectChar('${esc(gmSlug(c.name))}')">${esc(c.name)}</div>`).join('')}
+        </div>
+        <div id="gm-brief-area">${chars.map((c, i) => gmCharBrief(c, i === 0)).join('')}</div>`
+        : '<div class="empty scenario-empty"><p>No per-player analysis generated yet.</p></div>'}
+    </section>`;
+
+  return `<div class="gm-private-analysis">${pacing}${actionsSection}${briefsSection}</div>`;
 }
 
 function renderScenarioSourceEditor(sources) {
