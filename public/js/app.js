@@ -791,7 +791,7 @@ function renderOverviewTable(title, sub, rows, emptyText) {
       ${rows.length ? `<div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Player</th><th>Character</th><th>Condition</th><th>Resources</th><th>Notable skills</th><th>Weapons</th><th>Notes</th></tr>
+            <tr><th>Player</th><th>Character</th><th>Luck</th><th>Condition</th><th>Resources</th><th>Notable skills</th><th>Weapons</th><th>Notes</th></tr>
           </thead>
           <tbody>
             ${rows.map((r) => {
@@ -799,6 +799,7 @@ function renderOverviewTable(title, sub, rows, emptyText) {
               return `<tr>
                 <td><strong>${esc(r.col1 || '—')}</strong></td>
                 <td>${esc(r.name || d.name || '—')}</td>
+                <td>${esc(r.luck || (d.luck != null && String(d.luck).trim() !== '' ? String(d.luck) : '—'))}</td>
                 <td>${esc(summarizeCondition(d))}</td>
                 <td>${esc(summarizeResources(d))}</td>
                 <td>${esc(summarizeNotableSkills(d))}</td>
@@ -995,12 +996,14 @@ const ROLL_MOD = { none: '', advantage: ' · advantage', disadvantage: ' · disa
 const ADV_MODE_LABEL = { simple: 'Simple (roll twice, take best/worst)', rol: 'RoL bonus/penalty die' };
 
 function rollOutcomeHtml(r) {
-  if (r.status === 'pending') return '<span class="roll-badge roll-pending">pending</span>';
+  if (r.status === 'pending' && !r.awaiting_luck) return '<span class="roll-badge roll-pending">pending</span>';
   if (r.status === 'cancelled') return '<span class="roll-badge">cancelled</span>';
-  if (r.outcome === 'unadjudicated') return `<span class="roll-badge">rolled ${r.result}</span> <span class="card-sub">no target set — GM adjudicates</span>`;
+  const shown = r.awaiting_luck ? r.raw_result : r.result;
+  if (r.outcome === 'unadjudicated') return `<span class="roll-badge">rolled ${shown}</span> <span class="card-sub">no target set — GM adjudicates</span>`;
   const cls = r.outcome === 'fumble' || r.passed === false ? 'roll-fail' : 'roll-pass';
   const pass = r.passed == null ? '' : (r.passed ? ' — PASS' : ' — FAIL');
-  return `<span class="roll-badge ${cls}">rolled ${r.result} → ${esc(r.outcome)}${pass}</span>`;
+  const luck = (!r.awaiting_luck && r.luck_spent) ? ` <span class="card-sub">(spent ${r.luck_spent} Luck; raw ${r.raw_result})${r.restored_at ? ' · loss restored' : ''}</span>` : '';
+  return `<span class="roll-badge ${cls}">rolled ${shown} → ${esc(r.outcome)}${pass}</span>${luck}`;
 }
 
 function rollCardHtml(r, isGM, myId) {
@@ -1008,8 +1011,23 @@ function rollCardHtml(r, isGM, myId) {
   const head = `${esc(r.character_name)} — ${esc(r.skill_label)}${tgt} (${ROLL_DIFF[r.difficulty] || r.difficulty})${ROLL_MOD[r.modifier] || ''}`;
   const mine = r.user_id === myId;
   const actions = [];
-  if (r.status === 'pending' && (mine || isGM)) actions.push(`<button class="btn btn-sm btn-primary" onclick="resolveAssignedRoll(${r.session_id}, ${r.id}, this)">Roll</button>`);
+  let luckRow = '';
+  if (r.status === 'pending' && !r.awaiting_luck && (mine || isGM)) {
+    actions.push(`<button class="btn btn-sm btn-primary" onclick="resolveAssignedRoll(${r.session_id}, ${r.id}, this)">Roll</button>`);
+  }
+  if (r.awaiting_luck && (mine || isGM)) {
+    const cap = r.luck_cap || 0;
+    luckRow = cap > 0
+      ? `<div class="roll-luck">Spend Luck (0–${cap}, ${r.luck_available} available):
+           <input type="number" id="luck-${r.id}" value="0" min="0" max="${cap}" style="width:5rem">
+           <button class="btn btn-sm btn-primary" onclick="finalizeAssignedRoll(${r.session_id}, ${r.id}, this)">Confirm</button></div>`
+      : `<div class="roll-luck"><span class="card-sub">No Luck can change this${r.outcome === 'fumble' ? ' (fumble)' : ''}.</span>
+           <button class="btn btn-sm btn-primary" onclick="finalizeAssignedRoll(${r.session_id}, ${r.id}, this)">Confirm</button></div>`;
+  }
   if (r.status === 'pending' && isGM) actions.push(`<button class="btn btn-sm btn-danger" onclick="cancelAssignedRoll(${r.session_id}, ${r.id}, this)">Cancel</button>`);
+  if (r.status === 'resolved' && isGM && r.luck_spent > 0 && !r.restored_at) {
+    actions.push(`<button class="btn btn-sm" onclick="restoreRollLuck(${r.session_id}, ${r.id}, this)">Restore Luck</button>`);
+  }
   return `
     <div class="card roll-card">
       <div class="card-header">
@@ -1017,6 +1035,25 @@ function rollCardHtml(r, isGM, myId) {
         ${actions.length ? `<div style="display:flex;gap:0.5rem;flex-wrap:wrap">${actions.join('')}</div>` : ''}
       </div>
       ${r.comment ? `<p class="card-sub" style="margin:0.4rem 0 0">“${esc(r.comment)}”</p>` : ''}
+      ${luckRow}
+    </div>`;
+}
+
+function luckLedgerHtml(luck) {
+  const list = (luck || []).filter((l) => l);
+  if (!list.length) return '';
+  return `
+    <div class="card">
+      <div class="card-title">Luck this session</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Character</th><th>Base</th><th>Spent</th><th>Effective</th></tr></thead>
+        <tbody>${list.map((l) => `<tr>
+          <td>${esc(l.character_name)}</td><td>${l.base}</td>
+          <td>${l.spent ? `−${l.spent}` : '0'}</td>
+          <td><strong>${l.effective}</strong></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+      <div class="card-sub" style="margin-top:0.4rem">Spent Luck counts until you “Restore Luck” on a resolved roll below (e.g. between sessions).</div>
     </div>`;
 }
 
@@ -1025,14 +1062,16 @@ async function renderSessionRolls(sessionId) {
   if (!tab) return;
   tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading rolls…</p>';
   const isGM = State.user.role === 'gm';
-  let rolls;
+  let rolls = [];
+  let luck = null;
   let players = [];
   let settings = { advantage_mode: 'rol' };
   try {
     const reqs = [api.getSessionRolls(sessionId)];
     if (isGM) { reqs.push(api.getSessionPlayers(sessionId)); reqs.push(api.getSessionSettings(sessionId)); }
     const out = await Promise.all(reqs);
-    rolls = out[0];
+    rolls = (out[0] && out[0].rolls) || [];
+    luck = out[0] && out[0].luck;
     if (isGM) { players = out[1] || []; settings = out[2] || settings; }
   } catch (e) {
     tab.innerHTML = `<div class="page-header"><h2>Rolls</h2></div><div class="alert alert-danger">${esc(e.message)}</div>`;
@@ -1061,6 +1100,7 @@ async function renderSessionRolls(sessionId) {
     </div>
     <div id="rolls-alert"></div>
     ${assign}
+    ${isGM ? luckLedgerHtml(luck) : ''}
     <div class="scenario-subtitle">Pending (${pending.length})</div>
     ${pending.length ? `<div class="roll-grid">${pending.map((r) => rollCardHtml(r, isGM, myId)).join('')}</div>` : '<div class="empty" style="padding:1rem"><p>No pending rolls.</p></div>'}
     <div class="scenario-subtitle" style="margin-top:1rem">History (${done.length})</div>
@@ -1103,6 +1143,36 @@ async function resolveAssignedRoll(sessionId, rollId, btn) {
 }
 window.resolveAssignedRoll = resolveAssignedRoll;
 
+async function finalizeAssignedRoll(sessionId, rollId, btn) {
+  const input = el(`luck-${rollId}`);
+  let luck = input ? parseInt(input.value, 10) : 0;
+  if (!Number.isFinite(luck) || luck < 0) luck = 0;
+  btn.disabled = true;
+  btn.textContent = 'Confirming…';
+  try {
+    await api.finalizeSessionRoll(sessionId, rollId, luck);
+    await renderSessionRolls(sessionId);
+  } catch (e) {
+    showAlert(e.message, 'danger', 'rolls-alert');
+    btn.disabled = false;
+    btn.textContent = 'Confirm';
+  }
+}
+window.finalizeAssignedRoll = finalizeAssignedRoll;
+
+async function restoreRollLuck(sessionId, rollId, btn) {
+  if (!confirm('Restore (clear) this Luck loss? It will stop counting against the character this session.')) return;
+  btn.disabled = true;
+  try {
+    await api.restoreSessionRollLuck(sessionId, rollId);
+    await renderSessionRolls(sessionId);
+  } catch (e) {
+    showAlert(e.message, 'danger', 'rolls-alert');
+    btn.disabled = false;
+  }
+}
+window.restoreRollLuck = restoreRollLuck;
+
 async function cancelAssignedRoll(sessionId, rollId, btn) {
   if (!confirm('Cancel this assigned roll?')) return;
   btn.disabled = true;
@@ -1123,11 +1193,13 @@ async function renderSessionOverview(sessionId) {
   let players;
   let sheets;
   let npcs;
+  let rollsData = {};
   try {
-    [players, sheets, npcs] = await Promise.all([
+    [players, sheets, npcs, rollsData] = await Promise.all([
       api.getSessionPlayers(sessionId),
       api.getSheets(sessionId),
-      api.getNpcs(sessionId)
+      api.getNpcs(sessionId),
+      api.getSessionRolls(sessionId).catch(() => ({}))
     ]);
   } catch (e) {
     content.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
@@ -1135,11 +1207,17 @@ async function renderSessionOverview(sessionId) {
   }
   const sheetMap = {};
   sheets.forEach((s) => { sheetMap[s.user_id] = s; });
-  const playerRows = players.map((p) => ({
-    col1: p.username,
-    name: (sheetMap[p.id] && sheetMap[p.id].data && sheetMap[p.id].data.name) || '—',
-    d: (sheetMap[p.id] && sheetMap[p.id].data) || {}
-  }));
+  const luckByUser = {};
+  ((rollsData && rollsData.luck) || []).forEach((l) => { luckByUser[l.user_id] = l; });
+  const playerRows = players.map((p) => {
+    const l = luckByUser[p.id];
+    return {
+      col1: p.username,
+      name: (sheetMap[p.id] && sheetMap[p.id].data && sheetMap[p.id].data.name) || '—',
+      luck: l ? `${l.effective} eff${l.spent ? ` (−${l.spent} of ${l.base})` : ''}` : null,
+      d: (sheetMap[p.id] && sheetMap[p.id].data) || {}
+    };
+  });
   const npcRows = npcs.map((n) => ({
     col1: (n.sheet && n.sheet.occupation) || n.role || 'NPC',
     name: n.name,

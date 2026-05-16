@@ -114,14 +114,53 @@ function rowToRoll(row) {
     modifier: row.modifier,
     comment: row.comment || '',
     status: row.status,
+    // pending + already rolled = waiting for the player's Luck decision.
+    awaiting_luck: row.status === 'pending' && row.result != null,
     dice,
     result: row.result,
+    raw_result: dice && dice.rawResult != null ? dice.rawResult : row.result,
     outcome: row.outcome,
     passed: row.passed == null ? null : !!row.passed,
     luck_spent: row.luck_spent || 0,
+    restored_at: row.restored_at || null,
     created_at: row.created_at,
     resolved_at: row.resolved_at
   };
+}
+
+// Base Luck (from the player's sheet for this case) minus unrestored Luck
+// already spent on resolved rolls this session. The sheet stat is never written.
+function luckForUser(db, sessionId, userId) {
+  const sheetRow = db.prepare('SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
+  let base = 0;
+  try {
+    const sheet = sheetRow && sheetRow.data ? JSON.parse(sheetRow.data) : null;
+    const n = sheet ? parseInt(String(sheet.luck).replace(/[^0-9-]/g, ''), 10) : NaN;
+    base = Number.isFinite(n) ? n : 0;
+  } catch { base = 0; }
+  const spentRow = db.prepare("SELECT COALESCE(SUM(luck_spent),0) s FROM session_rolls WHERE session_id = ? AND user_id = ? AND status = 'resolved' AND restored_at IS NULL").get(sessionId, userId);
+  const spent = spentRow ? spentRow.s : 0;
+  return { base, spent, effective: base - spent };
+}
+
+// Max Luck spendable on a just-rolled result (RoL caps).
+function luckCap(result, outcome, skillValue, available) {
+  if (skillValue == null) return 0;          // unadjudicated — GM decides
+  if (outcome === 'fumble') return 0;        // can't buy out of a fumble
+  return Math.max(0, Math.min(available, result - 2)); // can't reach a Critical (1)
+}
+
+function luckLedger(db, sessionId) {
+  const players = db.prepare(`
+    SELECT sp.user_id, u.username FROM session_players sp
+    JOIN users u ON u.id = sp.user_id WHERE sp.session_id = ?
+  `).all(sessionId);
+  return players.map((p) => {
+    const sheetRow = db.prepare('SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?').get(sessionId, p.user_id);
+    let name = p.username;
+    try { const s = sheetRow && sheetRow.data ? JSON.parse(sheetRow.data) : null; if (s && String(s.name || '').trim()) name = String(s.name).trim(); } catch { /* keep username */ }
+    return { user_id: p.user_id, character_name: name, ...luckForUser(db, sessionId, p.user_id) };
+  });
 }
 
 function listRolls(db, sessionId, opts = {}) {
@@ -131,7 +170,15 @@ function listRolls(db, sessionId, opts = {}) {
   } else {
     rows = db.prepare('SELECT * FROM session_rolls WHERE session_id = ? ORDER BY created_at DESC, id DESC').all(sessionId);
   }
-  return rows.map(rowToRoll);
+  return rows.map((row) => {
+    const r = rowToRoll(row);
+    if (r.awaiting_luck) {
+      const a = luckForUser(db, sessionId, r.user_id);
+      r.luck_available = a.effective;
+      r.luck_cap = luckCap(r.raw_result, r.outcome, r.skill_value, a.effective);
+    }
+    return r;
+  });
 }
 
 function createRoll(db, sessionId, gmUserId, payload) {
@@ -167,22 +214,74 @@ function createRoll(db, sessionId, gmUserId, payload) {
   return { roll: rowToRoll(db.prepare('SELECT * FROM session_rolls WHERE id = ?').get(result.lastInsertRowid)) };
 }
 
+function rollWithLuck(db, sessionId, row) {
+  const roll = rowToRoll(row);
+  if (row.status !== 'pending' || row.result == null) return roll;
+  const avail = luckForUser(db, sessionId, row.user_id);
+  return {
+    ...roll,
+    luck_available: avail.effective,
+    luck_cap: luckCap(row.result, row.outcome, row.skill_value, avail.effective)
+  };
+}
+
+// Step 1: roll the dice (idempotent — re-calling returns the same roll so it
+// can't be re-rolled). Status stays 'pending' until the player finalises with
+// their Luck decision.
 function resolveRoll(db, sessionId, rollId, actingUser) {
   const row = db.prepare('SELECT * FROM session_rolls WHERE id = ? AND session_id = ?').get(rollId, sessionId);
   if (!row) return { error: 'Roll not found', statusCode: 404 };
   const isGM = actingUser && actingUser.role === 'gm';
   if (!isGM && row.user_id !== (actingUser && actingUser.id)) return { error: 'Not your roll', statusCode: 403 };
   if (row.status !== 'pending') return { error: `Roll already ${row.status}`, statusCode: 409 };
+  if (row.result != null) return { roll: rollWithLuck(db, sessionId, row) }; // already rolled
 
   const { advantage_mode } = getSettings(db, sessionId);
   const { result, dice } = rollDice(row.modifier, advantage_mode);
   const { outcome, passed } = computeOutcome(result, row.skill_value, row.difficulty);
   db.prepare(`
-    UPDATE session_rolls
-    SET status = 'resolved', rolls = ?, result = ?, outcome = ?, passed = ?, resolved_at = datetime('now')
+    UPDATE session_rolls SET rolls = ?, result = ?, outcome = ?, passed = ?
     WHERE id = ?
   `).run(JSON.stringify(dice), result, outcome, passed == null ? null : (passed ? 1 : 0), rollId);
+  return { roll: rollWithLuck(db, sessionId, db.prepare('SELECT * FROM session_rolls WHERE id = ?').get(rollId)) };
+}
+
+// Step 2: apply the (optional) Luck spend and finalise. Luck lowers the result
+// point-for-point, capped by RoL rules + the player's effective Luck.
+function finalizeRoll(db, sessionId, rollId, actingUser, luckSpentRaw) {
+  const row = db.prepare('SELECT * FROM session_rolls WHERE id = ? AND session_id = ?').get(rollId, sessionId);
+  if (!row) return { error: 'Roll not found', statusCode: 404 };
+  const isGM = actingUser && actingUser.role === 'gm';
+  if (!isGM && row.user_id !== (actingUser && actingUser.id)) return { error: 'Not your roll', statusCode: 403 };
+  if (row.status !== 'pending') return { error: `Roll already ${row.status}`, statusCode: 409 };
+  if (row.result == null) return { error: 'Roll has not been rolled yet', statusCode: 409 };
+
+  const avail = luckForUser(db, sessionId, row.user_id);
+  const cap = luckCap(row.result, row.outcome, row.skill_value, avail.effective);
+  let luckSpent = parseInt(luckSpentRaw, 10);
+  if (!Number.isFinite(luckSpent) || luckSpent < 0) luckSpent = 0;
+  luckSpent = Math.min(luckSpent, cap);
+
+  const rawResult = row.result;
+  const finalResult = rawResult - luckSpent;
+  const { outcome, passed } = computeOutcome(finalResult, row.skill_value, row.difficulty);
+  let dice = {};
+  try { dice = row.rolls ? JSON.parse(row.rolls) : {}; } catch { dice = {}; }
+  dice.rawResult = rawResult;
+  dice.luckSpent = luckSpent;
+  db.prepare(`
+    UPDATE session_rolls
+    SET status = 'resolved', rolls = ?, result = ?, outcome = ?, passed = ?, luck_spent = ?, resolved_at = datetime('now')
+    WHERE id = ?
+  `).run(JSON.stringify(dice), finalResult, outcome, passed == null ? null : (passed ? 1 : 0), luckSpent, rollId);
   return { roll: rowToRoll(db.prepare('SELECT * FROM session_rolls WHERE id = ?').get(rollId)) };
+}
+
+// GM clears a Luck loss (refresh) — it stops counting against effective Luck.
+function restoreRollLuck(db, sessionId, rollId) {
+  const r = db.prepare("UPDATE session_rolls SET restored_at = datetime('now') WHERE id = ? AND session_id = ? AND status = 'resolved' AND luck_spent > 0 AND restored_at IS NULL").run(rollId, sessionId);
+  if (!r.changes) return { error: 'No restorable Luck loss on that roll', statusCode: 404 };
+  return { ok: true };
 }
 
 function cancelRoll(db, sessionId, rollId) {
@@ -202,10 +301,11 @@ function rollHeadline(r) {
 }
 
 function rollOutcomeText(r) {
-  if (r.status !== 'resolved') return r.status;
-  if (r.outcome === 'unadjudicated') return `rolled ${r.result} (no target set — GM to adjudicate)`;
+  if (r.status !== 'resolved') return r.awaiting_luck ? 'rolled — awaiting Luck decision' : r.status;
+  const luck = r.luck_spent ? ` (spent ${r.luck_spent} Luck; raw ${r.raw_result})` : '';
+  if (r.outcome === 'unadjudicated') return `rolled ${r.result} (no target set — GM to adjudicate)${luck}`;
   const pass = r.passed == null ? '' : (r.passed ? ' — PASS' : ' — FAIL');
-  return `rolled ${r.result} → ${r.outcome}${pass}`;
+  return `rolled ${r.result} → ${r.outcome}${pass}${luck}`;
 }
 
 function writeRollMirrors(db, sessionId) {
@@ -219,8 +319,8 @@ function writeRollMirrors(db, sessionId) {
   if (!rolls.length) gm.push('No rolls assigned yet.');
   for (const r of rolls) {
     gm.push(`## ${rollHeadline(r)}`, '');
-    gm.push(`- Status: ${r.status}${r.status === 'resolved' ? ` — ${rollOutcomeText(r)}` : ''}`);
-    if (r.luck_spent) gm.push(`- Luck spent: ${r.luck_spent}`);
+    gm.push(`- Status: ${r.status} — ${rollOutcomeText(r)}`);
+    if (r.luck_spent) gm.push(`- Luck spent: ${r.luck_spent}${r.restored_at ? ' (restored by GM)' : ' (counts against this session)'}`);
     if (r.comment) gm.push(`- GM note: ${r.comment}`);
     gm.push('');
   }
@@ -251,6 +351,11 @@ module.exports = {
   listRolls,
   createRoll,
   resolveRoll,
+  finalizeRoll,
+  restoreRollLuck,
   cancelRoll,
+  luckLedger,
+  luckForUser,
+  luckCap,
   writeRollMirrors
 };

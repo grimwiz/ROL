@@ -59,6 +59,8 @@ const api = (() => {
     getSessionRolls: (sessionId) => req('GET', `/sessions/${sessionId}/rolls`),
     createSessionRoll: (sessionId, data) => req('POST', `/sessions/${sessionId}/rolls`, data),
     resolveSessionRoll: (sessionId, rollId) => req('POST', `/sessions/${sessionId}/rolls/${rollId}/resolve`),
+    finalizeSessionRoll: (sessionId, rollId, luckSpent) => req('POST', `/sessions/${sessionId}/rolls/${rollId}/finalize`, { luck_spent: luckSpent }),
+    restoreSessionRollLuck: (sessionId, rollId) => req('POST', `/sessions/${sessionId}/rolls/${rollId}/restore-luck`),
     cancelSessionRoll: (sessionId, rollId) => req('POST', `/sessions/${sessionId}/rolls/${rollId}/cancel`),
     getRules: () => req('GET', '/rules'),
     searchRules: (query) => req('GET', `/rules/search?q=${encodeURIComponent(query)}`),

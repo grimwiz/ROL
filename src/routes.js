@@ -987,8 +987,9 @@ router.put('/sessions/:id/settings', requireGM, (req, res) => {
 router.get('/sessions/:id/rolls', requireAuth, (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
-  const opts = req.user.role === 'gm' ? {} : { userId: req.user.id };
-  res.json(sessionRolls.listRolls(db, session.id, opts));
+  const isGM = req.user.role === 'gm';
+  const rolls = sessionRolls.listRolls(db, session.id, isGM ? {} : { userId: req.user.id });
+  res.json({ rolls, luck: isGM ? sessionRolls.luckLedger(db, session.id) : null });
 });
 
 router.post('/sessions/:id/rolls', requireGM, (req, res) => {
@@ -1000,13 +1001,33 @@ router.post('/sessions/:id/rolls', requireGM, (req, res) => {
   res.status(201).json(out.roll);
 });
 
+// Step 1 — roll (preview); does not finalise, so no mirror write yet.
 router.post('/sessions/:id/rolls/:rollId/resolve', requireAuth, (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
   const out = sessionRolls.resolveRoll(db, session.id, req.params.rollId, req.user);
   if (out.error) return res.status(out.statusCode || 400).json({ error: out.error });
+  res.json(out.roll);
+});
+
+// Step 2 — finalise with the player's Luck decision.
+router.post('/sessions/:id/rolls/:rollId/finalize', requireAuth, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const out = sessionRolls.finalizeRoll(db, session.id, req.params.rollId, req.user, req.body && req.body.luck_spent);
+  if (out.error) return res.status(out.statusCode || 400).json({ error: out.error });
   sessionRolls.writeRollMirrors(db, session.id);
   res.json(out.roll);
+});
+
+// GM clears (refreshes) a Luck loss so it stops counting this session.
+router.post('/sessions/:id/rolls/:rollId/restore-luck', requireGM, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const out = sessionRolls.restoreRollLuck(db, session.id, req.params.rollId);
+  if (out.error) return res.status(out.statusCode || 400).json({ error: out.error });
+  sessionRolls.writeRollMirrors(db, session.id);
+  res.json({ ok: true });
 });
 
 router.post('/sessions/:id/rolls/:rollId/cancel', requireGM, (req, res) => {

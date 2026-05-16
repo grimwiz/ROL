@@ -899,3 +899,6 @@ tr:hover td { background: var(--bg3); }
 .roll-badge.roll-pending { color: var(--warning); border-color: var(--warning); }
 .roll-badge.roll-pass { color: #5fd49a; border-color: #2f6f4f; background: rgba(39,174,96,0.12); }
 .roll-badge.roll-fail { color: #e88; border-color: var(--danger); background: rgba(192,57,43,0.12); }
+
+.roll-luck { margin-top: 0.55rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; font-size: 0.85rem; color: var(--text2); }
+.roll-luck input { margin: 0; }
