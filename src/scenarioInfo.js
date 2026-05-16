@@ -1458,6 +1458,14 @@ function sanitiseChatMessages(raw) {
   return cleaned.slice(-24);
 }
 
+// The big case-context system prompt is frozen for the life of a conversation
+// so the prompt prefix stays byte-identical every turn. That lets Ollama reuse
+// its KV cache (it only has to process the new message), so turns after the
+// first are fast. A new conversation (first user turn) or the TTL rebuilds it,
+// picking up any edited files / regenerated artifacts.
+const gmChatPromptCache = new Map();
+const GM_CHAT_PROMPT_TTL_MS = 2 * 60 * 60 * 1000;
+
 // Streams a GM chat reply. opts.onToken receives text deltas; opts.signal cancels.
 async function streamGmChat(sessionId, db, clientMessages, opts = {}) {
   const session = getSessionById(db, sessionId);
@@ -1472,8 +1480,20 @@ async function streamGmChat(sessionId, db, clientMessages, opts = {}) {
     error.statusCode = 400;
     throw error;
   }
+
+  const newConversation = history.filter((m) => m.role === 'user').length <= 1;
+  const cached = gmChatPromptCache.get(session.id);
+  const fresh = !cached || newConversation || (Date.now() - cached.builtAt) > GM_CHAT_PROMPT_TTL_MS;
+  let systemPrompt;
+  if (fresh) {
+    systemPrompt = buildGmChatSystemPrompt(session, db);
+    gmChatPromptCache.set(session.id, { prompt: systemPrompt, builtAt: Date.now() });
+  } else {
+    systemPrompt = cached.prompt;
+  }
+
   const messages = [
-    { role: 'system', content: buildGmChatSystemPrompt(session, db) },
+    { role: 'system', content: systemPrompt },
     ...history
   ];
   return callOllama(null, {
