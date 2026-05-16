@@ -128,19 +128,77 @@ function rowToRoll(row) {
   };
 }
 
-// Base Luck (from the player's sheet for this case) minus unrestored Luck
-// already spent on resolved rolls this session. The sheet stat is never written.
-function luckForUser(db, sessionId, userId) {
+const STATS = ['luck', 'hp', 'mp'];
+
+// Base values from the player's sheet for this case (never written back):
+// Luck stat, derived current HP and MP.
+function sheetBaseStats(db, sessionId, userId) {
   const sheetRow = db.prepare('SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
-  let base = 0;
-  try {
-    const sheet = sheetRow && sheetRow.data ? JSON.parse(sheetRow.data) : null;
-    const n = sheet ? parseInt(String(sheet.luck).replace(/[^0-9-]/g, ''), 10) : NaN;
-    base = Number.isFinite(n) ? n : 0;
-  } catch { base = 0; }
+  const num = (v) => { const n = parseInt(String(v == null ? '' : v).replace(/[^0-9-]/g, ''), 10); return Number.isFinite(n) ? n : 0; };
+  let sheet = null;
+  try { sheet = sheetRow && sheetRow.data ? JSON.parse(sheetRow.data) : null; } catch { sheet = null; }
+  const d = (sheet && sheet.derived) || {};
+  return { luck: num(sheet && sheet.luck), hp: num(d.hp), mp: num(d.mp) };
+}
+
+function statAdjustmentSum(db, sessionId, userId, stat) {
+  const r = db.prepare('SELECT COALESCE(SUM(delta),0) a FROM session_luck_adjustments WHERE session_id = ? AND user_id = ? AND stat = ? AND cleared_at IS NULL').get(sessionId, userId, stat);
+  return r ? r.a : 0;
+}
+
+// Luck: base − unrestored roll-spends + GM adjustments. (Spend only applies to Luck.)
+function luckForUser(db, sessionId, userId) {
+  const base = sheetBaseStats(db, sessionId, userId).luck;
   const spentRow = db.prepare("SELECT COALESCE(SUM(luck_spent),0) s FROM session_rolls WHERE session_id = ? AND user_id = ? AND status = 'resolved' AND restored_at IS NULL").get(sessionId, userId);
   const spent = spentRow ? spentRow.s : 0;
-  return { base, spent, effective: base - spent };
+  const adjustment = statAdjustmentSum(db, sessionId, userId, 'luck');
+  return { base, spent, adjustment, effective: base - spent + adjustment };
+}
+
+const WOUNDS = ['hurt', 'bloodied', 'down', 'impaired'];
+
+function getWounds(db, sessionId, userId) {
+  const row = db.prepare('SELECT hurt, bloodied, down, impaired FROM session_character_state WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
+  const out = {};
+  for (const w of WOUNDS) out[w] = !!(row && row[w]);
+  return out;
+}
+
+function setWounds(db, sessionId, userId, w) {
+  const v = (k) => (w && w[k] ? 1 : 0);
+  db.prepare(`
+    INSERT INTO session_character_state (session_id, user_id, hurt, bloodied, down, impaired, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+    ON CONFLICT(session_id, user_id) DO UPDATE SET
+      hurt = excluded.hurt, bloodied = excluded.bloodied, down = excluded.down,
+      impaired = excluded.impaired, updated_at = datetime('now')
+  `).run(sessionId, userId, v('hurt'), v('bloodied'), v('down'), v('impaired'));
+  return getWounds(db, sessionId, userId);
+}
+
+function woundLabels(wounds) {
+  return WOUNDS.filter((w) => wounds && wounds[w]).map((w) => w.charAt(0).toUpperCase() + w.slice(1));
+}
+
+function listStatAdjustments(db, sessionId, userId, stat) {
+  return db.prepare('SELECT id, user_id, stat, delta, note, created_at, cleared_at FROM session_luck_adjustments WHERE session_id = ? AND user_id = ? AND stat = ? AND cleared_at IS NULL ORDER BY created_at, id').all(sessionId, userId, stat);
+}
+
+function addStatAdjustment(db, sessionId, userId, stat, delta, note, gmId) {
+  const s = STATS.includes(stat) ? stat : 'luck';
+  const d = parseInt(delta, 10);
+  if (!Number.isFinite(d) || d === 0) return { error: `A non-zero ${s.toUpperCase()} modifier is required` };
+  const assigned = db.prepare('SELECT 1 FROM session_players WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
+  if (!assigned) return { error: 'That player is not assigned to this case' };
+  db.prepare("INSERT INTO session_luck_adjustments (session_id, user_id, stat, delta, note, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))")
+    .run(sessionId, userId, s, d, note ? String(note).trim().slice(0, 500) : null, gmId);
+  return { ok: true };
+}
+
+function clearStatAdjustment(db, sessionId, adjId) {
+  const r = db.prepare("UPDATE session_luck_adjustments SET cleared_at = datetime('now') WHERE id = ? AND session_id = ? AND cleared_at IS NULL").run(adjId, sessionId);
+  if (!r.changes) return { error: 'Modifier not found or already cleared', statusCode: 404 };
+  return { ok: true };
 }
 
 // Max Luck spendable on a just-rolled result (RoL caps).
@@ -150,16 +208,35 @@ function luckCap(result, outcome, skillValue, available) {
   return Math.max(0, Math.min(available, result - 2)); // can't reach a Critical (1)
 }
 
+// Per-player session state: Luck (base − spent + adj), and current HP/MP
+// (base + GM adj), wounds, and the active modifiers grouped by stat.
 function luckLedger(db, sessionId) {
   const players = db.prepare(`
     SELECT sp.user_id, u.username FROM session_players sp
     JOIN users u ON u.id = sp.user_id WHERE sp.session_id = ?
   `).all(sessionId);
   return players.map((p) => {
-    const sheetRow = db.prepare('SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?').get(sessionId, p.user_id);
+    const uid = p.user_id;
+    const sheetRow = db.prepare('SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?').get(sessionId, uid);
     let name = p.username;
     try { const s = sheetRow && sheetRow.data ? JSON.parse(sheetRow.data) : null; if (s && String(s.name || '').trim()) name = String(s.name).trim(); } catch { /* keep username */ }
-    return { user_id: p.user_id, character_name: name, ...luckForUser(db, sessionId, p.user_id) };
+    const base = sheetBaseStats(db, sessionId, uid);
+    const luck = luckForUser(db, sessionId, uid);
+    const hpAdj = statAdjustmentSum(db, sessionId, uid, 'hp');
+    const mpAdj = statAdjustmentSum(db, sessionId, uid, 'mp');
+    return {
+      user_id: uid,
+      character_name: name,
+      ...luck, // base/spent/adjustment/effective (Luck) kept flat for existing UI
+      hp: { base: base.hp, adjustment: hpAdj, current: base.hp + hpAdj },
+      mp: { base: base.mp, adjustment: mpAdj, current: base.mp + mpAdj },
+      wounds: getWounds(db, sessionId, uid),
+      adjustments: {
+        luck: listStatAdjustments(db, sessionId, uid, 'luck'),
+        hp: listStatAdjustments(db, sessionId, uid, 'hp'),
+        mp: listStatAdjustments(db, sessionId, uid, 'mp')
+      }
+    };
   });
 }
 
@@ -324,6 +401,19 @@ function writeRollMirrors(db, sessionId) {
     if (r.comment) gm.push(`- GM note: ${r.comment}`);
     gm.push('');
   }
+  const ledger = luckLedger(db, sessionId);
+  const adjList = (l) => [...l.adjustments.luck, ...l.adjustments.hp, ...l.adjustments.mp];
+  const gmConds = ledger.filter((l) => woundLabels(l.wounds).length || l.spent || l.adjustment
+    || l.hp.adjustment || l.mp.adjustment || adjList(l).length);
+  if (gmConds.length) {
+    gm.push('## Conditions & Current Stats', '');
+    for (const l of gmConds) {
+      const w = woundLabels(l.wounds);
+      gm.push(`- **${l.character_name}** — HP ${l.hp.current}/${l.hp.base}, MP ${l.mp.current}/${l.mp.base}, Luck ${l.effective}/${l.base}${l.spent ? ` (−${l.spent} spent)` : ''}${w.length ? `; wounds: ${w.join(', ')}` : ''}`);
+      for (const a of adjList(l)) gm.push(`  - ${a.stat.toUpperCase()} ${a.delta > 0 ? '+' : ''}${a.delta}${a.note ? ` — ${a.note}` : ''}`);
+    }
+    gm.push('');
+  }
   fs.writeFileSync(path.join(paths.gmInput, 'rolls.md'), `${gm.join('\n').trim()}\n`, 'utf8');
 
   // Shared — resolved outcomes only, no GM comment (player + LLM visible).
@@ -332,6 +422,11 @@ function writeRollMirrors(db, sessionId) {
   if (!resolved.length) shared.push('No resolved rolls yet.');
   for (const r of resolved) {
     shared.push(`- **${rollHeadline(r)}** — ${rollOutcomeText(r)}`);
+  }
+  const wounded = ledger.filter((l) => woundLabels(l.wounds).length);
+  if (wounded.length) {
+    shared.push('', '## Current Conditions', '');
+    for (const l of wounded) shared.push(`- **${l.character_name}**: ${woundLabels(l.wounds).join(', ')}`);
   }
   fs.writeFileSync(path.join(paths.root, 'rolls.md'), `${shared.join('\n').trim()}\n`, 'utf8');
 
@@ -357,5 +452,10 @@ module.exports = {
   luckLedger,
   luckForUser,
   luckCap,
+  getWounds,
+  setWounds,
+  listStatAdjustments,
+  addStatAdjustment,
+  clearStatAdjustment,
   writeRollMirrors
 };

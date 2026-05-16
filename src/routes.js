@@ -1001,6 +1001,16 @@ router.post('/sessions/:id/rolls', requireGM, (req, res) => {
   res.status(201).json(out.roll);
 });
 
+// A player initiates their own roll (unprompted) for one of their skills.
+router.post('/sessions/:id/rolls/self', requireAuth, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const out = sessionRolls.createRoll(db, session.id, req.user.id, { ...req.body, user_id: req.user.id });
+  if (out.error) return res.status(400).json({ error: out.error });
+  sessionRolls.writeRollMirrors(db, session.id);
+  res.status(201).json(out.roll);
+});
+
 // Step 1 — roll (preview); does not finalise, so no mirror write yet.
 router.post('/sessions/:id/rolls/:rollId/resolve', requireAuth, (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
@@ -1034,6 +1044,35 @@ router.post('/sessions/:id/rolls/:rollId/cancel', requireGM, (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
   const out = sessionRolls.cancelRoll(db, session.id, req.params.rollId);
+  if (out.error) return res.status(out.statusCode || 400).json({ error: out.error });
+  sessionRolls.writeRollMirrors(db, session.id);
+  res.json({ ok: true });
+});
+
+// Per-session wounds (GM).
+router.put('/sessions/:id/players/:userId/wounds', requireGM, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const w = sessionRolls.setWounds(db, session.id, parseInt(req.params.userId, 10), req.body || {});
+  sessionRolls.writeRollMirrors(db, session.id);
+  res.json(w);
+});
+
+// GM applies / clears a current-stat modifier (stat = luck | hp | mp).
+router.post('/sessions/:id/players/:userId/stat-adjustment', requireGM, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const b = req.body || {};
+  const out = sessionRolls.addStatAdjustment(db, session.id, parseInt(req.params.userId, 10), b.stat, b.delta, b.note, req.user.id);
+  if (out.error) return res.status(out.statusCode || 400).json({ error: out.error });
+  sessionRolls.writeRollMirrors(db, session.id);
+  res.json({ ok: true });
+});
+
+router.post('/sessions/:id/stat-adjustments/:adjId/clear', requireGM, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const out = sessionRolls.clearStatAdjustment(db, session.id, req.params.adjId);
   if (out.error) return res.status(out.statusCode || 400).json({ error: out.error });
   sessionRolls.writeRollMirrors(db, session.id);
   res.json({ ok: true });

@@ -902,3 +902,72 @@ tr:hover td { background: var(--bg3); }
 
 .roll-luck { margin-top: 0.55rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; font-size: 0.85rem; color: var(--text2); }
 .roll-luck input { margin: 0; }
+
+.wound-cell { white-space: nowrap; }
+.wound-tog { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.8rem; margin-right: 0.5rem; color: var(--text2); }
+.wound-tog input { margin: 0; }
+.luck-adj { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; margin-right: 0.4rem; }
+.luck-adj-form { display: flex; gap: 0.35rem; align-items: center; }
+.luck-adj-form input { margin: 0; }
+
+/* ── Per-skill Roll button ── */
+.sheet-roll-btn {
+  margin-left: 0.5rem;
+  padding: 0.12rem 0.55rem;
+  font-size: 0.72rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text2);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.sheet-roll-btn:hover { color: var(--text); border-color: var(--accent); }
+.sheet-roll-btn.roll-needed {
+  background: #4a3c12;
+  border-color: var(--warning);
+  color: #ffd479;
+  font-weight: 600;
+  animation: roll-pulse 1.6s ease-in-out infinite;
+}
+@keyframes roll-pulse { 50% { box-shadow: 0 0 0 3px rgba(230,126,34,0.18); } }
+.srm-result { font-size: 1.05rem; margin: 0.5rem 0 0.9rem; }
+.roll-line { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.roll-line:last-child { border-bottom: none; }
+
+/* Keep the per-skill Roll button inline on its row (wide screens) rather than
+   wrapping under the skill. The base rows are 2-/3-col grids; extend them. */
+.skill-row.with-roll { grid-template-columns: 1fr auto auto; }
+.combat-skill-row.with-roll { grid-template-columns: minmax(0, 1fr) 84px 84px auto; }
+/* With Roll buttons, base stats drop to 3-per-row (like the derived grid) and
+   each cell is fully inline: label · select · Roll. Plenty of width at 3-up. */
+.characteristics-grid-6.with-roll-grid { grid-template-columns: repeat(3, 1fr); }
+.char-field.with-roll {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.char-field.with-roll > label { margin: 0; flex: 0 0 auto; text-align: left; }
+.char-field.with-roll select { flex: 1 1 auto; min-width: 0; }
+.char-field.with-roll .sheet-roll-btn { margin: 0; }
+.sheet-roll-btn { white-space: nowrap; }
+
+/* Derived stats: title · value · Roll inline (matches the base-stats block). */
+.derived-grid .form-group.with-roll { display: flex; align-items: center; gap: 0.4rem; }
+.derived-grid .form-group.with-roll > label { margin: 0; flex: 0 0 auto; text-align: left; }
+.derived-grid .form-group.with-roll > input,
+.derived-grid .form-group.with-roll > div { flex: 1 1 auto; min-width: 0; }
+/* Current HP/MP/Luck — 3-column row, each with a Roll button. */
+.current-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem 1.5rem; margin-top: 0.75rem; }
+.current-cell { display: flex; align-items: center; gap: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius); padding: 0.4rem 0.65rem; }
+.current-label { font-size: 0.78rem; color: var(--text2); flex: 0 0 auto; }
+.current-val { font-weight: 700; font-size: 1.05rem; }
+.current-base { color: var(--text2); font-weight: 400; font-size: 0.8rem; }
+.current-cell .sheet-roll-btn { margin-left: auto; }
+.state-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.6rem 0.85rem; margin: 0.5rem 0; }
+.state-name { font-weight: 600; color: var(--accent2); margin-bottom: 0.35rem; }
+.state-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 0.3rem 0; border-top: 1px solid var(--border); }
+.state-card .state-line:first-of-type { border-top: none; }
+.state-head { min-width: 150px; }
+.state-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.state-wounds { margin-top: 0.45rem; font-size: 0.85rem; color: var(--text2); }

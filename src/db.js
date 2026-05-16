@@ -118,6 +118,32 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_session_rolls_session ON session_rolls(session_id);
   CREATE INDEX IF NOT EXISTS idx_session_rolls_user ON session_rolls(session_id, user_id);
 
+  -- Per-session temporary character state (wounds), GM-managed, cleared when
+  -- no longer relevant. Never mutates the permanent sheet.
+  CREATE TABLE IF NOT EXISTS session_character_state (
+    session_id INTEGER NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    hurt INTEGER NOT NULL DEFAULT 0,
+    bloodied INTEGER NOT NULL DEFAULT 0,
+    down INTEGER NOT NULL DEFAULT 0,
+    impaired INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY (session_id, user_id)
+  );
+
+  -- GM-entered temporary Luck deltas (+/-) with a note; clearable like roll spends.
+  CREATE TABLE IF NOT EXISTS session_luck_adjustments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    delta INTEGER NOT NULL,
+    note TEXT,
+    created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TEXT DEFAULT (datetime('now')),
+    cleared_at TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_luck_adj_session ON session_luck_adjustments(session_id, user_id);
+
   DROP TABLE IF EXISTS domestic_sheets;
 `);
 
@@ -125,6 +151,12 @@ db.exec(`
 const npcColumns = db.prepare("PRAGMA table_info(npcs)").all();
 if (!npcColumns.some((c) => c.name === 'sheet')) {
   db.exec('ALTER TABLE npcs ADD COLUMN sheet TEXT');
+}
+
+// Generalise the Luck-adjustment ledger to any current stat (luck/hp/mp).
+const adjColumns = db.prepare("PRAGMA table_info(session_luck_adjustments)").all();
+if (adjColumns.length && !adjColumns.some((c) => c.name === 'stat')) {
+  db.exec("ALTER TABLE session_luck_adjustments ADD COLUMN stat TEXT NOT NULL DEFAULT 'luck'");
 }
 
 module.exports = db;

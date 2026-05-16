@@ -106,6 +106,12 @@ const SheetForm = (() => {
     return Number.isFinite(val) ? val : 0;
   }
 
+  // RoL: starting Luck = roll the ten-sided 'units' die twice (2D10) + 50
+  function rollStartingLuck() {
+    const d10 = () => 1 + Math.floor(Math.random() * 10);
+    return d10() + d10() + 50;
+  }
+
   function calcDerived() {
     const con = getStatValue('con');
     const siz = getStatValue('siz');
@@ -144,7 +150,13 @@ const SheetForm = (() => {
     el.dataset.auto = isAuto ? 'false' : 'true';
     el.readOnly = !isAuto; // toggling: if was auto, now manual → not readonly
     if (btn) btn.textContent = isAuto ? 'Auto' : 'Manual';
-    if (!isAuto) updateDerivedDisplay();
+    if (!isAuto) {
+      if (field === 'luck') {
+        if (!el.value.trim()) el.value = rollStartingLuck();
+      } else {
+        updateDerivedDisplay();
+      }
+    }
   }
   window.SheetFormToggleDerived = toggleDerivedAuto;
 
@@ -217,6 +229,24 @@ const SheetForm = (() => {
     return COMBAT_SKILL_NAMES.map((name) => ({ ...byName[name.toLowerCase()] }));
   }
 
+  // Expert (mandatory) + additional skills must never duplicate each other or
+  // the canonical common/combat skills, and a skill with no value is not stored.
+  function cleanExtraSkills(mandatory, additional) {
+    const reserved = new Set([...COMMON_SKILL_NAMES, ...COMBAT_SKILL_NAMES].map((s) => s.toLowerCase()));
+    const seen = new Set();
+    const clean = (arr) => (Array.isArray(arr) ? arr : []).reduce((out, row) => {
+      const name = String((row && row.name) || '').trim();
+      const value = String((row && row.value) || '').trim();
+      if (!name || !value) return out;                 // no nameless / valueless rows
+      const key = name.toLowerCase();
+      if (reserved.has(key) || seen.has(key)) return out; // no dupes / common-skill collisions
+      seen.add(key);
+      out.push({ name, value });
+      return out;
+    }, []);
+    return { mandatory: clean(mandatory), additional: clean(additional) };
+  }
+
   function normaliseDamage(saved) {
     const base = { hurt: false, bloodied: false, down: false, impaired: false };
     if (!saved || typeof saved !== 'object') return base;
@@ -248,6 +278,10 @@ const SheetForm = (() => {
     if (!Array.isArray(base.magic_spells)) base.magic_spells = [];
     base.common_skills = mergeCommonSkills(base.common_skills);
     base.combat_skills = mergeCombatSkills(base.combat_skills, base.mandatory_skills, base.additional_skills);
+    // After combat-skill legacy recovery, drop duplicate/valueless extra skills.
+    const _extra = cleanExtraSkills(base.mandatory_skills, base.additional_skills);
+    base.mandatory_skills = _extra.mandatory;
+    base.additional_skills = _extra.additional;
     base.damage = normaliseDamage(base.damage);
     base.weapons = normaliseWeapons(base.weapons);
     base.advantages = parseAdvantages(base.advantages).join(', ');
@@ -490,9 +524,9 @@ const SheetForm = (() => {
         ${renderDerivedField('mp',    'MP',      derived.mp    || '', autoD.mp,    readonly)}
         ${renderDerivedField('build', 'Build',   derived.build || '', autoD.build, readonly)}
         ${fg('Move', `<input type="text" id="sf_derived_move" value="${esc(derived.move || d.mov || '')}" placeholder="e.g. 8"${rdAttr}>`)}
-        ${fg('Luck', `<input type="number" id="sf_luck" value="${esc(d.luck)}" min="1" max="100"${rdAttr}>`)}
+        ${renderDerivedField('luck', 'Luck', d.luck || '', (d.luck && String(d.luck).trim()) ? d.luck : rollStartingLuck(), readonly)}
       </div>
-      ${!readonly ? `<p class="card-sub" style="margin-top:0.35rem">HP, SAN, MP and Build are auto-calculated from base stats. Click "Manual" to override.</p>` : ''}
+      ${!readonly ? `<p class="card-sub" style="margin-top:0.35rem">HP, SAN, MP and Build are auto-calculated from base stats; Luck "Auto" rolls 2D10+50. Click "Manual" to override.</p>` : ''}
     </div>
   </div>
 
@@ -1267,6 +1301,7 @@ const SheetForm = (() => {
       const value = (row.querySelector('.ask-val') || {}).value || '';
       if (name) additional_skills.push({ name: name.trim(), value: value.trim() });
     });
+    const _extra = cleanExtraSkills(mandatory_skills, additional_skills);
 
     const common_skills = [];
     document.querySelectorAll('#common-skills .csk-row').forEach((row) => {
@@ -1298,6 +1333,8 @@ const SheetForm = (() => {
       derived[f] = el ? el.value.trim() : '';
     });
     derived.move = g('derived_move');
+    const luckEl = document.getElementById('sf_derived_luck');
+    const luckVal = luckEl ? luckEl.value.trim() : g('luck');
 
     const damage = {
       hurt: !!((document.getElementById('sf_damage_hurt') || {}).checked),
@@ -1327,8 +1364,8 @@ const SheetForm = (() => {
       str: g('str'), con: g('con'), dex: g('dex'), int: g('int'), pow: g('pow'), siz: g('siz'),
       advantages: g('advantages_text'),
       disadvantages: g('disadvantages'),
-      combat_skills, common_skills, mandatory_skills, additional_skills,
-      luck: g('luck'), damage, weapons, carry: g('carry'),
+      combat_skills, common_skills, mandatory_skills: _extra.mandatory, additional_skills: _extra.additional,
+      luck: luckVal, damage, weapons, carry: g('carry'),
       magic_tradition: g('magic_tradition'), magic_notes: g('magic_notes'), magic_spells,
       derived,
       custom_fields

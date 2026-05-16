@@ -703,7 +703,6 @@ async function openSession(sessionId, options = {}) {
     <div class="sheet-tabs session-subtabs">
       ${isGM ? `<div class="sheet-tab active" data-session-panel="overview" onclick="switchSessionPanel(${sessionId}, 'overview')">Overview</div>` : ''}
       <div class="sheet-tab${isGM ? '' : ' active'}" data-session-panel="characters" onclick="switchSessionPanel(${sessionId}, 'characters')">Characters</div>
-      <div class="sheet-tab" data-session-panel="rolls" onclick="switchSessionPanel(${sessionId}, 'rolls')">Rolls</div>
       <div class="sheet-tab" data-session-panel="case-info" onclick="switchSessionPanel(${sessionId}, 'case-info')">Case Info</div>
       <div class="sheet-tab" data-session-panel="player-info" onclick="switchSessionPanel(${sessionId}, 'player-info')">Player Info</div>
       <div class="sheet-tab" data-session-panel="entities" onclick="switchSessionPanel(${sessionId}, 'entities')">NPC/Places/Things</div>
@@ -761,10 +760,6 @@ async function switchSessionPanel(sessionId, panel) {
     await renderSessionGmChat(sessionId);
     return;
   }
-  if (panel === 'rolls') {
-    await renderSessionRolls(sessionId);
-    return;
-  }
   await renderSessionCharacters(sessionId);
 }
 window.switchSessionPanel = switchSessionPanel;
@@ -800,7 +795,7 @@ function renderOverviewTable(title, sub, rows, emptyText) {
                 <td><strong>${esc(r.col1 || '—')}</strong></td>
                 <td>${esc(r.name || d.name || '—')}</td>
                 <td>${esc(r.luck || (d.luck != null && String(d.luck).trim() !== '' ? String(d.luck) : '—'))}</td>
-                <td>${esc(summarizeCondition(d))}</td>
+                <td>${r.wounds ? `<strong>${esc(r.wounds)}</strong> · ` : ''}${esc(summarizeCondition(d))}</td>
                 <td>${esc(summarizeResources(d))}</td>
                 <td>${esc(summarizeNotableSkills(d))}</td>
                 <td>${esc(summarizeWeapons(d))}</td>
@@ -1006,166 +1001,300 @@ function rollOutcomeHtml(r) {
   return `<span class="roll-badge ${cls}">rolled ${shown} → ${esc(r.outcome)}${pass}</span>${luck}`;
 }
 
-function rollCardHtml(r, isGM, myId) {
-  const tgt = r.skill_value == null ? '' : ` [${r.skill_value}%]`;
-  const head = `${esc(r.character_name)} — ${esc(r.skill_label)}${tgt} (${ROLL_DIFF[r.difficulty] || r.difficulty})${ROLL_MOD[r.modifier] || ''}`;
-  const mine = r.user_id === myId;
-  const actions = [];
-  let luckRow = '';
-  if (r.status === 'pending' && !r.awaiting_luck && (mine || isGM)) {
-    actions.push(`<button class="btn btn-sm btn-primary" onclick="resolveAssignedRoll(${r.session_id}, ${r.id}, this)">Roll</button>`);
-  }
-  if (r.awaiting_luck && (mine || isGM)) {
-    const cap = r.luck_cap || 0;
-    luckRow = cap > 0
-      ? `<div class="roll-luck">Spend Luck (0–${cap}, ${r.luck_available} available):
-           <input type="number" id="luck-${r.id}" value="0" min="0" max="${cap}" style="width:5rem">
-           <button class="btn btn-sm btn-primary" onclick="finalizeAssignedRoll(${r.session_id}, ${r.id}, this)">Confirm</button></div>`
-      : `<div class="roll-luck"><span class="card-sub">No Luck can change this${r.outcome === 'fumble' ? ' (fumble)' : ''}.</span>
-           <button class="btn btn-sm btn-primary" onclick="finalizeAssignedRoll(${r.session_id}, ${r.id}, this)">Confirm</button></div>`;
-  }
-  if (r.status === 'pending' && isGM) actions.push(`<button class="btn btn-sm btn-danger" onclick="cancelAssignedRoll(${r.session_id}, ${r.id}, this)">Cancel</button>`);
-  if (r.status === 'resolved' && isGM && r.luck_spent > 0 && !r.restored_at) {
-    actions.push(`<button class="btn btn-sm" onclick="restoreRollLuck(${r.session_id}, ${r.id}, this)">Restore Luck</button>`);
-  }
+// Compact roll list for the GM Session Overview (informational + management;
+// the actual rolling happens from the Roll buttons on the sheet).
+function rollHistoryHtml(sessionId, rolls) {
+  const list = (rolls || []).filter((r) => r.status !== 'cancelled');
+  const rowHtml = (r) => {
+    const tgt = r.skill_value == null ? '' : ` [${r.skill_value}%]`;
+    const head = `${esc(r.character_name)} — ${esc(r.skill_label)}${tgt} (${ROLL_DIFF[r.difficulty] || r.difficulty})${ROLL_MOD[r.modifier] || ''}`;
+    const acts = [];
+    if (r.status === 'pending') acts.push(`<button class="btn btn-sm btn-danger" onclick="cancelAssignedRoll(${sessionId}, ${r.id}, this)">Cancel</button>`);
+    if (r.status === 'resolved' && r.luck_spent > 0 && !r.restored_at) acts.push(`<button class="btn btn-sm" onclick="restoreRollLuck(${sessionId}, ${r.id}, this)">Restore Luck</button>`);
+    return `<div class="roll-line">
+      <div><strong>${head}</strong><div class="card-sub">${rollOutcomeHtml(r)}${r.comment ? ` — “${esc(r.comment)}”` : ''}</div></div>
+      ${acts.length ? `<div style="display:flex;gap:0.4rem;flex-wrap:wrap">${acts.join('')}</div>` : ''}
+    </div>`;
+  };
+  const pending = list.filter((r) => r.status === 'pending');
+  const done = list.filter((r) => r.status === 'resolved');
   return `
-    <div class="card roll-card">
-      <div class="card-header">
-        <div><div class="card-title">${head}</div><div class="card-sub">${rollOutcomeHtml(r)}</div></div>
-        ${actions.length ? `<div style="display:flex;gap:0.5rem;flex-wrap:wrap">${actions.join('')}</div>` : ''}
-      </div>
-      ${r.comment ? `<p class="card-sub" style="margin:0.4rem 0 0">“${esc(r.comment)}”</p>` : ''}
-      ${luckRow}
+    <div class="card">
+      <div class="card-title">Rolls</div>
+      <div class="scenario-subtitle">Pending (${pending.length})</div>
+      ${pending.length ? pending.map(rowHtml).join('') : '<p class="card-sub">None — request a roll via the Roll button on a character\'s skill.</p>'}
+      <div class="scenario-subtitle" style="margin-top:0.75rem">History (${done.length})</div>
+      ${done.length ? done.map(rowHtml).join('') : '<p class="card-sub">No resolved rolls yet.</p>'}
     </div>`;
 }
 
-function luckLedgerHtml(luck) {
-  const list = (luck || []).filter((l) => l);
+const WOUND_KEYS = ['hurt', 'bloodied', 'down', 'impaired'];
+
+function statLineHtml(sessionId, u, label, stat, cur, base, extra, adjArr) {
+  const chips = (adjArr || []).map((a) => `<span class="luck-adj">${a.delta > 0 ? '+' : ''}${a.delta}${a.note ? ` (${esc(a.note)})` : ''} <button class="btn btn-sm" onclick="clearStatAdj(${sessionId}, ${a.id}, this)">clear</button></span>`).join(' ');
+  return `<div class="state-line">
+    <div class="state-head"><strong>${label}</strong> <span class="roll-badge">${cur}/${base}</span>${extra || ''}</div>
+    ${chips ? `<div class="state-chips">${chips}</div>` : ''}
+    <div class="luck-adj-form">
+      <input type="number" id="adj-${stat}-${u}" placeholder="±${label}" style="width:5rem">
+      <input type="text" id="adjn-${stat}-${u}" placeholder="note">
+      <button class="btn btn-sm" onclick="addStatAdj(${sessionId}, ${u}, '${stat}', this)">Add</button>
+    </div>
+  </div>`;
+}
+
+function luckLedgerHtml(sessionId, ledger) {
+  const list = (ledger || []).filter((l) => l);
   if (!list.length) return '';
   return `
     <div class="card">
-      <div class="card-title">Luck this session</div>
-      <div class="table-wrap"><table>
-        <thead><tr><th>Character</th><th>Base</th><th>Spent</th><th>Effective</th></tr></thead>
-        <tbody>${list.map((l) => `<tr>
-          <td>${esc(l.character_name)}</td><td>${l.base}</td>
-          <td>${l.spent ? `−${l.spent}` : '0'}</td>
-          <td><strong>${l.effective}</strong></td>
-        </tr>`).join('')}</tbody>
-      </table></div>
-      <div class="card-sub" style="margin-top:0.4rem">Spent Luck counts until you “Restore Luck” on a resolved roll below (e.g. between sessions).</div>
+      <div class="card-title">Conditions &amp; Current Stats</div>
+      ${list.map((l) => {
+        const u = l.user_id;
+        const checks = WOUND_KEYS.map((w) => `<label class="wound-tog"><input type="checkbox" id="w-${u}-${w}"${l.wounds && l.wounds[w] ? ' checked' : ''} onchange="toggleWounds(${sessionId}, ${u})"> ${w[0].toUpperCase()}${w.slice(1)}</label>`).join('');
+        return `<div class="state-card">
+          <div class="state-name">${esc(l.character_name)}</div>
+          ${statLineHtml(sessionId, u, 'HP', 'hp', l.hp.current, l.hp.base, '', l.adjustments.hp)}
+          ${statLineHtml(sessionId, u, 'MP', 'mp', l.mp.current, l.mp.base, '', l.adjustments.mp)}
+          ${statLineHtml(sessionId, u, 'Luck', 'luck', l.effective, l.base, l.spent ? ` <span class="card-sub">(−${l.spent} spent on rolls)</span>` : '', l.adjustments.luck)}
+          <div class="state-wounds">Wounds: ${checks}</div>
+        </div>`;
+      }).join('')}
+      <div class="card-sub" style="margin-top:0.4rem">Current = base/derived + GM modifiers (Luck also − roll spends). Modifiers persist until cleared. “Restore Luck” on a resolved roll below clears its spend.</div>
     </div>`;
 }
 
-async function renderSessionRolls(sessionId) {
-  const tab = el('session-content');
-  if (!tab) return;
-  tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading rolls…</p>';
-  const isGM = State.user.role === 'gm';
-  let rolls = [];
-  let luck = null;
-  let players = [];
-  let settings = { advantage_mode: 'rol' };
+async function toggleWounds(sessionId, userId) {
+  const w = {};
+  for (const k of WOUND_KEYS) { const c = el(`w-${userId}-${k}`); w[k] = !!(c && c.checked); }
   try {
-    const reqs = [api.getSessionRolls(sessionId)];
-    if (isGM) { reqs.push(api.getSessionPlayers(sessionId)); reqs.push(api.getSessionSettings(sessionId)); }
-    const out = await Promise.all(reqs);
-    rolls = (out[0] && out[0].rolls) || [];
-    luck = out[0] && out[0].luck;
-    if (isGM) { players = out[1] || []; settings = out[2] || settings; }
-  } catch (e) {
-    tab.innerHTML = `<div class="page-header"><h2>Rolls</h2></div><div class="alert alert-danger">${esc(e.message)}</div>`;
-    return;
-  }
-  const myId = State.user.id;
-  const assign = isGM ? `
-    <div class="card">
-      <div class="card-title">Assign a roll</div>
-      <div class="card-sub" style="margin-bottom:0.6rem">Advantage handling: <strong>${esc(ADV_MODE_LABEL[settings.advantage_mode] || settings.advantage_mode)}</strong> — change per case in Admin → Case Settings.</div>
-      <div class="roll-form">
-        <select id="roll-user">${players.length ? players.map((p) => `<option value="${p.id}">${esc(p.username)}</option>`).join('') : '<option value="">(no players assigned)</option>'}</select>
-        <input type="text" id="roll-skill" placeholder="Roll / skill, e.g. Library">
-        <input type="number" id="roll-value" placeholder="Target % (optional)" min="1" max="100">
-        <select id="roll-diff"><option value="regular">Regular</option><option value="hard">Hard</option><option value="extreme">Extreme</option></select>
-        <select id="roll-mod"><option value="none">No modifier</option><option value="advantage">Advantage</option><option value="disadvantage">Disadvantage</option></select>
-        <input type="text" id="roll-comment" placeholder="Comment (optional, shown to that player)">
-        <button class="btn btn-primary" onclick="assignRoll(${sessionId}, this)">Assign</button>
-      </div>
-    </div>` : '';
-  const pending = rolls.filter((r) => r.status === 'pending');
-  const done = rolls.filter((r) => r.status !== 'pending');
-  tab.innerHTML = `
-    <div class="page-header">
-      <div><h2>Rolls</h2><p class="card-sub">${isGM ? 'Assign rolls to players; they resolve them here.' : 'Rolls the GM has asked you to make.'}</p></div>
-    </div>
-    <div id="rolls-alert"></div>
-    ${assign}
-    ${isGM ? luckLedgerHtml(luck) : ''}
-    <div class="scenario-subtitle">Pending (${pending.length})</div>
-    ${pending.length ? `<div class="roll-grid">${pending.map((r) => rollCardHtml(r, isGM, myId)).join('')}</div>` : '<div class="empty" style="padding:1rem"><p>No pending rolls.</p></div>'}
-    <div class="scenario-subtitle" style="margin-top:1rem">History (${done.length})</div>
-    ${done.length ? `<div class="roll-grid">${done.map((r) => rollCardHtml(r, isGM, myId)).join('')}</div>` : '<div class="empty" style="padding:1rem"><p>No resolved rolls yet.</p></div>'}`;
+    await api.setSessionWounds(sessionId, userId, w);
+    await reloadCurrentSessionPanel();
+  } catch (e) { showAlert(e.message, 'danger', 'session-alert'); }
+}
+window.toggleWounds = toggleWounds;
+
+async function addStatAdj(sessionId, userId, stat, btn) {
+  const delta = parseInt((el(`adj-${stat}-${userId}`) || {}).value, 10);
+  const note = ((el(`adjn-${stat}-${userId}`) || {}).value || '').trim();
+  if (!Number.isFinite(delta) || delta === 0) return showAlert(`Enter a non-zero ${stat.toUpperCase()} modifier (e.g. -3 or 2).`, 'danger', 'session-alert');
+  btn.disabled = true;
+  try {
+    await api.addSessionStatAdjustment(sessionId, userId, stat, delta, note);
+    await reloadCurrentSessionPanel();
+  } catch (e) { showAlert(e.message, 'danger', 'session-alert'); btn.disabled = false; }
+}
+window.addStatAdj = addStatAdj;
+
+async function clearStatAdj(sessionId, adjId, btn) {
+  btn.disabled = true;
+  try {
+    await api.clearSessionStatAdjustment(sessionId, adjId);
+    await reloadCurrentSessionPanel();
+  } catch (e) { showAlert(e.message, 'danger', 'session-alert'); btn.disabled = false; }
+}
+window.clearStatAdj = clearStatAdj;
+
+// ── Per-skill Roll buttons on the character sheet ────────────────────────────
+let skillRollCtx = null;
+function normSkill(s) { return String(s == null ? '' : s).trim().toLowerCase(); }
+
+// Build the roll context for a player's case sheet: who, and which skills the
+// GM currently has a pending request against (so we can highlight them).
+async function buildSkillRollCtx(sessionId, userId, isGM) {
+  const pending = {};
+  let state = null;
+  try {
+    const d = await api.getSessionRolls(sessionId);
+    ((d && d.rolls) || []).forEach((r) => {
+      if (r.user_id === userId && r.status === 'pending') pending[normSkill(r.skill_label)] = r;
+    });
+    state = ((d && d.luck) || []).find((l) => l.user_id === userId) || null;
+  } catch { /* a rolls fetch failure must not break the sheet */ }
+  return { sessionId, userId, isGM, pending, state };
 }
 
-async function assignRoll(sessionId, btn) {
-  const payload = {
-    user_id: el('roll-user').value,
-    skill_label: el('roll-skill').value.trim(),
-    skill_value: el('roll-value').value.trim(),
-    difficulty: el('roll-diff').value,
-    modifier: el('roll-mod').value,
-    comment: el('roll-comment').value.trim()
+function makeRollButton(ctx, name, value) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  const pend = ctx.pending[normSkill(name)];
+  b.className = `sheet-roll-btn${pend ? ' roll-needed' : ''}`;
+  b.textContent = pend && !ctx.isGM ? 'Roll ●' : 'Roll';
+  b.title = pend
+    ? (ctx.isGM ? `Requested: ${name} (${pend.difficulty})` : 'The GM has asked for this roll')
+    : (ctx.isGM ? `Request a ${name} roll` : `Make a ${name} roll`);
+  b.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openSkillRollModal(ctx, name, value(), ctx.pending[normSkill(name)] || null);
+  });
+  return b;
+}
+
+// Append a Roll button to each skill / characteristic row. Idempotent.
+function attachSkillRollButtons(host, ctx) {
+  if (!host || !ctx) return;
+  skillRollCtx = ctx;
+  const add = (row, name, valEl) => {
+    if (!row || !name || !String(name).trim()) return;
+    if (row.querySelector(':scope > .sheet-roll-btn')) return;
+    row.classList.add('with-roll'); // CSS extends the row's grid to keep it inline
+    row.appendChild(makeRollButton(ctx, String(name).trim(), () => (valEl ? valEl.value : '')));
   };
-  if (!payload.user_id) return showAlert('Choose a player.', 'danger', 'rolls-alert');
-  if (!payload.skill_label) return showAlert('Enter a roll / skill label.', 'danger', 'rolls-alert');
-  btn.disabled = true;
-  try {
-    await api.createSessionRoll(sessionId, payload);
-    await renderSessionRolls(sessionId);
-  } catch (e) {
-    showAlert(e.message, 'danger', 'rolls-alert');
-    btn.disabled = false;
-  }
-}
-window.assignRoll = assignRoll;
+  host.querySelectorAll('#common-skills .csk-row').forEach((r) => add(r, r.dataset.name, r.querySelector('.csk-val')));
+  host.querySelectorAll('#combat-skills .combat-skill-row').forEach((r) => add(r, (r.querySelector('input[readonly]') || {}).value, r.querySelector('.combat-skill-full')));
+  host.querySelectorAll('#mandatory-skills .skill-row').forEach((r) => add(r, (r.querySelector('.msk-name') || {}).value, r.querySelector('.msk-val')));
+  host.querySelectorAll('#additional-skills .skill-row').forEach((r) => add(r, (r.querySelector('.ask-name') || {}).value, r.querySelector('.ask-val')));
+  ['str', 'con', 'dex', 'int', 'pow', 'siz'].forEach((k) => {
+    const inp = host.querySelector(`#sf_${k}`);
+    if (inp && inp.parentElement && !inp.parentElement.querySelector(':scope > .sheet-roll-btn')) {
+      inp.parentElement.classList.add('with-roll');
+      if (inp.parentElement.parentElement) inp.parentElement.parentElement.classList.add('with-roll-grid');
+      inp.parentElement.appendChild(makeRollButton(ctx, k.toUpperCase(), () => inp.value));
+    }
+  });
 
-async function resolveAssignedRoll(sessionId, rollId, btn) {
-  btn.disabled = true;
-  btn.textContent = 'Rolling…';
-  try {
-    await api.resolveSessionRoll(sessionId, rollId);
-    await renderSessionRolls(sessionId);
-  } catch (e) {
-    showAlert(e.message, 'danger', 'rolls-alert');
-    btn.disabled = false;
-    btn.textContent = 'Roll';
-  }
-}
-window.resolveAssignedRoll = resolveAssignedRoll;
+  // Derived stats: title + value (+ Roll for SAN/Luck) all inline, like the
+  // base-stats block. No per-field badge — current values get their own row.
+  [['#sf_derived_hp'], ['#sf_derived_san', 'SAN'], ['#sf_derived_mp'], ['#sf_derived_build'], ['#sf_derived_move'], ['#sf_derived_luck', 'Luck']]
+    .forEach(([id, rollName]) => {
+      const inp = host.querySelector(id);
+      const cell = inp && inp.closest('.form-group');
+      if (!cell) return;
+      cell.classList.add('with-roll');
+      if (rollName && !cell.querySelector(':scope > .sheet-roll-btn')) {
+        cell.appendChild(makeRollButton(ctx, rollName, () => inp.value));
+      }
+    });
 
-async function finalizeAssignedRoll(sessionId, rollId, btn) {
-  const input = el(`luck-${rollId}`);
-  let luck = input ? parseInt(input.value, 10) : 0;
-  if (!Number.isFinite(luck) || luck < 0) luck = 0;
-  btn.disabled = true;
-  btn.textContent = 'Confirming…';
-  try {
-    await api.finalizeSessionRoll(sessionId, rollId, luck);
-    await renderSessionRolls(sessionId);
-  } catch (e) {
-    showAlert(e.message, 'danger', 'rolls-alert');
-    btn.disabled = false;
-    btn.textContent = 'Confirm';
+  // Current HP / MP / Luck — its own 3-column row, each with a Roll button.
+  const st = ctx.state;
+  const grid = host.querySelector('.derived-grid');
+  if (st && grid && !host.querySelector('.current-row')) {
+    const wrap = document.createElement('div');
+    wrap.className = 'current-row';
+    const cell = (label, name, cur, base, rollable) => {
+      const d = document.createElement('div');
+      d.className = 'current-cell';
+      d.innerHTML = `<div class="current-label">${label}</div><div class="current-val">${cur}</div>`;
+      if (rollable) d.appendChild(makeRollButton(ctx, name, () => String(cur)));
+      return d;
+    };
+    wrap.appendChild(cell('Current HP', 'HP', st.hp.current, st.hp.base, false));
+    wrap.appendChild(cell('Current MP', 'MP', st.mp.current, st.mp.base, false));
+    wrap.appendChild(cell('Current Luck', 'Luck', st.effective, st.base, true));
+    grid.insertAdjacentElement('afterend', wrap);
   }
 }
-window.finalizeAssignedRoll = finalizeAssignedRoll;
+
+// Stateful popup: GM requests a roll; a player resolves a request or makes an
+// unprompted roll (roll → optional Luck → confirm).
+function openSkillRollModal(ctx, skill, value, pending) {
+  const bd = modal('<div id="srm"></div>', (root) => {
+    const m = root.querySelector('.modal');
+    if (m) m.style.maxWidth = '460px';
+  });
+  const body = bd.querySelector('#srm');
+  const close = () => bd.remove();
+  const done = async () => { close(); await reloadCurrentSessionPanel(); };
+  const diffSel = '<select id="srm-diff"><option value="regular">Regular</option><option value="hard">Hard</option><option value="extreme">Extreme</option></select>';
+  const modSel = '<select id="srm-mod"><option value="none">No modifier</option><option value="advantage">Advantage</option><option value="disadvantage">Disadvantage</option></select>';
+  const titleTgt = value ? ` <span class="card-sub">[${esc(String(value))}%]</span>` : '';
+
+  function gmView() {
+    if (pending) {
+      body.innerHTML = `<h3>${esc(skill)} — requested</h3>
+        <p class="card-sub">${ROLL_DIFF[pending.difficulty]}${ROLL_MOD[pending.modifier] || ''}${pending.comment ? ` — “${esc(pending.comment)}”` : ''} · status: ${esc(pending.status)}</p>
+        <div class="modal-actions"><button class="btn btn-danger" id="srm-cancel">Cancel request</button><button class="btn" id="srm-x">Close</button></div>`;
+      body.querySelector('#srm-x').onclick = close;
+      body.querySelector('#srm-cancel').onclick = async () => {
+        try { await api.cancelSessionRoll(ctx.sessionId, pending.id); await done(); } catch (e) { alert(e.message); }
+      };
+      return;
+    }
+    body.innerHTML = `<h3>Request roll — ${esc(skill)}${titleTgt}</h3>
+      <div class="form-group"><label>Difficulty</label>${diffSel}</div>
+      <div class="form-group"><label>Modifier</label>${modSel}</div>
+      <div class="form-group"><label>Comment (shown to the player)</label><input type="text" id="srm-comment"></div>
+      <div class="modal-actions"><button class="btn" id="srm-x">Cancel</button><button class="btn btn-primary" id="srm-go">Request</button></div>`;
+    body.querySelector('#srm-x').onclick = close;
+    body.querySelector('#srm-go').onclick = async (ev) => {
+      ev.target.disabled = true;
+      try {
+        await api.createSessionRoll(ctx.sessionId, {
+          user_id: ctx.userId, skill_label: skill, skill_value: value,
+          difficulty: body.querySelector('#srm-diff').value,
+          modifier: body.querySelector('#srm-mod').value,
+          comment: body.querySelector('#srm-comment').value.trim()
+        });
+        await done();
+      } catch (e) { ev.target.disabled = false; alert(e.message); }
+    };
+  }
+
+  function showResult(r) {
+    const cap = r.luck_cap || 0;
+    body.innerHTML = `<h3>${esc(skill)}</h3>
+      <div class="srm-result">${rollOutcomeHtml(r)}</div>
+      ${r.awaiting_luck && cap > 0
+        ? `<div class="form-group"><label>Spend Luck (0–${cap}, ${r.luck_available} available)</label><input type="number" id="srm-luck" value="0" min="0" max="${cap}"></div>`
+        : (r.awaiting_luck ? `<p class="card-sub">No Luck can change this${r.outcome === 'fumble' ? ' (fumble)' : ''}.</p>` : '')}
+      <div class="modal-actions">${r.awaiting_luck
+        ? '<button class="btn btn-primary" id="srm-confirm">Confirm</button>'
+        : '<button class="btn btn-primary" id="srm-done">Done</button>'}</div>`;
+    if (r.awaiting_luck) {
+      body.querySelector('#srm-confirm').onclick = async (ev) => {
+        ev.target.disabled = true;
+        const li = body.querySelector('#srm-luck');
+        let lk = li ? parseInt(li.value, 10) : 0;
+        if (!Number.isFinite(lk) || lk < 0) lk = 0;
+        try { showResult(await api.finalizeSessionRoll(ctx.sessionId, r.id, lk)); } catch (e) { ev.target.disabled = false; alert(e.message); }
+      };
+    } else {
+      body.querySelector('#srm-done').onclick = done;
+    }
+  }
+
+  function playerView() {
+    if (pending) {
+      body.innerHTML = `<h3>${esc(skill)} — GM request</h3>
+        <p class="card-sub">${ROLL_DIFF[pending.difficulty]}${ROLL_MOD[pending.modifier] || ''}${pending.comment ? ` — “${esc(pending.comment)}”` : ''}</p>
+        <div class="modal-actions"><button class="btn" id="srm-x">Later</button><button class="btn btn-primary" id="srm-roll">Roll</button></div>`;
+      body.querySelector('#srm-x').onclick = close;
+      body.querySelector('#srm-roll').onclick = async (ev) => {
+        ev.target.disabled = true;
+        try { showResult(await api.resolveSessionRoll(ctx.sessionId, pending.id)); } catch (e) { ev.target.disabled = false; alert(e.message); }
+      };
+      return;
+    }
+    body.innerHTML = `<h3>Roll ${esc(skill)}${titleTgt}</h3>
+      <div class="form-group"><label>Difficulty</label>${diffSel}</div>
+      <div class="form-group"><label>Modifier</label>${modSel}</div>
+      <div class="modal-actions"><button class="btn" id="srm-x">Cancel</button><button class="btn btn-primary" id="srm-roll">Roll</button></div>`;
+    body.querySelector('#srm-x').onclick = close;
+    body.querySelector('#srm-roll').onclick = async (ev) => {
+      ev.target.disabled = true;
+      try {
+        const created = await api.createSelfRoll(ctx.sessionId, {
+          skill_label: skill, skill_value: value,
+          difficulty: body.querySelector('#srm-diff').value,
+          modifier: body.querySelector('#srm-mod').value
+        });
+        showResult(await api.resolveSessionRoll(ctx.sessionId, created.id));
+      } catch (e) { ev.target.disabled = false; alert(e.message); }
+    };
+  }
+
+  if (ctx.isGM) gmView();
+  else playerView();
+}
 
 async function restoreRollLuck(sessionId, rollId, btn) {
   if (!confirm('Restore (clear) this Luck loss? It will stop counting against the character this session.')) return;
   btn.disabled = true;
   try {
     await api.restoreSessionRollLuck(sessionId, rollId);
-    await renderSessionRolls(sessionId);
+    await reloadCurrentSessionPanel();
   } catch (e) {
     showAlert(e.message, 'danger', 'rolls-alert');
     btn.disabled = false;
@@ -1178,7 +1307,7 @@ async function cancelAssignedRoll(sessionId, rollId, btn) {
   btn.disabled = true;
   try {
     await api.cancelSessionRoll(sessionId, rollId);
-    await renderSessionRolls(sessionId);
+    await reloadCurrentSessionPanel();
   } catch (e) {
     showAlert(e.message, 'danger', 'rolls-alert');
     btn.disabled = false;
@@ -1211,10 +1340,12 @@ async function renderSessionOverview(sessionId) {
   ((rollsData && rollsData.luck) || []).forEach((l) => { luckByUser[l.user_id] = l; });
   const playerRows = players.map((p) => {
     const l = luckByUser[p.id];
+    const wlabels = l && l.wounds ? WOUND_KEYS.filter((w) => l.wounds[w]).map((w) => w[0].toUpperCase() + w.slice(1)) : [];
     return {
       col1: p.username,
       name: (sheetMap[p.id] && sheetMap[p.id].data && sheetMap[p.id].data.name) || '—',
       luck: l ? `${l.effective} eff${l.spent ? ` (−${l.spent} of ${l.base})` : ''}` : null,
+      wounds: wlabels.join(', '),
       d: (sheetMap[p.id] && sheetMap[p.id].data) || {}
     };
   });
@@ -1232,7 +1363,9 @@ async function renderSessionOverview(sessionId) {
     </div>
     <div id="session-alert"></div>
     ${renderOverviewTable('Player Characters', 'Assigned players in this case.', playerRows, 'No players assigned to this case yet.')}
-    ${renderOverviewTable('NPCs', 'NPCs allocated to this case.', npcRows, 'No NPCs allocated to this case yet.')}`;
+    ${renderOverviewTable('NPCs', 'NPCs allocated to this case.', npcRows, 'No NPCs allocated to this case yet.')}
+    ${luckLedgerHtml(sessionId, (rollsData && rollsData.luck) || [])}
+    ${rollHistoryHtml(sessionId, (rollsData && rollsData.rolls) || [])}`;
 }
 
 async function renderGMSessionView(sessionId, preferredUserId = null) {
@@ -1293,6 +1426,7 @@ async function renderGMSessionView(sessionId, preferredUserId = null) {
       <button class="btn" onclick="exportPdf()">Export PDF</button>
       <span class="save-status" id="save-status"></span>
     </div>`);
+    try { attachSkillRollButtons(area, await buildSkillRollCtx(sessionId, userId, true)); } catch (e) { /* non-fatal */ }
   }
   window.gmSelectSheet = gmSelectSheet;
 }
@@ -1314,6 +1448,7 @@ async function renderPlayerSessionView(sessionId) {
     </div>`;
 
   SheetForm.render(el('sheet-form-area'), hasSheet ? sheet.data : {}, false);
+  try { attachSkillRollButtons(el('sheet-form-area'), await buildSkillRollCtx(sessionId, State.user.id, false)); } catch (e) { /* non-fatal */ }
 }
 
 async function saveSheet(sessionId) {
