@@ -36,7 +36,9 @@ function ollamaStatus() {
     busy: ollamaActivity.active > 0,
     active: ollamaActivity.active,
     started_at: ollamaActivity.startedAt,
-    last_section: ollamaActivity.lastSection
+    last_section: ollamaActivity.lastSection,
+    url: OLLAMA_URL,
+    model: OLLAMA_MODEL
   };
 }
 
@@ -1223,7 +1225,8 @@ function extractJsonCandidate(text) {
 // Streaming is the actual fix for "fetch failed": with stream:false a big
 // section returns nothing until generation completes, so undici tears the
 // socket down on headersTimeout. `options.signal` lets a caller cancel.
-async function callOllama(prompt, { signal, label } = {}) {
+async function callOllama(prompt, { signal, label, onProgress } = {}) {
+  const startedMs = Date.now();
   const controller = new AbortController();
   const linkAbort = () => controller.abort(signal && signal.reason);
   if (signal) {
@@ -1281,6 +1284,8 @@ async function callOllama(prompt, { signal, label } = {}) {
       if (obj.error) throw new Error(`Ollama error: ${obj.error}`);
       if (obj.message && typeof obj.message.content === 'string') content += obj.message.content;
     };
+    let lastTick = 0;
+    let firstByte = false;
     for (;;) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -1289,6 +1294,14 @@ async function callOllama(prompt, { signal, label } = {}) {
       while ((nl = buffer.indexOf('\n')) >= 0) {
         consume(buffer.slice(0, nl));
         buffer = buffer.slice(nl + 1);
+      }
+      if (typeof onProgress === 'function') {
+        const now = Date.now();
+        if (!firstByte || now - lastTick >= 400) {
+          firstByte = true;
+          lastTick = now;
+          try { onProgress({ label, chars: content.length, elapsedMs: now - startedMs }); } catch { /* progress is best-effort */ }
+        }
       }
     }
     consume(buffer);
@@ -1310,7 +1323,7 @@ async function callOllama(prompt, { signal, label } = {}) {
   }
 }
 
-async function regenerateScenarioSection(sessionId, sectionId, db) {
+async function regenerateScenarioSection(sessionId, sectionId, db, opts = {}) {
   const session = getSessionById(db, sessionId);
   if (!session) return null;
   const section = readScenarioSection(session, sectionId);
@@ -1322,7 +1335,7 @@ async function regenerateScenarioSection(sessionId, sectionId, db) {
   const { config, paths, artifact, value: currentValue } = section;
   const sourceFiles = listSessionSourceFiles(session, { includePrivate: config.artifact === 'gm' });
   const prompt = renderSectionPrompt(session, db, config, artifact, currentValue, sourceFiles);
-  const raw = await callOllama(prompt, { label: config.id });
+  const raw = await callOllama(prompt, { label: config.id, signal: opts.signal, onProgress: opts.onProgress });
   let parsed;
   try {
     parsed = JSON.parse(extractJsonCandidate(raw));
@@ -1369,13 +1382,22 @@ async function regenerateScenarioSections(sessionId, db, options = {}) {
     error.statusCode = 400;
     throw error;
   }
+  const onEvent = typeof options.onEvent === 'function' ? options.onEvent : () => {};
   const regenerated = [];
   const errors = [];
-  for (const id of ids) {
+  for (let i = 0; i < ids.length; i += 1) {
+    const id = ids[i];
+    onEvent({ type: 'start', id, index: i + 1, total: ids.length });
     try {
-      regenerated.push(await regenerateScenarioSection(session.id, id, db));
+      const result = await regenerateScenarioSection(session.id, id, db, {
+        signal: options.signal,
+        onProgress: (p) => onEvent({ type: 'progress', id, index: i + 1, total: ids.length, ...p })
+      });
+      regenerated.push(result);
+      onEvent({ type: 'done', id, index: i + 1, total: ids.length, output_path: result.output_path });
     } catch (e) {
       errors.push({ section_id: id, error: e.message, ollama_response: e.ollama_response });
+      onEvent({ type: 'error', id, index: i + 1, total: ids.length, error: e.message });
     }
   }
   return {

@@ -13,7 +13,8 @@
 const db = require('../src/db');
 const {
   findSessionByToken,
-  regenerateScenarioSections
+  regenerateScenarioSections,
+  ollamaStatus
 } = require('../src/scenarioInfo');
 
 function readFlag(argv, ...names) {
@@ -46,20 +47,49 @@ const options = {
   sections: sectionsArg ? sectionsArg.split(',').map((s) => s.trim()).filter(Boolean) : null
 };
 
+const isTTY = !!process.stdout.isTTY;
+const secs = (ms) => `${(ms / 1000).toFixed(1)}s`;
+const line = (s) => `${s}`.padEnd(78).slice(0, 78);
+const starts = new Map();
+
+// Live per-section feedback. The Ollama call is streamed, so this heartbeat
+// reflects real generation progress (elapsed + characters received so far),
+// not just a spinner — the model work itself runs inside Ollama.
+function onEvent(ev) {
+  const tag = `[${ev.index}/${ev.total}] ${ev.id}`;
+  if (ev.type === 'start') {
+    starts.set(ev.id, Date.now());
+    if (isTTY) process.stdout.write(`\r${line(`→ ${tag}  connecting…`)}`);
+    else console.log(`→ ${tag}`);
+  } else if (ev.type === 'progress') {
+    if (!isTTY) return; // avoid flooding non-TTY logs; start/done lines suffice
+    process.stdout.write(`\r${line(`→ ${tag}  ${secs(ev.elapsedMs)}  ${ev.chars.toLocaleString()} chars`)}`);
+  } else if (ev.type === 'done') {
+    const took = secs(Date.now() - (starts.get(ev.id) || Date.now()));
+    const msg = `✓ ${tag}  (${took})  → ${ev.output_path}`;
+    if (isTTY) process.stdout.write(`\r${line(msg)}\n`);
+    else console.log(msg);
+  } else if (ev.type === 'error') {
+    const took = secs(Date.now() - (starts.get(ev.id) || Date.now()));
+    const msg = `✗ ${tag}  (${took})  ${ev.error}`;
+    if (isTTY) process.stderr.write(`\r${line(msg)}\n`);
+    else console.error(msg);
+  }
+}
+
 (async () => {
+  const ol = ollamaStatus();
   console.log(`Session: ${session.name} (${session.id})`);
+  console.log(`Ollama:  ${ol.model} @ ${ol.url}`);
   console.log(options.sections ? `Sections: ${options.sections.join(', ')}`
     : options.artifact ? `Artifact: ${options.artifact} (all sections)`
     : 'Regenerating all sections');
+  console.log('');
 
-  const result = await regenerateScenarioSections(session.id, db, options);
-  for (const item of result.regenerated || []) {
-    console.log(`  ✓ ${item.section_id} → ${item.output_path}`);
-  }
-  for (const failure of result.errors || []) {
-    console.error(`  ✗ ${failure.section_id}: ${failure.error}`);
-  }
-  console.log(`Done: ${result.regenerated.length} regenerated, ${result.errors.length} failed.`);
+  const startedAll = Date.now();
+  const result = await regenerateScenarioSections(session.id, db, { ...options, onEvent });
+  console.log('');
+  console.log(`Done in ${secs(Date.now() - startedAll)}: ${result.regenerated.length} regenerated, ${result.errors.length} failed.`);
   process.exit(result.errors.length ? 1 : 0);
 })().catch((e) => {
   console.error(e.message || e);
