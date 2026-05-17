@@ -1,21 +1,32 @@
 # TODO
 
-- **Player-private artifacts.** Let the GM attach a private file/picture to a
-  specific player, shown at the bottom of that player's Characters tab and
-  visible only to them (and the GM) — for private clues to roleplay with.
-  Notes: unlike LLM entities, players are real accounts with stable IDs, so
-  key the scope off the user/account id (not character name). Likely a
-  per-player private area (e.g. `Gallery/private/<userId>/`); the asset route
-  must let a player fetch only their own private files (GM sees all), and
-  these must never feed the source walks / LLM context. Surfacing: a
-  "From the GM" section at the foot of the player session view; GM manages
-  assignment via Edit Files (a new visibility target alongside GM Only /
-  Player Handout).
+- **Visibility-set artifacts (master folder + audience copies).** Replace the
+  folder-based GM-only/Player-Handout toggle with a per-artifact visibility
+  set. Layout:
+  - `Gallery/_master/<file>` — canonical copy; never walked by the source/
+    asset listers and never fed to the LLM.
+  - `Gallery/all/`, `Gallery/gm/`, `Gallery/<userId>/` — a **copy** of the
+    file in each audience that may see it (copies, not hard links — robust
+    on every filesystem; files are tiny vs. the app).
+  - The visibility set = which audience folders contain `<file>` (matched by
+    filename). Empty set (master only) = **archived**. Grant = copy
+    master→audience; revoke = delete that audience copy; delete = remove
+    master + all copies.
+  - **Replace** overwrites every audience copy that has the file; **Rename**
+    renames master + all copies together (copies don't share an inode).
+  - Asset route, listers, and the prose injector consult audience folders
+    only; a player is served a file only if it is in `all/` or their own
+    `<userId>/`. Per-character artifacts surface display-time in a
+    "From the GM" section at the foot of that player's view — never via the
+    shared-prose injector.
+  - Keyed by user/account id, labelled by character in the UI. New handouts
+    / extracted NPC portraits default to the `gm` audience.
+  - Edit Files: the GM Only ⇄ Player Handout control becomes a multi-select
+    of {GM, All, each character}; clearing all archives it; the list always
+    shows every master file so archived artifacts stay reachable.
 
-- **Archive / Unarchive files.** A pair of actions for files that should be
-  kept but must not appear in, or feed into, any description or analysis
-  (i.e. excluded from the GM/player source walks and the LLM context).
-  Likely an `archive/` subfolder that the source/asset listers skip.
+  This single feature replaces the folder toggle and subsumes per-character
+  private clues AND archive/unarchive.
 
 ## Done
 
