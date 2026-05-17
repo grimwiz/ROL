@@ -31,6 +31,40 @@ try {
 // In-process view of whether a generation is running, for a future busyness
 // monitor. Kept here so the single Ollama path owns the truth.
 const ollamaActivity = { active: 0, startedAt: null, lastSection: null };
+
+// Global app config (model override etc.) persisted outside the per-case DB.
+const APP_CONFIG_PATH = path.join(DATA_ROOT, 'app-config.json');
+function readAppConfig() {
+  try { return JSON.parse(fs.readFileSync(APP_CONFIG_PATH, 'utf8')) || {}; }
+  catch { return {}; }
+}
+function effectiveOllamaModel() {
+  const m = readAppConfig().ollama_model;
+  return (typeof m === 'string' && m.trim()) ? m.trim() : OLLAMA_MODEL;
+}
+function setOllamaModel(model) {
+  const m = String(model == null ? '' : model).trim();
+  if (!m) { const e = new Error('A model name is required'); e.statusCode = 400; throw e; }
+  const cfg = readAppConfig();
+  cfg.ollama_model = m;
+  fs.mkdirSync(DATA_ROOT, { recursive: true });
+  fs.writeFileSync(APP_CONFIG_PATH, JSON.stringify(cfg, null, 2) + '\n', 'utf8');
+  return effectiveOllamaModel();
+}
+// Pull installed models from the Ollama server's /api/tags.
+async function listOllamaModels() {
+  const resp = await fetch(`${OLLAMA_URL.replace(/\/+$/, '')}/api/tags`);
+  if (!resp.ok) {
+    const e = new Error(`Ollama /api/tags returned HTTP ${resp.status}`);
+    e.statusCode = 502; throw e;
+  }
+  const data = await resp.json().catch(() => ({}));
+  return (Array.isArray(data.models) ? data.models : [])
+    .map((x) => x && x.name)
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
+}
+
 function ollamaStatus() {
   return {
     busy: ollamaActivity.active > 0,
@@ -38,7 +72,8 @@ function ollamaStatus() {
     started_at: ollamaActivity.startedAt,
     last_section: ollamaActivity.lastSection,
     url: OLLAMA_URL,
-    model: OLLAMA_MODEL
+    model: effectiveOllamaModel(),
+    default_model: OLLAMA_MODEL
   };
 }
 
@@ -113,6 +148,8 @@ function getSessionPaths(session) {
     gmInput,
     outputPlayer,
     outputGm,
+    gallery: path.join(root, 'Gallery'),       // player-visible artifacts
+    gmGallery: path.join(gmInput, 'Gallery'),  // GM-only artifacts
     sources: input,
     publicSource: path.join(input, 'player.md'),
     gmSource: path.join(gmInput, 'gm.md'),
@@ -595,7 +632,8 @@ function listSessionSourceFiles(session, options = {}) {
     }
   }
   walkFiles(paths.input, addFile);
-  if (includePrivate) walkFiles(paths.gmInput, addFile);
+  walkFiles(paths.gallery, addFile); // player-visible artifacts
+  if (includePrivate) walkFiles(paths.gmInput, addFile); // includes GM/Gallery
   return files.sort((a, b) => a.path.localeCompare(b.path));
 }
 
@@ -1200,9 +1238,23 @@ function renderPromptFileBundle(sourceFiles) {
   return sections.join('\n');
 }
 
+function renderImageInventory(sourceFiles) {
+  const imgs = (sourceFiles || []).filter((f) => f && f.kind === 'graphic' && f.path);
+  if (!imgs.length) return '';
+  const list = imgs.map((f) => `- ${String(f.path).split('/').pop()}`).join('\n');
+  return [
+    '## Available Images',
+    '',
+    'These image files are in scope for this section. When one is clearly about a place, person, thing, or topic you are writing about, embed it on its OWN line directly beneath the most relevant `##`/`###` heading inside that section\'s Markdown `content`, written exactly as `![concise caption](EXACT-FILENAME)`. At most one image per heading. Use a filename from this list **verbatim** — never invent, rename, alter, or path-qualify a filename, and never reference an image that is not listed. If none clearly fit, embed none.',
+    '',
+    list
+  ].join('\n');
+}
+
 function renderCommonPromptContext(session, db, sourceFiles) {
   const roster = listRoster(db, session.id);
   const speakers = listMarkdownSpeakers(sourceFiles);
+  const imageInventory = renderImageInventory(sourceFiles);
 
   return [
     '## Application Roster',
@@ -1215,7 +1267,8 @@ function renderCommonPromptContext(session, db, sourceFiles) {
     '',
     `The play-log markdown may use real/player display names in headings. Reconcile these speakers with the roster where the mapping is clear. Treat ${GM_NAME} as the GM narrator/director, not as a player character.`,
     '',
-    renderSpeakersMarkdown(speakers)
+    renderSpeakersMarkdown(speakers),
+    ...(imageInventory ? ['', imageInventory] : [])
   ].join('\n');
 }
 
@@ -1324,7 +1377,7 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
       signal: controller.signal,
       ...(ollamaDispatcher ? { dispatcher: ollamaDispatcher } : {}),
       body: JSON.stringify({
-        model: OLLAMA_MODEL,
+        model: effectiveOllamaModel(),
         stream: true,
         keep_alive: OLLAMA_KEEP_ALIVE,
         options: {
@@ -1648,6 +1701,161 @@ function revertScenarioSection(sessionId, sectionId, db) {
   };
 }
 
+// Persist a GM-generated handout image into the session's GM-only gallery
+// (GM/Gallery). Never visible to players until the GM moves it to the
+// player gallery from Edit Files.
+function saveSessionHandout(sessionId, db, { bytes, name, ext, prompt } = {}) {
+  const session = getSessionById(db, sessionId);
+  if (!session) { const e = new Error('Session not found'); e.statusCode = 404; throw e; }
+  if (!bytes || !bytes.length) { const e = new Error('No image data to save'); e.statusCode = 400; throw e; }
+  const paths = ensureSessionDataFolders(session);
+  const dir = paths.gmGallery;
+  fs.mkdirSync(dir, { recursive: true });
+  const safeExt = GRAPHIC_EXTENSIONS.has(String(ext || '').toLowerCase()) ? String(ext).toLowerCase() : '.png';
+  const pad = (n) => String(n).padStart(2, '0');
+  const d = new Date();
+  const stamp = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+  const slug = String(name || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+  const file = `${slug ? slug + '-' : 'handout-'}${stamp}${safeExt}`;
+  const fullPath = path.join(dir, file);
+  fs.writeFileSync(fullPath, bytes);
+  // Record the generating prompt next to the image so it can be tweaked and
+  // re-used later. Sidecar keeps it out of the asset/source listings.
+  const promptText = String(prompt == null ? '' : prompt).trim();
+  if (promptText) {
+    fs.writeFileSync(`${fullPath}.prompt.txt`, promptText + '\n', 'utf8');
+  }
+  return { path: repoRelative(fullPath), file };
+}
+
+// Toggle a session asset between GM-only and player-visible by moving it
+// between the GM and player areas, which is what classifySessionFileVisibility
+// keys off. Mapping (round-trips): GM/Gallery ⇄ Gallery (artifacts) and
+// GM/<x> ⇄ input/<x> (markdown sources etc.). Returns new path + visibility.
+function setSessionAssetVisibility(sessionId, db, requestPath, visibility) {
+  const session = getSessionById(db, sessionId);
+  if (!session) { const e = new Error('Session not found'); e.statusCode = 404; throw e; }
+  const want = visibility === 'player' ? 'player' : 'gm';
+  const paths = ensureSessionDataFolders(session);
+  const cleaned = String(requestPath || '').replace(/^\/+/, '');
+  const src = path.resolve(REPO_ROOT, cleaned.startsWith('data/') ? cleaned : path.join(repoRelative(paths.root), cleaned));
+  if (!isInside(paths.root, src)) { const e = new Error('Path is outside the case folder'); e.statusCode = 400; throw e; }
+  if (!fs.existsSync(src) || !fs.statSync(src).isFile()) { const e = new Error('File not found'); e.statusCode = 404; throw e; }
+  const ext = path.extname(src).toLowerCase();
+  if (!ASSET_EXTENSIONS.has(ext)) { const e = new Error('Not a toggleable asset'); e.statusCode = 400; throw e; }
+  const base = path.basename(src);
+  if (GENERATED_FILENAMES.has(base) || base === 'player.md' || base === 'gm.md') {
+    const e = new Error('This file’s visibility is fixed'); e.statusCode = 400; throw e;
+  }
+  const current = classifySessionFileVisibility(src, paths);
+  if (current === want) return { path: repoRelative(src), visibility: current };
+
+  const rootRel = normaliseSlash(path.relative(paths.root, src));
+  let destRel;
+  if (want === 'player') {
+    if (rootRel.startsWith('GM/Gallery/')) destRel = 'Gallery/' + rootRel.slice('GM/Gallery/'.length);
+    else if (rootRel.startsWith('GM/')) destRel = 'input/' + rootRel.slice(3);
+    else destRel = base;
+  } else {
+    if (rootRel.startsWith('Gallery/')) destRel = 'GM/Gallery/' + rootRel.slice('Gallery/'.length);
+    else if (rootRel.startsWith('input/')) destRel = 'GM/' + rootRel.slice(6);
+    else destRel = 'GM/' + base;
+  }
+  const dest = path.join(paths.root, destRel);
+  if (!isInside(paths.root, dest)) { const e = new Error('Resolved destination is invalid'); e.statusCode = 400; throw e; }
+  if (fs.existsSync(dest)) { const e = new Error('A file with that name already exists in the target area'); e.statusCode = 409; throw e; }
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.renameSync(src, dest);
+  return { path: repoRelative(dest), visibility: want };
+}
+
+function safeAssetName(name) {
+  const base = path.basename(String(name || '').trim()).replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^[-.]+/, '');
+  if (!base) { const e = new Error('A file name is required'); e.statusCode = 400; throw e; }
+  const ext = path.extname(base).toLowerCase();
+  if (!ASSET_EXTENSIONS.has(ext)) {
+    const e = new Error(`Unsupported file type "${ext || base}". Allowed: ${[...ASSET_EXTENSIONS].join(', ')}`);
+    e.statusCode = 400; throw e;
+  }
+  return { base, ext };
+}
+
+// Create a brand-new file (Create / Upload). `area` 'player' lands it
+// player-visible, 'gm' (default) GM-only. Images go to the Gallery folders,
+// other assets to input/ or GM/. Refuses to clobber an existing file.
+function createSessionFile(sessionId, db, { name, bytes, area } = {}) {
+  const session = getSessionById(db, sessionId);
+  if (!session) { const e = new Error('Session not found'); e.statusCode = 404; throw e; }
+  if (!bytes) { const e = new Error('No file content'); e.statusCode = 400; throw e; }
+  const { base, ext } = safeAssetName(name);
+  const paths = ensureSessionDataFolders(session);
+  const player = area === 'player';
+  const isImg = GRAPHIC_EXTENSIONS.has(ext);
+  const dir = isImg
+    ? (player ? paths.gallery : paths.gmGallery)
+    : (player ? paths.input : paths.gmInput);
+  const dest = path.join(dir, base);
+  if (!isInside(paths.root, dest)) { const e = new Error('Resolved path is invalid'); e.statusCode = 400; throw e; }
+  if (fs.existsSync(dest)) { const e = new Error(`"${base}" already exists — use Replace to overwrite it`); e.statusCode = 409; throw e; }
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(dest, bytes);
+  return { path: repoRelative(dest), file: base, visibility: classifySessionFileVisibility(dest, paths) };
+}
+
+// Overwrite an existing in-scope file's bytes, keeping its path/visibility
+// (Replace — round-trip a file edited in a better external tool).
+function replaceSessionFile(sessionId, db, { path: requestPath, bytes } = {}) {
+  const session = getSessionById(db, sessionId);
+  if (!session) { const e = new Error('Session not found'); e.statusCode = 404; throw e; }
+  if (!bytes) { const e = new Error('No file content'); e.statusCode = 400; throw e; }
+  const paths = ensureSessionDataFolders(session);
+  const cleaned = String(requestPath || '').replace(/^\/+/, '');
+  const dest = path.resolve(REPO_ROOT, cleaned.startsWith('data/') ? cleaned : path.join(repoRelative(paths.root), cleaned));
+  if (!isInside(paths.root, dest)) { const e = new Error('Path is outside the case folder'); e.statusCode = 400; throw e; }
+  if (!fs.existsSync(dest) || !fs.statSync(dest).isFile()) { const e = new Error('File not found'); e.statusCode = 404; throw e; }
+  const ext = path.extname(dest).toLowerCase();
+  if (!ASSET_EXTENSIONS.has(ext)) { const e = new Error('Not a replaceable asset'); e.statusCode = 400; throw e; }
+  const rootRel = normaliseSlash(path.relative(paths.root, dest));
+  if (rootRel.startsWith('output_player/') || rootRel.startsWith('output_gm/') || GENERATED_FILENAMES.has(path.basename(dest))) {
+    const e = new Error('This file is generated and cannot be replaced'); e.statusCode = 400; throw e;
+  }
+  fs.writeFileSync(dest, bytes);
+  return { path: repoRelative(dest), visibility: classifySessionFileVisibility(dest, paths) };
+}
+
+// Rename an in-scope file in place (same folder → visibility unchanged). The
+// new name keeps the original extension so a file can't change type.
+function renameSessionFile(sessionId, db, { path: requestPath, name } = {}) {
+  const session = getSessionById(db, sessionId);
+  if (!session) { const e = new Error('Session not found'); e.statusCode = 404; throw e; }
+  const paths = ensureSessionDataFolders(session);
+  const cleaned = String(requestPath || '').replace(/^\/+/, '');
+  const src = path.resolve(REPO_ROOT, cleaned.startsWith('data/') ? cleaned : path.join(repoRelative(paths.root), cleaned));
+  if (!isInside(paths.root, src)) { const e = new Error('Path is outside the case folder'); e.statusCode = 400; throw e; }
+  if (!fs.existsSync(src) || !fs.statSync(src).isFile()) { const e = new Error('File not found'); e.statusCode = 404; throw e; }
+  const srcExt = path.extname(src).toLowerCase();
+  if (!ASSET_EXTENSIONS.has(srcExt)) { const e = new Error('Not a renameable asset'); e.statusCode = 400; throw e; }
+  const base = path.basename(src);
+  const rootRel = normaliseSlash(path.relative(paths.root, src));
+  if (rootRel.startsWith('output_player/') || rootRel.startsWith('output_gm/')
+      || GENERATED_FILENAMES.has(base) || base === 'player.md' || base === 'gm.md') {
+    const e = new Error('This file is structural and cannot be renamed'); e.statusCode = 400; throw e;
+  }
+  // Take the requested name, drop any path and any extension the user typed,
+  // then force the original extension so a file can't change type.
+  let stem = path.basename(String(name || '').trim());
+  stem = stem.replace(/\.[A-Za-z0-9]{1,8}$/, '');
+  stem = stem.replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^[-.]+/, '').slice(0, 80);
+  if (!stem) { const e = new Error('A new name is required'); e.statusCode = 400; throw e; }
+  const newBase = stem + srcExt;
+  if (newBase === base) return { path: repoRelative(src), visibility: classifySessionFileVisibility(src, paths) };
+  const dest = path.join(path.dirname(src), newBase);
+  if (!isInside(paths.root, dest)) { const e = new Error('Resolved name is invalid'); e.statusCode = 400; throw e; }
+  if (fs.existsSync(dest)) { const e = new Error(`"${newBase}" already exists in that folder`); e.statusCode = 409; throw e; }
+  fs.renameSync(src, dest);
+  return { path: repoRelative(dest), file: newBase, visibility: classifySessionFileVisibility(dest, paths) };
+}
+
 function resolveSessionAssetPath(sessionId, requestPath, db, isGM = false) {
   const session = getSessionById(db, sessionId);
   if (!session) return null;
@@ -1761,5 +1969,13 @@ module.exports = {
   regenerateNpcSummaries,
   ollamaStatus,
   streamGmChat,
-  writeGmChatExport
+  writeGmChatExport,
+  saveSessionHandout,
+  setSessionAssetVisibility,
+  createSessionFile,
+  replaceSessionFile,
+  renameSessionFile,
+  effectiveOllamaModel,
+  setOllamaModel,
+  listOllamaModels
 };

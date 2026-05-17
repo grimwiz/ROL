@@ -19,7 +19,15 @@ const {
   regenerateNpcSummaries,
   streamGmChat,
   writeGmChatExport,
-  ollamaStatus
+  ollamaStatus,
+  saveSessionHandout,
+  setSessionAssetVisibility,
+  createSessionFile,
+  replaceSessionFile,
+  renameSessionFile,
+  effectiveOllamaModel,
+  setOllamaModel,
+  listOllamaModels
 } = require('./scenarioInfo');
 const sessionRolls = require('./sessionRolls');
 const { buildPdf } = require('../scripts/export-character-sheet');
@@ -907,6 +915,26 @@ router.get('/llm/status', requireAuth, (req, res) => {
   res.json(ollamaStatus());
 });
 
+// Installed Ollama models for the Admin selector. On Ollama failure still
+// return current/default so the UI can fall back to manual entry.
+router.get('/llm/models', requireGM, async (req, res) => {
+  const s = ollamaStatus();
+  try {
+    res.json({ models: await listOllamaModels(), current: s.model, default: s.default_model });
+  } catch (e) {
+    res.status(200).json({ models: [], current: s.model, default: s.default_model, error: e.message || 'Could not reach Ollama' });
+  }
+});
+
+router.put('/llm/model', requireGM, (req, res) => {
+  try {
+    const model = setOllamaModel(req.body && req.body.model);
+    res.json({ model, default: ollamaStatus().default_model });
+  } catch (e) {
+    res.status(e.statusCode || 500).json({ error: e.message || 'Could not set the model' });
+  }
+});
+
 router.post('/sessions/:id/scenario-info/sections/:sectionId/regenerate', requireGM, async (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
@@ -939,6 +967,7 @@ router.get('/sessions/:id/scenario-info/assets/*', requireAuth, (req, res) => {
   if (!session) return;
   const filePath = resolveSessionAssetPath(session.id, req.params[0], db, req.user.role === 'gm');
   if (!filePath) return res.status(404).json({ error: 'Scenario asset not found' });
+  if (req.query.download) return res.download(filePath, path.basename(filePath));
   res.sendFile(filePath);
 });
 
@@ -1532,6 +1561,133 @@ router.get('/portrait/view', requireAuth, async (req, res, next) => {
     }
     res.end();
   } catch (e) { next(e); }
+});
+
+// ── GM handouts (text prompt → ComfyUI image, saved GM-only) ─────────────────
+// Reuses the Qwen image workflow and the generic /portrait/history + /portrait/
+// view proxies; only the submit differs (free-text prompt, page-ish size).
+router.post('/sessions/:id/handouts/generate', requireGM, async (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const prompt = String((req.body && req.body.prompt) || '').trim();
+    if (!prompt) return res.status(400).json({ error: 'A prompt is required.' });
+    const missingAssets = await ensureQwenPortraitAssets();
+    if (missingAssets.length) {
+      return res.status(503).json({ error: `Qwen image workflow is not fully installed in ComfyUI: missing ${missingAssets.join(', ')}.` });
+    }
+    const workflow = JSON.parse(JSON.stringify(PORTRAIT_RANDOM_WORKFLOW_TEMPLATE));
+    const seed = Math.floor(Math.random() * 2 ** 31);
+    workflow['4'].inputs.text = prompt;
+    workflow['7'].inputs.width = 768;   // page-ish portrait handout, divisible by 64
+    workflow['7'].inputs.height = 1024;
+    workflow['8'].inputs.seed = seed;
+    workflow['10'].inputs.filename_prefix = 'ROL_handout';
+    logLine('handout.generate', { userId: req.user.id, sessionId: session.id, seed, prompt });
+    const upstream = await fetch(`${COMFYUI_URL}/prompt`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ prompt: workflow })
+    });
+    const text = await upstream.text();
+    res.status(upstream.status)
+       .type(upstream.headers.get('content-type') || 'application/json')
+       .send(text);
+  } catch (e) { next(e); }
+});
+
+// Persist a chosen ComfyUI result into the session's GM-only handout area.
+router.post('/sessions/:id/handouts/save', requireGM, async (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const { filename, subfolder, type, name, prompt } = req.body || {};
+    if (!filename) return res.status(400).json({ error: 'Missing image reference.' });
+    const url = new URL(`${COMFYUI_URL}/view`);
+    url.searchParams.set('filename', String(filename));
+    if (subfolder) url.searchParams.set('subfolder', String(subfolder));
+    url.searchParams.set('type', String(type || 'output'));
+    const up = await fetch(url);
+    if (!up.ok) return res.status(502).json({ error: `Could not fetch the image from ComfyUI (HTTP ${up.status}).` });
+    const buf = Buffer.from(await up.arrayBuffer());
+    const ext = path.extname(String(filename)).toLowerCase() || '.png';
+    const saved = saveSessionHandout(session.id, db, { bytes: buf, name, ext, prompt });
+    res.json({ ok: true, ...saved });
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// Toggle a saved asset (handout, etc.) between GM-only and player-visible by
+// moving it between the GM/ and input/ subtrees.
+router.post('/sessions/:id/assets/visibility', requireGM, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const { path: assetPath, visibility } = req.body || {};
+    if (!assetPath) return res.status(400).json({ error: 'Missing asset path.' });
+    res.json(setSessionAssetVisibility(session.id, db, assetPath, visibility));
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// Body → Buffer. `text` (UTF-8) for Create, `content_base64` for Upload/Replace.
+function fileBytesFromBody(body) {
+  if (body && typeof body.text === 'string') return Buffer.from(body.text, 'utf8');
+  if (body && typeof body.content_base64 === 'string' && body.content_base64) {
+    return Buffer.from(body.content_base64.replace(/^data:[^,]*,/, ''), 'base64');
+  }
+  return null;
+}
+
+// Create a new file, or upload one (text or base64 bytes).
+router.post('/sessions/:id/files', requireGM, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const bytes = fileBytesFromBody(req.body);
+    if (bytes === null) return res.status(400).json({ error: 'Provide text or content_base64.' });
+    res.json(createSessionFile(session.id, db, {
+      name: req.body && req.body.name,
+      bytes,
+      area: (req.body && req.body.area) === 'player' ? 'player' : 'gm'
+    }));
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// Rename a file in place (same folder, visibility unchanged).
+router.post('/sessions/:id/files/rename', requireGM, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    res.json(renameSessionFile(session.id, db, {
+      path: req.body && req.body.path,
+      name: req.body && req.body.name
+    }));
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// Replace an existing file's contents in place (keeps path/visibility).
+router.post('/sessions/:id/files/replace', requireGM, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const bytes = fileBytesFromBody(req.body);
+    if (bytes === null) return res.status(400).json({ error: 'Provide text or content_base64.' });
+    res.json(replaceSessionFile(session.id, db, { path: req.body && req.body.path, bytes }));
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
 });
 
 // Render an in-memory sheet to PDF using the canonical buildPdf() from

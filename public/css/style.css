@@ -1002,9 +1002,61 @@ tr:hover td { background: var(--bg3); }
 @keyframes gmchat-blink { 50% { opacity: 0; } }
 .gmchat-compose { margin-top: 0.75rem; flex: 0 0 auto; }
 .gmchat-compose textarea { width: 100%; resize: vertical; }
-.gmchat-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.gmchat-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center; }
+.gmchat-mode { display: inline-flex; gap: 0.25rem; }
+.gmchat-mode .btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.gmchat-image { max-width: 320px; max-height: 420px; width: auto; height: auto; border: 1px solid var(--border); border-radius: var(--radius); display: block; }
+.gmchat-image-actions { margin-top: 0.4rem; }
+.gmchat-saved { color: #5fd49a; font-size: 0.82rem; }
+
+.gmchat-msg-actions { display: flex; gap: 0.4rem; margin-top: 0.3rem; }
+.gmchat-msg-actions .btn { font-size: 0.74rem; padding: 0.12rem 0.5rem; }
+.gmchat-edit { width: 100%; resize: vertical; }
 
 .gmchat-error { margin-top: 0.5rem; color: var(--danger); font-size: 0.85rem; }
+
+.asset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+.asset-card {
+  display: flex; flex-direction: column; gap: 0.35rem;
+  text-decoration: none; color: var(--text2); font-size: 0.78rem;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 0.5rem; background: var(--bg3);
+}
+.asset-card:hover { border-color: var(--accent); }
+.asset-card img {
+  width: 100%; aspect-ratio: 3 / 4; object-fit: cover;
+  border-radius: calc(var(--radius) - 2px); background: var(--bg);
+}
+.asset-card span { word-break: break-word; }
+.asset-card-actions { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.asset-card-actions .btn { font-size: 0.72rem; padding: 0.12rem 0.45rem; }
+.ef-toolbar { display: flex; gap: 0.4rem; flex-shrink: 0; }
+
+.scenario-figure { margin: 0.75rem 0; }
+.scenario-figure img {
+  max-width: 100%; height: auto; display: block;
+  border: 1px solid var(--border); border-radius: var(--radius);
+}
+.scenario-figure figcaption {
+  font-size: 0.8rem; color: var(--text2);
+  margin-top: 0.3rem; text-align: center;
+}
+.asset-pdf {
+  width: 100%; aspect-ratio: 3 / 4; display: flex;
+  align-items: center; justify-content: center;
+  font-weight: 700; color: var(--accent2);
+  background: var(--bg); border-radius: calc(var(--radius) - 2px);
+}
+.vis-badge {
+  display: inline-block; font-size: 0.7rem; font-weight: 600;
+  padding: 0.08rem 0.45rem; border-radius: 999px; border: 1px solid var(--border);
+}
+.vis-gm { color: var(--warning); border-color: var(--warning); background: rgba(243,156,18,0.12); }
+.vis-player { color: #5fd49a; border-color: #2f6f4f; background: rgba(39,174,96,0.12); }
 
 /* ── Assigned rolls ── */
 .roll-form { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }

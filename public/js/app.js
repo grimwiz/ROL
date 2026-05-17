@@ -21,6 +21,7 @@ const State = {
   domesticSaveInflight: null,
   llmBusy: false,
   llmPollTimer: null,
+  llmLocalPending: 0,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -393,7 +394,11 @@ async function renderMain() {
 // GM gets unmistakable feedback (status by the dice roller + regenerate buttons
 // disabled) instead of clicking Bulk Regenerate again and again.
 function applyLlmBusyUI(status) {
-  const busy = !!(status && status.busy);
+  // Locally-initiated work counts as busy immediately, before the server has
+  // even entered the Ollama call — so the indicator never lags or flickers
+  // off mid-operation when an early poll races ahead of the request.
+  const serverBusy = !!(status && status.busy);
+  const busy = serverBusy || State.llmLocalPending > 0;
   State.llmBusy = busy;
   const box = el('nav-llm-status');
   if (box) {
@@ -424,6 +429,18 @@ function startLlmStatusPolling() {
   if (State.llmPollTimer) return;
   pollLlmStatusOnce();
   State.llmPollTimer = setInterval(pollLlmStatusOnce, 3000);
+}
+
+// Bracket a locally-initiated LLM operation so the busy indicator shows
+// instantly and stays until it actually finishes (consistent everywhere:
+// regenerate pages/sections and GM Chat).
+function llmPendingBegin(label) {
+  State.llmLocalPending += 1;
+  applyLlmBusyUI({ busy: true, last_section: label || null });
+}
+function llmPendingEnd() {
+  State.llmLocalPending = Math.max(0, State.llmLocalPending - 1);
+  pollLlmStatusOnce();
 }
 
 async function switchTab(tab, options = {}) {
@@ -855,7 +872,7 @@ function renderOverviewTable(title, sub, rows, emptyText) {
 // ── GM brainstorming chat (per case, GM only, ephemeral in memory) ───────────
 const gmChatState = {};
 function gmChat(sessionId) {
-  if (!gmChatState[sessionId]) gmChatState[sessionId] = { messages: [], streaming: false, controller: null };
+  if (!gmChatState[sessionId]) gmChatState[sessionId] = { messages: [], streaming: false, controller: null, mode: 'text' };
   return gmChatState[sessionId];
 }
 
@@ -864,11 +881,58 @@ function gmChatLogHtml(sessionId) {
   if (!st.messages.length) {
     return '<div class="empty" style="padding:1.5rem"><p>Ask for plot ideas, NPC motives, the next beat, contingencies… This chat sees the full GM material for this case and is never shown to players.</p></div>';
   }
-  return st.messages.map((m) => {
+  return st.messages.map((m, i) => {
     const who = m.role === 'user' ? 'You' : 'Assistant';
+    if (m.kind === 'image' && m.role === 'assistant') {
+      let inner;
+      if (m.editingPrompt) {
+        inner = `<textarea id="gmimgedit-${i}" class="gmchat-edit" rows="3">${esc(m.prompt || '')}</textarea>
+          <div class="gmchat-msg-actions">
+            <button class="btn btn-sm btn-primary" onclick="gmImageEditApply(${sessionId}, ${i})">Regenerate</button>
+            <button class="btn btn-sm" onclick="gmImageEditCancel(${sessionId}, ${i})">Cancel</button>
+          </div>`;
+      } else if (m.error) {
+        inner = `<div class="gmchat-error">⚠ ${esc(m.error)}</div>`;
+      } else if (m.imageUrl) {
+        inner = `<img class="gmchat-image" src="${esc(m.imageUrl)}" alt="Generated handout">
+          <div class="gmchat-image-actions">
+            ${m.saved
+              ? `<span class="gmchat-saved">✓ Saved to ${esc(m.saved)} (GM-only) — manage player access in Edit Files</span>`
+              : `<button class="btn btn-sm" onclick="saveGmHandout(${sessionId}, ${i})">Save handout</button>`}
+          </div>`;
+      } else {
+        inner = `<em style="color:var(--text2)">Generating image…<span class="gmchat-caret">▍</span></em>`;
+      }
+      const imgActions = (!st.streaming && !m.editingPrompt && (m.imageUrl || m.error))
+        ? `<div class="gmchat-msg-actions">
+            <button class="btn btn-sm" onclick="regenerateGmImage(${sessionId}, ${i})" title="Run this prompt again for a fresh image">↻ Regenerate</button>
+            <button class="btn btn-sm" onclick="gmImageEditStart(${sessionId}, ${i})" title="Edit the prompt and regenerate">✎ Edit prompt</button>
+          </div>`
+        : '';
+      return `<div class="gmchat-msg gmchat-assistant"><div class="gmchat-who">Image</div><div class="gmchat-body">${inner}</div>${imgActions}</div>`;
+    }
+    if (m.role === 'user' && m.editing) {
+      return `<div class="gmchat-msg gmchat-user"><div class="gmchat-who">You</div>
+        <div class="gmchat-body">
+          <textarea id="gmedit-${i}" class="gmchat-edit" rows="3">${esc(m.content || '')}</textarea>
+          <div class="gmchat-msg-actions">
+            <button class="btn btn-sm btn-primary" onclick="gmEditResend(${sessionId}, ${i})">Resend</button>
+            <button class="btn btn-sm" onclick="gmEditCancel(${sessionId}, ${i})">Cancel</button>
+          </div>
+        </div></div>`;
+    }
     let body = esc(m.content || '') + (m.streaming ? '<span class="gmchat-caret">▍</span>' : '');
+    if (m.kind === 'image' && m.role === 'user') body = `🖼 ${body}`;
     if (m.error) body += `<div class="gmchat-error">⚠ ${esc(m.error)}</div>`;
-    return `<div class="gmchat-msg gmchat-${m.role}"><div class="gmchat-who">${who}</div><div class="gmchat-body">${body || '<em style="color:var(--text2)">…</em>'}</div></div>`;
+    let actions = '';
+    if (!st.streaming && m.kind !== 'image') {
+      if (m.role === 'user') {
+        actions = `<div class="gmchat-msg-actions"><button class="btn btn-sm" onclick="gmEditPrompt(${sessionId}, ${i})" title="Edit this prompt and resend">✎ Edit</button></div>`;
+      } else if (m.role === 'assistant' && (m.content || m.error)) {
+        actions = `<div class="gmchat-msg-actions"><button class="btn btn-sm" onclick="regenerateGmAnswer(${sessionId}, ${i})" title="Run this prompt again for a fresh answer">↻ Regenerate</button></div>`;
+      }
+    }
+    return `<div class="gmchat-msg gmchat-${m.role}"><div class="gmchat-who">${who}</div><div class="gmchat-body">${body || '<em style="color:var(--text2)">…</em>'}</div>${actions}</div>`;
   }).join('');
 }
 
@@ -909,6 +973,11 @@ async function renderSessionGmChat(sessionId) {
       <div class="gmchat-compose">
         <textarea id="gmchat-text" rows="3" placeholder="Ask for ideas, NPC motives, the next beat, a twist, contingencies…" onkeydown="gmChatKey(event, ${sessionId})"></textarea>
         <div class="gmchat-actions">
+          <div class="gmchat-mode" role="group" aria-label="Chat mode">
+            <button type="button" id="gmchat-mode-text" class="btn btn-sm" onclick="setGmChatMode(${sessionId}, 'text')">💬 Brainstorm</button>
+            <button type="button" id="gmchat-mode-image" class="btn btn-sm" onclick="setGmChatMode(${sessionId}, 'image')">🖼 Image</button>
+          </div>
+          <span style="flex:1"></span>
           <button class="btn btn-primary" id="gmchat-send" onclick="sendGmChat(${sessionId})">Send</button>
           <button class="btn" id="gmchat-stop" onclick="stopGmChat(${sessionId})" style="display:none">Stop</button>
         </div>
@@ -916,7 +985,31 @@ async function renderSessionGmChat(sessionId) {
     </div>`;
   renderGmChatLog(sessionId);
   setGmChatStreaming(st.streaming);
+  applyGmChatMode(sessionId);
 }
+
+function applyGmChatMode(sessionId) {
+  const st = gmChat(sessionId);
+  const image = st.mode === 'image';
+  const tBtn = el('gmchat-mode-text');
+  const iBtn = el('gmchat-mode-image');
+  if (tBtn) tBtn.classList.toggle('active', !image);
+  if (iBtn) iBtn.classList.toggle('active', image);
+  const text = el('gmchat-text');
+  if (text) text.placeholder = image
+    ? 'Describe the handout/image to generate — a map, a note, a newspaper clipping, a photo…'
+    : 'Ask for ideas, NPC motives, the next beat, a twist, contingencies…';
+  const send = el('gmchat-send');
+  if (send) send.textContent = image ? 'Generate' : 'Send';
+}
+
+function setGmChatMode(sessionId, mode) {
+  const st = gmChat(sessionId);
+  if (st.streaming) return;
+  st.mode = mode === 'image' ? 'image' : 'text';
+  applyGmChatMode(sessionId);
+}
+window.setGmChatMode = setGmChatMode;
 
 function gmChatKey(ev, sessionId) {
   if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) {
@@ -932,16 +1025,33 @@ async function sendGmChat(sessionId) {
   const textEl = el('gmchat-text');
   const text = (textEl && textEl.value || '').trim();
   if (!text) return;
+  if (st.mode === 'image') { gmChatGenerateImage(sessionId, text); return; }
   textEl.value = '';
   st.messages.push({ role: 'user', content: text });
   const reply = { role: 'assistant', content: '', streaming: true };
   st.messages.push(reply);
   renderGmChatLog(sessionId);
+  await runGmStream(sessionId, reply);
+}
+window.sendGmChat = sendGmChat;
 
-  const payload = st.messages.slice(0, -1).map(({ role, content }) => ({ role, content }));
+// Streams an assistant reply into `reply` (already the last message). Payload =
+// every message before it, excluding image turns. Reused by send / regenerate
+// / edit-and-resend.
+async function runGmStream(sessionId, reply) {
+  const st = gmChat(sessionId);
+  const cut = st.messages.indexOf(reply);
+  const payload = st.messages.slice(0, cut < 0 ? st.messages.length : cut)
+    .filter((m) => m.kind !== 'image')
+    .map(({ role, content }) => ({ role, content }));
+  reply.content = '';
+  reply.error = null;
+  reply.streaming = true;
   st.controller = new AbortController();
   st.streaming = true;
   setGmChatStreaming(true);
+  llmPendingBegin('GM Chat');
+  renderGmChatLog(sessionId);
   try {
     const res = await fetch(`/api/sessions/${sessionId}/chat`, {
       method: 'POST',
@@ -989,16 +1099,205 @@ async function sendGmChat(sessionId) {
     st.streaming = false;
     st.controller = null;
     setGmChatStreaming(false);
+    llmPendingEnd();
     renderGmChatLog(sessionId);
   }
 }
-window.sendGmChat = sendGmChat;
+
+// Re-run the prompt that produced this answer for a fresh attempt. "Redo from
+// here": drop this answer and anything after it, then re-stream.
+function regenerateGmAnswer(sessionId, idx) {
+  const st = gmChat(sessionId);
+  if (st.streaming) return;
+  const target = st.messages[idx];
+  if (!target || target.role !== 'assistant' || target.kind === 'image') return;
+  st.messages = st.messages.slice(0, idx);
+  const reply = { role: 'assistant', content: '', streaming: true };
+  st.messages.push(reply);
+  renderGmChatLog(sessionId);
+  runGmStream(sessionId, reply);
+}
+window.regenerateGmAnswer = regenerateGmAnswer;
+
+function gmEditPrompt(sessionId, idx) {
+  const st = gmChat(sessionId);
+  if (st.streaming) return;
+  const m = st.messages[idx];
+  if (!m || m.role !== 'user' || m.kind === 'image') return;
+  m.editing = true;
+  renderGmChatLog(sessionId);
+  const ta = document.getElementById(`gmedit-${idx}`);
+  if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+}
+window.gmEditPrompt = gmEditPrompt;
+
+function gmEditCancel(sessionId, idx) {
+  const m = gmChat(sessionId).messages[idx];
+  if (m) m.editing = false;
+  renderGmChatLog(sessionId);
+}
+window.gmEditCancel = gmEditCancel;
+
+// Save an edited prompt and re-run from it: truncate from idx, push the edited
+// user turn + a fresh assistant reply, then stream.
+function gmEditResend(sessionId, idx) {
+  const st = gmChat(sessionId);
+  if (st.streaming) return;
+  const ta = document.getElementById(`gmedit-${idx}`);
+  const m = st.messages[idx];
+  if (!ta || !m) return;
+  const newText = ta.value.trim();
+  if (!newText) return;
+  st.messages = st.messages.slice(0, idx);
+  st.messages.push({ role: 'user', content: newText });
+  const reply = { role: 'assistant', content: '', streaming: true };
+  st.messages.push(reply);
+  renderGmChatLog(sessionId);
+  runGmStream(sessionId, reply);
+}
+window.gmEditResend = gmEditResend;
 
 function stopGmChat(sessionId) {
   const st = gmChat(sessionId);
   if (st.controller) st.controller.abort();
 }
 window.stopGmChat = stopGmChat;
+
+// GM-chat "Image" mode: free-text prompt → ComfyUI (reusing the generic
+// /portrait history+view proxies) → inline preview → optional GM-only save.
+async function gmChatGenerateImage(sessionId, prompt) {
+  const st = gmChat(sessionId);
+  if (st.streaming) return;
+  const textEl = el('gmchat-text');
+  if (textEl) textEl.value = '';
+  st.messages.push({ role: 'user', content: prompt, kind: 'image' });
+  const msg = { role: 'assistant', kind: 'image', prompt };
+  st.messages.push(msg);
+  await runImageGen(sessionId, msg);
+}
+
+// Runs ComfyUI generation for an existing assistant image `msg` using
+// msg.prompt. Reused by first generation, Regenerate, and Edit-prompt.
+async function runImageGen(sessionId, msg) {
+  const st = gmChat(sessionId);
+  if (st.streaming) return;
+  msg.imageUrl = null;
+  msg.error = null;
+  msg.saved = null;
+  msg.ref = null;
+  msg.editingPrompt = false;
+  st.streaming = true;
+  setGmChatStreaming(true);
+  llmPendingBegin('GM Chat image');
+  renderGmChatLog(sessionId);
+  try {
+    const q = await api.generateHandout(sessionId, msg.prompt);
+    if (q && q.node_errors && Object.keys(q.node_errors).length) {
+      throw new Error('ComfyUI rejected the workflow — check the ComfyUI server.');
+    }
+    const promptId = q && q.prompt_id;
+    if (!promptId) throw new Error('ComfyUI returned no prompt_id.');
+    const started = Date.now();
+    const timeoutMs = 10 * 60 * 1000;
+    let entry = null;
+    while (Date.now() - started < timeoutMs) {
+      await new Promise((r) => setTimeout(r, 2000));
+      const h = await fetch(`/api/portrait/history/${encodeURIComponent(promptId)}`, { credentials: 'same-origin' });
+      if (h.ok) {
+        const hJson = await h.json();
+        const e = hJson[promptId];
+        if (e && e.status && e.status.completed) { entry = e; break; }
+        if (e && e.status && e.status.status_str === 'error') {
+          throw new Error('ComfyUI reported an error generating the image.');
+        }
+      }
+    }
+    if (!entry) throw new Error('Timed out waiting for ComfyUI.');
+    const outputs = entry.outputs || {};
+    const node = outputs['10'] || Object.values(outputs).find((o) => o && o.images);
+    if (!node || !node.images || !node.images.length) throw new Error('ComfyUI finished but returned no image.');
+    const img = node.images[0];
+    const params = new URLSearchParams();
+    params.set('filename', img.filename);
+    if (img.subfolder) params.set('subfolder', img.subfolder);
+    params.set('type', img.type || 'output');
+    const imgRes = await fetch(`/api/portrait/view?${params.toString()}`, { credentials: 'same-origin' });
+    if (!imgRes.ok) throw new Error(`Fetching the image failed (HTTP ${imgRes.status}).`);
+    const blob = await imgRes.blob();
+    msg.imageUrl = URL.createObjectURL(blob);
+    msg.ref = { filename: img.filename, subfolder: img.subfolder || '', type: img.type || 'output' };
+  } catch (e) {
+    msg.error = e.message || 'Image generation failed';
+  } finally {
+    st.streaming = false;
+    setGmChatStreaming(false);
+    llmPendingEnd();
+    renderGmChatLog(sessionId);
+  }
+}
+
+async function saveGmHandout(sessionId, idx) {
+  const st = gmChat(sessionId);
+  const msg = st.messages[idx];
+  if (!msg || !msg.ref || msg.saved) return;
+  const name = prompt('Name this handout (used in the filename):', '');
+  if (name === null) return;
+  try {
+    const r = await api.saveHandout(sessionId, { ...msg.ref, name, prompt: msg.prompt });
+    msg.saved = r.file || 'GM handouts';
+    renderGmChatLog(sessionId);
+    showAlert(`Saved ${r.file} to the GM-only area — view it and toggle player access in Edit Files.`, 'success', 'gmchat-alert');
+  } catch (e) {
+    showAlert(e.message || 'Save failed', 'danger', 'gmchat-alert');
+  }
+}
+window.saveGmHandout = saveGmHandout;
+
+// Re-run the same image prompt for another attempt.
+function regenerateGmImage(sessionId, idx) {
+  const st = gmChat(sessionId);
+  if (st.streaming) return;
+  const msg = st.messages[idx];
+  if (!msg || msg.role !== 'assistant' || msg.kind !== 'image') return;
+  runImageGen(sessionId, msg);
+}
+window.regenerateGmImage = regenerateGmImage;
+
+function gmImageEditStart(sessionId, idx) {
+  const st = gmChat(sessionId);
+  if (st.streaming) return;
+  const msg = st.messages[idx];
+  if (!msg || msg.kind !== 'image') return;
+  msg.editingPrompt = true;
+  renderGmChatLog(sessionId);
+  const ta = document.getElementById(`gmimgedit-${idx}`);
+  if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+}
+window.gmImageEditStart = gmImageEditStart;
+
+function gmImageEditCancel(sessionId, idx) {
+  const msg = gmChat(sessionId).messages[idx];
+  if (msg) msg.editingPrompt = false;
+  renderGmChatLog(sessionId);
+}
+window.gmImageEditCancel = gmImageEditCancel;
+
+// Save the edited prompt and regenerate; mirror the new prompt onto the
+// preceding user bubble so the log stays coherent.
+function gmImageEditApply(sessionId, idx) {
+  const st = gmChat(sessionId);
+  if (st.streaming) return;
+  const ta = document.getElementById(`gmimgedit-${idx}`);
+  const msg = st.messages[idx];
+  if (!ta || !msg) return;
+  const next = ta.value.trim();
+  if (!next) return;
+  msg.prompt = next;
+  const userMsg = st.messages[idx - 1];
+  if (userMsg && userMsg.role === 'user' && userMsg.kind === 'image') userMsg.content = next;
+  runImageGen(sessionId, msg);
+}
+window.gmImageEditApply = gmImageEditApply;
 
 function clearGmChat(sessionId) {
   const st = gmChat(sessionId);
@@ -1018,7 +1317,7 @@ async function exportGmChat(sessionId, btn) {
   btn.disabled = true;
   btn.textContent = 'Saving…';
   try {
-    const r = await api.exportGmChat(sessionId, st.messages.map(({ role, content }) => ({ role, content })));
+    const r = await api.exportGmChat(sessionId, st.messages.filter((m) => m.kind !== 'image').map(({ role, content }) => ({ role, content })));
     showAlert(`Saved to ${r.path} — edit it in the Edit Files tab.`, 'success', 'gmchat-alert');
   } catch (e) {
     showAlert(e.message || 'Save failed', 'danger', 'gmchat-alert');
@@ -1658,6 +1957,19 @@ function scenarioAssetUrl(filePath, sessionId = State.currentSession) {
   return `/api/sessions/${encodeURIComponent(sessionId)}/scenario-info/assets/${clean.split('/').map(encodeURIComponent).join('/')}`;
 }
 
+// In-scope images for the scenario being rendered, keyed by lowercased
+// basename → repo path. Set from the (visibility-scoped) source_files in the
+// scenario-info payload; the Markdown renderer only renders refs found here, so
+// hallucinated or out-of-scope filenames are silently dropped.
+let scenarioImageMap = {};
+function setScenarioImages(sourceFiles) {
+  const m = {};
+  (sourceFiles || []).forEach((f) => {
+    if (f && f.kind === 'graphic' && f.path) m[String(f.path).split('/').pop().toLowerCase()] = f.path;
+  });
+  scenarioImageMap = m;
+}
+
 function renderScenarioMedia(media) {
   const items = scenarioArray(media);
   if (!items.length) return '';
@@ -1787,6 +2099,9 @@ function mdSlug(text, used) {
 
 function mdInline(s) {
   return String(s)
+    // Standalone images are handled line-by-line; strip any the model inlined
+    // so raw ![..](..) never leaks into prose.
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
     .replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>')
     .replace(/__([^_]+?)__/g, '<strong>$1</strong>')
     .replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>')
@@ -1817,6 +2132,19 @@ function markdownToHtml(md, anchorPrefix) {
       headings.push({ id, text, level });
       const tag = level === 2 ? 'h4' : (level === 3 ? 'h5' : 'h6');
       out.push(`<${tag} id="${esc(id)}" class="summary-h summary-h${level}">${mdInline(esc(text))}</${tag}>`);
+      continue;
+    }
+
+    const imageLine = trimmed.match(/^!\[([^\]]*)\]\(([^)\s]+)\)$/);
+    if (imageLine) {
+      flushPara(); closeList(); closeQuote();
+      const cap = imageLine[1].trim();
+      const base = String(imageLine[2]).split('/').pop().toLowerCase();
+      const repoPath = scenarioImageMap[base];
+      if (repoPath) {
+        out.push(`<figure class="scenario-figure"><img src="${esc(scenarioAssetUrl(repoPath))}" alt="${esc(cap || base)}" loading="lazy">${cap ? `<figcaption>${mdInline(esc(cap))}</figcaption>` : ''}</figure>`);
+      }
+      // Unknown / out-of-scope filename → silently dropped.
       continue;
     }
 
@@ -2117,7 +2445,11 @@ function renderScenarioSourceEditor(sources) {
       <div class="card-header">
         <div>
           <div class="card-title">Edit Files</div>
-          <div class="card-sub">Select one file, edit its contents, then save that file only. Revert discards unsaved edits in the editor.</div>
+          <div class="card-sub">The hub for case artifacts. Create or upload files (land GM-only; share with players via the toggle), download to edit in better tools, then Replace to reinject.</div>
+        </div>
+        <div class="ef-toolbar">
+          <button class="btn btn-sm" onclick="efCreateFile(${State.currentSession})">+ New file</button>
+          <button class="btn btn-sm" onclick="efUploadFile(${State.currentSession})">⤴ Upload</button>
         </div>
       </div>
       <div class="scenario-file-editor">
@@ -2125,7 +2457,7 @@ function renderScenarioSourceEditor(sources) {
           ${editableSources.map((source) => `
             <button type="button" data-source-index="${source.index}" class="${source.index === State.scenarioSelectedSourceIndex ? 'active' : ''}" onclick="selectScenarioSource(${source.index})">
               <span>${esc(source.relative_path || source.path || `Source ${source.index + 1}`)}</span>
-              <small>${source.visibility === 'gm' ? 'GM only' : 'player-visible'}</small>
+              <small>${source.visibility === 'gm' ? 'GM Only' : 'Player Handout'}</small>
             </button>
           `).join('')}
         </div>
@@ -2133,16 +2465,57 @@ function renderScenarioSourceEditor(sources) {
           ${preferredIndex ? `
             <div class="scenario-file-meta">
               <strong id="scenario-source-title">${esc(preferredIndex.relative_path || preferredIndex.path || 'Source')}</strong>
-              <span id="scenario-source-visibility">${preferredIndex.visibility === 'gm' ? 'GM only' : 'player-visible'}</span>
+              <span id="scenario-source-visibility">${preferredIndex.visibility === 'gm' ? 'GM Only' : 'Player Handout'}</span>
             </div>
             <textarea id="scenario-source-editor" data-source-index="${preferredIndex.index}" rows="18">${esc(preferredIndex.content || '')}</textarea>
             <div class="scenario-source-actions">
               <button class="btn btn-primary" onclick="saveSessionScenarioSources(${State.currentSession}, this)">Save file</button>
               <button class="btn" onclick="revertScenarioSourceEditor()">Revert</button>
+              <button class="btn" onclick="toggleSelectedSourceVisibility(${State.currentSession})" title="Move this file between the GM-only and player folders">GM Only ⇄ Player Handout</button>
+              <button class="btn" onclick="efDownloadSelected(${State.currentSession})">Download</button>
+              <button class="btn" onclick="efReplaceSelected(${State.currentSession})" title="Overwrite this file with one you upload">Replace</button>
+              <button class="btn" onclick="efRenameSelected(${State.currentSession})" title="Rename this file (extension kept)">Rename</button>
               <span class="save-status" id="scenario-source-status"></span>
             </div>
           ` : '<div class="empty scenario-empty"><p>No editable markdown files are available.</p></div>'}
         </div>
+      </div>
+    </div>
+    ${assetFilesPanelHtml(sources)}`;
+}
+
+// View-only preview of image/PDF assets (handouts, maps, clippings) on the
+// Edit Files page — the markdown editor can't show these.
+function assetFilesPanelHtml(sources) {
+  const files = scenarioArray(sources.source_files)
+    .filter((f) => f && (f.kind === 'graphic' || f.kind === 'pdf'));
+  if (!files.length) return '';
+  return `
+    <div class="card scenario-source-editor" style="margin-top:1rem">
+      <div class="card-header"><div>
+        <div class="card-title">Graphics &amp; PDFs</div>
+        <div class="card-sub">View-only preview of image and PDF assets in this case.</div>
+      </div></div>
+      <div class="asset-grid">
+        ${files.map((f) => {
+          const url = scenarioAssetUrl(f.path);
+          const label = String(f.path || '').split('/').slice(-1)[0];
+          const player = f.visibility !== 'gm';
+          const media = f.kind === 'pdf'
+            ? '<div class="asset-pdf">PDF</div>'
+            : `<img src="${esc(url)}" alt="${esc(label)}" loading="lazy">`;
+          return `<div class="asset-card">
+            <a href="${esc(url)}" target="_blank" rel="noopener" title="${esc(f.path)}">${media}</a>
+            <span>${esc(label)}</span>
+            <span class="vis-badge vis-${player ? 'player' : 'gm'}">${player ? 'Player Handout' : 'GM Only'}</span>
+            <div class="asset-card-actions">
+              <button class="btn btn-sm" onclick="toggleAssetVisibility(${State.currentSession}, '${esc(f.path)}', '${player ? 'gm' : 'player'}')">${player ? 'Make GM Only' : 'Make Player Handout'}</button>
+              <a class="btn btn-sm" href="${esc(url)}?download=1" download>Download</a>
+              <button class="btn btn-sm" onclick="efReplaceFile(${State.currentSession}, '${esc(f.path)}')">Replace</button>
+              <button class="btn btn-sm" onclick="efRenameFile(${State.currentSession}, '${esc(f.path)}')">Rename</button>
+            </div>
+          </div>`;
+        }).join('')}
       </div>
     </div>`;
 }
@@ -2168,7 +2541,7 @@ function selectScenarioSource(sourceIndex) {
   const title = el('scenario-source-title');
   if (title) title.textContent = source.relative_path || source.path || 'Source';
   const visibility = el('scenario-source-visibility');
-  if (visibility) visibility.textContent = source.visibility === 'gm' ? 'GM only' : 'player-visible';
+  if (visibility) visibility.textContent = source.visibility === 'gm' ? 'GM Only' : 'Player Handout';
   document.querySelectorAll('.scenario-file-list button').forEach((button) => button.classList.remove('active'));
   const selectedButton = document.querySelector(`.scenario-file-list button[data-source-index="${Number(sourceIndex)}"]`);
   if (selectedButton) selectedButton.classList.add('active');
@@ -2193,6 +2566,7 @@ window.revertScenarioSourceEditor = revertScenarioSourceEditor;
 async function loadScenarioInfo(sessionId, asUser) {
   const info = await api.getSessionScenarioInfo(sessionId, asUser);
   if (!asUser) State.scenarioInfo = info;
+  setScenarioImages(info && info.source_files);
   return info;
 }
 
@@ -2347,6 +2721,7 @@ async function scenarioSelectPlayer(sessionId, userId, username) {
     area.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
     return;
   }
+  setScenarioImages(info && info.source_files);
   const viewerNames = (info.viewer && info.viewer.character_names) || [];
   const mine = scenarioArray(info.entities && info.entities.characters)
     .filter((c) => matchesCharacter(c, viewerNames));
@@ -2385,6 +2760,125 @@ async function renderSessionEntities(sessionId) {
          ${renderScenarioSection('Things', entities.items || info.items, 'No notable things have been generated yet.', 'player.entities.items')}`}`;
 }
 
+// Toggle the currently-selected markdown file in Edit Files between the GM-only
+// and player folders (server refuses the canonical player.md / gm.md).
+function toggleSelectedSourceVisibility(sessionId) {
+  const src = scenarioArray(State.scenarioSources && State.scenarioSources.markdown_sources)[State.scenarioSelectedSourceIndex];
+  if (!src) { showAlert('Select a file first.', 'danger', 'scenario-alert'); return; }
+  toggleAssetVisibility(sessionId, src.path, src.visibility === 'gm' ? 'player' : 'gm');
+}
+window.toggleSelectedSourceVisibility = toggleSelectedSourceVisibility;
+
+async function toggleAssetVisibility(sessionId, assetPath, toVisibility) {
+  try {
+    await api.setAssetVisibility(sessionId, assetPath, toVisibility);
+    showAlert(`Now ${toVisibility === 'player' ? 'a Player Handout' : 'GM Only'}.`, 'success', 'scenario-alert');
+    await reloadCurrentSessionPanel();
+  } catch (e) {
+    showAlert(e.message || 'Could not change visibility', 'danger', 'scenario-alert');
+  }
+}
+window.toggleAssetVisibility = toggleAssetVisibility;
+
+// ── Edit Files: Create / Upload / Download / Replace ─────────────────────────
+function efPickFile() {
+  return new Promise((resolve) => {
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.onchange = () => resolve(inp.files && inp.files[0] ? inp.files[0] : null);
+    inp.click();
+  });
+}
+function efFileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onerror = () => reject(new Error('Could not read the file'));
+    r.onload = () => resolve(String(r.result).replace(/^data:[^,]*,/, ''));
+    r.readAsDataURL(file);
+  });
+}
+function efSelectedSource() {
+  return scenarioArray(State.scenarioSources && State.scenarioSources.markdown_sources)[State.scenarioSelectedSourceIndex] || null;
+}
+
+async function efCreateFile(sessionId) {
+  const name = prompt('New file name (e.g. clue-note.md, briefing.md):', '');
+  if (name === null) return;
+  try {
+    const r = await api.createSessionFile(sessionId, { name: name.trim(), text: '' });
+    showAlert(`Created ${r.file} (GM Only). Edit it here; share with players via the toggle.`, 'success', 'scenario-alert');
+    await reloadCurrentSessionPanel();
+  } catch (e) {
+    showAlert(e.message || 'Create failed', 'danger', 'scenario-alert');
+  }
+}
+window.efCreateFile = efCreateFile;
+
+async function efUploadFile(sessionId) {
+  const file = await efPickFile();
+  if (!file) return;
+  try {
+    const content_base64 = await efFileToBase64(file);
+    const r = await api.createSessionFile(sessionId, { name: file.name, content_base64, area: 'gm' });
+    showAlert(`Uploaded ${r.file} (GM Only). Share with players via the toggle.`, 'success', 'scenario-alert');
+    await reloadCurrentSessionPanel();
+  } catch (e) {
+    showAlert(e.message || 'Upload failed', 'danger', 'scenario-alert');
+  }
+}
+window.efUploadFile = efUploadFile;
+
+async function efReplaceFile(sessionId, assetPath) {
+  if (!assetPath) { showAlert('Select a file first.', 'danger', 'scenario-alert'); return; }
+  const file = await efPickFile();
+  if (!file) return;
+  try {
+    const content_base64 = await efFileToBase64(file);
+    await api.replaceSessionFile(sessionId, { path: assetPath, content_base64 });
+    showAlert('Replaced — contents updated, visibility unchanged.', 'success', 'scenario-alert');
+    await reloadCurrentSessionPanel();
+  } catch (e) {
+    showAlert(e.message || 'Replace failed', 'danger', 'scenario-alert');
+  }
+}
+window.efReplaceFile = efReplaceFile;
+
+async function efRenameFile(sessionId, assetPath) {
+  if (!assetPath) { showAlert('Select a file first.', 'danger', 'scenario-alert'); return; }
+  const cur = String(assetPath).split('/').slice(-1)[0];
+  const next = prompt('New name (extension is kept automatically):', cur.replace(/\.[^.]+$/, ''));
+  if (next === null) return;
+  try {
+    const r = await api.renameSessionFile(sessionId, { path: assetPath, name: next });
+    showAlert(`Renamed to ${r.file}.`, 'success', 'scenario-alert');
+    await reloadCurrentSessionPanel();
+  } catch (e) {
+    showAlert(e.message || 'Rename failed', 'danger', 'scenario-alert');
+  }
+}
+window.efRenameFile = efRenameFile;
+
+function efDownloadSelected(sessionId) {
+  const src = efSelectedSource();
+  if (!src) { showAlert('Select a file first.', 'danger', 'scenario-alert'); return; }
+  window.open(`${scenarioAssetUrl(src.path, sessionId)}?download=1`, '_blank');
+}
+window.efDownloadSelected = efDownloadSelected;
+
+function efReplaceSelected(sessionId) {
+  const src = efSelectedSource();
+  if (!src) { showAlert('Select a file first.', 'danger', 'scenario-alert'); return; }
+  efReplaceFile(sessionId, src.path);
+}
+window.efReplaceSelected = efReplaceSelected;
+
+function efRenameSelected(sessionId) {
+  const src = efSelectedSource();
+  if (!src) { showAlert('Select a file first.', 'danger', 'scenario-alert'); return; }
+  efRenameFile(sessionId, src.path);
+}
+window.efRenameSelected = efRenameSelected;
+
 async function reloadCurrentSessionPanel() {
   if (!State.currentSession) return;
   await switchSessionPanel(State.currentSession, State.currentSessionPanel || 'case-info');
@@ -2399,7 +2893,7 @@ async function regenerateScenarioSection(sectionId, btn) {
   const original = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Regenerating…';
-  pollLlmStatusOnce();
+  llmPendingBegin(sectionId);
   try {
     await api.regenerateScenarioSection(State.currentSession, sectionId);
     showAlert('Section regenerated', 'success', 'scenario-alert');
@@ -2409,7 +2903,7 @@ async function regenerateScenarioSection(sectionId, btn) {
   } finally {
     btn.disabled = false;
     btn.textContent = original;
-    pollLlmStatusOnce();
+    llmPendingEnd();
   }
 }
 window.regenerateScenarioSection = regenerateScenarioSection;
@@ -2483,7 +2977,7 @@ async function regenerateScenarioPage(btn, sectionsCsv, label) {
   const original = btn.textContent;
   btn.disabled = true;
   btn.textContent = `${label || 'Regenerating'}…`;
-  pollLlmStatusOnce();
+  llmPendingBegin(label || 'scenario');
   try {
     const result = await api.regenerateScenarioSections(State.currentSession, body);
     const ok = scenarioArray(result.regenerated).length;
@@ -2500,7 +2994,7 @@ async function regenerateScenarioPage(btn, sectionsCsv, label) {
   } finally {
     btn.disabled = false;
     btn.textContent = original;
-    pollLlmStatusOnce();
+    llmPendingEnd();
   }
 }
 window.regenerateScenarioPage = regenerateScenarioPage;
@@ -2821,6 +3315,7 @@ async function loadAdminTab() {
       <div class="sheet-tab active" data-admin="accounts" onclick="adminShow('accounts')">Accounts</div>
       <div class="sheet-tab" data-admin="npcs" onclick="adminShow('npcs')">NPCs</div>
       <div class="sheet-tab" data-admin="cases" onclick="adminShow('cases')">Case Settings</div>
+      <div class="sheet-tab" data-admin="llm" onclick="adminShow('llm')">LLM</div>
     </div>
     <div id="admin-content"><p style="color:var(--text2);padding:1rem">Loading…</p></div>`;
   await adminShow('accounts');
@@ -2831,6 +3326,7 @@ async function adminShow(section) {
   document.querySelectorAll('[data-admin]').forEach((t) => t.classList.toggle('active', t.dataset.admin === section));
   if (section === 'npcs') await renderAdminNpcs();
   else if (section === 'cases') await renderAdminCases();
+  else if (section === 'llm') await renderAdminLlm();
   else await renderAdminAccounts();
 }
 window.adminShow = adminShow;
@@ -2895,6 +3391,67 @@ async function saveCaseRuleset(sessionId, ruleset, sel) {
   }
 }
 window.saveCaseRuleset = saveCaseRuleset;
+
+async function renderAdminLlm() {
+  const host = el('admin-content');
+  if (!host) return;
+  host.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading…</p>';
+  let info;
+  try {
+    info = await api.getLlmModels();
+  } catch (e) {
+    host.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+    return;
+  }
+  const models = Array.isArray(info.models) ? info.models : [];
+  const current = info.current || '';
+  const def = info.default || '';
+  // Always include the current model in the list even if Ollama didn't list it.
+  const options = models.slice();
+  if (current && !options.includes(current)) options.unshift(current);
+
+  const selector = options.length
+    ? `<select id="llm-model-select">
+        ${options.map((m) => `<option value="${esc(m)}"${m === current ? ' selected' : ''}>${esc(m)}${m === def ? ' (default)' : ''}</option>`).join('')}
+       </select>`
+    : `<input type="text" id="llm-model-select" value="${esc(current)}" placeholder="model name e.g. ${esc(def)}">`;
+
+  host.innerHTML = `
+    <div id="llm-alert"></div>
+    <div class="card">
+      <div class="card-header"><div>
+        <div class="card-title">Language model</div>
+        <div class="card-sub">Model used for all generation and GM Chat. Persists in <code>data/app-config.json</code>; the configured default is <strong>${esc(def)}</strong>.</div>
+      </div></div>
+      ${info.error ? `<div class="alert alert-danger">Couldn’t list models from Ollama (${esc(info.error)}). You can still type a model name below.</div>` : ''}
+      <div class="form-group" style="max-width:520px">
+        <label>Active model</label>
+        ${selector}
+      </div>
+      <div style="display:flex;gap:0.5rem;align-items:center">
+        <button class="btn btn-primary" onclick="saveAdminLlmModel(this)">Save</button>
+        ${def && current !== def ? `<button class="btn" onclick="saveAdminLlmModel(this, '${esc(def)}')">Reset to default</button>` : ''}
+        <span class="save-status" id="llm-status"></span>
+      </div>
+    </div>`;
+}
+
+async function saveAdminLlmModel(btn, forceModel) {
+  const sel = el('llm-model-select');
+  const model = (forceModel != null ? forceModel : (sel && sel.value || '')).trim();
+  if (!model) { showAlert('Pick or enter a model.', 'danger', 'llm-alert'); return; }
+  btn.disabled = true;
+  try {
+    const r = await api.setLlmModel(model);
+    showAlert(`Active model set to ${r.model}.`, 'success', 'llm-alert');
+    await renderAdminLlm();
+  } catch (e) {
+    showAlert(e.message || 'Could not set the model', 'danger', 'llm-alert');
+  } finally {
+    btn.disabled = false;
+  }
+}
+window.saveAdminLlmModel = saveAdminLlmModel;
 
 // ── Rules tab ────────────────────────────────────────────────────────────────
 async function loadRulesTab() {
