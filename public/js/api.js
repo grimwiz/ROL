@@ -78,7 +78,7 @@ const api = (() => {
     getLlmStatus: () => req('GET', '/llm/status'),
     getLlmModels: () => req('GET', '/llm/models'),
     setLlmModel: (model) => req('PUT', '/llm/model', { model }),
-    generateHandout: (sessionId, prompt) => req('POST', `/sessions/${sessionId}/handouts/generate`, { prompt }),
+    generateHandout: (sessionId, prompt, size) => req('POST', `/sessions/${sessionId}/handouts/generate`, { prompt, size }),
     saveHandout: (sessionId, ref) => req('POST', `/sessions/${sessionId}/handouts/save`, ref),
     setAssetVisibility: (sessionId, path, visibility) => req('POST', `/sessions/${sessionId}/assets/visibility`, { path, visibility }),
     createSessionFile: (sessionId, data) => req('POST', `/sessions/${sessionId}/files`, data),

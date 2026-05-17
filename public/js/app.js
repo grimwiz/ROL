@@ -358,7 +358,7 @@ async function renderMain() {
     <nav class="nav">
       <div class="nav-brand">🔮 The Folly</div>
       <div class="nav-tabs">
-        <button class="nav-tab active" data-tab="sessions" onclick="switchTab('sessions')">Case File</button>
+        <button class="nav-tab active" data-tab="sessions" onclick="switchTab('sessions')">Case Files</button>
         <button class="nav-tab" data-tab="rules" onclick="switchTab('rules')">Rules</button>
         ${isGM ? `<button class="nav-tab" data-tab="admin" onclick="switchTab('admin')">Admin</button>` : ''}
       </div>
@@ -766,11 +766,11 @@ async function openSession(sessionId, options = {}) {
       <div class="sheet-tab${isGM ? '' : ' active'}" data-session-panel="characters" onclick="switchSessionPanel(${sessionId}, 'characters')">Characters</div>
       <div class="sheet-tab" data-session-panel="case-info" onclick="switchSessionPanel(${sessionId}, 'case-info')">Case Info</div>
       <div class="sheet-tab" data-session-panel="player-info" onclick="switchSessionPanel(${sessionId}, 'player-info')">Player Info</div>
-      <div class="sheet-tab" data-session-panel="entities" onclick="switchSessionPanel(${sessionId}, 'entities')">NPC/Places/Things</div>
+      <div class="sheet-tab" data-session-panel="entities" onclick="switchSessionPanel(${sessionId}, 'entities')">Places/NPC/Things</div>
       ${isGM ? `<div class="sheet-tab" data-session-panel="gm-info" onclick="switchSessionPanel(${sessionId}, 'gm-info')">GM Info</div>` : ''}
       ${isGM ? `<div class="sheet-tab" data-session-panel="raw-data" onclick="switchSessionPanel(${sessionId}, 'raw-data')">Edit Files</div>` : ''}
       ${isGM ? `<div class="sheet-tab" data-session-panel="npcs" onclick="switchSessionPanel(${sessionId}, 'npcs')">NPCs</div>` : ''}
-      ${isGM ? `<div class="sheet-tab" data-session-panel="gm-chat" onclick="switchSessionPanel(${sessionId}, 'gm-chat')">GM Chat</div>` : ''}
+      ${isGM ? `<div class="sheet-tab" data-session-panel="gm-chat" onclick="switchSessionPanel(${sessionId}, 'gm-chat')">AI Support</div>` : ''}
     </div>
     <div id="session-content"><p style="color:var(--text2)">Loading…</p></div>`;
 
@@ -894,12 +894,7 @@ function gmChatLogHtml(sessionId) {
       } else if (m.error) {
         inner = `<div class="gmchat-error">⚠ ${esc(m.error)}</div>`;
       } else if (m.imageUrl) {
-        inner = `<img class="gmchat-image" src="${esc(m.imageUrl)}" alt="Generated handout">
-          <div class="gmchat-image-actions">
-            ${m.saved
-              ? `<span class="gmchat-saved">✓ Saved to ${esc(m.saved)} (GM-only) — manage player access in Edit Files</span>`
-              : `<button class="btn btn-sm" onclick="saveGmHandout(${sessionId}, ${i})">Save handout</button>`}
-          </div>`;
+        inner = `<img class="gmchat-image" src="${esc(m.imageUrl)}" alt="Generated handout">`;
       } else {
         inner = `<em style="color:var(--text2)">Generating image…<span class="gmchat-caret">▍</span></em>`;
       }
@@ -907,6 +902,9 @@ function gmChatLogHtml(sessionId) {
         ? `<div class="gmchat-msg-actions">
             <button class="btn btn-sm" onclick="regenerateGmImage(${sessionId}, ${i})" title="Run this prompt again for a fresh image">↻ Regenerate</button>
             <button class="btn btn-sm" onclick="gmImageEditStart(${sessionId}, ${i})" title="Edit the prompt and regenerate">✎ Edit prompt</button>
+            ${m.imageUrl ? (m.saved
+              ? `<span class="gmchat-saved">✓ Saved to ${esc(m.saved)} (GM-only) — manage player access in Edit Files</span>`
+              : `<button class="btn btn-sm" onclick="saveGmHandout(${sessionId}, ${i})">💾 Save handout</button>`) : ''}
           </div>`
         : '';
       return `<div class="gmchat-msg gmchat-assistant"><div class="gmchat-who">Image</div><div class="gmchat-body">${inner}</div>${imgActions}</div>`;
@@ -959,7 +957,7 @@ async function renderSessionGmChat(sessionId) {
   tab.innerHTML = `
     <div class="page-header">
       <div>
-        <h2>GM Chat</h2>
+        <h2>AI Support</h2>
         <p class="card-sub">Private brainstorming grounded in this case's GM material. Never shown to players; ephemeral (cleared on reload).</p>
       </div>
       <div style="display:flex;gap:0.5rem">
@@ -977,6 +975,13 @@ async function renderSessionGmChat(sessionId) {
             <button type="button" id="gmchat-mode-text" class="btn btn-sm" onclick="setGmChatMode(${sessionId}, 'text')">💬 Brainstorm</button>
             <button type="button" id="gmchat-mode-image" class="btn btn-sm" onclick="setGmChatMode(${sessionId}, 'image')">🖼 Image</button>
           </div>
+          <select id="gmchat-size" class="dice-select" title="Image size / ratio" style="display:none">
+            <option value="portrait" selected>Portrait</option>
+            <option value="landscape">Landscape</option>
+            <option value="square">Square</option>
+            <option value="character">Character (sheet box)</option>
+            <option value="intricate">Intricate (hi-res, maps)</option>
+          </select>
           <span style="flex:1"></span>
           <button class="btn btn-primary" id="gmchat-send" onclick="sendGmChat(${sessionId})">Send</button>
           <button class="btn" id="gmchat-stop" onclick="stopGmChat(${sessionId})" style="display:none">Stop</button>
@@ -1001,6 +1006,8 @@ function applyGmChatMode(sessionId) {
     : 'Ask for ideas, NPC motives, the next beat, a twist, contingencies…';
   const send = el('gmchat-send');
   if (send) send.textContent = image ? 'Generate' : 'Send';
+  const sizeSel = el('gmchat-size');
+  if (sizeSel) sizeSel.style.display = image ? '' : 'none';
 }
 
 function setGmChatMode(sessionId, mode) {
@@ -1170,8 +1177,10 @@ async function gmChatGenerateImage(sessionId, prompt) {
   if (st.streaming) return;
   const textEl = el('gmchat-text');
   if (textEl) textEl.value = '';
+  const sizeSel = el('gmchat-size');
+  const size = sizeSel ? sizeSel.value : 'portrait';
   st.messages.push({ role: 'user', content: prompt, kind: 'image' });
-  const msg = { role: 'assistant', kind: 'image', prompt };
+  const msg = { role: 'assistant', kind: 'image', prompt, size };
   st.messages.push(msg);
   await runImageGen(sessionId, msg);
 }
@@ -1191,7 +1200,7 @@ async function runImageGen(sessionId, msg) {
   llmPendingBegin('GM Chat image');
   renderGmChatLog(sessionId);
   try {
-    const q = await api.generateHandout(sessionId, msg.prompt);
+    const q = await api.generateHandout(sessionId, msg.prompt, msg.size);
     if (q && q.node_errors && Object.keys(q.node_errors).length) {
       throw new Error('ComfyUI rejected the workflow — check the ComfyUI server.');
     }
@@ -1961,6 +1970,35 @@ function scenarioAssetUrl(filePath, sessionId = State.currentSession) {
 // basename → repo path. Set from the (visibility-scoped) source_files in the
 // scenario-info payload; the Markdown renderer only renders refs found here, so
 // hallucinated or out-of-scope filenames are silently dropped.
+// Filename layout tag: "<frac><LHS|RHS|FW>" e.g. 0.3RHS (30% right, text
+// wraps), 0.5LHS (50% left), 1.0FW (full width). Default 0.3LHS.
+function scenarioFigureLayout(filename) {
+  const stem = String(filename || '').replace(/\.[a-z0-9]+$/i, '');
+  const m = stem.match(/[-_.]?(\d(?:\.\d+)?)(rhs|lhs|fw)$/i);
+  let frac = 0.3;
+  let pos = 'lhs';
+  if (m) { frac = parseFloat(m[1]); pos = m[2].toLowerCase(); }
+  if (!Number.isFinite(frac)) frac = 0.3;
+  frac = Math.min(1, Math.max(0.1, frac));
+  if (pos === 'fw' || frac >= 1) return { cls: 'sf-full', style: '' };
+  const pct = Math.round(frac * 100);
+  return { cls: pos === 'rhs' ? 'sf-right' : 'sf-left', style: `--sf-w:${pct}%` };
+}
+
+// An entity's own portrait file ("<name>-portrait.png", separators optional —
+// mirrors the server matcher). Returned as a repo path or ''.
+function entityPortraitPath(name) {
+  const key = String(name == null ? '' : name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  if (key.replace(/-/g, '').length < 2) return '';
+  const pat = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/-/g, '-?');
+  const re = new RegExp(`^${pat}-?portrait$`);
+  for (const [base, repoPath] of Object.entries(scenarioImageMap)) {
+    const norm = base.replace(/\.[a-z0-9]+$/i, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    if (re.test(norm)) return repoPath;
+  }
+  return '';
+}
+
 let scenarioImageMap = {};
 function setScenarioImages(sourceFiles) {
   const m = {};
@@ -2011,7 +2049,7 @@ function renderScenarioSectionActions(sectionId) {
     </div>`;
 }
 
-function renderScenarioEntry(entry, fallbackTitle = 'Entry') {
+function renderScenarioEntry(entry, fallbackTitle = 'Entry', anchorId = '') {
   const data = entry && typeof entry === 'object' ? entry : { body: entry };
   const title = data.name || data.title || data.character || data.deliverable || fallbackTitle;
   const meta = [
@@ -2049,30 +2087,57 @@ function renderScenarioEntry(entry, fallbackTitle = 'Entry') {
   }
 
   return `
-    <div class="card scenario-entry-card">
+    <div class="card scenario-entry-card"${anchorId ? ` id="${esc(anchorId)}"` : ''}>
       <div class="card-header">
         <div>
           <div class="card-title">${esc(title)}</div>
           ${meta.length ? `<div class="card-sub">${esc(meta.join(' | '))}</div>` : ''}
         </div>
       </div>
-      ${bodyHtml ? `<div class="scenario-body">${bodyHtml}</div>` : ''}
+      ${(() => {
+        const pp = entityPortraitPath(title);
+        const fig = pp ? `<figure class="scenario-figure sf-left" style="--sf-w:30%"><img src="${esc(scenarioAssetUrl(pp))}" alt="${esc(title)}" loading="lazy"></figure>` : '';
+        return (fig || bodyHtml) ? `<div class="scenario-body">${fig}${bodyHtml}</div>` : '';
+      })()}
       ${blocks.join('')}
       ${renderScenarioMedia(data.media)}
       ${renderScenarioSources(data.sources)}
     </div>`;
 }
 
-function renderScenarioSection(title, entries, emptyText, sectionId = '') {
+// Deterministic {entry,title,id} list for a section. Pure — calling it again
+// with the same inputs yields the same anchor ids, so a page can build a
+// combined top index that matches the cards renderScenarioSection emits.
+function scenarioSectionItems(title, entries, sectionId = '') {
   const list = scenarioArray(entries);
+  const baseSlug = `sec-${String(sectionId || title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+  const used = {};
+  return list.map((entry, i) => {
+    const d = entry && typeof entry === 'object' ? entry : {};
+    const t = d.name || d.title || d.character || d.deliverable || `${title} ${i + 1}`;
+    return { entry, title: t, id: `${baseSlug}-${mdSlug(String(t), used)}` };
+  });
+}
+
+function scenarioJumpNav(items, ariaLabel) {
+  if (!items || items.length < 2) return '';
+  return `<nav class="scenario-jump" aria-label="${esc(ariaLabel || 'index')}">${
+    items.map((it) => `<a href="#${esc(it.id)}" onclick="scrollToAnchor(event,'${esc(it.id)}')">${esc(it.title)}</a>`).join('')
+  }</nav>`;
+}
+
+function renderScenarioSection(title, entries, emptyText, sectionId = '', inlineIndex = true) {
+  const list = scenarioArray(entries);
+  const items = scenarioSectionItems(title, entries, sectionId);
   return `
     <section class="scenario-section">
       <div class="scenario-section-header">
         <h3>${esc(title)}</h3>
         ${renderScenarioSectionActions(sectionId)}
       </div>
+      ${inlineIndex ? scenarioJumpNav(items, `${title} index`) : ''}
       ${list.length
-        ? `<div class="scenario-grid">${list.map((entry) => renderScenarioEntry(entry, title)).join('')}</div>`
+        ? `<div class="scenario-grid">${items.map((it) => renderScenarioEntry(it.entry, title, it.id)).join('')}</div>`
         : `<div class="empty scenario-empty"><p>${esc(emptyText)}</p></div>`}
     </section>`;
 }
@@ -2099,9 +2164,10 @@ function mdSlug(text, used) {
 
 function mdInline(s) {
   return String(s)
-    // Standalone images are handled line-by-line; strip any the model inlined
-    // so raw ![..](..) never leaks into prose.
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    // Standalone images are handled line-by-line. If the model inlined one
+    // inside a paragraph, surface a marker (diagnostic) rather than silently
+    // dropping it, so "model didn't emit" vs "emitted but misplaced" is clear.
+    .replace(/!\[[^\]]*\]\(([^)]*)\)/g, ' ⟦inline image: $1 — move to its own line⟧ ')
     .replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>')
     .replace(/__([^_]+?)__/g, '<strong>$1</strong>')
     .replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>')
@@ -2142,9 +2208,14 @@ function markdownToHtml(md, anchorPrefix) {
       const base = String(imageLine[2]).split('/').pop().toLowerCase();
       const repoPath = scenarioImageMap[base];
       if (repoPath) {
-        out.push(`<figure class="scenario-figure"><img src="${esc(scenarioAssetUrl(repoPath))}" alt="${esc(cap || base)}" loading="lazy">${cap ? `<figcaption>${mdInline(esc(cap))}</figcaption>` : ''}</figure>`);
+        const lay = scenarioFigureLayout(base);
+        out.push(`<figure class="scenario-figure ${lay.cls}"${lay.style ? ` style="${lay.style}"` : ''}><img src="${esc(scenarioAssetUrl(repoPath))}" alt="${esc(cap || base)}" loading="lazy">${cap ? `<figcaption>${mdInline(esc(cap))}</figcaption>` : ''}</figure>`);
+      } else {
+        // Diagnostic: the model emitted an image ref but the filename is not
+        // in the viewer's in-scope set (wrong name, not a Player Handout, or
+        // not regenerated since). Shown so this is visible, not silent.
+        out.push(`<div class="scenario-figure-missing">🖼️ image not available to this view: <code>${esc(imageLine[2])}</code>${cap ? ` — “${esc(cap)}”` : ''}</div>`);
       }
-      // Unknown / out-of-scope filename → silently dropped.
       continue;
     }
 
@@ -2734,7 +2805,7 @@ window.scenarioSelectPlayer = scenarioSelectPlayer;
 async function renderSessionEntities(sessionId) {
   const tab = el('session-content');
   if (!tab) return;
-  tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading NPC/Places/Things…</p>';
+  tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading Places/NPC/Things…</p>';
   let info;
   try {
     info = await loadScenarioInfo(sessionId);
@@ -2743,10 +2814,23 @@ async function renderSessionEntities(sessionId) {
     return;
   }
   const entities = info.entities || {};
+  const groups = [
+    ['Places', entities.locations || info.locations, 'No places have been generated yet.', 'player.entities.locations'],
+    ['NPCs', entities.npcs || info.npcs, 'No NPCs have been generated yet.', 'player.entities.npcs'],
+    ['Things', entities.items || info.items, 'No notable things have been generated yet.', 'player.entities.items']
+  ];
+  // One combined index at the very top, grouped, so anything further down the
+  // page (NPCs, Things) is reachable from the top — not just Places.
+  const topIndex = groups.map(([t, e, , sid]) => {
+    const its = scenarioSectionItems(t, e, sid);
+    if (!its.length) return '';
+    const links = its.map((it) => `<a href="#${esc(it.id)}" onclick="scrollToAnchor(event,'${esc(it.id)}')">${esc(it.title)}</a>`).join('');
+    return `<div class="scenario-jump-group"><span class="scenario-jump-label">${esc(t)}</span><nav class="scenario-jump">${links}</nav></div>`;
+  }).filter(Boolean).join('');
   tab.innerHTML = `
     <div class="page-header">
       <div>
-        <h2>NPC/Places/Things</h2>
+        <h2>Places/NPC/Things</h2>
         ${info.generated_at ? `<p class="card-sub">Generated ${esc(new Date(info.generated_at).toLocaleString('en-GB'))}</p>` : ''}
       </div>
       ${scenarioPageButton('player.entities.locations,player.entities.npcs,player.entities.items', 'Regenerate Page')}
@@ -2755,9 +2839,8 @@ async function renderSessionEntities(sessionId) {
     ${info.error ? `<div class="alert alert-danger">${esc(info.error)}</div>` : ''}
     ${info.generated === false
       ? `<div class="card scenario-summary-card"><div class="card-title">Nothing generated yet</div><p class="card-sub">A GM can run the scenario regeneration to populate places, NPCs, and notable things.</p></div>`
-      : `${renderScenarioSection('Places', entities.locations || info.locations, 'No places have been generated yet.', 'player.entities.locations')}
-         ${renderScenarioSection('NPCs', entities.npcs || info.npcs, 'No NPCs have been generated yet.', 'player.entities.npcs')}
-         ${renderScenarioSection('Things', entities.items || info.items, 'No notable things have been generated yet.', 'player.entities.items')}`}`;
+      : `${topIndex ? `<div class="scenario-jump-all">${topIndex}</div>` : ''}
+         ${groups.map(([t, e, empty, sid]) => renderScenarioSection(t, e, empty, sid, false)).join('')}`}`;
 }
 
 // Toggle the currently-selected markdown file in Edit Files between the GM-only

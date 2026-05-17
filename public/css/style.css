@@ -140,7 +140,7 @@ body {
 @keyframes llm-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
 
 /* ── Main content ────────────────────────────────────────── */
-.main { flex: 1; padding: 2rem 1.5rem; max-width: 1100px; margin: 0 auto; width: 100%; }
+.main { flex: 1; padding: 2rem 2rem; width: 100%; }
 
 .page-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -1041,9 +1041,51 @@ tr:hover td { background: var(--bg3); }
   max-width: 100%; height: auto; display: block;
   border: 1px solid var(--border); border-radius: var(--radius);
 }
+/* Filename-tagged inline layout: text wraps around left/right floats. */
+.scenario-figure.sf-full { width: 100%; }
+.scenario-figure.sf-left,
+.scenario-figure.sf-right { width: var(--sf-w, 30%); max-width: 70%; }
+.scenario-figure.sf-left { float: left; margin: 0.2rem 1rem 0.5rem 0; }
+.scenario-figure.sf-right { float: right; margin: 0.2rem 0 0.5rem 1rem; }
+/* Contain floats within the prose block (so they can't escape the card),
+   but DON'T clear at headings — text and headings should wrap beside the
+   image, which is the whole point of LHS/RHS. */
+.scenario-body::after, .summary-content::after { content: ""; display: block; clear: both; }
+@media (max-width: 700px) {
+  .scenario-figure.sf-left, .scenario-figure.sf-right {
+    float: none; width: 100%; max-width: 100%; margin: 0.75rem 0;
+  }
+}
+.scenario-jump {
+  display: flex; flex-wrap: wrap; gap: 0.35rem 0.75rem;
+  margin: 0 0 1rem; padding: 0.5rem 0.75rem;
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.scenario-jump a { color: var(--accent2); text-decoration: none; font-size: 0.86rem; }
+.scenario-jump a:hover { text-decoration: underline; }
+.scenario-entry-card { scroll-margin-top: 1rem; }
+/* Combined top index: Places / NPCs / Things groups, each labelled. */
+.scenario-jump-all { margin: 0 0 1.25rem; }
+.scenario-jump-group { display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 0.4rem; }
+.scenario-jump-group .scenario-jump { margin: 0; flex: 1; }
+.scenario-jump-label {
+  flex: 0 0 4.5rem; padding-top: 0.55rem;
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--text2);
+}
+@media (max-width: 600px) {
+  .scenario-jump-group { flex-direction: column; gap: 0.2rem; }
+  .scenario-jump-label { padding-top: 0; }
+}
 .scenario-figure figcaption {
   font-size: 0.8rem; color: var(--text2);
   margin-top: 0.3rem; text-align: center;
+}
+.scenario-figure-missing {
+  font-size: 0.8rem; color: var(--warning);
+  border: 1px dashed var(--warning); border-radius: var(--radius);
+  background: rgba(243,156,18,0.08);
+  padding: 0.4rem 0.6rem; margin: 0.6rem 0;
 }
 .asset-pdf {
   width: 100%; aspect-ratio: 3 / 4; display: flex;

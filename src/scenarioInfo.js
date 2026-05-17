@@ -922,11 +922,44 @@ function emptyGmAnalysis() {
   };
 }
 
+// Extract each allocated NPC's character-sheet portrait to a player-visible
+// file "<NPC Name>-portrait.png" in the case Gallery, if it isn't there yet.
+// Idempotent; the file becomes the source of truth once written.
+function ensureNpcPortraitFiles(session, db) {
+  let rows;
+  try {
+    rows = db.prepare(`
+      SELECT n.name, n.sheet FROM npcs n
+      JOIN npc_sessions ns ON ns.npc_id = n.id
+      WHERE ns.session_id = ?
+    `).all(session.id);
+  } catch { return; }
+  if (!rows || !rows.length) return;
+  const paths = ensureSessionDataFolders(session);
+  for (const row of rows) {
+    const name = String(row.name || '').trim();
+    if (!name) continue;
+    let sheet = null;
+    try { sheet = row.sheet ? JSON.parse(row.sheet) : null; } catch { sheet = null; }
+    const portrait = sheet && typeof sheet.portrait === 'string' ? sheet.portrait : '';
+    const m = portrait.match(/^data:image\/[a-z0-9.+-]+;base64,([\s\S]+)$/i);
+    if (!m) continue;
+    const base = name.replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'npc';
+    const dest = path.join(paths.gallery, `${base}-portrait.png`);
+    if (fs.existsSync(dest)) continue;
+    try {
+      fs.mkdirSync(paths.gallery, { recursive: true });
+      fs.writeFileSync(dest, Buffer.from(m[1], 'base64'));
+    } catch { /* non-fatal */ }
+  }
+}
+
 function loadSessionScenarioInfoForUser(sessionId, user, db) {
   const session = getSessionById(db, sessionId);
   if (!session) return null;
   const paths = ensureSessionDataFolders(session);
   const isGM = user && user.role === 'gm';
+  ensureNpcPortraitFiles(session, db);
   let parsed;
   try {
     parsed = readJsonFile(paths.scenarioInfo);
@@ -1275,6 +1308,18 @@ function renderCommonPromptContext(session, db, sourceFiles) {
 function renderSectionPrompt(session, db, config, artifact, currentValue, sourceFiles) {
   const expected = config.type === 'array' ? 'a JSON array' : 'a JSON object';
   const orderedSourceFiles = sortPromptSources(sourceFiles);
+  const inScopeImageNames = (sourceFiles || [])
+    .filter((f) => f && f.kind === 'graphic' && f.path)
+    .map((f) => String(f.path).split('/').pop());
+  const imageDirective = inScopeImageNames.length ? [
+    '',
+    '## REQUIRED: Embed Matching Images',
+    '',
+    'Before returning, check the image filenames below. For every item whose name or subject clearly matches one of these files, you MUST embed that image inside that item\'s Markdown content string: a line consisting of an exclamation mark, then a short caption in square brackets, then the exact filename in parentheses, placed on its own line directly under the most relevant heading. Example for an item about 1 Example Street with a file 1-example-street.png: the line would be exclamation-mark, [1 Example Street] then (1-example-street.png).',
+    'This is expected output and overrides any reluctance from the JSON / no-raw-HTML rules (Markdown images are allowed; raw HTML is not). Match generously on subject: a file named for an address, place, person, or object matches the location / NPC / item about that thing. Use these filenames exactly and never invent one:',
+    ...inScopeImageNames.map((n) => `- ${n}`),
+    'If an item has no clearly matching file, add nothing for it.'
+  ].join('\n') : '';
   const accessRules = config.artifact === 'player'
     ? [
         '- This is a player-visible section. Never include secrets, future plans, hidden causes, or private GM interpretation.',
@@ -1315,6 +1360,7 @@ ${config.schemaHint}
 - Preserve stable IDs from the current section where an item still represents the same thing. Keep useful existing facts unless the sources make them stale, unsafe, or incorrect.
 - Prefer factual prose over speculation. Preserve ambiguity explicitly: "unknown", "unconfirmed", or "requires sign-off".
 - Cite sources with repo-relative paths in sources[].path, preferring the Authoritative Case Sources.
+- IMAGES: the "no raw HTML" rule does NOT forbid Markdown images. If the "Available Images" section lists a file whose name clearly matches a place/person/thing/topic you describe, you SHOULD embed it: put a Markdown image (exclamation mark, [concise caption], then (EXACT-FILENAME) in parentheses) on its own line inside that item's Markdown content string, directly under the most relevant heading. Use filenames verbatim from that list only; never invent one.
 ${accessRules}
 
 ${renderCommonPromptContext(session, db, sourceFiles)}
@@ -1330,6 +1376,7 @@ ${renderJsonBlock(artifact)}
 ${renderJsonBlock(currentValue ?? (config.type === 'array' ? [] : null))}
 
 ${renderPromptFileBundle(orderedSourceFiles)}
+${imageDirective}
 
 Return ${expected} now.`;
 }
@@ -1457,6 +1504,91 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
   }
 }
 
+// Normalise a name/heading/filename to a match key: lowercase, every run of
+// non-alphanumerics (spaces, "/", "'", punctuation — anything illegal in a
+// filename) collapses to a single "-". So entity "Digbeth / Floodgate Street"
+// and file "digbeth-floodgate-street-map.png" both reduce to a comparable form.
+function imgMatchKey(s) {
+  return String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+// Filename PREFIX match. Separators in the name are OPTIONAL in the file, so a
+// name like "Regent's Canal reach" (key regent-s-canal-reach) matches stems
+// "regents-canal-reach-...", "regent-s-canal-reach-...", "regentscanalreach-..."
+// etc. A trailing "-" or end-of-stem keeps word boundaries (so "Mary" does not
+// match "marylebone").
+function imagesForName(name, imgs) {
+  const key = imgMatchKey(name);
+  if (key.replace(/-/g, '').length < 3) return [];
+  const pat = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/-/g, '-?');
+  const re = new RegExp(`^${pat}(?:-|$)`);
+  return imgs.filter((im) => re.test(im.stem));
+}
+
+function mdHasImage(md, file) {
+  return String(md || '').includes(`](${file})`);
+}
+function imageLine(caption, file) {
+  return `![${String(caption || '').replace(/[\[\]]/g, '')}](${file})`;
+}
+
+// Inject standalone image refs into a Markdown `content` string: under any
+// `##`/`###` heading whose text prefix-matches a file, plus (for entity items)
+// a leading image when the item's own name matches. Idempotent.
+function injectImagesIntoContent(content, itemName, imgs) {
+  let md = String(content == null ? '' : content);
+  // 1) Per-heading matches.
+  const lines = md.split('\n');
+  const out = [];
+  for (const line of lines) {
+    out.push(line);
+    const h = line.trim().match(/^#{2,4}\s+(.*?)\s*#*$/);
+    if (h) {
+      for (const im of imagesForName(h[1], imgs)) {
+        if (!mdHasImage(out.join('\n'), im.file) && !mdHasImage(md, im.file)) {
+          out.push('', imageLine(h[1].trim(), im.file), '');
+        }
+      }
+    }
+  }
+  md = out.join('\n');
+  // 2) Whole-item name match → image at the very top of the entry.
+  if (itemName) {
+    for (const im of imagesForName(itemName, imgs)) {
+      if (!mdHasImage(md, im.file)) md = `${imageLine(itemName, im.file)}\n\n${md}`;
+    }
+  }
+  return md;
+}
+
+// Deterministic post-generation pass: surface in-scope images by matching
+// their filename prefix to entity names / headings, so delivery never depends
+// on the model emitting Markdown image syntax. sourceFiles is already
+// visibility-scoped for this section.
+function injectImagesIntoValue(value, config, sourceFiles) {
+  const imgs = (sourceFiles || [])
+    .filter((f) => f && f.kind === 'graphic' && f.path)
+    .map((f) => {
+      const file = String(f.path).split('/').pop();
+      return { file, stem: imgMatchKey(file.replace(/\.[^.]+$/, '')) };
+    })
+    // NPC portraits are rendered directly per entity card (always 0.3LHS),
+    // not injected into prose — exclude them here to avoid double display.
+    .filter((im) => !/-?portrait$/.test(im.stem));
+  if (!imgs.length || value == null) return value;
+
+  const fixItem = (item) => {
+    if (!item || typeof item !== 'object' || typeof item.content !== 'string') return item;
+    const name = item.name || item.title || item.character || '';
+    item.content = injectImagesIntoContent(item.content, name, imgs);
+    return item;
+  };
+
+  if (Array.isArray(value)) return value.map(fixItem);
+  if (typeof value === 'object' && typeof value.content === 'string') return fixItem(value);
+  return value;
+}
+
 async function regenerateScenarioSection(sessionId, sectionId, db, opts = {}) {
   const session = getSessionById(db, sessionId);
   if (!session) return null;
@@ -1480,7 +1612,7 @@ async function regenerateScenarioSection(sessionId, sectionId, db, opts = {}) {
   }
 
   saveSectionBackup(paths, config, currentValue ?? (config.type === 'array' ? [] : null));
-  const nextValue = normaliseSectionValue(config, parsed);
+  const nextValue = injectImagesIntoValue(normaliseSectionValue(config, parsed), config, sourceFiles);
   setPathValue(artifact, config.path, nextValue);
   writeArtifactForSection(session, paths, config, artifact);
   return {

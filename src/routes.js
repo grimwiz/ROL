@@ -1210,6 +1210,16 @@ const COMFYUI_URL = (process.env.COMFYUI_URL || 'http://192.168.37.51:8188').rep
 // 672 × 768 is divisible by 64 for SD3 latents and renders crisply at print
 // resolution (~4× the target points).
 const PORTRAIT_STORAGE_SIZE = { width: 672, height: 768 };
+// Handout size presets (all divisible by 64 for the SD3 latent). "character"
+// matches the character-sheet portrait box; "intricate" is high-res for maps.
+const HANDOUT_SIZES = {
+  character: { width: 672, height: 768 },
+  portrait:  { width: 768, height: 1024 },
+  landscape: { width: 1024, height: 768 },
+  square:    { width: 768, height: 768 },
+  intricate: { width: 1280, height: 960 }
+};
+const HANDOUT_SIZE_DEFAULT = 'portrait';
 const QWEN_IMAGE_MODELS = {
   diffusionModel: process.env.COMFYUI_QWEN_DIFFUSION_MODEL || 'qwen_image_2512_fp8_e4m3fn.safetensors',
   textEncoder: process.env.COMFYUI_QWEN_TEXT_ENCODER || 'qwen_2.5_vl_7b_fp8_scaled.safetensors',
@@ -1576,14 +1586,16 @@ router.post('/sessions/:id/handouts/generate', requireGM, async (req, res, next)
     if (missingAssets.length) {
       return res.status(503).json({ error: `Qwen image workflow is not fully installed in ComfyUI: missing ${missingAssets.join(', ')}.` });
     }
+    const sizeKey = HANDOUT_SIZES[req.body && req.body.size] ? req.body.size : HANDOUT_SIZE_DEFAULT;
+    const size = HANDOUT_SIZES[sizeKey];
     const workflow = JSON.parse(JSON.stringify(PORTRAIT_RANDOM_WORKFLOW_TEMPLATE));
     const seed = Math.floor(Math.random() * 2 ** 31);
     workflow['4'].inputs.text = prompt;
-    workflow['7'].inputs.width = 768;   // page-ish portrait handout, divisible by 64
-    workflow['7'].inputs.height = 1024;
+    workflow['7'].inputs.width = size.width;
+    workflow['7'].inputs.height = size.height;
     workflow['8'].inputs.seed = seed;
     workflow['10'].inputs.filename_prefix = 'ROL_handout';
-    logLine('handout.generate', { userId: req.user.id, sessionId: session.id, seed, prompt });
+    logLine('handout.generate', { userId: req.user.id, sessionId: session.id, seed, size: sizeKey, width: size.width, height: size.height, prompt });
     const upstream = await fetch(`${COMFYUI_URL}/prompt`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
