@@ -22,6 +22,10 @@ const State = {
   llmBusy: false,
   llmPollTimer: null,
   llmLocalPending: 0,
+  llmStatusTitle: 'An AI task is running (only one runs at a time on the shared GPU)',
+  llmCanCancel: false,
+  llmLastSection: null,
+  activeRegen: null,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -377,8 +381,9 @@ async function renderMain() {
         <button class="nav-tab" data-tab="about" onclick="switchTab('about')">About</button>
       </div>
       <div class="nav-right">
-        <span id="nav-llm-status" class="llm-status" hidden title="The language model is generating content">
-          <span class="llm-dot"></span><span class="llm-text">Generating…</span>
+        <span id="nav-llm-status" class="llm-status" hidden title="An AI task is running (only one runs at a time on the shared GPU)">
+          <span class="llm-dot"></span><span class="llm-text">AI working…</span>
+          ${isGM ? '<button type="button" class="llm-stop" onclick="stopActiveRegen()" hidden>Stop</button>' : ''}
         </span>
         <div class="dice-roller" title="Quick dice roller">
           <select id="nav-dice-select" class="dice-select" aria-label="Dice preset">
@@ -415,35 +420,93 @@ function applyLlmBusyUI(status) {
   const serverBusy = !!(status && status.busy);
   const busy = serverBusy || State.llmLocalPending > 0;
   State.llmBusy = busy;
+  const serverCanCancel = !!(status && status.can_cancel && status.kind !== 'image');
+  State.llmCanCancel = !!State.activeRegen || serverCanCancel;
+  if (status && status.last_section) State.llmLastSection = status.last_section;
+  else if (!busy) State.llmLastSection = null;
   const box = el('nav-llm-status');
   if (box) {
     box.hidden = !busy;
     const txt = box.querySelector('.llm-text');
     if (txt) {
-      const where = status && status.last_section ? ` · ${status.last_section}` : '';
-      txt.textContent = `Generating${where}`;
+      const activeLabel = State.activeRegen && State.activeRegen.label;
+      const statusLabel = (status && status.last_section) || State.llmLastSection;
+      const where = activeLabel || statusLabel ? ` · ${activeLabel || statusLabel}` : '';
+      txt.textContent = `AI working${where}`;
     }
+    const stop = box.querySelector('.llm-stop');
+    if (stop) stop.hidden = !State.llmCanCancel;
+    const ps = status && status.ps;
+    if (ps && ps.name) {
+      const split = ps.cpu_pct ? `${ps.gpu_pct}% GPU/${ps.cpu_pct}% CPU` : `${ps.gpu_pct}% GPU`;
+      const vram = ps.vram_gb != null ? ` · ${ps.vram_gb}GB VRAM` : '';
+      State.llmStatusTitle = `${ps.name} · ${split}${ps.ctx ? ` · ctx ${ps.ctx}` : ''}${vram}`;
+    }
+    box.title = State.llmStatusTitle;
   }
   document.querySelectorAll('.js-regen').forEach((b) => {
+    if (busy && State.llmCanCancel) {
+      if (!b.dataset.regenOriginal) b.dataset.regenOriginal = b.textContent;
+      b.disabled = false;
+      b.dataset.stopBtn = '1';
+      b.textContent = (State.activeRegen && State.activeRegen.status)
+        || (State.llmLastSection ? `Stop · ${State.llmLastSection}` : 'Stop');
+      return;
+    }
+    if (b.dataset.regenOriginal) {
+      b.textContent = b.dataset.regenOriginal;
+      delete b.dataset.regenOriginal;
+    }
     if (busy) {
       if (!b.disabled) { b.disabled = true; b.dataset.llmDisabled = '1'; }
     } else if (b.dataset.llmDisabled) {
       b.disabled = false;
       delete b.dataset.llmDisabled;
     }
+    if (b.dataset.stopBtn) delete b.dataset.stopBtn;
   });
 }
 
+async function stopActiveRegen() {
+  const active = State.activeRegen;
+  const label = (active && active.label) || State.llmLastSection || 'language model';
+  if (active) active.status = `Stopping · ${label}`;
+  applyLlmBusyUI({ busy: true, kind: 'llm', can_cancel: true, last_section: label });
+  try {
+    await api.cancelLlm();
+  } catch (e) {
+    showAlert(e.message || 'Could not stop the language model', 'danger', 'scenario-alert');
+  } finally {
+    if (active && active.controller) {
+      try { active.controller.abort(); } catch (_) {}
+    }
+    pollLlmStatusOnce();
+  }
+}
+window.stopActiveRegen = stopActiveRegen;
+
 async function pollLlmStatusOnce() {
   try {
-    applyLlmBusyUI(await api.getLlmStatus());
+    const status = await api.getLlmStatus();
+    applyLlmBusyUI(status);
+    if (status && status.busy) ensureLlmPolling();
+    else if (State.llmLocalPending === 0) stopLlmPolling();
   } catch { /* transient — keep last known state */ }
 }
 
+// Strict polling: one poll at login, then keep polling while this browser has
+// an AI operation in flight or the server reports one.
 function startLlmStatusPolling() {
+  pollLlmStatusOnce(); // one-shot at login; no interval while idle
+}
+function ensureLlmPolling() {
   if (State.llmPollTimer) return;
-  pollLlmStatusOnce();
   State.llmPollTimer = setInterval(pollLlmStatusOnce, 3000);
+}
+function stopLlmPolling() {
+  if (!State.llmPollTimer) return;
+  clearInterval(State.llmPollTimer);
+  State.llmPollTimer = null;
 }
 
 // Bracket a locally-initiated LLM operation so the busy indicator shows
@@ -452,10 +515,13 @@ function startLlmStatusPolling() {
 function llmPendingBegin(label) {
   State.llmLocalPending += 1;
   applyLlmBusyUI({ busy: true, last_section: label || null });
+  ensureLlmPolling();
+  pollLlmStatusOnce();
 }
 function llmPendingEnd() {
   State.llmLocalPending = Math.max(0, State.llmLocalPending - 1);
-  pollLlmStatusOnce();
+  if (State.llmLocalPending === 0) stopLlmPolling();
+  pollLlmStatusOnce(); // final refresh so the badge clears when the op ends
 }
 
 async function switchTab(tab, options = {}) {
@@ -805,39 +871,24 @@ async function switchSessionPanel(sessionId, panel) {
   setSessionPanelActive(panel);
   const content = el('session-content');
   if (content) content.innerHTML = '<p style="color:var(--text2)">Loading…</p>';
-  if (panel === 'case-info') {
-    await renderSessionCaseInfo(sessionId);
-    return;
+  try {
+    if (panel === 'case-info') await renderSessionCaseInfo(sessionId);
+    else if (panel === 'player-info') await renderSessionPlayerInfo(sessionId);
+    else if (panel === 'entities') await renderSessionEntities(sessionId);
+    else if (panel === 'gm-info') await renderSessionScenarioInfo(sessionId, 'gm');
+    else if (panel === 'raw-data') await renderSessionScenarioInfo(sessionId, 'raw');
+    else if (panel === 'npcs') await renderSessionNpcs(sessionId);
+    else if (panel === 'overview') await renderSessionOverview(sessionId);
+    else if (panel === 'gm-chat') await renderSessionGmChat(sessionId);
+    else await renderSessionCharacters(sessionId);
+  } finally {
+    applyLlmBusyUI({
+      busy: State.llmBusy,
+      kind: State.llmCanCancel ? 'llm' : null,
+      can_cancel: State.llmCanCancel,
+      last_section: (State.activeRegen && State.activeRegen.label) || State.llmLastSection
+    });
   }
-  if (panel === 'player-info') {
-    await renderSessionPlayerInfo(sessionId);
-    return;
-  }
-  if (panel === 'entities') {
-    await renderSessionEntities(sessionId);
-    return;
-  }
-  if (panel === 'gm-info') {
-    await renderSessionScenarioInfo(sessionId, 'gm');
-    return;
-  }
-  if (panel === 'raw-data') {
-    await renderSessionScenarioInfo(sessionId, 'raw');
-    return;
-  }
-  if (panel === 'npcs') {
-    await renderSessionNpcs(sessionId);
-    return;
-  }
-  if (panel === 'overview') {
-    await renderSessionOverview(sessionId);
-    return;
-  }
-  if (panel === 'gm-chat') {
-    await renderSessionGmChat(sessionId);
-    return;
-  }
-  await renderSessionCharacters(sessionId);
 }
 window.switchSessionPanel = switchSessionPanel;
 
@@ -1791,6 +1842,7 @@ async function renderGMSessionView(sessionId, preferredUserId = null) {
     area.innerHTML = '';
     SheetForm.setRuleset((sheet && sheet.ruleset) || sessionRuleset);
     SheetForm.setSessionId(sessionId);
+    SheetForm.setPortraitAi(true);
     SheetForm.render(area, sheet ? sheet.data : {}, false);
     area.insertAdjacentHTML('beforeend', `
       <div class="sheet-actions">
@@ -1821,6 +1873,7 @@ async function renderPlayerSessionView(sessionId) {
 
   SheetForm.setRuleset((sheet && sheet.ruleset) || 'rol');
   SheetForm.setSessionId(sessionId);
+  SheetForm.setPortraitAi(true);
   SheetForm.render(el('sheet-form-area'), hasSheet ? sheet.data : {}, false);
   try { attachSkillRollButtons(el('sheet-form-area'), await buildSkillRollCtx(sessionId, State.user.id, false)); } catch (e) { /* non-fatal */ }
 }
@@ -2985,27 +3038,92 @@ async function reloadCurrentSessionPanel() {
   await switchSessionPanel(State.currentSession, State.currentSessionPanel || 'case-info');
 }
 
-async function regenerateScenarioSection(sectionId, btn) {
+// Shared streaming regenerate. The authoritative stop path is server-side
+// (/llm/cancel); the local controller only closes this browser's stream.
+async function runStreamingRegen(btn, label, url, body) {
+  if (State.activeRegen || State.llmCanCancel) { stopActiveRegen(); return; }
   if (!State.currentSession) return;
   if (State.llmBusy) {
     showAlert('A generation is already running — wait for it to finish.', 'danger', 'scenario-alert');
     return;
   }
   const original = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = 'Regenerating…';
-  llmPendingBegin(sectionId);
+  const controller = new AbortController();
+  State.activeRegen = { controller, label, status: `Stop · ${label}` };
+  btn.dataset.regenOriginal = original;
+  applyLlmBusyUI({ busy: true, last_section: label });
+  llmPendingBegin(label);
+  const errors = [];
+  let cancelled = false;
+  const setStatus = (s) => {
+    if (State.activeRegen) {
+      State.activeRegen.status = `Stop · ${s}`;
+      applyLlmBusyUI({ busy: true, last_section: State.activeRegen.label });
+    }
+  };
+  const handle = (obj) => {
+    if (obj.type === 'start') setStatus(`${obj.id} ${obj.index}/${obj.total}…`);
+    else if (obj.type === 'progress') {
+      const m = obj.metrics;
+      if (m) setStatus(`${obj.id} prefill=${m.prompt_eval_count ?? '?'} out=${m.eval_count ?? '?'} ${m.tok_per_s ?? '?'}t/s ctx=${m.num_ctx ?? '?'}`);
+      else if (obj.chars != null) setStatus(`${obj.id} ${obj.chars}c ${Math.round((obj.elapsedMs || 0) / 1000)}s`);
+    }
+    else if (obj.type === 'done') setStatus(`${obj.id} ✓ ${obj.ms}ms`);
+    else if (obj.type === 'error') errors.push(`${obj.id}: ${obj.error}`);
+    else if (obj.type === 'cancelled') cancelled = true;
+    else if (obj.type === 'fatal') errors.push(obj.error || 'failed');
+    else if (obj.type === 'complete') {
+      (obj.errors || []).forEach((e) => errors.push(`${e.section_id}: ${e.error}`));
+    }
+  };
   try {
-    await api.regenerateScenarioSection(State.currentSession, sectionId);
-    showAlert('Section regenerated', 'success', 'scenario-alert');
+    const res = await fetch(url, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin', body: JSON.stringify(body || {}),
+      signal: controller.signal
+    });
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (_) {}
+      if (res.status === 404) msg = 'Endpoint not found — restart the server to pick up streaming regen.';
+      throw new Error(msg);
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    const drain = (line) => { const t = line.trim(); if (!t) return; let o; try { o = JSON.parse(t); } catch { return; } handle(o); };
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let nl;
+      while ((nl = buffer.indexOf('\n')) >= 0) { drain(buffer.slice(0, nl)); buffer = buffer.slice(nl + 1); }
+    }
+    drain(buffer);
+    if (cancelled) showAlert('Stopped.', 'danger', 'scenario-alert');
+    else if (errors.length) showAlert(`Finished with errors — ${errors.join('; ')}`, 'danger', 'scenario-alert');
+    else showAlert('Regenerated.', 'success', 'scenario-alert');
     await reloadCurrentSessionPanel();
   } catch (e) {
-    showAlert(e.message, 'danger', 'scenario-alert');
+    if (e.name === 'AbortError') showAlert('Stopped.', 'danger', 'scenario-alert');
+    else showAlert(e.message || 'Regeneration failed', 'danger', 'scenario-alert');
   } finally {
+    State.activeRegen = null;
+    delete btn.dataset.stopBtn;
+    delete btn.dataset.regenOriginal;
     btn.disabled = false;
     btn.textContent = original;
+    applyLlmBusyUI({ busy: State.llmLocalPending > 0, last_section: null });
     llmPendingEnd();
   }
+}
+
+function regenerateScenarioSection(sectionId, btn) {
+  return runStreamingRegen(
+    btn, sectionId,
+    `/api/sessions/${State.currentSession}/scenario-info/sections/${encodeURIComponent(sectionId)}/regenerate`,
+    {}
+  );
 }
 window.regenerateScenarioSection = regenerateScenarioSection;
 
@@ -3067,36 +3185,13 @@ window.saveSessionScenarioSources = saveSessionScenarioSources;
 // ids; an empty string regenerates everything (bulk). Each section is one Ollama
 // call server-side, so this can take a while — the button stays disabled until
 // the run finishes.
-async function regenerateScenarioPage(btn, sectionsCsv, label) {
-  if (!State.currentSession) return;
-  if (State.llmBusy) {
-    showAlert('A generation is already running — wait for it to finish.', 'danger', 'scenario-alert');
-    return;
-  }
+function regenerateScenarioPage(btn, sectionsCsv, label) {
   const sections = String(sectionsCsv || '').split(',').map((s) => s.trim()).filter(Boolean);
-  const body = sections.length ? { sections } : {};
-  const original = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = `${label || 'Regenerating'}…`;
-  llmPendingBegin(label || 'scenario');
-  try {
-    const result = await api.regenerateScenarioSections(State.currentSession, body);
-    const ok = scenarioArray(result.regenerated).length;
-    const errs = scenarioArray(result.errors);
-    if (errs.length) {
-      const detail = errs.map((e) => `${e.section_id}: ${e.error}`).join('; ');
-      showAlert(`Regenerated ${ok} section(s); ${errs.length} failed — ${detail}`, 'danger', 'scenario-alert');
-    } else {
-      showAlert(`Regenerated ${ok} section(s)`, 'success', 'scenario-alert');
-    }
-    await reloadCurrentSessionPanel();
-  } catch (e) {
-    showAlert(e.message, 'danger', 'scenario-alert');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = original;
-    llmPendingEnd();
-  }
+  return runStreamingRegen(
+    btn, label || 'scenario',
+    `/api/sessions/${State.currentSession}/scenario-info/regenerate`,
+    sections.length ? { sections } : {}
+  );
 }
 window.regenerateScenarioPage = regenerateScenarioPage;
 
@@ -3203,26 +3298,79 @@ async function saveSessionNpcAssign(sessionId, btn) {
 window.saveSessionNpcAssign = saveSessionNpcAssign;
 
 // Read-only sheet view for the per-case NPC detail.
+// Case→NPC: an EDITABLE per-case working copy of the NPC, seeded from the
+// central pool. Portrait Random/Style use this case's style. "Write back to
+// central NPC" promotes the whole sheet to the central pool, and only shows
+// when the per-case copy differs from central.
 function openNpcSheetView(npcId) {
   const npc = State.npcs.find((entry) => entry.id === npcId);
   if (!npc) return;
+  const sessionId = State.currentSession;
   modal(`
-    <h3>${esc(npc.name)} — Character Sheet</h3>
+    <h3>${esc(npc.name)} — Character Sheet <span style="color:var(--text2);font-weight:400;font-size:0.8rem">(this case)</span></h3>
     <div id="npc-sheet-area"><p style="color:var(--text2)">Loading…</p></div>
     <div class="sheet-actions">
+      <button class="btn btn-primary" id="npc-case-save" onclick="saveCaseNpc(${sessionId}, ${npcId}, this)">Save (this case)</button>
+      <button class="btn" id="npc-case-pushglobal" style="display:none" onclick="pushCaseNpcGlobal(${sessionId}, ${npcId}, this)" title="Promote this whole NPC sheet to the central pool (all cases)">Write back to central NPC</button>
       <button class="btn" onclick="exportPdf()">Export PDF</button>
       <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Close</button>
-    </div>`, (root) => {
+      <span class="save-status" id="npc-case-status"></span>
+    </div>`, async (root) => {
     const modalEl = root.querySelector('.modal');
     if (modalEl) { modalEl.style.maxWidth = '1100px'; modalEl.style.maxHeight = '92vh'; modalEl.style.overflowY = 'auto'; }
     const area = root.querySelector('#npc-sheet-area');
-    area.innerHTML = '';
-    SheetForm.setRuleset('rol');
-    SheetForm.setSessionId(null);
-    SheetForm.render(area, npc.sheet || {}, true);
+    try {
+      const data = await api.getCaseNpcSheet(sessionId, npcId);
+      area.innerHTML = '';
+      SheetForm.setRuleset('rol');
+      SheetForm.setSessionId(sessionId);
+      SheetForm.setPortraitAi(true);
+      SheetForm.render(area, data.sheet || {}, false);
+      setCaseNpcModified(root, data.modified);
+    } catch (e) {
+      area.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+    }
   });
 }
 window.openNpcSheetView = openNpcSheetView;
+
+function setCaseNpcModified(scope, modified) {
+  const btn = (scope || document).querySelector('#npc-case-pushglobal');
+  if (btn) btn.style.display = modified ? '' : 'none';
+}
+
+async function saveCaseNpc(sessionId, npcId, btn) {
+  const status = el('npc-case-status');
+  btn.disabled = true;
+  if (status) { status.textContent = 'Saving…'; status.className = 'save-status'; }
+  try {
+    const r = await api.saveCaseNpcSheet(sessionId, npcId, SheetForm.collect());
+    if (status) { status.textContent = '✓ Saved (this case)'; status.className = 'save-status ok'; }
+    setCaseNpcModified(btn.closest('.modal-backdrop'), r.modified);
+  } catch (e) {
+    if (status) { status.textContent = `✕ ${e.message}`; status.className = 'save-status error'; }
+  } finally {
+    btn.disabled = false;
+  }
+}
+window.saveCaseNpc = saveCaseNpc;
+
+async function pushCaseNpcGlobal(sessionId, npcId, btn) {
+  if (!confirm('Write this whole NPC sheet back to the central pool? It becomes the default for every case (existing per-case copies are unaffected).')) return;
+  const status = el('npc-case-status');
+  btn.disabled = true;
+  if (status) { status.textContent = 'Writing back…'; status.className = 'save-status'; }
+  try {
+    const r = await api.pushCaseNpcToGlobal(sessionId, npcId);
+    if (status) { status.textContent = '✓ Written back to central'; status.className = 'save-status ok'; }
+    setCaseNpcModified(btn.closest('.modal-backdrop'), r.modified);
+  } catch (e) {
+    if (status) { status.textContent = `✕ ${e.message}`; status.className = 'save-status error'; }
+  } finally {
+    btn.disabled = false;
+  }
+}
+window.pushCaseNpcGlobal = pushCaseNpcGlobal;
 
 // ── Admin: NPC management + case allocation ──────────────────────────────────
 async function renderAdminNpcs() {
@@ -3288,6 +3436,9 @@ function openNpcSheet(npcId) {
     area.innerHTML = '';
     SheetForm.setRuleset('rol');
     SheetForm.setSessionId(null);
+    // Central pool: no case ⇒ no style context, so hide the AI portrait
+    // buttons here (manual upload/camera/clear stay).
+    SheetForm.setPortraitAi(false);
     SheetForm.render(area, (npc && npc.sheet) || {}, false);
   });
 }
@@ -3560,16 +3711,36 @@ async function renderAdminLlm() {
       ? `<select id="${id}">${opts.map((m) => `<option value="${esc(m)}"${m === cur ? ' selected' : ''}>${esc(m)}${m === dft ? ' (default)' : ''}</option>`).join('')}</select>`
       : `<input type="text" id="${id}" value="${esc(cur)}" placeholder="default: ${esc(dft)}" spellcheck="false" autocomplete="off">`;
   };
-  const models = Array.isArray(info.models) ? info.models : [];
+  // Server now returns [{ name, context }] (filtered to >=64K). Normalise and
+  // always include the current model even if Ollama didn't list it.
+  const models = (Array.isArray(info.models) ? info.models : [])
+    .map((m) => (typeof m === 'string' ? { name: m, context: null } : m))
+    .filter((m) => m && m.name);
   const current = info.current || '';
   const def = info.default || '';
-  // Always include the current model in the list even if Ollama didn't list it.
   const options = models.slice();
-  if (current && !options.includes(current)) options.unshift(current);
+  if (current && !options.some((m) => m.name === current)) options.unshift({ name: current, context: null });
+  const ctxLabel = (c) => (c == null ? '? ctx' : (c >= 1024 ? `${Math.round(c / 1024)}K` : String(c)));
+  const ctx = info.context || {};
+  const ctxCurrent = Number(ctx.current || ctx.effective || 0);
+  const ctxEffective = Number(ctx.effective || ctxCurrent || 0);
+  const ctxModelMax = Number(ctx.model_max);
+  const ctxAll = (Array.isArray(ctx.all_options) && ctx.all_options.length ? ctx.all_options : [131072, 262144])
+    .map(Number).filter((n) => Number.isFinite(n));
+  const ctxSupported = Array.isArray(ctx.options) ? ctx.options.map(Number) : ctxAll;
+  const contextButtons = ctxAll.map((n) => {
+    const supported = ctxSupported.includes(n);
+    const selected = n === ctxCurrent || (!ctxAll.includes(ctxCurrent) && n === ctxEffective);
+    const title = supported ? `Use ${ctxLabel(n)} context` : `Not supported by ${current || 'the active model'}`;
+    return `<button class="btn btn-sm${selected ? ' btn-primary' : ''}" onclick="saveAdminLlmContext(this, ${n})"${supported ? '' : ' disabled'} title="${esc(title)}">${ctxLabel(n)}</button>`;
+  }).join('');
+  const ctxSub = ctx.error
+    ? `Could not read context metadata: ${esc(ctx.error)}`
+    : `Model maximum: ${Number.isFinite(ctxModelMax) && ctxModelMax > 0 ? ctxLabel(ctxModelMax) : 'unknown'}. Active request: ${ctxLabel(ctxCurrent)}${ctxEffective && ctxEffective !== ctxCurrent ? `, effective ${ctxLabel(ctxEffective)}` : ''}.`;
 
   const selector = options.length
     ? `<select id="llm-model-select">
-        ${options.map((m) => `<option value="${esc(m)}"${m === current ? ' selected' : ''}>${esc(m)}${m === def ? ' (default)' : ''}</option>`).join('')}
+        ${options.map((m) => `<option value="${esc(m.name)}"${m.name === current ? ' selected' : ''}>${esc(m.name)} (${ctxLabel(m.context)})${m.name === def ? ' (default)' : ''}</option>`).join('')}
        </select>`
     : `<input type="text" id="llm-model-select" value="${esc(current)}" placeholder="model name e.g. ${esc(def)}">`;
 
@@ -3584,6 +3755,14 @@ async function renderAdminLlm() {
       <div class="form-group" style="max-width:520px">
         <label>Active model</label>
         ${selector}
+      </div>
+      <div class="form-group" style="max-width:520px">
+        <label>LLM context</label>
+        <div style="display:flex;gap:0.5rem;align-items:center">
+          ${contextButtons}
+          <span class="save-status" id="llm-context-status"></span>
+        </div>
+        <div class="card-sub" style="margin-top:0.35rem">${ctxSub}</div>
       </div>
       <div style="display:flex;gap:0.5rem;align-items:center">
         <button class="btn btn-primary" onclick="saveAdminLlmModel(this)">Save</button>
@@ -3684,6 +3863,24 @@ async function saveAdminLlmModel(btn, forceModel) {
   }
 }
 window.saveAdminLlmModel = saveAdminLlmModel;
+
+async function saveAdminLlmContext(btn, numCtx) {
+  const status = el('llm-context-status');
+  const label = Number(numCtx) >= 1024 ? `${Math.round(Number(numCtx) / 1024)}K` : String(numCtx);
+  btn.disabled = true;
+  if (status) { status.textContent = 'Saving...'; status.className = 'save-status'; }
+  try {
+    await api.setLlmContext(numCtx);
+    if (status) { status.textContent = `${label} saved`; status.className = 'save-status saved'; }
+    await renderAdminLlm();
+  } catch (e) {
+    if (status) { status.textContent = e.message || 'Could not save context'; status.className = 'save-status error'; }
+    showAlert(e.message || 'Could not save context', 'danger', 'llm-alert');
+  } finally {
+    btn.disabled = false;
+  }
+}
+window.saveAdminLlmContext = saveAdminLlmContext;
 
 // ── About tab ────────────────────────────────────────────────────────────────
 function loadAboutTab() {
@@ -3868,6 +4065,7 @@ async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
   const sheetHost = el('domestic-sheet');
   SheetForm.setRuleset('rol');
   SheetForm.setSessionId(State.currentSession);
+  SheetForm.setPortraitAi(true);
   SheetForm.render(sheetHost, State.domesticSheet || {}, false);
   attachDomesticSheetPersistence(sheetHost);
 }

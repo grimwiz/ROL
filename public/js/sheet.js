@@ -43,6 +43,11 @@ const SheetForm = (() => {
   // case's configured art-style. null ⇒ server uses the default style.
   let _sessionId = null;
   function setSessionId(id) { const n = parseInt(id, 10); _sessionId = Number.isInteger(n) ? n : null; }
+  // AI portrait buttons (Random / Style this picture) need a case to define
+  // the style. Disabled for the Admin NPC editor (no case). Manual
+  // upload/camera/clear stay regardless.
+  let _portraitAi = true;
+  function setPortraitAi(on) { _portraitAi = on !== false; }
   function sizEnabled() { return _ruleset === 'coc'; }
 
   const STAT_OPTIONS = [10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90];
@@ -523,8 +528,10 @@ const SheetForm = (() => {
           </div>
           ${!readonly ? `
             <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.5rem">
+              ${_portraitAi ? `
               <button type="button" id="sf_portrait_random" class="btn btn-sm" onclick="SheetForm.generateRandomPortrait()">Random</button>
               <button type="button" id="sf_portrait_style" class="btn btn-sm" onclick="SheetForm.stylePortrait()">Style this picture</button>
+              ` : ''}
               <button type="button" id="sf_portrait_revert" class="btn btn-sm" style="display:none" onclick="SheetForm.revertPortrait()">Discard generated</button>
               <button type="button" id="sf_portrait_clear" class="btn btn-sm" onclick="SheetForm.clearPortrait()">Remove picture</button>
             </div>
@@ -993,6 +1000,7 @@ const SheetForm = (() => {
     setDisabled('sf_portrait_camera',  stylising);
     setDisabled('sf_portrait_clear',   stylising);
     setDisabled('sf_portrait_random',  stylising);
+    setDisabled('sf_portrait_style',   stylising);
     setDisabled('sf_portrait_revert',  stylising || !hasPendingGenerated);
   }
 
@@ -1200,6 +1208,8 @@ const SheetForm = (() => {
   async function runPortraitJob(verb, submit) {
     if (stylising) return;
     stylising = true;
+    // Light the shared nav AI indicator instantly (same one the LLM uses).
+    if (window.llmPendingBegin) window.llmPendingBegin(verb === 'Styling' ? 'styling portrait' : 'portrait');
     setPortraitControlsEnabled(false);
     setPortraitStatus(`${verb}… (can take ~1 min on first run)`, '');
 
@@ -1294,6 +1304,7 @@ const SheetForm = (() => {
       setPortraitStatus(`${verb} failed: ${err.message || err}`, 'error');
     } finally {
       clearInterval(ticker);
+      if (window.llmPendingEnd) window.llmPendingEnd();
       stylising = false;
       setPortraitControlsEnabled(true);
       updatePortraitControlsVisibility();
@@ -1463,7 +1474,7 @@ const SheetForm = (() => {
   }
 
   return {
-    render, collect, setRuleset, setSessionId,
+    render, collect, setRuleset, setSessionId, setPortraitAi,
     addMandatory, removeMandatory,
     addAdditional, removeAdditional,
     addLanguage, removeLanguage,

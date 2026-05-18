@@ -35,6 +35,9 @@ const api = (() => {
     setNpcSessions: (id, sessionIds) => req('PUT', `/npcs/${id}/sessions`, { session_ids: sessionIds }),
     getAllocatableCases: () => req('GET', '/allocatable-cases'),
     setSessionNpcs: (sessionId, npcIds) => req('PUT', `/sessions/${sessionId}/npcs`, { npc_ids: npcIds }),
+    getCaseNpcSheet: (sessionId, npcId) => req('GET', `/sessions/${sessionId}/npcs/${npcId}/sheet`),
+    saveCaseNpcSheet: (sessionId, npcId, sheet) => req('PUT', `/sessions/${sessionId}/npcs/${npcId}/sheet`, { sheet }),
+    pushCaseNpcToGlobal: (sessionId, npcId) => req('POST', `/sessions/${sessionId}/npcs/${npcId}/sheet/push-global`, {}),
 
     getSessions: () => req('GET', '/sessions'),
     createSession: (data) => req('POST', '/sessions', data),
@@ -78,6 +81,8 @@ const api = (() => {
     getLlmStatus: () => req('GET', '/llm/status'),
     getLlmModels: () => req('GET', '/llm/models'),
     setLlmModel: (model) => req('PUT', '/llm/model', { model }),
+    setLlmContext: (numCtx) => req('PUT', '/llm/context', { num_ctx: numCtx }),
+    cancelLlm: () => req('POST', '/llm/cancel', {}),
     getLlmServices: () => req('GET', '/llm/services'),
     setLlmServices: (patch) => req('PUT', '/llm/services', patch || {}),
     getComfyModels: () => req('GET', '/comfy/models'),

@@ -22,6 +22,17 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/rules-files', requireAuth, express.static(path.join(__dirname, '..', 'Rivers_of_London')));
 
+// Concise per-request access log (one line on response finish). Skips the
+// 3s /llm/status poll so it doesn't drown the console.
+app.use('/api', (req, res, next) => {
+  if (req.path === '/llm/status') return next();
+  const startedMs = Date.now();
+  res.on('finish', () => {
+    console.info(`[http] method=${req.method} path=${req.originalUrl.split('?')[0]} status=${res.statusCode} ms=${Date.now() - startedMs}`);
+  });
+  next();
+});
+
 app.use('/api', require('./routes'));
 
 // SPA fallback — serve index.html for all non-API routes

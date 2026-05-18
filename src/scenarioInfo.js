@@ -10,9 +10,10 @@ const GM_NAME = 'Stu Bentley';
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://openwebui37.dragon-net.local:11434';
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3.6_36b:codex';
 const OLLAMA_NUM_CTX = parseInt(process.env.OLLAMA_NUM_CTX || '262144', 10);
+const OLLAMA_CONTEXT_OPTIONS = [131072, 262144];
 // Hard upper bound for a single section generation (default 30 min). Streaming
 // keeps the connection alive during generation; this only catches a truly
-// stuck call. Also the seam a future "cancel" button drives.
+// stuck call. The server-side cancel endpoint also aborts through this path.
 const OLLAMA_TIMEOUT_MS = parseInt(process.env.OLLAMA_TIMEOUT_MS || '1800000', 10);
 const OLLAMA_KEEP_ALIVE = process.env.OLLAMA_KEEP_ALIVE || '30m';
 
@@ -28,15 +29,20 @@ try {
   ollamaDispatcher = null;
 }
 
-// In-process view of whether a generation is running, for a future busyness
-// monitor. Kept here so the single Ollama path owns the truth.
+// In-process view of whether a generation is running. Kept here so the single
+// Ollama path owns the truth for status polling and server-side cancellation.
 const ollamaActivity = { active: 0, startedAt: null, lastSection: null };
+const ollamaControllers = new Set();
 
 // Global app config (model override etc.) persisted outside the per-case DB.
 const APP_CONFIG_PATH = path.join(DATA_ROOT, 'app-config.json');
 function readAppConfig() {
   try { return JSON.parse(fs.readFileSync(APP_CONFIG_PATH, 'utf8')) || {}; }
   catch { return {}; }
+}
+function writeAppConfig(cfg) {
+  fs.mkdirSync(DATA_ROOT, { recursive: true });
+  fs.writeFileSync(APP_CONFIG_PATH, JSON.stringify(cfg || {}, null, 2) + '\n', 'utf8');
 }
 function effectiveOllamaModel() {
   const m = readAppConfig().ollama_model;
@@ -47,9 +53,97 @@ function setOllamaModel(model) {
   if (!m) { const e = new Error('A model name is required'); e.statusCode = 400; throw e; }
   const cfg = readAppConfig();
   cfg.ollama_model = m;
-  fs.mkdirSync(DATA_ROOT, { recursive: true });
-  fs.writeFileSync(APP_CONFIG_PATH, JSON.stringify(cfg, null, 2) + '\n', 'utf8');
+  writeAppConfig(cfg);
   return effectiveOllamaModel();
+}
+
+// Model max context, read from Ollama /api/show metadata (manifest/GGUF —
+// NOT a model load). Cached per model. We must never request more context
+// than the model supports: a 2x over-request (e.g. num_ctx 262144 on
+// gemma4:e4b's real 131072) gives no usable attention, silently drops prompt
+// content ("lost in the middle"), and bloats the shared-GPU KV cache.
+const modelCtxCache = new Map(); // model name -> { max:number|null, at:ms }
+async function modelMaxContext(model) {
+  const cached = modelCtxCache.get(model);
+  if (cached && Date.now() - cached.at < 30 * 60 * 1000) return cached.max;
+  let max = null;
+  try {
+    const r = await fetch(`${effectiveOllamaUrl()}/api/show`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: model }),
+      signal: AbortSignal.timeout(5000)
+    });
+    if (r.ok) {
+      const j = await r.json();
+      const mi = (j && j.model_info) || {};
+      const key = Object.keys(mi).find((k) => k.endsWith('.context_length'));
+      const v = key ? Number(mi[key]) : NaN;
+      if (Number.isFinite(v) && v > 0) max = v;
+    }
+  } catch { /* unreachable / no metadata — fall back to the configured size */ }
+  modelCtxCache.set(model, { max, at: Date.now() });
+  return max;
+}
+
+function formatContextSize(n) {
+  const v = Number(n);
+  return Number.isFinite(v) && v >= 1024 ? `${Math.round(v / 1024)}K` : String(n);
+}
+
+function defaultOllamaNumCtx() {
+  return OLLAMA_CONTEXT_OPTIONS.includes(OLLAMA_NUM_CTX) ? OLLAMA_NUM_CTX : 262144;
+}
+
+function configuredOllamaNumCtx() {
+  const n = Number(readAppConfig().ollama_num_ctx);
+  return OLLAMA_CONTEXT_OPTIONS.includes(n) ? n : defaultOllamaNumCtx();
+}
+
+function supportedContextOptions(max) {
+  return OLLAMA_CONTEXT_OPTIONS.filter((n) => !(Number.isFinite(max) && max > 0) || n <= max);
+}
+
+async function ollamaContextConfig() {
+  const max = await modelMaxContext(effectiveOllamaModel());
+  const current = configuredOllamaNumCtx();
+  const effective = (Number.isFinite(max) && max > 0) ? Math.min(current, max) : current;
+  return {
+    current,
+    effective,
+    default: defaultOllamaNumCtx(),
+    model_max: max,
+    options: supportedContextOptions(max),
+    all_options: OLLAMA_CONTEXT_OPTIONS.slice()
+  };
+}
+
+async function setOllamaNumCtx(value) {
+  const n = Number(value);
+  if (!OLLAMA_CONTEXT_OPTIONS.includes(n)) {
+    const e = new Error('Context must be 128K or 256K');
+    e.statusCode = 400;
+    throw e;
+  }
+  const max = await modelMaxContext(effectiveOllamaModel());
+  if (Number.isFinite(max) && max > 0 && n > max) {
+    const e = new Error(`The active model only supports ${formatContextSize(max)} context`);
+    e.statusCode = 400;
+    throw e;
+  }
+  const cfg = readAppConfig();
+  cfg.ollama_num_ctx = n;
+  writeAppConfig(cfg);
+  return ollamaContextConfig();
+}
+
+// num_ctx to request: the persisted size, clamped only to the model's real
+// maximum (so we never ask for more than the model supports). The large
+// window is intentional: sections analyse a lot of source data.
+async function resolveNumCtx() {
+  const configured = configuredOllamaNumCtx();
+  const max = await modelMaxContext(effectiveOllamaModel());
+  return (Number.isFinite(max) && max > 0) ? Math.min(configured, max) : configured;
 }
 
 // Per-service base-URL overrides for the AI hosts (Ollama, ComfyUI). Each
@@ -74,8 +168,7 @@ function setServiceUrl(key, url) {
   }
   const cfg = readAppConfig();
   if (u) cfg[cfgKey] = u; else delete cfg[cfgKey];
-  fs.mkdirSync(DATA_ROOT, { recursive: true });
-  fs.writeFileSync(APP_CONFIG_PATH, JSON.stringify(cfg, null, 2) + '\n', 'utf8');
+  writeAppConfig(cfg);
   return servicesConfig();
 }
 function servicesConfig() {
@@ -106,8 +199,7 @@ function setComfyuiModel(kind, name) {
   const m = String(name == null ? '' : name).trim();
   const cfg = readAppConfig();
   if (m) cfg[cfgKey] = m; else delete cfg[cfgKey];
-  fs.mkdirSync(DATA_ROOT, { recursive: true });
-  fs.writeFileSync(APP_CONFIG_PATH, JSON.stringify(cfg, null, 2) + '\n', 'utf8');
+  writeAppConfig(cfg);
   return comfyModelsConfig();
 }
 function comfyModelsConfig() {
@@ -130,16 +222,65 @@ async function listOllamaModels() {
     .sort((a, b) => a.localeCompare(b));
 }
 
+// Runtime view of the currently-loaded model from /api/ps: how much of it is
+// resident in VRAM vs spilled to CPU, and the context it was actually loaded
+// with. Reports the effective model when present, else the first loaded one.
+// null when nothing is loaded or Ollama is unreachable.
+async function ollamaPs() {
+  let r;
+  try {
+    r = await fetch(`${effectiveOllamaUrl()}/api/ps`, { signal: AbortSignal.timeout(4000) });
+  } catch { return null; }
+  if (!r.ok) return null;
+  const j = await r.json().catch(() => null);
+  const models = (j && Array.isArray(j.models)) ? j.models : [];
+  if (!models.length) return null;
+  const want = effectiveOllamaModel();
+  const m = models.find((x) => x && (x.name === want || x.model === want)) || models[0];
+  const total = Number(m.size) || 0;
+  const vram = Number(m.size_vram) || 0;
+  const gpuPct = total ? Math.round((vram / total) * 100) : null;
+  return {
+    name: m.name || m.model || null,
+    total, vram,
+    total_gb: total ? +(total / 1e9).toFixed(2) : null,
+    vram_gb: vram ? +(vram / 1e9).toFixed(2) : null,
+    gpu_pct: gpuPct,
+    cpu_pct: gpuPct == null ? null : 100 - gpuPct,
+    ctx: Number(m.context_length) || null
+  };
+}
+
+// Installed models enriched with each one's max context (cached,
+// metadata-only via /api/show). `context` is null when it can't be read.
+async function listOllamaModelsDetailed() {
+  const names = await listOllamaModels();
+  return Promise.all(names.map(async (name) => ({ name, context: await modelMaxContext(name) })));
+}
+
 function ollamaStatus() {
   return {
     busy: ollamaActivity.active > 0,
     active: ollamaActivity.active,
+    can_cancel: ollamaControllers.size > 0,
     started_at: ollamaActivity.startedAt,
     last_section: ollamaActivity.lastSection,
     url: effectiveOllamaUrl(),
     default_url: OLLAMA_URL.replace(/\/+$/, ''),
     model: effectiveOllamaModel(),
-    default_model: OLLAMA_MODEL
+    default_model: OLLAMA_MODEL,
+    num_ctx: configuredOllamaNumCtx()
+  };
+}
+
+function cancelOllama(reason = 'Ollama request cancelled') {
+  const controllers = [...ollamaControllers].filter((controller) => controller && !controller.signal.aborted);
+  for (const controller of controllers) controller.abort(new Error(reason));
+  return {
+    cancelled: controllers.length,
+    active: ollamaActivity.active,
+    busy: ollamaActivity.active > 0,
+    last_section: ollamaActivity.lastSection
   };
 }
 
@@ -1397,9 +1538,38 @@ function renderSectionPrompt(session, db, config, artifact, currentValue, source
         '- Do not write player-facing prose; write practical GM support material.'
       ].join('\n');
 
-  return `# Section Regeneration Task
+  // Ordered for prompt/prefix-cache reuse: everything that is identical for
+  // every section of this artifact (the full source corpus, common context,
+  // rules) comes FIRST as a stable prefix; the per-section ask and the
+  // mutating artifact JSON come LAST. With the model resident (keep_alive)
+  // and calls serialised (AI-exclusivity gate), sections 2..N reuse the
+  // cached prefill of the corpus instead of re-processing ~all of it.
+  return `# The Folly — Scenario Regeneration
 
-You are regenerating exactly one section of The Folly web app's scenario information.
+You are regenerating scenario information for The Folly web app, one section at a time. Study all of the source material and rules below; the specific section to produce — and the current artifact — are given at the very end.
+
+${renderPromptFileBundle(orderedSourceFiles)}
+${imageDirective}
+
+${renderCommonPromptContext(session, db, sourceFiles)}
+
+## Rules
+
+- Return only valid JSON for this one section. No markdown fences, commentary, planning text, or wrapper object.
+- GROUNDING: every statement about what happened — who did or found something, who met whom, where they went, what they were told, and when — must trace to the **Authoritative Case Sources** (the WhatsApp transcript and GM-authored case files). If the case sources do not establish it, do not write it. Never introduce people, places, organisations, meetings, relationships, or timeline from the World Reference; those files only explain what an already-mentioned name or term *is*. When in doubt, leave it out rather than guess.
+- COMPLETENESS: this is the players' primary record of the case — they do not read the raw files. Surface ALL pertinent case information for this section: facts, decisions, clues, leads, who did what, current state, and consequences. Do not omit relevant detail to be brief; for case facts, favour completeness over concision. It is an analysis task, not a terse summary.
+- COHESION: the whole artifact must read as one consistent account. Treat "what has happened" as the spine; this section must agree with it and with the other sections — reuse the exact same entity names and IDs, do not contradict them, and reflect cross-references (e.g., a location entry should reflect what the summary says happened there).
+- The session transcript comes from WhatsApp. Message headings identify the speaker and time, and replies/linkage clarify the thread of conversation. Follow those conversational threads; do not treat a message heading as a story event in itself.
+- Do not create generic timeline fields or timeline paragraphs. If chronology matters, write it naturally inside the analysis for the item.
+- Preserve stable IDs from the current section where an item still represents the same thing. Keep useful existing facts unless the sources make them stale, unsafe, or incorrect.
+- Prefer factual prose over speculation. Preserve ambiguity explicitly: "unknown", "unconfirmed", or "requires sign-off".
+- Cite sources with repo-relative paths in sources[].path, preferring the Authoritative Case Sources.
+- IMAGES: the "no raw HTML" rule does NOT forbid Markdown images. If the "Available Images" section lists a file whose name clearly matches a place/person/thing/topic you describe, you SHOULD embed it: put a Markdown image (exclamation mark, [concise caption], then (EXACT-FILENAME) in parentheses) on its own line inside that item's Markdown content string, directly under the most relevant heading. Use filenames verbatim from that list only; never invent one.
+${accessRules}
+
+---
+
+# The Section To Produce Now
 
 Session: ${session.name} (id ${session.id})
 Section id: ${config.id}
@@ -1415,22 +1585,6 @@ ${config.schemaHint ? `
 
 ${config.schemaHint}
 ` : ''}
-## Rules
-
-- Return only valid JSON for this one section. No markdown fences, commentary, planning text, or wrapper object.
-- GROUNDING: every statement about what happened — who did or found something, who met whom, where they went, what they were told, and when — must trace to the **Authoritative Case Sources** (the WhatsApp transcript and GM-authored case files). If the case sources do not establish it, do not write it. Never introduce people, places, organisations, meetings, relationships, or timeline from the World Reference; those files only explain what an already-mentioned name or term *is*. When in doubt, leave it out rather than guess.
-- COMPLETENESS: this is the players' primary record of the case — they do not read the raw files. Surface ALL pertinent case information for this section: facts, decisions, clues, leads, who did what, current state, and consequences. Do not omit relevant detail to be brief; for case facts, favour completeness over concision. It is an analysis task, not a terse summary.
-- COHESION: the whole artifact must read as one consistent account. Treat "what has happened" as the spine; this section must agree with it and with the other sections — reuse the exact same entity names and IDs, do not contradict them, and reflect cross-references (e.g., a location entry should reflect what the summary says happened there).
-- The session transcript comes from WhatsApp. Message headings identify the speaker and time, and replies/linkage clarify the thread of conversation. Follow those conversational threads; do not treat a message heading as a story event in itself.
-- Do not create generic timeline fields or timeline paragraphs. If chronology matters, write it naturally inside the analysis for the item.
-- Preserve stable IDs from the current section where an item still represents the same thing. Keep useful existing facts unless the sources make them stale, unsafe, or incorrect.
-- Prefer factual prose over speculation. Preserve ambiguity explicitly: "unknown", "unconfirmed", or "requires sign-off".
-- Cite sources with repo-relative paths in sources[].path, preferring the Authoritative Case Sources.
-- IMAGES: the "no raw HTML" rule does NOT forbid Markdown images. If the "Available Images" section lists a file whose name clearly matches a place/person/thing/topic you describe, you SHOULD embed it: put a Markdown image (exclamation mark, [concise caption], then (EXACT-FILENAME) in parentheses) on its own line inside that item's Markdown content string, directly under the most relevant heading. Use filenames verbatim from that list only; never invent one.
-${accessRules}
-
-${renderCommonPromptContext(session, db, sourceFiles)}
-
 ## Current Complete Artifact
 
 This is the rest of the player/GM record. Make this section cohere with it: same names, same IDs, no contradictions. "What has happened" is the spine — session summaries extend it, and entities/threads must be consistent with both. Extend and reconcile; do not regress detail another section already captured.
@@ -1440,9 +1594,6 @@ ${renderJsonBlock(artifact)}
 ## Current Section Value
 
 ${renderJsonBlock(currentValue ?? (config.type === 'array' ? [] : null))}
-
-${renderPromptFileBundle(orderedSourceFiles)}
-${imageDirective}
 
 Return ${expected} now.`;
 }
@@ -1479,11 +1630,13 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
     ? setTimeout(() => controller.abort(new Error(`Ollama timed out after ${Math.round(OLLAMA_TIMEOUT_MS / 1000)}s`)), OLLAMA_TIMEOUT_MS)
     : null;
 
+  ollamaControllers.add(controller);
   ollamaActivity.active += 1;
   ollamaActivity.startedAt = ollamaActivity.startedAt || new Date().toISOString();
   if (label) ollamaActivity.lastSection = label;
 
   try {
+    const numCtx = await resolveNumCtx();
     const response = await fetch(`${effectiveOllamaUrl()}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1494,7 +1647,7 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
         stream: true,
         keep_alive: OLLAMA_KEEP_ALIVE,
         options: {
-          num_ctx: Number.isInteger(OLLAMA_NUM_CTX) ? OLLAMA_NUM_CTX : 262144,
+          num_ctx: numCtx,
           temperature: 0.2
         },
         messages: Array.isArray(messages) && messages.length ? messages : [
@@ -1518,6 +1671,7 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
     const decoder = new TextDecoder();
     let buffer = '';
     let content = '';
+    let stats = null;
     const consume = (line) => {
       const trimmed = line.trim();
       if (!trimmed) return;
@@ -1529,6 +1683,19 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
         if (typeof onToken === 'function') {
           try { onToken(obj.message.content); } catch { /* token sink is best-effort */ }
         }
+      }
+      // Terminal object carries Ollama's eval stats. prompt_eval_count is the
+      // prefix-cache tell: it collapses on a cache hit (only the new tail).
+      if (obj.done) {
+        const evalMs = Math.round((obj.eval_duration || 0) / 1e6);
+        stats = {
+          prompt_eval_count: obj.prompt_eval_count ?? null,
+          eval_count: obj.eval_count ?? null,
+          prompt_eval_ms: Math.round((obj.prompt_eval_duration || 0) / 1e6),
+          eval_ms: evalMs,
+          total_ms: Math.round((obj.total_duration || 0) / 1e6),
+          tok_per_s: (obj.eval_count && evalMs) ? +(obj.eval_count / (evalMs / 1000)).toFixed(1) : null
+        };
       }
     };
     let lastTick = 0;
@@ -1553,6 +1720,9 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
     }
     consume(buffer);
     if (!content.trim()) throw new Error('Ollama returned an empty response');
+    if (typeof onProgress === 'function' && stats) {
+      try { onProgress({ label, chars: content.length, elapsedMs: Date.now() - startedMs, metrics: { ...stats, num_ctx: numCtx } }); } catch { /* best-effort */ }
+    }
     return content;
   } catch (e) {
     if (controller.signal.aborted) {
@@ -1565,6 +1735,7 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
   } finally {
     if (timer) clearTimeout(timer);
     if (signal) signal.removeEventListener('abort', linkAbort);
+    ollamaControllers.delete(controller);
     ollamaActivity.active = Math.max(0, ollamaActivity.active - 1);
     if (ollamaActivity.active === 0) ollamaActivity.startedAt = null;
   }
@@ -1655,6 +1826,193 @@ function injectImagesIntoValue(value, config, sourceFiles) {
   return value;
 }
 
+function scenarioSlug(s) {
+  return String(s || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+}
+
+// Detected session transcripts in input/ (case-insensitive Session-NN.md).
+function detectSessionItems(session, db, paths) {
+  let names = [];
+  try { names = fs.readdirSync(paths.input); } catch { return []; }
+  const items = [];
+  for (const name of names) {
+    const m = /^session[-_ ]?0*(\d+)\.(?:md|markdown)$/i.exec(name);
+    if (!m) continue;
+    const n = parseInt(m[1], 10);
+    if (!Number.isFinite(n)) continue;
+    items.push({ key: `session-${n}`, n, title: `Session ${n}`, file: repoRelative(path.join(paths.input, name)) });
+  }
+  return items.sort((a, b) => a.n - b.n);
+}
+
+function loopPrereqError(message) {
+  const error = new Error(message);
+  error.statusCode = 400;
+  return error;
+}
+
+// Player characters from assigned players' actual character sheets (one item
+// each). This deliberately does not use listRoster()'s username fallback:
+// regeneration needs a real character-name index before it spends an LLM call.
+function listCharacterItems(session, db) {
+  const rows = db.prepare(`
+    SELECT u.id AS user_id, u.username, u.role, cs.data
+    FROM session_players sp
+    JOIN users u ON u.id = sp.user_id
+    LEFT JOIN character_sheets cs ON cs.session_id = sp.session_id AND cs.user_id = sp.user_id
+    WHERE sp.session_id = ? AND u.role = 'player'
+    ORDER BY u.username
+  `).all(session.id);
+
+  const missing = [];
+  const invalidNames = [];
+  const duplicateNames = [];
+  const seen = new Set();
+  const items = [];
+  for (const row of rows) {
+    const data = parseSheetData(row.data);
+    const nm = String(data.name || '').trim();
+    if (!nm) {
+      missing.push(row.username);
+      continue;
+    }
+    const slug = scenarioSlug(nm);
+    if (!slug) {
+      invalidNames.push(nm);
+      continue;
+    }
+    const key = `char-${slug}`;
+    if (seen.has(key)) {
+      duplicateNames.push(nm);
+      continue;
+    }
+    seen.add(key);
+    items.push({ key, name: nm, title: nm });
+  }
+  if (missing.length) {
+    throw loopPrereqError(`Cannot regenerate player character summaries: missing character sheet name for assigned player account(s): ${missing.join(', ')}.`);
+  }
+  if (invalidNames.length) {
+    throw loopPrereqError(`Cannot regenerate player character summaries: character name(s) cannot produce stable output id(s): ${invalidNames.join(', ')}.`);
+  }
+  if (duplicateNames.length) {
+    throw loopPrereqError(`Cannot regenerate player character summaries: duplicate character name(s) would produce the same output id: ${duplicateNames.join(', ')}.`);
+  }
+  if (!items.length) {
+    throw loopPrereqError('Cannot regenerate player character summaries: no assigned player character sheet names were found.');
+  }
+  return items;
+}
+
+// Sections regenerated as a code-driven per-item loop (one small focused
+// Ollama call per item, array assembled in code) instead of one call that
+// must emit the whole array.
+const LOOPED_SECTIONS = {
+  'player.summary.session_summaries': (session, db, paths) => detectSessionItems(session, db, paths),
+  'player.entities.characters': (session, db) => listCharacterItems(session, db)
+};
+
+function emptyLoopMessage(config) {
+  if (config.id === 'player.summary.session_summaries') {
+    return 'Cannot regenerate session summaries: no session transcript files matching session-NN.md were found under input/.';
+  }
+  if (config.id === 'player.entities.characters') {
+    return 'Cannot regenerate player character summaries: no assigned player character sheet names were found.';
+  }
+  return `Cannot regenerate ${config.title}: no loop items were found.`;
+}
+
+function itemFocusPrompt(config, item) {
+  const head = [
+    '',
+    '## OUTPUT OVERRIDE — one item only',
+    'Disregard any instruction to return a JSON array. Return EXACTLY ONE JSON object',
+    '(no array, no wrapper) matching the element shape described above, for THIS item only:'
+  ];
+  if (config.id === 'player.summary.session_summaries') {
+    head.push(
+      `- id: "${item.key}" (use exactly this id)`,
+      `- title: based on "${item.title}" (you may append a date if the sources give one)`,
+      `Cover everything that happened in THIS session, grounded only in its transcript`,
+      `(${item.file}) plus the World Reference for term clarification.`
+    );
+  } else if (config.id === 'player.entities.characters') {
+    head.push(
+      `- id: "${item.key}" (use exactly this id)`,
+      `- name: "${item.name}"`,
+      `The fullest account of THIS player character across the whole case, grounded in the case sources.`
+    );
+  }
+  head.push('', 'Return exactly one JSON object now.');
+  return head.join('\n');
+}
+
+function loopedItemSourceFiles(config, item, sourceFiles) {
+  const ordered = sortPromptSources(sourceFiles);
+  if (config.id === 'player.summary.session_summaries' && item.file) {
+    return ordered.filter((file) => {
+      if (!file || file.kind !== 'markdown') return false;
+      if (file.path === item.file) return true;
+      if (String(file.path || '').endsWith('/input/player.md')) return true;
+      return !isCaseSourceFile(file);
+    });
+  }
+  return ordered.filter((file) => file && file.kind === 'markdown');
+}
+
+// Per-item prompt for looped sections. It is grounded in the original session
+// .md files plus root reference .md files. It deliberately excludes the current
+// generated artifact/section value, so character/session loops cannot compound
+// old summary omissions or hallucinations.
+function renderLoopedItemPrompt(session, db, config, item, sourceFiles) {
+  const promptSources = loopedItemSourceFiles(config, item, sourceFiles);
+  const expected = 'one JSON object';
+  const accessRules = config.artifact === 'player'
+    ? [
+        '- This is player-visible. Never include secrets, future plans, hidden causes, or private GM interpretation.',
+        '- The `known_by` field must use exact character names from the application roster, or ["all"] only when the whole table plainly shares it.'
+      ].join('\n')
+    : '- This is GM-only analysis. It may include private plans, pacing advice, hidden causes, and player engagement guidance.';
+
+  return `# The Folly — Scenario Item Regeneration
+
+You are regenerating one item inside one scenario section for The Folly web app. Use the original Markdown sources below as the authority. Do not infer facts from any previously generated JSON; none is supplied.
+
+${renderPromptFileBundle(promptSources)}
+
+${renderCommonPromptContext(session, db, promptSources)}
+
+## Rules
+
+- Return only valid JSON for this one item. No markdown fences, commentary, planning text, or wrapper object.
+- GROUNDING: every statement about what happened must trace to the Authoritative Case Sources above. If the source files do not establish it, omit it.
+- The root/session-folder Markdown files outside input/ are world/reference material only. Use them to clarify terms already present in the case sources; do not turn them into events.
+- Be exhaustive for this item. Surface concrete actions, discoveries, decisions, interactions, carried/controlled items, current state, and unresolved threads.
+- Cite supplied source files with repo-relative paths in \`sources[].path\`.
+- GitHub-flavoured Markdown is allowed only inside string fields; raw HTML is not allowed.
+${accessRules}
+
+---
+
+# The Item To Produce Now
+
+Session: ${session.name} (id ${session.id})
+Section id: ${config.id}
+Section title: ${config.title}
+Destination JSON path: ${config.path.join('.')}
+Expected response: ${expected}
+
+## Goal
+
+${config.goal}
+${config.schemaHint ? `
+## Element Shape
+
+${config.schemaHint}
+` : ''}
+${itemFocusPrompt(config, item)}`;
+}
+
 async function regenerateScenarioSection(sessionId, sectionId, db, opts = {}) {
   const session = getSessionById(db, sessionId);
   if (!session) return null;
@@ -1666,19 +2024,56 @@ async function regenerateScenarioSection(sessionId, sectionId, db, opts = {}) {
   }
   const { config, paths, artifact, value: currentValue } = section;
   const sourceFiles = listSessionSourceFiles(session, { includePrivate: config.artifact === 'gm' });
-  const prompt = renderSectionPrompt(session, db, config, artifact, currentValue, sourceFiles);
-  const raw = await callOllama(prompt, { label: config.id, signal: opts.signal, onProgress: opts.onProgress });
-  let parsed;
-  try {
-    parsed = JSON.parse(extractJsonCandidate(raw));
-  } catch (e) {
-    const error = new Error(`Ollama returned invalid JSON for ${config.id}: ${e.message}`);
-    error.ollama_response = raw;
-    throw error;
-  }
+  const loopedItems = LOOPED_SECTIONS[config.id];
+  const items = loopedItems
+    ? loopedItems(session, db, paths, sourceFiles)
+    : null;
 
-  saveSectionBackup(paths, config, currentValue ?? (config.type === 'array' ? [] : null));
-  const nextValue = injectImagesIntoValue(normaliseSectionValue(config, parsed), config, sourceFiles);
+  let nextValue;
+  if (loopedItems) {
+    if (!items || !items.length) throw loopPrereqError(emptyLoopMessage(config));
+    // Per-item loop: shared corpus prefix is identical across items (prefix
+    // cache reuse); only the small focus tail + output differ.
+    const out = [];
+    for (let i = 0; i < items.length; i += 1) {
+      if (opts.signal && opts.signal.aborted) throw new Error('cancelled');
+      const it = items[i];
+      if (typeof opts.onProgress === 'function') {
+        try { opts.onProgress({ label: config.id, item: it.key, index: i + 1, total: items.length }); } catch { /* best-effort */ }
+      }
+      const prompt = renderLoopedItemPrompt(session, db, config, it, sourceFiles);
+      const raw = await callOllama(prompt, { label: `${config.id}:${it.key}`, signal: opts.signal, onProgress: opts.onProgress });
+      let obj;
+      try {
+        obj = JSON.parse(extractJsonCandidate(raw));
+      } catch (e) {
+        const error = new Error(`Ollama returned invalid JSON for ${config.id}:${it.key}: ${e.message}`);
+        error.ollama_response = raw;
+        throw error;
+      }
+      if (Array.isArray(obj)) obj = obj.find((x) => x && typeof x === 'object') || null;
+      if (obj && typeof obj === 'object') {
+        obj.id = it.key;                       // code-owned, deterministic
+        if (!obj.title && it.title) obj.title = it.title;
+        out.push(obj);
+      }
+    }
+    saveSectionBackup(paths, config, currentValue ?? []);
+    nextValue = injectImagesIntoValue(out, config, sourceFiles);
+  } else {
+    const prompt = renderSectionPrompt(session, db, config, artifact, currentValue, sourceFiles);
+    const raw = await callOllama(prompt, { label: config.id, signal: opts.signal, onProgress: opts.onProgress });
+    let parsed;
+    try {
+      parsed = JSON.parse(extractJsonCandidate(raw));
+    } catch (e) {
+      const error = new Error(`Ollama returned invalid JSON for ${config.id}: ${e.message}`);
+      error.ollama_response = raw;
+      throw error;
+    }
+    saveSectionBackup(paths, config, currentValue ?? (config.type === 'array' ? [] : null));
+    nextValue = injectImagesIntoValue(normaliseSectionValue(config, parsed), config, sourceFiles);
+  }
   setPathValue(artifact, config.path, nextValue);
   writeArtifactForSection(session, paths, config, artifact);
   return {
@@ -2166,6 +2561,7 @@ module.exports = {
   writeSessionNpcSummary,
   regenerateNpcSummaries,
   ollamaStatus,
+  cancelOllama,
   streamGmChat,
   writeGmChatExport,
   saveSessionHandout,
@@ -2175,7 +2571,11 @@ module.exports = {
   renameSessionFile,
   effectiveOllamaModel,
   setOllamaModel,
+  ollamaContextConfig,
+  setOllamaNumCtx,
   listOllamaModels,
+  listOllamaModelsDetailed,
+  ollamaPs,
   effectiveOllamaUrl,
   effectiveComfyuiUrl,
   setServiceUrl,

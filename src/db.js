@@ -175,4 +175,12 @@ if (setColumns2.length && !setColumns2.some((c) => c.name === 'portrait_style'))
   db.exec("ALTER TABLE session_settings ADD COLUMN portrait_style TEXT");
 }
 
+// Per-case NPC working copy. NULL ⇒ not yet initialised ⇒ fall back to the
+// central npcs.sheet. Seeded from the central pool when an NPC is allocated;
+// the GM can edit it per-case and explicitly write it back to central.
+const nsColumns = db.prepare("PRAGMA table_info(npc_sessions)").all();
+if (nsColumns.length && !nsColumns.some((c) => c.name === 'sheet')) {
+  db.exec('ALTER TABLE npc_sessions ADD COLUMN sheet TEXT');
+}
+
 module.exports = db;

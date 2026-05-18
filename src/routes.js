@@ -20,6 +20,7 @@ const {
   streamGmChat,
   writeGmChatExport,
   ollamaStatus,
+  cancelOllama,
   saveSessionHandout,
   setSessionAssetVisibility,
   createSessionFile,
@@ -27,7 +28,11 @@ const {
   renameSessionFile,
   effectiveOllamaModel,
   setOllamaModel,
+  ollamaContextConfig,
+  setOllamaNumCtx,
   listOllamaModels,
+  listOllamaModelsDetailed,
+  ollamaPs,
   effectiveComfyuiUrl,
   setServiceUrl,
   servicesConfig,
@@ -313,6 +318,26 @@ function npcSessionIds(npcId) {
   return db.prepare('SELECT session_id FROM npc_sessions WHERE npc_id = ?').all(npcId).map((r) => r.session_id);
 }
 
+// The per-case NPC working copy. Lazily initialises npc_sessions.sheet from
+// the central npcs.sheet on first access (covers links created before this
+// column existed). Returns null when the NPC isn't allocated to the session.
+// `modified` ⇒ the per-case sheet differs from central (drives the
+// write-back button's visibility).
+function getCaseNpc(sessionId, npcId) {
+  const link = db.prepare('SELECT sheet FROM npc_sessions WHERE session_id = ? AND npc_id = ?').get(sessionId, npcId);
+  if (!link) return null;
+  const npc = db.prepare('SELECT * FROM npcs WHERE id = ?').get(npcId);
+  if (!npc) return null;
+  let caseSheet = link.sheet;
+  if (caseSheet == null) {
+    caseSheet = npc.sheet || null;
+    db.prepare('UPDATE npc_sessions SET sheet = ? WHERE session_id = ? AND npc_id = ?')
+      .run(caseSheet, sessionId, npcId);
+  }
+  const norm = (s) => JSON.stringify(parseNpcSheet(s) || null);
+  return { npc, caseSheetJson: caseSheet, sheet: parseNpcSheet(caseSheet), modified: norm(caseSheet) !== norm(npc.sheet) };
+}
+
 // Replace an NPC's case allocations. Any real case is allowed, including the
 // built-in The Domestic. Every case that gained or lost this NPC gets its
 // NPC.md refreshed.
@@ -322,10 +347,21 @@ function setNpcSessions(npcId, sessionIds) {
   const valid = db.prepare('SELECT id FROM sessions WHERE id = ?');
   const ids = [...new Set(sessionIds.map((v) => parseInt(v, 10)).filter(Number.isInteger))]
     .filter((id) => valid.get(id));
+  // Diff, don't wipe: removing+re-adding every row would destroy the
+  // per-case NPC sheets (npc_sessions.sheet) of links that simply stayed.
+  const beforeSet = new Set(before);
+  const targetSet = new Set(ids);
+  const toAdd = ids.filter((id) => !beforeSet.has(id));
+  const toRemove = before.filter((id) => !targetSet.has(id));
   const tx = db.transaction(() => {
-    db.prepare('DELETE FROM npc_sessions WHERE npc_id = ?').run(npcId);
-    const ins = db.prepare('INSERT OR IGNORE INTO npc_sessions (npc_id, session_id) VALUES (?, ?)');
-    for (const id of ids) ins.run(npcId, id);
+    const del = db.prepare('DELETE FROM npc_sessions WHERE npc_id = ? AND session_id = ?');
+    for (const id of toRemove) del.run(npcId, id);
+    // Seed the per-case working copy from the central sheet on allocation.
+    const ins = db.prepare(`
+      INSERT OR IGNORE INTO npc_sessions (npc_id, session_id, sheet)
+      SELECT ?, ?, sheet FROM npcs WHERE id = ?
+    `);
+    for (const id of toAdd) ins.run(npcId, id, npcId);
   });
   tx();
   regenerateNpcSummaries(db, [...before, ...ids]);
@@ -670,10 +706,21 @@ router.put('/sessions/:id/npcs', requireGM, (req, res) => {
   const npcExists = db.prepare('SELECT 1 FROM npcs WHERE id = ?');
   const ids = [...new Set((((req.body && req.body.npc_ids) || []).map((v) => parseInt(v, 10)).filter(Number.isInteger)))]
     .filter((id) => npcExists.get(id));
+  const before = db.prepare('SELECT npc_id FROM npc_sessions WHERE session_id = ?')
+    .all(session.id).map((r) => r.npc_id);
+  const targetSet = new Set(ids);
+  const beforeSet = new Set(before);
+  const toAdd = ids.filter((id) => !beforeSet.has(id));
+  const toRemove = before.filter((id) => !targetSet.has(id));
   const tx = db.transaction(() => {
-    db.prepare('DELETE FROM npc_sessions WHERE session_id = ?').run(session.id);
-    const ins = db.prepare('INSERT OR IGNORE INTO npc_sessions (npc_id, session_id) VALUES (?, ?)');
-    for (const npcId of ids) ins.run(npcId, session.id);
+    // Diff, don't wipe — keep per-case NPC sheets of links that stay.
+    const del = db.prepare('DELETE FROM npc_sessions WHERE session_id = ? AND npc_id = ?');
+    for (const npcId of toRemove) del.run(session.id, npcId);
+    const ins = db.prepare(`
+      INSERT OR IGNORE INTO npc_sessions (npc_id, session_id, sheet)
+      SELECT ?, ?, sheet FROM npcs WHERE id = ?
+    `);
+    for (const npcId of toAdd) ins.run(npcId, session.id, npcId);
   });
   tx();
   regenerateNpcSummaries(db, [session.id]);
@@ -682,6 +729,51 @@ router.put('/sessions/:id/npcs', requireGM, (req, res) => {
     WHERE ns.session_id = ? ORDER BY n.name COLLATE NOCASE
   `).all(session.id);
   res.json(rows.map(rowToNpc));
+});
+
+// ── Per-case NPC sheets ───────────────────────────────────────────────────────
+// The Case→NPC tab is GM-only; these endpoints back its per-case working copy.
+
+router.get('/sessions/:id/npcs/:npcId/sheet', requireGM, (req, res) => {
+  const cn = getCaseNpc(parseInt(req.params.id, 10), parseInt(req.params.npcId, 10));
+  if (!cn) return res.status(404).json({ error: 'NPC is not allocated to this case' });
+  res.json({ id: cn.npc.id, name: cn.npc.name, sheet: cn.sheet || {}, modified: cn.modified });
+});
+
+// Save the per-case working copy (does NOT touch central until written back).
+router.put('/sessions/:id/npcs/:npcId/sheet', requireGM, (req, res) => {
+  const sessionId = parseInt(req.params.id, 10);
+  const npcId = parseInt(req.params.npcId, 10);
+  const cn = getCaseNpc(sessionId, npcId);
+  if (!cn) return res.status(404).json({ error: 'NPC is not allocated to this case' });
+  const sheet = req.body && req.body.sheet;
+  if (!sheet || typeof sheet !== 'object') return res.status(400).json({ error: 'sheet object required' });
+  const json = JSON.stringify(sheet);
+  if (json.length > 200000) return res.status(400).json({ error: 'sheet too large' });
+  db.prepare('UPDATE npc_sessions SET sheet = ? WHERE session_id = ? AND npc_id = ?').run(json, sessionId, npcId);
+  regenerateNpcSummaries(db, [sessionId]);
+  const after = getCaseNpc(sessionId, npcId);
+  res.json({ ok: true, modified: after.modified });
+});
+
+// Promote the WHOLE per-case NPC sheet back to the central pool. Keeps the
+// NPC's name/role in sync with the sheet (as the Admin editor does) but
+// preserves other central metadata. After this, per-case == central.
+router.post('/sessions/:id/npcs/:npcId/sheet/push-global', requireGM, (req, res) => {
+  const sessionId = parseInt(req.params.id, 10);
+  const npcId = parseInt(req.params.npcId, 10);
+  const cn = getCaseNpc(sessionId, npcId);
+  if (!cn) return res.status(404).json({ error: 'NPC is not allocated to this case' });
+  const s = cn.sheet || {};
+  const name = (typeof s.name === 'string' && s.name.trim()) ? s.name.trim() : cn.npc.name;
+  const role = (typeof s.occupation === 'string' && s.occupation.trim()) ? s.occupation.trim() : cn.npc.role;
+  db.prepare(`
+    UPDATE npcs SET name = ?, role = ?, sheet = ?, updated_at = datetime('now') WHERE id = ?
+  `).run(name, role, cn.caseSheetJson, npcId);
+  // Every case this NPC is in may show a refreshed summary.
+  regenerateNpcSummaries(db, npcSessionIds(npcId));
+  const after = getCaseNpc(sessionId, npcId);
+  res.json({ ok: true, modified: after.modified, name });
 });
 
 // ── Character Sheets ──────────────────────────────────────────────────────────
@@ -904,32 +996,155 @@ router.put('/sessions/:id/scenario-sources', requireGM, (req, res) => {
 router.post('/sessions/:id/scenario-info/regenerate', requireGM, async (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
+  if (await rejectIfAiBusy(res)) return; // normal 409 BEFORE streaming starts
+  const t0 = Date.now();
+  const stepAt = new Map();
+  // Stream NDJSON progress so the client sees live per-section timing/metrics
+  // and can cancel through /llm/cancel. A disconnect still aborts this
+  // request's controller as a fallback.
+  const controller = new AbortController();
+  res.on('close', () => { if (!res.writableEnded) controller.abort(new Error('client cancelled')); });
+  res.setHeader('Content-Type', 'application/x-ndjson');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+  const send = (obj) => { if (!res.writableEnded) res.write(`${JSON.stringify(obj)}\n`); };
   try {
+    logLine('scenario.regenerate.begin', { session: session.id });
+    send({ type: 'begin', session: session.id });
     const result = await regenerateScenarioSections(session.id, db, {
       sections: Array.isArray(req.body && req.body.sections) ? req.body.sections : null,
-      artifact: (req.body && req.body.artifact) || null
+      artifact: (req.body && req.body.artifact) || null,
+      signal: controller.signal,
+      onEvent: (ev) => {
+        if (ev.type === 'start') {
+          stepAt.set(ev.id, Date.now());
+          logLine('scenario.step.start', { id: ev.id, step: `${ev.index}/${ev.total}` });
+        } else if (ev.type === 'done') {
+          ev.ms = Date.now() - (stepAt.get(ev.id) || Date.now());
+          logLine('scenario.step.done', { id: ev.id, step: `${ev.index}/${ev.total}`, ms: ev.ms });
+        } else if (ev.type === 'error') {
+          ev.ms = Date.now() - (stepAt.get(ev.id) || Date.now());
+          logLine('scenario.step.error', { id: ev.id, step: `${ev.index}/${ev.total}`, ms: ev.ms, error: ev.error });
+        }
+        send(ev); // start | progress (incl. metrics) | done | error
+      }
     });
-    if (!result) return res.status(404).json({ error: 'Session not found' });
-    res.json({ ok: true, ...result });
+    if (!result) { send({ type: 'fatal', error: 'Session not found' }); return res.end(); }
+    for (const f of result.errors || []) {
+      logLine('scenario.step.fail', { id: f.section_id, error: f.error, ollama_response: f.ollama_response });
+    }
+    logLine('scenario.regenerate.done', {
+      session: session.id, sections: (result.requested || []).length,
+      ok: (result.regenerated || []).length, errors: (result.errors || []).length,
+      ms_total: Date.now() - t0
+    });
+    send({
+      type: 'complete', ok: (result.regenerated || []).length,
+      errors: result.errors || [], sections: (result.requested || []).length,
+      ms_total: Date.now() - t0
+    });
   } catch (e) {
-    res.status(e.statusCode || 500).json({ error: e.message || 'Scenario regeneration failed' });
+    const cancelled = controller.signal.aborted || e.cancelled;
+    logLine(cancelled ? 'scenario.regenerate.cancelled' : 'scenario.regenerate.error', {
+      session: session.id, ms_total: Date.now() - t0, error: e.message, ollama_response: e.ollama_response
+    });
+    send({ type: cancelled ? 'cancelled' : 'fatal', error: e.message || 'Scenario regeneration failed' });
   }
+  res.end();
 });
 
 // Lightweight LLM busyness probe so the UI can show generation progress and
 // stop GMs from firing duplicate regenerations.
-router.get('/llm/status', requireAuth, (req, res) => {
-  res.json(ollamaStatus());
+// ── Single-GPU AI exclusivity ─────────────────────────────────────────────────
+// Ollama and ComfyUI share one GPU; two large models co-loading OOMs it. Every
+// AI-initiating endpoint refuses to start while EITHER subsystem is busy
+// (multi-user safe — can't be enforced client-side). ComfyUI busyness is its
+// live queue; if ComfyUI is unreachable it's treated as free so a dead image
+// host never blocks the language model.
+let comfyQueueCache = { at: 0, busy: false };
+async function comfyBusy() {
+  const now = Date.now();
+  if (now - comfyQueueCache.at < 1500) return comfyQueueCache.busy;
+  try {
+    const r = await fetch(`${effectiveComfyuiUrl()}/prompt`, { signal: AbortSignal.timeout(2500) });
+    const j = r.ok ? await r.json() : null;
+    const remaining = j && j.exec_info ? Number(j.exec_info.queue_remaining) : 0;
+    comfyQueueCache = { at: now, busy: Number.isFinite(remaining) && remaining > 0 };
+  } catch {
+    comfyQueueCache = { at: now, busy: false };
+  }
+  return comfyQueueCache.busy;
+}
+
+async function aiBusyState() {
+  const o = ollamaStatus();
+  if (o.busy) return { busy: true, kind: 'llm', label: o.last_section || 'language model' };
+  if (await comfyBusy()) return { busy: true, kind: 'image', label: 'image generation' };
+  return { busy: false, kind: null, label: null };
+}
+
+// Returns true (and sends 409) when the GPU is already running an AI task.
+async function rejectIfAiBusy(res) {
+  const s = await aiBusyState();
+  if (!s.busy) return false;
+  const what = s.kind === 'llm' ? 'the language model' : 'image generation';
+  res.status(409).json({ error: `AI is busy with ${what}${s.label && s.kind === 'llm' ? ` (${s.label})` : ''}. Only one AI task runs at a time on the shared GPU — try again in a moment.` });
+  return true;
+}
+
+// Logged once per model load (the split/ctx don't change for a resident
+// model). Re-logs if the model reloads with a different VRAM split or ctx.
+let lastPsSig = null;
+router.get('/llm/status', requireAuth, async (req, res) => {
+  const o = ollamaStatus();
+  const ps = await ollamaPs().catch(() => null);
+  if (ps) {
+    const sig = `${ps.name}|${ps.vram}|${ps.total}|${ps.ctx}`;
+    if (sig !== lastPsSig) {
+      lastPsSig = sig;
+      logLine('llm.ps', {
+        model: ps.name, gpu_pct: ps.gpu_pct, cpu_pct: ps.cpu_pct,
+        ctx: ps.ctx, total_gb: ps.total_gb, vram_gb: ps.vram_gb
+      });
+    }
+  } else {
+    lastPsSig = null; // unloaded → next load logs again
+  }
+  if (!o.busy && await comfyBusy()) {
+    return res.json({ ...o, ps, busy: true, kind: 'image', can_cancel: false, last_section: 'image generation' });
+  }
+  res.json({ ...o, ps, kind: o.busy ? 'llm' : null });
+});
+
+router.post('/llm/cancel', requireGM, (req, res) => {
+  const result = cancelOllama('cancelled by GM');
+  logLine('llm.cancel', { cancelled: result.cancelled, active: result.active, last_section: result.last_section });
+  res.json(result);
 });
 
 // Installed Ollama models for the Admin selector. On Ollama failure still
 // return current/default so the UI can fall back to manual entry.
+// Models are returned as { name, context }. Filtered to >=128K context
+// (smaller models can't hold the case data); models whose context can't be
+// read are kept (don't hide on a metadata hiccup), and the currently-selected
+// model is always kept so the selector stays consistent.
 router.get('/llm/models', requireGM, async (req, res) => {
   const s = ollamaStatus();
+  const MIN_CTX = 131072;
+  let context = null;
   try {
-    res.json({ models: await listOllamaModels(), current: s.model, default: s.default_model });
+    context = await ollamaContextConfig();
   } catch (e) {
-    res.status(200).json({ models: [], current: s.model, default: s.default_model, error: e.message || 'Could not reach Ollama' });
+    context = { error: e.message || 'Could not read context settings' };
+  }
+  try {
+    const detailed = await listOllamaModelsDetailed();
+    const models = detailed.filter((m) =>
+      m.name === s.model || m.context == null || m.context >= MIN_CTX);
+    res.json({ models, current: s.model, default: s.default_model, context });
+  } catch (e) {
+    res.status(200).json({ models: [], current: s.model, default: s.default_model, context, error: e.message || 'Could not reach Ollama' });
   }
 });
 
@@ -939,6 +1154,15 @@ router.put('/llm/model', requireGM, (req, res) => {
     res.json({ model, default: ollamaStatus().default_model });
   } catch (e) {
     res.status(e.statusCode || 500).json({ error: e.message || 'Could not set the model' });
+  }
+});
+
+router.put('/llm/context', requireGM, async (req, res) => {
+  try {
+    const context = await setOllamaNumCtx(req.body && req.body.num_ctx);
+    res.json(context);
+  } catch (e) {
+    res.status(e.statusCode || 500).json({ error: e.message || 'Could not set the LLM context' });
   }
 });
 
@@ -989,16 +1213,41 @@ router.put('/comfy/models', requireGM, (req, res) => {
 router.post('/sessions/:id/scenario-info/sections/:sectionId/regenerate', requireGM, async (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
+  if (await rejectIfAiBusy(res)) return; // normal 409 BEFORE streaming starts
+  const t0 = Date.now();
+  const sectionId = req.params.sectionId;
+  const controller = new AbortController();
+  res.on('close', () => { if (!res.writableEnded) controller.abort(new Error('client cancelled')); });
+  res.setHeader('Content-Type', 'application/x-ndjson');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+  const send = (obj) => { if (!res.writableEnded) res.write(`${JSON.stringify(obj)}\n`); };
   try {
-    const result = await regenerateScenarioSection(session.id, req.params.sectionId, db);
-    if (!result) return res.status(404).json({ error: 'Session not found' });
-    res.json({ ok: true, ...result });
-  } catch (e) {
-    res.status(e.statusCode || 500).json({
-      error: e.message || 'Section regeneration failed',
-      ollama_response: e.ollama_response
+    logLine('scenario.step.start', { id: sectionId, session: session.id });
+    send({ type: 'start', id: sectionId, index: 1, total: 1 });
+    const result = await regenerateScenarioSection(session.id, sectionId, db, {
+      signal: controller.signal,
+      onProgress: (p) => send({ type: 'progress', id: sectionId, index: 1, total: 1, ...p })
     });
+    if (!result) { send({ type: 'fatal', error: 'Session not found' }); return res.end(); }
+    const ms = Date.now() - t0;
+    logLine('scenario.step.done', { id: sectionId, session: session.id, ms });
+    send({ type: 'done', id: sectionId, index: 1, total: 1, ms });
+    send({ type: 'complete', ok: 1, errors: [], sections: 1, ms_total: ms });
+  } catch (e) {
+    const cancelled = controller.signal.aborted || e.cancelled;
+    logLine(cancelled ? 'scenario.step.cancelled' : 'scenario.step.error', {
+      id: sectionId, session: session.id, ms: Date.now() - t0,
+      error: e.message, ollama_response: e.ollama_response
+    });
+    send({
+      type: cancelled ? 'cancelled' : 'error', id: sectionId, index: 1, total: 1,
+      error: e.message || 'Section regeneration failed', ollama_response: e.ollama_response
+    });
+    if (!cancelled) send({ type: 'fatal', error: e.message || 'Section regeneration failed' });
   }
+  res.end();
 });
 
 router.post('/sessions/:id/scenario-info/sections/:sectionId/revert', requireGM, (req, res) => {
@@ -1027,6 +1276,7 @@ router.get('/sessions/:id/scenario-info/assets/*', requireAuth, (req, res) => {
 router.post('/sessions/:id/chat', requireGM, async (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
+  if (await rejectIfAiBusy(res)) return;
   const controller = new AbortController();
   // Detect a real client disconnect via the RESPONSE close (guarded by
   // writableEnded). req 'close' fires as soon as the request body is read,
@@ -1036,14 +1286,19 @@ router.post('/sessions/:id/chat', requireGM, async (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('X-Accel-Buffering', 'no');
   res.flushHeaders();
+  const t0 = Date.now();
   try {
+    logLine('gmchat.start', { session: session.id });
     await streamGmChat(session.id, db, req.body && req.body.messages, {
       signal: controller.signal,
       onToken: (delta) => res.write(`${JSON.stringify({ delta })}\n`)
     });
+    logLine('gmchat.done', { session: session.id, ms: Date.now() - t0 });
     res.write(`${JSON.stringify({ done: true })}\n`);
   } catch (e) {
-    res.write(`${JSON.stringify({ error: e.message || 'Chat failed' })}\n`);
+    const cancelled = controller.signal.aborted || e.cancelled;
+    logLine(cancelled ? 'gmchat.cancelled' : 'gmchat.error', { session: session.id, ms: Date.now() - t0, error: e.message });
+    res.write(`${JSON.stringify(cancelled ? { cancelled: true, error: e.message || 'Chat cancelled' } : { error: e.message || 'Chat failed' })}\n`);
   }
   res.end();
 });
@@ -1655,6 +1910,7 @@ function buildPortraitPromptFromSheet(sheet, style) {
 // Queue a tightly-controlled random portrait workflow on ComfyUI from sheet data.
 router.post('/portrait/random', requireAuth, async (req, res, next) => {
   try {
+    if (await rejectIfAiBusy(res)) return;
     const missingAssets = await ensureQwenPortraitAssets();
     if (missingAssets.length) {
       return res.status(503).json({
@@ -1717,6 +1973,7 @@ router.post('/portrait/random', requireAuth, async (req, res, next) => {
 // Reuses /portrait/history + /portrait/view for polling/fetch.
 router.post('/portrait/restyle', requireAuth, async (req, res, next) => {
   try {
+    if (await rejectIfAiBusy(res)) return;
     const editModel = effectiveComfyuiEditModel();
     const missingAssets = await ensureQwenPortraitAssets(editModel);
     if (missingAssets.length) {
@@ -1833,6 +2090,7 @@ router.post('/sessions/:id/handouts/generate', requireGM, async (req, res, next)
     if (!session) return;
     const prompt = String((req.body && req.body.prompt) || '').trim();
     if (!prompt) return res.status(400).json({ error: 'A prompt is required.' });
+    if (await rejectIfAiBusy(res)) return;
     const missingAssets = await ensureQwenPortraitAssets();
     if (missingAssets.length) {
       return res.status(503).json({ error: `Qwen image workflow is not fully installed in ComfyUI: missing ${missingAssets.join(', ')}.` });
