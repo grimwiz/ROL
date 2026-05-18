@@ -1183,3 +1183,36 @@ tr:hover td { background: var(--bg3); }
 .state-head { min-width: 150px; }
 .state-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .state-wounds { margin-top: 0.45rem; font-size: 0.85rem; color: var(--text2); }
+
+/* ── About tab ───────────────────────────────────────────── */
+.about-card { max-width: 880px; display: flex; flex-direction: column; gap: 1.5rem; }
+.about-hero { display: flex; gap: 1.5rem; align-items: flex-start; }
+.about-portrait-frame {
+  flex: 0 0 auto; margin: 0;
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  overflow: hidden; background: var(--bg3);
+}
+.about-portrait { display: block; width: 200px; height: auto; }
+.about-copy { display: flex; flex-direction: column; gap: 0.75rem; }
+.about-copy p { color: var(--text); }
+.about-inline-link { color: var(--accent2); }
+.about-inline-link:hover { color: var(--accent); }
+.about-links { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.about-link-button { text-decoration: none; }
+.about-meta-card { background: var(--bg3); }
+.about-meta-list { list-style: none; margin: 0.6rem 0 0; padding: 0; }
+.about-meta-list li {
+  display: flex; justify-content: space-between; gap: 1rem;
+  padding: 0.4rem 0; border-top: 1px solid var(--border);
+}
+.about-meta-list li:first-child { border-top: none; }
+.about-meta-list span { color: var(--text2); }
+.about-meta-list code,
+.about-meta-list strong,
+.about-meta-list a,
+.about-meta-list time { color: var(--text); text-align: right; }
+
+@media (max-width: 640px) {
+  .about-hero { flex-direction: column; }
+  .about-portrait { width: 100%; }
+}

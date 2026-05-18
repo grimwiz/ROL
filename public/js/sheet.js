@@ -39,6 +39,10 @@ const SheetForm = (() => {
   // SIZ and those derivations for groups running CoC-style play.
   let _ruleset = 'rol';
   function setRuleset(r) { _ruleset = r === 'coc' ? 'coc' : 'rol'; }
+  // Case id for the open sheet, so portrait generation can pick up this
+  // case's configured art-style. null ⇒ server uses the default style.
+  let _sessionId = null;
+  function setSessionId(id) { const n = parseInt(id, 10); _sessionId = Number.isInteger(n) ? n : null; }
   function sizEnabled() { return _ruleset === 'coc'; }
 
   const STAT_OPTIONS = [10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90];
@@ -520,12 +524,13 @@ const SheetForm = (() => {
           ${!readonly ? `
             <div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.5rem">
               <button type="button" id="sf_portrait_random" class="btn btn-sm" onclick="SheetForm.generateRandomPortrait()">Random</button>
+              <button type="button" id="sf_portrait_style" class="btn btn-sm" onclick="SheetForm.stylePortrait()">Style this picture</button>
               <button type="button" id="sf_portrait_revert" class="btn btn-sm" style="display:none" onclick="SheetForm.revertPortrait()">Discard generated</button>
               <button type="button" id="sf_portrait_clear" class="btn btn-sm" onclick="SheetForm.clearPortrait()">Remove picture</button>
             </div>
             <div id="sf_portrait_status" class="card-sub" style="margin-top:0.35rem;min-height:1em"></div>
           ` : ''}
-          <div class="card-sub">Upload or take a photo to use directly, or click <em>Random</em> to generate a portrait from the character sheet.</div>
+          <div class="card-sub">Upload or take a photo, then <em>Style this picture</em> to redraw it in this case’s art-style — or <em>Random</em> to generate a portrait from the character sheet.</div>
         </div>
       </div>
     </div>
@@ -1189,27 +1194,24 @@ const SheetForm = (() => {
     updatePortraitControlsVisibility();
   }
 
-  async function generateRandomPortrait() {
+  // Shared queue→poll→fetch→preview pipeline for both Random (text→image)
+  // and Style this picture (image→image). `submit` returns the /prompt fetch
+  // Response; `verb` is just the status wording.
+  async function runPortraitJob(verb, submit) {
     if (stylising) return;
-    const portraitSheet = collectPortraitPromptSheet();
-
     stylising = true;
     setPortraitControlsEnabled(false);
-    setPortraitStatus('Generating… (can take ~1 min on first run)', '');
+    setPortraitStatus(`${verb}… (can take ~1 min on first run)`, '');
 
     let statusTick = 0;
     const ticker = setInterval(() => {
       statusTick += 1;
       const dots = '.'.repeat((statusTick % 4) + 1);
-      setPortraitStatus(`Generating${dots}`, '');
+      setPortraitStatus(`${verb}${dots}`, '');
     }, 800);
 
     try {
-      const q = await fetch('/api/portrait/random', {
-        method: 'POST', credentials: 'include',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ sheet: portraitSheet })
-      });
+      const q = await submit();
       const qText = await q.text();
       let qJson = null;
       try { qJson = JSON.parse(qText); } catch (_) { /* left null */ }
@@ -1262,7 +1264,7 @@ const SheetForm = (() => {
 
       // 5. Locate the saved image and fetch it.
       const outputs = entry.outputs || {};
-      const saveNode = outputs['7'] || outputs['8'] || Object.values(outputs).find((o) => o && o.images);
+      const saveNode = Object.values(outputs).find((o) => o && o.images && o.images.length) || outputs['10'];
       if (!saveNode || !saveNode.images || !saveNode.images.length) {
         throw new Error('ComfyUI finished but returned no image.');
       }
@@ -1286,16 +1288,42 @@ const SheetForm = (() => {
       lastGeneratedUrl = URL.createObjectURL(blob);
       pendingGeneratedDataUrl = dataUrl;
 
-      setPortraitStatus('Generated preview ready. Save the sheet to keep it, or discard it.', 'ok');
+      setPortraitStatus(`${verb} preview ready. Save the sheet to keep it, or discard it.`, 'ok');
     } catch (err) {
-      console.error('Portrait generation failed:', err);
-      setPortraitStatus(`Generation failed: ${err.message || err}`, 'error');
+      console.error(`Portrait ${verb.toLowerCase()} failed:`, err);
+      setPortraitStatus(`${verb} failed: ${err.message || err}`, 'error');
     } finally {
       clearInterval(ticker);
       stylising = false;
       setPortraitControlsEnabled(true);
       updatePortraitControlsVisibility();
     }
+  }
+
+  function generateRandomPortrait() {
+    const portraitSheet = collectPortraitPromptSheet();
+    return runPortraitJob('Generating', () => fetch('/api/portrait/random', {
+      method: 'POST', credentials: 'include',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ sheet: portraitSheet, sessionId: _sessionId })
+    }));
+  }
+
+  // Restyle the photo currently on the sheet into the case's art-style. Uses
+  // whatever is in the hidden #sf_portrait field (the upload / camera result);
+  // requires an actual image, not a server path.
+  function stylePortrait() {
+    if (stylising) return;
+    const cur = ((document.getElementById('sf_portrait') || {}).value || '').trim();
+    if (!/^data:image\//i.test(cur)) {
+      setPortraitStatus('Upload or take a photo first, then “Style this picture”.', 'error');
+      return;
+    }
+    return runPortraitJob('Styling', () => fetch('/api/portrait/restyle', {
+      method: 'POST', credentials: 'include',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ image: cur, sessionId: _sessionId })
+    }));
   }
 
   // ── Collect ────────────────────────────────────────────────────────────────
@@ -1435,7 +1463,7 @@ const SheetForm = (() => {
   }
 
   return {
-    render, collect, setRuleset,
+    render, collect, setRuleset, setSessionId,
     addMandatory, removeMandatory,
     addAdditional, removeAdditional,
     addLanguage, removeLanguage,
@@ -1444,7 +1472,7 @@ const SheetForm = (() => {
     addCustomField, removeCustomField,
     openPortraitCamera,
     handlePortraitUpload, clearPortrait,
-    generateRandomPortrait, revertPortrait
+    generateRandomPortrait, stylePortrait, revertPortrait
   };
 })();
 

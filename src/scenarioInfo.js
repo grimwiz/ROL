@@ -51,9 +51,74 @@ function setOllamaModel(model) {
   fs.writeFileSync(APP_CONFIG_PATH, JSON.stringify(cfg, null, 2) + '\n', 'utf8');
   return effectiveOllamaModel();
 }
+
+// Per-service base-URL overrides for the AI hosts (Ollama, ComfyUI). Each
+// independently overrides its env/default base URL; a blank value clears the
+// override and falls back to the env default. Persisted in app-config.json so
+// the GM can repoint either service from the Admin page without a redeploy.
+const COMFYUI_URL_DEFAULT = process.env.COMFYUI_URL || 'http://192.168.37.51:8188';
+function effectiveOllamaUrl() {
+  const u = readAppConfig().ollama_url;
+  return ((typeof u === 'string' && u.trim()) ? u.trim() : OLLAMA_URL).replace(/\/+$/, '');
+}
+function effectiveComfyuiUrl() {
+  const u = readAppConfig().comfyui_url;
+  return ((typeof u === 'string' && u.trim()) ? u.trim() : COMFYUI_URL_DEFAULT).replace(/\/+$/, '');
+}
+function setServiceUrl(key, url) {
+  const cfgKey = key === 'comfyui' ? 'comfyui_url' : 'ollama_url';
+  const u = String(url == null ? '' : url).trim();
+  if (u && !/^https?:\/\//i.test(u)) {
+    const e = new Error('Service URL must start with http:// or https://');
+    e.statusCode = 400; throw e;
+  }
+  const cfg = readAppConfig();
+  if (u) cfg[cfgKey] = u; else delete cfg[cfgKey];
+  fs.mkdirSync(DATA_ROOT, { recursive: true });
+  fs.writeFileSync(APP_CONFIG_PATH, JSON.stringify(cfg, null, 2) + '\n', 'utf8');
+  return servicesConfig();
+}
+function servicesConfig() {
+  return {
+    ollama: { url: effectiveOllamaUrl(), default: OLLAMA_URL.replace(/\/+$/, '') },
+    comfyui: { url: effectiveComfyuiUrl(), default: COMFYUI_URL_DEFAULT.replace(/\/+$/, '') }
+  };
+}
+
+// Per-purpose ComfyUI diffusion-model selection, GM-pickable from the Admin
+// page (mirrors the Ollama model picker) and persisted in app-config.json:
+//   image — raw text→image generation (Random portrait, GM handouts)
+//   edit  — image→image restyle ("Style this picture")
+// Blank ⇒ env/built-in default. Lets the GM swap in smaller/newer models
+// without a redeploy and experiment with efficiency.
+const COMFYUI_IMAGE_MODEL_DEFAULT = process.env.COMFYUI_QWEN_DIFFUSION_MODEL || 'qwen_image_2512_fp8_e4m3fn.safetensors';
+const COMFYUI_EDIT_MODEL_DEFAULT = process.env.COMFYUI_QWEN_EDIT_MODEL || 'qwen_image_edit_2511_fp8mixed.safetensors';
+function effectiveComfyuiImageModel() {
+  const m = readAppConfig().comfyui_image_model;
+  return (typeof m === 'string' && m.trim()) ? m.trim() : COMFYUI_IMAGE_MODEL_DEFAULT;
+}
+function effectiveComfyuiEditModel() {
+  const m = readAppConfig().comfyui_edit_model;
+  return (typeof m === 'string' && m.trim()) ? m.trim() : COMFYUI_EDIT_MODEL_DEFAULT;
+}
+function setComfyuiModel(kind, name) {
+  const cfgKey = kind === 'edit' ? 'comfyui_edit_model' : 'comfyui_image_model';
+  const m = String(name == null ? '' : name).trim();
+  const cfg = readAppConfig();
+  if (m) cfg[cfgKey] = m; else delete cfg[cfgKey];
+  fs.mkdirSync(DATA_ROOT, { recursive: true });
+  fs.writeFileSync(APP_CONFIG_PATH, JSON.stringify(cfg, null, 2) + '\n', 'utf8');
+  return comfyModelsConfig();
+}
+function comfyModelsConfig() {
+  return {
+    image: { current: effectiveComfyuiImageModel(), default: COMFYUI_IMAGE_MODEL_DEFAULT },
+    edit: { current: effectiveComfyuiEditModel(), default: COMFYUI_EDIT_MODEL_DEFAULT }
+  };
+}
 // Pull installed models from the Ollama server's /api/tags.
 async function listOllamaModels() {
-  const resp = await fetch(`${OLLAMA_URL.replace(/\/+$/, '')}/api/tags`);
+  const resp = await fetch(`${effectiveOllamaUrl()}/api/tags`);
   if (!resp.ok) {
     const e = new Error(`Ollama /api/tags returned HTTP ${resp.status}`);
     e.statusCode = 502; throw e;
@@ -71,7 +136,8 @@ function ollamaStatus() {
     active: ollamaActivity.active,
     started_at: ollamaActivity.startedAt,
     last_section: ollamaActivity.lastSection,
-    url: OLLAMA_URL,
+    url: effectiveOllamaUrl(),
+    default_url: OLLAMA_URL.replace(/\/+$/, ''),
     model: effectiveOllamaModel(),
     default_model: OLLAMA_MODEL
   };
@@ -1418,7 +1484,7 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
   if (label) ollamaActivity.lastSection = label;
 
   try {
-    const response = await fetch(`${OLLAMA_URL.replace(/\/+$/, '')}/api/chat`, {
+    const response = await fetch(`${effectiveOllamaUrl()}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,
@@ -2109,5 +2175,13 @@ module.exports = {
   renameSessionFile,
   effectiveOllamaModel,
   setOllamaModel,
-  listOllamaModels
+  listOllamaModels,
+  effectiveOllamaUrl,
+  effectiveComfyuiUrl,
+  setServiceUrl,
+  servicesConfig,
+  effectiveComfyuiImageModel,
+  effectiveComfyuiEditModel,
+  setComfyuiModel,
+  comfyModelsConfig
 };

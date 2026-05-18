@@ -27,7 +27,14 @@ const {
   renameSessionFile,
   effectiveOllamaModel,
   setOllamaModel,
-  listOllamaModels
+  listOllamaModels,
+  effectiveComfyuiUrl,
+  setServiceUrl,
+  servicesConfig,
+  effectiveComfyuiImageModel,
+  effectiveComfyuiEditModel,
+  setComfyuiModel,
+  comfyModelsConfig
 } = require('./scenarioInfo');
 const sessionRolls = require('./sessionRolls');
 const { buildPdf } = require('../scripts/export-character-sheet');
@@ -935,6 +942,50 @@ router.put('/llm/model', requireGM, (req, res) => {
   }
 });
 
+// Effective + default base URLs for the AI services (Ollama, ComfyUI).
+router.get('/llm/services', requireGM, (req, res) => {
+  res.json(servicesConfig());
+});
+
+// Override either service URL. Body: { ollama_url?, comfyui_url? }. An empty
+// string clears that override (falls back to the env default). Keys absent
+// from the body are left unchanged.
+router.put('/llm/services', requireGM, (req, res) => {
+  try {
+    const body = req.body || {};
+    if (body.ollama_url !== undefined) setServiceUrl('ollama', body.ollama_url);
+    if (body.comfyui_url !== undefined) setServiceUrl('comfyui', body.comfyui_url);
+    res.json(servicesConfig());
+  } catch (e) {
+    res.status(e.statusCode || 500).json({ error: e.message || 'Could not set the service URL' });
+  }
+});
+
+// ComfyUI diffusion-model picker (Admin). Lists installed models so the GM
+// can choose which drives raw generation vs. image-edit restyle. On a ComfyUI
+// failure still return current/defaults so the UI can fall back to manual.
+router.get('/comfy/models', requireGM, async (req, res) => {
+  const cfg = comfyModelsConfig();
+  try {
+    res.json({ models: await fetchComfyModelNames('diffusion_models', true), ...cfg });
+  } catch (e) {
+    res.status(200).json({ models: [], ...cfg, error: e.message || 'Could not reach ComfyUI' });
+  }
+});
+
+// Body: { image_model?, edit_model? }. Empty string clears that override
+// (falls back to the env/built-in default). Absent keys are left unchanged.
+router.put('/comfy/models', requireGM, (req, res) => {
+  try {
+    const body = req.body || {};
+    if (body.image_model !== undefined) setComfyuiModel('image', body.image_model);
+    if (body.edit_model !== undefined) setComfyuiModel('edit', body.edit_model);
+    res.json(comfyModelsConfig());
+  } catch (e) {
+    res.status(e.statusCode || 500).json({ error: e.message || 'Could not set the ComfyUI model' });
+  }
+});
+
 router.post('/sessions/:id/scenario-info/sections/:sectionId/regenerate', requireGM, async (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
@@ -1203,9 +1254,53 @@ router.get('/rules/search', requireAuth, (req, res) => {
 // forward the four requests the portrait test page needs through the Folly
 // server over its authenticated HTTPS origin.
 //
-// Configure with COMFYUI_URL env var (default: http://192.168.37.51:8188).
+// Base URL comes from effectiveComfyuiUrl(): the admin override in
+// app-config.json if set, else the COMFYUI_URL env var (default
+// http://192.168.37.51:8188). Resolved per-call so an admin change to the
+// host takes effect without a redeploy.
 
-const COMFYUI_URL = (process.env.COMFYUI_URL || 'http://192.168.37.51:8188').replace(/\/+$/, '');
+// ── ComfyUI idle unload ───────────────────────────────────────────────────────
+// The ComfyUI GPU is shared with Ollama; a resident ~20 GB image model starves
+// it. We can't unload after every job — that would make each Regenerate press
+// pay a full cold-load. Instead a single shared timer is re-armed on EVERY
+// portrait-subsystem interaction (prompt submit, history poll, image fetch).
+// Rapid Regenerate keeps it warm; once nobody has touched it for the idle
+// window, we ask ComfyUI to free the model so VRAM returns to Ollama. Re-arming
+// on every interaction (not just submit) means a long generation can't be
+// unloaded mid-job. One shared timer ⇒ inherently multi-user safe.
+//
+// COMFYUI_IDLE_UNLOAD_MS: idle window in ms (default 300000 = 5 min). Set 0 to
+// disable (model stays resident as before).
+const COMFYUI_IDLE_UNLOAD_MS = (() => {
+  const raw = process.env.COMFYUI_IDLE_UNLOAD_MS;
+  if (raw === undefined || raw === '') return 300000;
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) && n >= 0 ? n : 300000;
+})();
+let comfyUnloadTimer = null;
+
+async function runComfyUnload() {
+  comfyUnloadTimer = null;
+  try {
+    const r = await fetch(`${effectiveComfyuiUrl()}/free`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ unload_models: true, free_memory: true })
+    });
+    logLine('comfy.idle_unload', { ok: r.ok, status: r.status });
+  } catch (e) {
+    // Best-effort: ComfyUI may be down/asleep. Nothing to recover.
+    logLine('comfy.idle_unload_error', { error: String((e && e.message) || e) });
+  }
+}
+
+function touchComfyActivity() {
+  if (!COMFYUI_IDLE_UNLOAD_MS) return;
+  if (comfyUnloadTimer) clearTimeout(comfyUnloadTimer);
+  comfyUnloadTimer = setTimeout(runComfyUnload, COMFYUI_IDLE_UNLOAD_MS);
+  if (comfyUnloadTimer.unref) comfyUnloadTimer.unref();
+}
+
 // Portrait storage size targets the printed PDF box (164 × 187 pt, ~7:8).
 // 672 × 768 is divisible by 64 for SD3 latents and renders crisply at print
 // resolution (~4× the target points).
@@ -1227,6 +1322,14 @@ const QWEN_IMAGE_MODELS = {
 };
 let comfyModelCache = { expiresAt: 0, folders: null };
 const PORTRAIT_NEGATIVE_PROMPT = '低分辨率，低画质，肢体畸形，手指畸形，画面过饱和，蜡像感，人脸无细节，过度光滑，画面具有AI感。构图混乱。文字模糊，扭曲';
+// Framing/composition is held fixed so every case's portrait still crops
+// cleanly into the printed character-sheet box, whatever the art style.
+const PORTRAIT_COMPOSITION = 'serious expression, three-quarters view, bust portrait, full head and hair fully visible, generous space above the head, clear face, clear eyes';
+// The art-style half of the prompt. Per-case overridable via session_settings
+// .portrait_style; this is the fallback when a case has none set. Note the
+// "not photorealistic" clause lives here (it is style-specific), unlike the
+// style-agnostic quality negatives in PORTRAIT_NEGATIVE_PROMPT.
+const DEFAULT_PORTRAIT_STYLE = 'Art Nouveau portrait styling with a restrained Art Deco frame around the portrait, clean elegant linework, muted earthy palette with antique gold accents, painterly illustration, not photorealistic, not modern snapshot';
 const PORTRAIT_RANDOM_WORKFLOW_TEMPLATE = {
   '1': { class_type: 'UNETLoader', inputs: { unet_name: QWEN_IMAGE_MODELS.diffusionModel, weight_dtype: 'default' } },
   '2': { class_type: 'ModelSamplingAuraFlow', inputs: { model: ['1', 0], shift: 3.1 } },
@@ -1243,6 +1346,71 @@ const PORTRAIT_RANDOM_WORKFLOW_TEMPLATE = {
   '9': { class_type: 'VAEDecode', inputs: { samples: ['8', 0], vae: ['6', 0] } },
   '10': { class_type: 'SaveImage', inputs: { images: ['9', 0], filename_prefix: 'ROL_portrait' } }
 };
+
+// Qwen-Image-Edit-2511 (image→image) restyle. The 2511 edit model needs the
+// **Plus** text-encode node (TextEncodeQwenImageEditPlus, image1 input): it
+// builds the reference from vae+image so identity is preserved while the
+// prompt fully re-styles palette/linework/rendering. The init latent is a
+// VAEEncode of the source and KSampler runs at denoise 1.0 — the reference
+// lives in the conditioning, NOT in a partial-denoise of the source. (The
+// older base TextEncodeQwenImageEdit node + low denoise produced a near-copy
+// with no restyle — verified against the live box.)
+const PORTRAIT_RESTYLE_WORKFLOW_TEMPLATE = {
+  '1': { class_type: 'UNETLoader', inputs: { unet_name: 'qwen_image_edit_2511_fp8mixed.safetensors', weight_dtype: 'default' } },
+  '2': { class_type: 'ModelSamplingAuraFlow', inputs: { model: ['1', 0], shift: 3.1 } },
+  '3': { class_type: 'CLIPLoader', inputs: { clip_name: QWEN_IMAGE_MODELS.textEncoder, type: 'qwen_image', device: 'default' } },
+  '6': { class_type: 'VAELoader', inputs: { vae_name: QWEN_IMAGE_MODELS.vae } },
+  '11': { class_type: 'LoadImage', inputs: { image: 'ROL_source.png' } },
+  '4': { class_type: 'TextEncodeQwenImageEditPlus', inputs: { clip: ['3', 0], vae: ['6', 0], image1: ['11', 0], prompt: '' } },
+  '5': { class_type: 'TextEncodeQwenImageEditPlus', inputs: { clip: ['3', 0], vae: ['6', 0], image1: ['11', 0], prompt: PORTRAIT_NEGATIVE_PROMPT } },
+  '12': { class_type: 'VAEEncode', inputs: { pixels: ['11', 0], vae: ['6', 0] } },
+  '8': { class_type: 'KSampler', inputs: {
+    model: ['2', 0], seed: 42, steps: 30, cfg: 3.5,
+    sampler_name: 'euler', scheduler: 'simple',
+    positive: ['4', 0], negative: ['5', 0], latent_image: ['12', 0], denoise: 1.0
+  } },
+  '9': { class_type: 'VAEDecode', inputs: { samples: ['8', 0], vae: ['6', 0] } },
+  '10': { class_type: 'SaveImage', inputs: { images: ['9', 0], filename_prefix: 'ROL_restyle' } }
+};
+
+// Edit instruction: a direct "redraw in this style, keep the identity"
+// command. Verified on the live box to fully restyle palette/linework while
+// keeping the person recognisable. Do NOT tell it to "keep the same framing"
+// — that suppresses the restyle.
+function buildRestyleInstruction(style) {
+  const styleText = (typeof style === 'string' && style.trim()) ? style.trim() : DEFAULT_PORTRAIT_STYLE;
+  return `Redraw this photograph in the following art style: ${styleText}. Preserve the person's identity and facial likeness, but fully restyle the colours, palette, linework and rendering to match. ${PORTRAIT_COMPOSITION}. No text, no watermark.`;
+}
+
+// Decode a data: URL (or raw base64) into { buffer, ext }.
+function decodeImageDataUrl(value) {
+  const s = String(value || '').trim();
+  const m = /^data:image\/([a-z0-9.+-]+);base64,(.+)$/i.exec(s);
+  if (!m) { const e = new Error('A portrait image is required'); e.statusCode = 400; throw e; }
+  const ext = m[1].toLowerCase() === 'jpeg' ? 'jpg' : m[1].toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
+  const buffer = Buffer.from(m[2], 'base64');
+  if (!buffer.length || buffer.length > 12 * 1024 * 1024) {
+    const e = new Error('Portrait image is empty or too large (max 12 MB)'); e.statusCode = 400; throw e;
+  }
+  return { buffer, ext };
+}
+
+// Push an image into ComfyUI's input area and return the stored filename.
+async function uploadImageToComfy(buffer, ext) {
+  const filename = `ROL_source_${Date.now()}_${Math.floor(Math.random() * 1e6)}.${ext}`;
+  const form = new FormData();
+  form.append('image', new Blob([buffer]), filename);
+  form.append('overwrite', 'true');
+  const up = await fetch(`${effectiveComfyuiUrl()}/upload/image`, { method: 'POST', body: form });
+  if (!up.ok) {
+    const e = new Error(`ComfyUI rejected the image upload (HTTP ${up.status})`); e.statusCode = 502; throw e;
+  }
+  const j = await up.json().catch(() => ({}));
+  // ComfyUI returns { name, subfolder, type }. LoadImage wants "name" (or
+  // "subfolder/name" when nested).
+  const name = j && j.name ? j.name : filename;
+  return j && j.subfolder ? `${j.subfolder}/${name}` : name;
+}
 
 function cleanPortraitText(value, maxLen = 120) {
   return String(value || '').replace(/\s+/g, ' ').trim().slice(0, maxLen);
@@ -1347,7 +1515,7 @@ async function fetchComfyModelNames(folder, forceRefresh = false) {
   if (!forceRefresh && comfyModelCache.folders && comfyModelCache.expiresAt > now && comfyModelCache.folders[folder]) {
     return comfyModelCache.folders[folder];
   }
-  const upstream = await fetch(`${COMFYUI_URL}/models/${encodeURIComponent(folder)}`);
+  const upstream = await fetch(`${effectiveComfyuiUrl()}/models/${encodeURIComponent(folder)}`);
   if (!upstream.ok) {
     throw new Error(`Could not query ComfyUI model folder ${folder} (HTTP ${upstream.status}).`);
   }
@@ -1369,14 +1537,18 @@ async function fetchComfyModelNames(folder, forceRefresh = false) {
   return names;
 }
 
-async function ensureQwenPortraitAssets() {
+// Verify the workflow's models are present in ComfyUI. `diffusionModel`
+// defaults to the configured image (txt→img) model; the restyle endpoint
+// passes the edit model instead.
+async function ensureQwenPortraitAssets(diffusionModel) {
+  const wanted = diffusionModel || effectiveComfyuiImageModel();
   const [diffusionModels, textEncoders, vaes] = await Promise.all([
     fetchComfyModelNames('diffusion_models'),
     fetchComfyModelNames('text_encoders'),
     fetchComfyModelNames('vae')
   ]);
   const missing = [];
-  if (!diffusionModels.includes(QWEN_IMAGE_MODELS.diffusionModel)) missing.push(`diffusion model ${QWEN_IMAGE_MODELS.diffusionModel}`);
+  if (!diffusionModels.includes(wanted)) missing.push(`diffusion model ${wanted}`);
   if (!textEncoders.includes(QWEN_IMAGE_MODELS.textEncoder)) missing.push(`text encoder ${QWEN_IMAGE_MODELS.textEncoder}`);
   if (!vaes.includes(QWEN_IMAGE_MODELS.vae)) missing.push(`vae ${QWEN_IMAGE_MODELS.vae}`);
   return missing;
@@ -1442,7 +1614,7 @@ function inferPortraitAttire(occupation) {
   return 'contemporary 21st-century London clothing appropriate to their profession';
 }
 
-function buildPortraitPromptFromSheet(sheet) {
+function buildPortraitPromptFromSheet(sheet, style) {
   const occupation = cleanPortraitText(sheet.occupation, 80);
   const age = cleanPortraitText(sheet.age, 20);
   const socialClass = cleanPortraitText(sheet.social_class, 80);
@@ -1470,13 +1642,14 @@ function buildPortraitPromptFromSheet(sheet) {
   const subjectPrompt = buildPortraitBaseConcept(sheet);
   const detailPrompt = descriptors.length ? `${descriptors.join(', ')}, ` : '';
 
+  const styleText = (typeof style === 'string' && style.trim()) ? style.trim() : DEFAULT_PORTRAIT_STYLE;
   return `${subjectPrompt}, `
     + `${detailPrompt}`
     + `${attire}, no robes or fantasy costume, `
     + `${backdrop}, `
-    + 'Art Nouveau portrait styling with a restrained Art Deco frame around the portrait, '
-    + 'clean elegant linework, muted earthy palette with antique gold accents, painterly illustration, serious expression, three-quarters view, bust portrait, full head and hair fully visible, generous space above the head, clear face, clear eyes, '
-    + 'not photorealistic, not modern snapshot, no text, no watermark';
+    + `${PORTRAIT_COMPOSITION}, `
+    + `${styleText}, `
+    + 'no text, no watermark';
 }
 
 // Queue a tightly-controlled random portrait workflow on ComfyUI from sheet data.
@@ -1489,8 +1662,17 @@ router.post('/portrait/random', requireAuth, async (req, res, next) => {
       });
     }
     const sheet = (req.body && typeof req.body.sheet === 'object' && req.body.sheet) || {};
+    // Resolve this case's portrait art-style (falls back to the built-in
+    // default). The client sends the case id it already has in context;
+    // unknown/missing ids just yield the default style.
+    const sessionId = parseInt(req.body && req.body.sessionId, 10);
+    let caseStyle = '';
+    if (Number.isInteger(sessionId)) {
+      try { caseStyle = sessionRolls.getSettings(db, sessionId).portrait_style || ''; } catch { caseStyle = ''; }
+    }
     const workflow = JSON.parse(JSON.stringify(PORTRAIT_RANDOM_WORKFLOW_TEMPLATE));
-    const promptText = buildPortraitPromptFromSheet(sheet);
+    workflow['1'].inputs.unet_name = effectiveComfyuiImageModel();
+    const promptText = buildPortraitPromptFromSheet(sheet, caseStyle);
     const seed = Math.floor(Math.random() * 2 ** 31);
     workflow['4'].inputs.text = promptText;
     workflow['8'].inputs.seed = seed;
@@ -1507,7 +1689,8 @@ router.post('/portrait/random', requireAuth, async (req, res, next) => {
       prompt: promptText
     });
 
-    const upstream = await fetch(`${COMFYUI_URL}/prompt`, {
+    touchComfyActivity();
+    const upstream = await fetch(`${effectiveComfyuiUrl()}/prompt`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ prompt: workflow })
@@ -1530,10 +1713,77 @@ router.post('/portrait/random', requireAuth, async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// Restyle an uploaded portrait into the case's art-style (Qwen-Image-Edit).
+// Reuses /portrait/history + /portrait/view for polling/fetch.
+router.post('/portrait/restyle', requireAuth, async (req, res, next) => {
+  try {
+    const editModel = effectiveComfyuiEditModel();
+    const missingAssets = await ensureQwenPortraitAssets(editModel);
+    if (missingAssets.length) {
+      return res.status(503).json({
+        error: `Qwen image-edit workflow is not fully installed in ComfyUI: missing ${missingAssets.join(', ')}.`
+      });
+    }
+    const { buffer, ext } = decodeImageDataUrl(req.body && req.body.image);
+    const sessionId = parseInt(req.body && req.body.sessionId, 10);
+    let caseStyle = '';
+    if (Number.isInteger(sessionId)) {
+      try { caseStyle = sessionRolls.getSettings(db, sessionId).portrait_style || ''; } catch { caseStyle = ''; }
+    }
+    // strength → denoise. With the Plus reference conditioning the restyle
+    // wants denoise 1.0; lowering it pulls back toward the literal source
+    // (≈ no restyle), so default 1.0 and don't allow it below 0.6.
+    let denoise = parseFloat(req.body && req.body.strength);
+    if (!Number.isFinite(denoise)) denoise = 1.0;
+    denoise = Math.min(1, Math.max(0.6, denoise));
+
+    const uploadedName = await uploadImageToComfy(buffer, ext);
+    const instruction = buildRestyleInstruction(caseStyle);
+    const seed = Math.floor(Math.random() * 2 ** 31);
+    const workflow = JSON.parse(JSON.stringify(PORTRAIT_RESTYLE_WORKFLOW_TEMPLATE));
+    workflow['1'].inputs.unet_name = editModel;
+    workflow['11'].inputs.image = uploadedName;
+    workflow['4'].inputs.prompt = instruction;
+    workflow['8'].inputs.seed = seed;
+    workflow['8'].inputs.denoise = denoise;
+
+    logLine('portrait.restyle', {
+      userId: req.user.id,
+      workflow: 'qwen_image_edit',
+      editModel,
+      sourceImage: uploadedName,
+      seed,
+      denoise,
+      prompt: instruction
+    });
+
+    touchComfyActivity();
+    const upstream = await fetch(`${effectiveComfyuiUrl()}/prompt`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ prompt: workflow })
+    });
+    const text = await upstream.text();
+    try {
+      const payload = JSON.parse(text);
+      if (payload && payload.node_errors && Object.keys(payload.node_errors).length) {
+        logLine('portrait.restyle.queue_error', { userId: req.user.id, node_errors: payload.node_errors });
+      }
+    } catch {}
+    res.status(upstream.status)
+       .type(upstream.headers.get('content-type') || 'application/json')
+       .send(text);
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
 // Poll for completion of a queued prompt.
 router.get('/portrait/history/:id', requireAuth, async (req, res, next) => {
   try {
-    const upstream = await fetch(`${COMFYUI_URL}/history/${encodeURIComponent(req.params.id)}`);
+    touchComfyActivity();
+    const upstream = await fetch(`${effectiveComfyuiUrl()}/history/${encodeURIComponent(req.params.id)}`);
     const text = await upstream.text();
     try {
       const payload = JSON.parse(text);
@@ -1554,7 +1804,8 @@ router.get('/portrait/history/:id', requireAuth, async (req, res, next) => {
 // Fetch a generated image. Streams bytes straight through.
 router.get('/portrait/view', requireAuth, async (req, res, next) => {
   try {
-    const url = new URL(`${COMFYUI_URL}/view`);
+    touchComfyActivity();
+    const url = new URL(`${effectiveComfyuiUrl()}/view`);
     for (const [k, v] of Object.entries(req.query)) {
       if (typeof v === 'string') url.searchParams.set(k, v);
     }
@@ -1589,6 +1840,7 @@ router.post('/sessions/:id/handouts/generate', requireGM, async (req, res, next)
     const sizeKey = HANDOUT_SIZES[req.body && req.body.size] ? req.body.size : HANDOUT_SIZE_DEFAULT;
     const size = HANDOUT_SIZES[sizeKey];
     const workflow = JSON.parse(JSON.stringify(PORTRAIT_RANDOM_WORKFLOW_TEMPLATE));
+    workflow['1'].inputs.unet_name = effectiveComfyuiImageModel();
     const seed = Math.floor(Math.random() * 2 ** 31);
     workflow['4'].inputs.text = prompt;
     workflow['7'].inputs.width = size.width;
@@ -1596,7 +1848,8 @@ router.post('/sessions/:id/handouts/generate', requireGM, async (req, res, next)
     workflow['8'].inputs.seed = seed;
     workflow['10'].inputs.filename_prefix = 'ROL_handout';
     logLine('handout.generate', { userId: req.user.id, sessionId: session.id, seed, size: sizeKey, width: size.width, height: size.height, prompt });
-    const upstream = await fetch(`${COMFYUI_URL}/prompt`, {
+    touchComfyActivity();
+    const upstream = await fetch(`${effectiveComfyuiUrl()}/prompt`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ prompt: workflow })
@@ -1615,7 +1868,8 @@ router.post('/sessions/:id/handouts/save', requireGM, async (req, res, next) => 
     if (!session) return;
     const { filename, subfolder, type, name, prompt } = req.body || {};
     if (!filename) return res.status(400).json({ error: 'Missing image reference.' });
-    const url = new URL(`${COMFYUI_URL}/view`);
+    touchComfyActivity();
+    const url = new URL(`${effectiveComfyuiUrl()}/view`);
     url.searchParams.set('filename', String(filename));
     if (subfolder) url.searchParams.set('subfolder', String(subfolder));
     url.searchParams.set('type', String(type || 'output'));

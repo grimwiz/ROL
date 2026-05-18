@@ -188,7 +188,20 @@ async function waitForDomesticPersistence() {
 }
 
 // ── Routing ───────────────────────────────────────────────────────────────────
-const APP_TABS = ['sessions', 'rules', 'admin'];
+const APP_TABS = ['sessions', 'rules', 'admin', 'about'];
+
+// Project / build metadata surfaced in the About tab. Edit the blurb and links
+// here — `buildRef`/`buildDate` track the deployed commit.
+const APP_METADATA = {
+  authorPortrait: '/ROL.jpg',
+  donationUrl: 'https://donate.stripe.com/aFa14o8Fv4waa8Td4mbV600',
+  repositoryUrl: 'https://github.com/grimwiz/ROL',
+  repositoryLabel: 'github.com/grimwiz/ROL',
+  inspirationUrl: 'https://rivers-of-london.com/',
+  licenseName: 'Apache License 2.0',
+  buildRef: 'd93d147',
+  buildDate: '2026-05-17T21:43:59+01:00'
+};
 
 function showPage(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -254,7 +267,7 @@ async function restoreUiFromUrl(replace = false) {
     return;
   }
 
-  const allowedTabs = new Set(['sessions', 'rules', 'admin']);
+  const allowedTabs = new Set(['sessions', 'rules', 'admin', 'about']);
   const targetTab = allowedTabs.has(route.tab) ? route.tab : 'sessions';
 
   if (targetTab === 'admin' && State.user.role !== 'gm') {
@@ -361,6 +374,7 @@ async function renderMain() {
         <button class="nav-tab active" data-tab="sessions" onclick="switchTab('sessions')">Case Files</button>
         <button class="nav-tab" data-tab="rules" onclick="switchTab('rules')">Rules</button>
         ${isGM ? `<button class="nav-tab" data-tab="admin" onclick="switchTab('admin')">Admin</button>` : ''}
+        <button class="nav-tab" data-tab="about" onclick="switchTab('about')">About</button>
       </div>
       <div class="nav-right">
         <span id="nav-llm-status" class="llm-status" hidden title="The language model is generating content">
@@ -382,7 +396,8 @@ async function renderMain() {
     </nav>
     <div id="tab-sessions" class="main"></div>
     <div id="tab-rules" class="main" style="display:none"></div>
-    ${isGM ? `<div id="tab-admin" class="main" style="display:none"></div>` : ''}`;
+    ${isGM ? `<div id="tab-admin" class="main" style="display:none"></div>` : ''}
+    <div id="tab-about" class="main" style="display:none"></div>`;
 
   showPage('main-page');
   startLlmStatusPolling();
@@ -457,6 +472,7 @@ async function switchTab(tab, options = {}) {
   if (tab === 'sessions') await loadSessionsTab({ skipUrlUpdate: true });
   if (tab === 'admin') await loadAdminTab();
   if (tab === 'rules') await loadRulesTab();
+  if (tab === 'about') loadAboutTab();
 }
 
 async function doLogout() {
@@ -1774,6 +1790,7 @@ async function renderGMSessionView(sessionId, preferredUserId = null) {
     const sheet = sheetMap[userId];
     area.innerHTML = '';
     SheetForm.setRuleset((sheet && sheet.ruleset) || sessionRuleset);
+    SheetForm.setSessionId(sessionId);
     SheetForm.render(area, sheet ? sheet.data : {}, false);
     area.insertAdjacentHTML('beforeend', `
       <div class="sheet-actions">
@@ -1803,6 +1820,7 @@ async function renderPlayerSessionView(sessionId) {
     </div>`;
 
   SheetForm.setRuleset((sheet && sheet.ruleset) || 'rol');
+  SheetForm.setSessionId(sessionId);
   SheetForm.render(el('sheet-form-area'), hasSheet ? sheet.data : {}, false);
   try { attachSkillRollButtons(el('sheet-form-area'), await buildSkillRollCtx(sessionId, State.user.id, false)); } catch (e) { /* non-fatal */ }
 }
@@ -3200,6 +3218,7 @@ function openNpcSheetView(npcId) {
     const area = root.querySelector('#npc-sheet-area');
     area.innerHTML = '';
     SheetForm.setRuleset('rol');
+    SheetForm.setSessionId(null);
     SheetForm.render(area, npc.sheet || {}, true);
   });
 }
@@ -3268,6 +3287,7 @@ function openNpcSheet(npcId) {
     const area = root.querySelector('#npc-sheet-area');
     area.innerHTML = '';
     SheetForm.setRuleset('rol');
+    SheetForm.setSessionId(null);
     SheetForm.render(area, (npc && npc.sheet) || {}, false);
   });
 }
@@ -3421,10 +3441,11 @@ async function renderAdminCases() {
   let sessions;
   try {
     sessions = await api.getSessions();
-    const settings = await Promise.all(sessions.map((s) => api.getSessionSettings(s.id).catch(() => ({ advantage_mode: 'rol', ruleset: 'rol' }))));
+    const settings = await Promise.all(sessions.map((s) => api.getSessionSettings(s.id).catch(() => ({ advantage_mode: 'rol', ruleset: 'rol', portrait_style: '' }))));
     sessions.forEach((s, i) => {
       s._adv = (settings[i] && settings[i].advantage_mode) || 'rol';
       s._ruleset = (settings[i] && settings[i].ruleset) || 'rol';
+      s._style = (settings[i] && settings[i].portrait_style) || '';
     });
   } catch (e) {
     host.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
@@ -3446,8 +3467,39 @@ async function renderAdminCases() {
           <option value="coc"${s._ruleset === 'coc' ? ' selected' : ''}>CoC-style (SIZ, plus SIZ-derived HP &amp; Build)</option>
         </select></td>
       </tr>`).join('')}</tbody>
-    </table></div></div>` : '<div class="empty"><p>No GM case files yet.</p></div>'}`;
+    </table></div></div>
+
+    <div class="card">
+      <div class="card-header"><div>
+        <div class="card-title">Portrait style (per case)</div>
+        <div class="card-sub">The art-style half of the auto-generated portrait prompt. Leave blank to use the built-in default (Art Nouveau / Mucha). Try e.g. <em>“photorealistic studio headshot, soft lighting”</em> or <em>“loose graphite pencil sketch on toned paper”</em>. Character framing (bust, headroom) and quality safeguards are kept automatically.</div>
+      </div></div>
+      ${sessions.map((s) => `<div class="form-group" style="max-width:720px">
+        <label>${esc(s.name)}</label>
+        <textarea id="case-style-${s.id}" rows="2" spellcheck="false" placeholder="Default: Art Nouveau / Mucha painterly illustration">${esc(s._style || '')}</textarea>
+        <div style="display:flex;gap:0.5rem;align-items:center;margin-top:0.4rem">
+          <button class="btn btn-sm btn-primary" onclick="saveCasePortraitStyle(${s.id}, this)">Save</button>
+          <button class="btn btn-sm" onclick="saveCasePortraitStyle(${s.id}, this, true)">Reset to default</button>
+        </div>
+      </div>`).join('')}
+    </div>` : '<div class="empty"><p>No GM case files yet.</p></div>'}`;
 }
+
+async function saveCasePortraitStyle(sessionId, btn, reset) {
+  const ta = el(`case-style-${sessionId}`);
+  const style = reset ? '' : ((ta && ta.value) || '').trim();
+  btn.disabled = true;
+  try {
+    const r = await api.setSessionSettings(sessionId, { portrait_style: style });
+    if (ta) ta.value = r.portrait_style || '';
+    showAlert(reset ? 'Reset to the default portrait style.' : 'Portrait style saved.', 'success', 'cases-alert');
+  } catch (e) {
+    showAlert(e.message, 'danger', 'cases-alert');
+  } finally {
+    btn.disabled = false;
+  }
+}
+window.saveCasePortraitStyle = saveCasePortraitStyle;
 
 async function saveCaseAdvantage(sessionId, mode, sel) {
   sel.disabled = true;
@@ -3480,12 +3532,34 @@ async function renderAdminLlm() {
   if (!host) return;
   host.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading…</p>';
   let info;
+  let svc;
   try {
     info = await api.getLlmModels();
   } catch (e) {
     host.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
     return;
   }
+  try {
+    svc = await api.getLlmServices();
+  } catch {
+    svc = { ollama: { url: '', default: '' }, comfyui: { url: '', default: '' } };
+  }
+  let cm;
+  try {
+    cm = await api.getComfyModels();
+  } catch {
+    cm = { models: [], image: { current: '', default: '' }, edit: { current: '', default: '' }, error: 'Could not reach ComfyUI' };
+  }
+  const cmModels = Array.isArray(cm.models) ? cm.models : [];
+  const comfySelect = (id, kind, match) => {
+    const cur = (cm[kind] && cm[kind].current) || '';
+    const dft = (cm[kind] && cm[kind].default) || '';
+    let opts = cmModels.filter((m) => match.test(m));
+    if (cur && !opts.includes(cur)) opts = [cur, ...opts];
+    return opts.length
+      ? `<select id="${id}">${opts.map((m) => `<option value="${esc(m)}"${m === cur ? ' selected' : ''}>${esc(m)}${m === dft ? ' (default)' : ''}</option>`).join('')}</select>`
+      : `<input type="text" id="${id}" value="${esc(cur)}" placeholder="default: ${esc(dft)}" spellcheck="false" autocomplete="off">`;
+  };
   const models = Array.isArray(info.models) ? info.models : [];
   const current = info.current || '';
   const def = info.default || '';
@@ -3516,8 +3590,83 @@ async function renderAdminLlm() {
         ${def && current !== def ? `<button class="btn" onclick="saveAdminLlmModel(this, '${esc(def)}')">Reset to default</button>` : ''}
         <span class="save-status" id="llm-status"></span>
       </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div>
+        <div class="card-title">Service endpoints</div>
+        <div class="card-sub">Base URLs for the Ollama (language) and ComfyUI (image) hosts. Persists in <code>data/app-config.json</code>; leave blank to use the deploy default. Changes take effect immediately — no redeploy.</div>
+      </div></div>
+      <div id="svc-alert"></div>
+      <div class="form-group" style="max-width:560px">
+        <label>Ollama URL</label>
+        <input type="text" id="svc-ollama" value="${esc(svc.ollama.url || '')}" placeholder="default: ${esc(svc.ollama.default || '')}" spellcheck="false" autocapitalize="none" autocomplete="off">
+      </div>
+      <div class="form-group" style="max-width:560px">
+        <label>ComfyUI URL</label>
+        <input type="text" id="svc-comfyui" value="${esc(svc.comfyui.url || '')}" placeholder="default: ${esc(svc.comfyui.default || '')}" spellcheck="false" autocapitalize="none" autocomplete="off">
+      </div>
+      <div style="display:flex;gap:0.5rem;align-items:center">
+        <button class="btn btn-primary" onclick="saveAdminLlmServices(this)">Save</button>
+        <button class="btn" onclick="saveAdminLlmServices(this, true)">Reset both to default</button>
+        <span class="save-status" id="svc-status"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div>
+        <div class="card-title">ComfyUI image models</div>
+        <div class="card-sub">Which installed ComfyUI model drives each task. <strong>Generation</strong> = Random portrait &amp; GM handouts (text→image); <strong>Edit</strong> = “Style this picture” (image→image). Lists are filtered by name (“image” / “edit”); persists in <code>data/app-config.json</code>, effective immediately.</div>
+      </div></div>
+      ${cm.error ? `<div class="alert alert-danger">Couldn’t list models from ComfyUI (${esc(cm.error)}). You can still type a model filename below.</div>` : ''}
+      <div id="cmodel-alert"></div>
+      <div class="form-group" style="max-width:560px">
+        <label>Image generation model</label>
+        ${comfySelect('cmodel-image', 'image', /image/i)}
+      </div>
+      <div class="form-group" style="max-width:560px">
+        <label>Image edit model</label>
+        ${comfySelect('cmodel-edit', 'edit', /edit/i)}
+      </div>
+      <div style="display:flex;gap:0.5rem;align-items:center">
+        <button class="btn btn-primary" onclick="saveAdminComfyModels(this)">Save</button>
+        <button class="btn" onclick="saveAdminComfyModels(this, true)">Reset both to default</button>
+        <span class="save-status" id="cmodel-status"></span>
+      </div>
     </div>`;
 }
+
+async function saveAdminComfyModels(btn, reset) {
+  const image = reset ? '' : ((el('cmodel-image') && el('cmodel-image').value) || '').trim();
+  const edit = reset ? '' : ((el('cmodel-edit') && el('cmodel-edit').value) || '').trim();
+  btn.disabled = true;
+  try {
+    await api.setComfyModels({ image_model: image, edit_model: edit });
+    showAlert(reset ? 'Both ComfyUI models reset to default.' : 'ComfyUI models saved.', 'success', 'cmodel-alert');
+    await renderAdminLlm();
+  } catch (e) {
+    showAlert(e.message || 'Could not save the ComfyUI models', 'danger', 'cmodel-alert');
+  } finally {
+    btn.disabled = false;
+  }
+}
+window.saveAdminComfyModels = saveAdminComfyModels;
+
+async function saveAdminLlmServices(btn, reset) {
+  const ollama = reset ? '' : ((el('svc-ollama') && el('svc-ollama').value) || '').trim();
+  const comfyui = reset ? '' : ((el('svc-comfyui') && el('svc-comfyui').value) || '').trim();
+  btn.disabled = true;
+  try {
+    await api.setLlmServices({ ollama_url: ollama, comfyui_url: comfyui });
+    showAlert(reset ? 'Both service URLs reset to default.' : 'Service URLs saved.', 'success', 'svc-alert');
+    await renderAdminLlm();
+  } catch (e) {
+    showAlert(e.message || 'Could not save the service URLs', 'danger', 'svc-alert');
+  } finally {
+    btn.disabled = false;
+  }
+}
+window.saveAdminLlmServices = saveAdminLlmServices;
 
 async function saveAdminLlmModel(btn, forceModel) {
   const sel = el('llm-model-select');
@@ -3535,6 +3684,59 @@ async function saveAdminLlmModel(btn, forceModel) {
   }
 }
 window.saveAdminLlmModel = saveAdminLlmModel;
+
+// ── About tab ────────────────────────────────────────────────────────────────
+function loadAboutTab() {
+  const tab = el('tab-about');
+  if (!tab) return;
+  const m = APP_METADATA;
+  tab.innerHTML = `
+    <div class="page-header"><h2>About The Folly</h2></div>
+
+    <div class="card about-card">
+      <section class="about-hero">
+        <figure class="about-portrait-frame">
+          <img class="about-portrait" src="${esc(m.authorPortrait)}" alt="Rivers of London – The Folly" />
+        </figure>
+        <div class="about-copy">
+          <p>
+            <strong>The Folly – Investigator Case Files</strong> is a fan-made companion
+            for the <a class="about-inline-link" href="${esc(m.inspirationUrl)}" target="_blank" rel="noreferrer">Rivers of London</a>
+            tabletop RPG. It keeps a gaming group's character sheets, NPCs, scenario
+            notes and dice rolls in one shared place so the GM and players can focus
+            on the story instead of the paperwork.
+          </p>
+          <p>
+            It grew out of running the game at home: tracking sheets across scraps of
+            paper never lasted past the first session. This pulls everything together —
+            multi-user GM/Player roles, an embedded rulebook, the solo Domestic
+            adventure, AI portrait generation, and one-click export to the printed
+            character sheet PDF.
+          </p>
+          <p>
+            Rivers of London is © Ben Aaronovitch and the game is published by Chaosium /
+            Just Crunch Games. This project is an unofficial aid and is not affiliated
+            with or endorsed by the rights holders.
+          </p>
+        </div>
+      </section>
+
+      <div class="about-links">
+        <a class="btn btn-primary about-link-button" href="${esc(m.donationUrl)}" target="_blank" rel="noreferrer">Make a donation</a>
+        <a class="btn about-link-button" href="${esc(m.repositoryUrl)}" target="_blank" rel="noreferrer">GitHub repository</a>
+      </div>
+
+      <div class="card about-meta-card">
+        <div class="card-title">Project</div>
+        <ul class="about-meta-list">
+          <li><span>License</span><strong>${esc(m.licenseName)}</strong></li>
+          <li><span>Repository</span><a class="about-inline-link" href="${esc(m.repositoryUrl)}" target="_blank" rel="noreferrer">${esc(m.repositoryLabel)}</a></li>
+          <li><span>Build</span><code>${esc(m.buildRef)}</code></li>
+          <li><span>Date</span><time datetime="${esc(m.buildDate)}">${esc(m.buildDate)}</time></li>
+        </ul>
+      </div>
+    </div>`;
+}
 
 // ── Rules tab ────────────────────────────────────────────────────────────────
 async function loadRulesTab() {
@@ -3665,6 +3867,7 @@ async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
 
   const sheetHost = el('domestic-sheet');
   SheetForm.setRuleset('rol');
+  SheetForm.setSessionId(State.currentSession);
   SheetForm.render(sheetHost, State.domesticSheet || {}, false);
   attachDomesticSheetPersistence(sheetHost);
 }
@@ -3906,6 +4109,7 @@ window.deleteUser = deleteUser;
 
 // Make tab functions global
 window.switchTab = switchTab;
+window.loadAboutTab = loadAboutTab;
 window.loadSessionsTab = loadSessionsTab;
 window.openSession = openSession;
 window.openCreateSession = openCreateSession;

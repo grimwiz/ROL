@@ -167,4 +167,12 @@ if (setColumns.length && !setColumns.some((c) => c.name === 'ruleset')) {
   db.exec("ALTER TABLE session_settings ADD COLUMN ruleset TEXT NOT NULL DEFAULT 'rol'");
 }
 
+// Per-case portrait art-style. Free text appended to the auto-generated
+// portrait prompt; empty/NULL falls back to the built-in default style so
+// existing cases are unchanged.
+const setColumns2 = db.prepare("PRAGMA table_info(session_settings)").all();
+if (setColumns2.length && !setColumns2.some((c) => c.name === 'portrait_style')) {
+  db.exec("ALTER TABLE session_settings ADD COLUMN portrait_style TEXT");
+}
+
 module.exports = db;
