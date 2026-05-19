@@ -1,12 +1,13 @@
-# The Folly – Investigator Case Files
+# The Folly - Investigator Case Files
 
-Rivers of London RPG character sheet management web app. Multi-user, GM/Player roles, NPC tracking, static scenario information pages, embedded rulebook + solo adventure, AI portrait generation, and one-click export to the printed character sheet PDF.
+Rivers of London RPG campaign-support web app. It combines multi-user GM/player access, per-case character sheets, global and per-case NPC sheets, session summaries and entity briefs generated from source Markdown, GM-only brainstorming and handout generation, in-app rolls with Luck handling, embedded rulebook search, *The Domestic* solo adventure, AI portrait tools, and one-click export to the printed character sheet PDF.
 
 ## Requirements
 
 - Node.js 18+
 - npm
-- (Optional) A reachable [ComfyUI](https://github.com/comfyanonymous/ComfyUI) server with the Qwen image model installed, if you want the "Generate portrait" button to work.
+- (Optional) A reachable Ollama server if you want AI scenario regeneration and GM Chat.
+- (Optional) A reachable [ComfyUI](https://github.com/comfyanonymous/ComfyUI) server with Qwen image/image-edit models installed, if you want portrait generation/restyling or GM handout generation.
 
 ## Setup
 
@@ -48,18 +49,22 @@ On first start, if no users exist, a default GM account is created:
 | `HOST` | `0.0.0.0` | Interface to bind the HTTP server to |
 | `OLLAMA_URL` | LAN default | Base URL of the Ollama server used to (re)generate scenario information |
 | `OLLAMA_MODEL` | `qwen3.6_36b:codex` | Ollama model used for scenario regeneration |
-| `OLLAMA_NUM_CTX` | `262144` | Context window passed to Ollama |
+| `OLLAMA_NUM_CTX` | `262144` | Default context window passed to Ollama. The Admin UI can persistently choose 128K or 256K, clamped to the selected model's max context |
+| `OLLAMA_TIMEOUT_MS` | `1800000` | Hard timeout for one streamed Ollama call |
+| `OLLAMA_KEEP_ALIVE` | `30m` | Ollama model keep-alive sent with chat/generation calls |
 | `JWT_SECRET` | *(insecure default)* | Secret for signing JWTs — **must be set in production** |
 | `DB_PATH` | `./data/folly.db` | Path to the SQLite database file |
 | `GM_INITIAL_PASSWORD` | `changeme123` | Password for auto-created GM account (first run only) |
 | `NODE_ENV` | — | Set to `production` to enable secure cookies (requires HTTPS) |
 | `TRUST_PROXY` | `1` | Express trust-proxy hops (set to your reverse-proxy depth) |
-| `COMFYUI_URL` | LAN default | Base URL of a reachable ComfyUI server (portrait generation) |
-| `COMFYUI_QWEN_DIFFUSION_MODEL` | `qwen_image_2512_fp8_e4m3fn.safetensors` | Diffusion model name in ComfyUI |
+| `COMFYUI_URL` | LAN default | Base URL of a reachable ComfyUI server (portraits and GM handouts) |
+| `COMFYUI_QWEN_DIFFUSION_MODEL` | `qwen_image_2512_fp8_e4m3fn.safetensors` | Text-to-image model name in ComfyUI |
+| `COMFYUI_QWEN_EDIT_MODEL` | `qwen_image_edit_2511_fp8mixed.safetensors` | Image-edit/restyle model name in ComfyUI |
 | `COMFYUI_QWEN_TEXT_ENCODER` | `qwen_2.5_vl_7b_fp8_scaled.safetensors` | Text encoder model name |
 | `COMFYUI_QWEN_VAE` | `qwen_image_vae.safetensors` | VAE model name |
+| `COMFYUI_IDLE_UNLOAD_MS` | `300000` | Idle delay before asking ComfyUI to unload models; set `0` to disable |
 
-The ComfyUI vars only matter if the "Generate portrait" button is going to be used. Without ComfyUI reachable, every other feature still works; the button will just fail.
+Ollama and ComfyUI service URLs, active Ollama model, Ollama context, and ComfyUI image/edit model choices can also be changed from **Admin → LLM**. Those overrides persist in `data/app-config.json` and take effect immediately. Without ComfyUI reachable, every non-image feature still works; image buttons will fail cleanly.
 
 ## Nginx proxy config (behind HTTPS)
 
@@ -111,16 +116,18 @@ Login is rate-limited (25 attempts per IP per 15 minutes; 8 per account) to slow
 
 ## Admin (GM only)
 
-GM-only management lives under the top-level **Admin** tab, with two sections:
+GM-only management lives under the top-level **Admin** tab, with four sections:
 
 - **Accounts** — create accounts, change passwords, delete accounts, and **allocate each account to any number of cases** (or none). Player↔case assignment can also still be done in-case via a case file's **+ Assign player** button; both write the same data.
 - **NPCs** — create/edit/print NPC character sheets and **allocate each NPC to any number of cases** (or none), exactly the way accounts are allocated. The allocation list includes the built-in **The Domestic** as a case.
+- **Case Settings** — per-case roll mode (*RoL bonus/penalty die* or *Simple* advantage/disadvantage), ruleset mode (*Rivers of London* or CoC-style SIZ/HP/Build), and portrait style instructions used by that case's character/NPC portrait tools.
+- **LLM** — active Ollama model, Ollama context (128K/256K when supported by the model), Ollama/ComfyUI base URLs, and ComfyUI image/edit model selection.
 
 NPCs and accounts are both first-class, case-independent records: an NPC or account exists on its own and is *allocated* to arbitrary cases.
 
 ## NPCs
 
-NPCs are full character sheets stored in SQLite. They are created, edited and printed from **Admin → NPCs** (the sheet's own Name field is authoritative). Allocation to cases works both ways: per-NPC via Admin → NPCs → **Cases…** (this list includes **The Domestic**), or per-case from a case file's **NPCs** subtab via **Assign NPCs…** (tick which NPCs are in this case). The subtab otherwise shows a read-only detail view of the NPCs allocated to that case with a printable sheet viewer. Whenever a case's NPC set changes, its `NPC.md` is regenerated.
+NPCs are full character sheets stored in SQLite. They are created, edited and printed from **Admin → NPCs** (the sheet's own Name field is authoritative). Allocation to cases works both ways: per-NPC via Admin → NPCs → **Cases…** (this list includes **The Domestic**), or per-case from a case file's **NPCs** subtab via **Assign NPCs…** (tick which NPCs are in this case). Allocating an NPC creates a per-case working copy of that NPC's sheet; the case detail view lets the GM edit that case copy, save it locally, and optionally **Write back to central NPC** when the per-case version should become the global sheet. Whenever a case's NPC set changes, its `NPC.md` is regenerated for GM/LLM context.
 
 ### NPC character sheets (from the rulebook)
 
@@ -138,17 +145,21 @@ So if a parsed sheet has an error, fix it in the web app, run `npm run npcs:expo
 
 ## Session scenario information
 
-Each case file detail view splits scenario knowledge into **Case Info**, **Player Info**, **NPC/Places/Things**, and (GM-only) **GM Info** and **Edit Files** subtabs:
+Each case file detail view splits scenario knowledge into **Overview**, **Characters**, **Case Info**, **Player Info**, **NPC/Places/Things**, **NPCs**, **Rolls**, and GM-only **GM Info**, **Edit Files**, **Raw Data**, and **GM Chat** subtabs:
 
-- **Case Info** — the "what has happened so far" analysis and per-session analysis. The model returns structured Markdown (headings, bold, bulleted beats) rendered with a clickable index; it also chooses a `presentation` mode — *scene* (the party moving through events together) or *player* (per-character threads) — favouring scene for the overall summary and per-player for sessions. Outstanding leads, in-flight actions, and open questions are woven into this prose rather than listed separately, because an explicit to-investigate checklist is itself a spoiler.
+- **Overview** — GM-only at-a-glance session board for player characters and allocated NPCs: conditions, resources, notable skills, weapons, and play notes.
+- **Characters** — per-player editable character sheets. Players only see their own sheet; the GM can edit all assigned player sheets.
+- **Case Info** — the "what has happened so far" analysis and per-session analysis. The model returns structured Markdown (headings, bold, bulleted beats) rendered with a clickable index. Session summaries can choose the most useful `presentation`: *scene* for chronological shared-table play, *player* for fragmented character-specific/WhatsApp threads, or *location* for place-by-place recall. Outstanding leads, in-flight actions, and open questions are woven into the prose rather than listed separately, because an explicit to-investigate checklist is itself a spoiler.
 - **Player Info** — per-character story. A player sees only their own character's story. A GM gets a player selector mirroring the Characters tab and can preview exactly what each player sees (filtered server-side via `?as_user=`).
-- **NPC/Places/Things** — player-visible Places, NPCs, and notable Things (objects/artefacts/evidence).
+- **NPC/Places/Things** — player-visible Places, NPCs, and notable Things (objects/artefacts/evidence). These entries are entity-centric: each NPC/place/item is written from the point of view of that subject, not as another per-player report.
+- **NPCs** — allocated NPC sheets for this case, using per-case working copies as described above.
 - **GM Info** — GM-only `gm-analysis.json` categories.
-- **Edit Files** — GM editing of the session source markdown.
+- **Edit Files** — GM editing of the session source markdown and asset visibility. Files created/uploaded here land GM-only by default; image/PDF assets can be toggled between GM-only and player-visible handouts.
+- **Raw Data** — GM-only inspection of the generated scenario JSON.
 - **Rolls** — the GM assigns a roll to a player (skill/label, optional target %, difficulty Regular/Hard/Extreme, modifier none/advantage/disadvantage, optional comment). The player resolves it in-app: the server rolls, applies the per-case advantage handling, and reports the success level and whether it meets the assigned difficulty. Target % auto-fills from the player's sheet when the label matches a skill/characteristic. Resolution is two-step: **Roll** previews the dice, then the player optionally **spends Luck** before **Confirm**. Luck is a session-scoped ledger — the sheet's base Luck is never mutated; effective Luck = base − unrestored Luck spent this session. RoL caps apply (can't spend out of a fumble, can't reach a Critical, capped at effective Luck). The GM sees a per-character Luck table (base / spent / effective) and **Restore Luck** clears a loss (e.g. between sessions). "Luck (eff)" also shows in the Session Overview. The GM panel also tracks per-session **wounds** (the four RoL conditions — Hurt/Bloodied/Down/Impaired — as toggles) and **manual temporary Luck adjustments** (a ± with a note, clearable), neither of which mutates the permanent sheet; active wounds show in the Session Overview "Condition" column. Rolls are mirrored to a GM-only `GM/rolls.md` ledger (incl. comments, Luck and a Conditions/Luck block) and resolved outcomes + current conditions to a shared `rolls.md` (player + LLM visible).
+- **GM Chat** — GM-only streaming brainstorming chat grounded in this case's full GM material (sources + current player/GM artifacts). Never shown to players; conversation is ephemeral (in-memory, cleared on reload). It supports text brainstorming and ComfyUI image handouts; generated images can be saved into the case's GM-only gallery and then shared via Edit Files. Reuses the streamed Ollama path with a server-side Stop button; the active Ollama call is cancelable from `/api/llm/cancel` even if the browser tab has been refreshed. `Ctrl/Cmd+Enter` sends. The large case-context system prompt is frozen for the life of a conversation so the prompt prefix is byte-stable — Ollama reuses its KV cache and only the first turn pays the full context cost; later turns are fast. **Clear** starts a new conversation and rebuilds the context (picking up edited files / regenerated artifacts). Note: a section regeneration or other large model call between turns can evict Ollama's cache, making the next chat turn slow once while it reprocesses the context.
 
 Advantage/disadvantage handling is a per-case setting under **Admin → Case Settings**: *RoL bonus/penalty die* (roll the tens die twice, keep the better/worse tens) or *Simple* (roll two d100s, take best/worst).
-- **GM Chat** — GM-only streaming brainstorming chat grounded in this case's full GM material (sources + current player/GM artifacts). Never shown to players; conversation is ephemeral (in-memory, cleared on reload). Reuses the streamed Ollama path with a Stop button (client `AbortController` → server aborts the Ollama call on disconnect). `Ctrl/Cmd+Enter` sends. The large case-context system prompt is frozen for the life of a conversation so the prompt prefix is byte-stable — Ollama reuses its KV cache and only the first turn pays the full context cost; later turns are fast. **Clear** starts a new conversation and rebuilds the context (picking up edited files / regenerated artifacts). Note: a section regeneration or other large model call between turns can evict Ollama's cache, making the next chat turn slow once while it reprocesses the context.
 
 It reads static generated artifacts from that session's folder:
 
@@ -171,13 +182,19 @@ Root markdown and `input/` files support player-facing analysis. `GM/` files sup
 
 ### One generation path
 
-There is exactly one way scenario information is produced: the server sends each section's prompt to an Ollama model (`OLLAMA_URL` / `OLLAMA_MODEL`, see *Environment variables*) and writes the returned JSON back to `scenario-info.json` / `gm-analysis.json`. Each prompt embeds the allowed markdown source contents and the current section value, uses the live database roster to map players to character names, treats **Stu Bentley** as the GM, and is told to rewrite a section only on a material change. Player access is filtered by `known_by` character names; GM-only analysis is only returned to GM users. The previous "write a Claude/Codex prompt file to run by hand" path has been removed.
+There is exactly one way scenario information is produced: the server sends each section's prompt to an Ollama model (`OLLAMA_URL` / `OLLAMA_MODEL`, or the Admin overrides) and writes the returned JSON back to `scenario-info.json` / `gm-analysis.json`. Prompts embed the allowed Markdown source contents, use the live database roster to map players to character names, treat **Stu Bentley** as the GM, and separate player-visible material from GM-only material. Player access is filtered by `known_by` character names; GM-only analysis is only returned to GM users.
+
+Most sections include the current generated artifact so the model can reconcile rather than churn stable content. The looped sections that must not eat their own tail — per-session summaries and per-player character reports — are generated one item at a time from the root/source `.md` files instead of from previous summaries. Session summaries are assembled by transcript file (`input/session-01.md`, `input/session-02.md`, etc.); player character reports are assembled from assigned players' real sheet names and fail before calling Ollama if those prerequisite names are missing. The previous "write a Claude/Codex prompt file to run by hand" path has been removed.
 
 A GM triggers regeneration from the web app:
 
 - **Regenerate** / **Revert** on any individual section card.
 - **Regenerate Page** in a subtab header — regenerates just the sections that page shows.
 - **Bulk Regenerate** on the **Edit Files** page — regenerates every section.
+
+Generation streams progress to the browser, including per-step timing/metrics and the requested context size. The global AI notification reports current work and exposes Ollama model/GPU/VRAM details on hover when `ollama ps` has data. The Stop button calls a server-side cancel endpoint, so an active Ollama request can still be stopped after switching tabs or refreshing the page.
+
+Generated Markdown also gets a deterministic non-LLM post-pass. It refreshes the stored source-file inventory, rebuilds browser page indexes on reload, and inserts matching scenario images into Markdown. Auto-inserted images are rebuilt at only the first matching title in a content block; that first title may receive multiple images, but later headings are left alone. GM pages expose **Regenerate Index** beside the AI regenerate controls to rerun this post-pass without calling Ollama.
 
 Codex/Claude is not available on the application server, so the equivalent manual run is a script that triggers the **same** server actions (no separate code path):
 
@@ -201,14 +218,14 @@ The sheet is organised into seven numbered sections: **1 · Personal Info & Back
 
 ### 2 · Characteristics
 
-- Six base stats: **STR, CON, DEX, INT, POW, SIZ**. Each is a dropdown from 10 to 90 in 5-point steps, with a running total shown underneath.
-- Four **derived stats** auto-calculate from the base stats and are displayed in a dedicated sub-grid:
-  - **HP** = round((CON + SIZ) / 10)
+- In the default **Rivers of London** ruleset, base stats are **STR, CON, DEX, INT, POW**. The optional **CoC-style** ruleset (per case, under Admin → Case Settings) also shows **SIZ**.
+- Each visible stat is a dropdown from 10 to 90 in 5-point steps, with a running total shown underneath.
+- Derived stats display in a dedicated sub-grid:
   - **SAN** = POW
   - **MP** = round(POW / 5)
-  - **Build** is bucketed from STR + SIZ (≤64 → -2, ≤84 → -1, ≤124 → 0, ≤164 → +1, ≤204 → +2, else +3)
-- Each derived stat has an **Auto / Manual toggle** — by default they follow the formulas and update live as base stats change, but a GM or player can flip a field to Manual to enter a custom value (e.g. temporary injury, narrative override) without losing the auto-calculation for the others.
-- **Move** and **Luck** sit in the same derived grid; Move is free text (for pace descriptors or numeric values) and Luck is a 1–100 number.
+  - **HP** and **Build** only appear in CoC-style mode; HP = round((CON + SIZ) / 10), and Build is bucketed from STR + SIZ (≤64 → -2, ≤84 → -1, ≤124 → 0, ≤164 → +1, ≤204 → +2, else +3)
+- Each derived stat has an **Auto / Manual toggle** — by default they follow the formulas and update live as base stats change, but a GM or player can flip a field to Manual to enter a custom value without losing the auto-calculation for the others.
+- **Move** and **Luck** sit in the same derived grid; Move is free text (for pace descriptors or numeric values) and Luck can be entered manually or auto-rolled as RoL starting Luck (`2D10+50`).
 
 ### 3 · Edges & Flaws
 
@@ -245,9 +262,9 @@ Player-defined key/value pairs that don't fit the canonical sheet — handy for 
 
 A case file's first subtab (GM only), **Overview**, is the at-a-glance session board: one card for **Player Characters** and a second, identically-formatted card for the **NPCs** allocated to this case (condition, resources, notable skills, weapons, play notes per row). The **Characters** subtab (now to the right of Overview) holds the per-player sheet tabs and the full editable sheet.
 
-## Portrait generation (Qwen via ComfyUI)
+## Portrait generation and restyling (Qwen via ComfyUI)
 
-The "Generate portrait" button on the sheet builds a prompt from the character's occupation, age, social class, reputation, advantages, top stats, top skills, weapons, and magic tradition, and dispatches it to the configured ComfyUI server using the Qwen image model. The browser polls a small set of authenticated proxy endpoints (`/api/portrait/random`, `/api/portrait/history/:id`, `/api/portrait/view`) so the LAN-only ComfyUI server never has to be exposed.
+The sheet portrait controls can upload, capture from webcam, generate a new random portrait, or restyle the current image with **Style this picture**. Random portraits build a prompt from the character's occupation, age, social class, reputation, advantages, top stats, top skills, weapons, and magic tradition, then dispatch it to the configured ComfyUI server using the selected Qwen image model. Restyling uses the selected Qwen image-edit model and the case's portrait-style instructions, preserving identity while changing the art treatment. The browser polls a small set of authenticated proxy endpoints (`/api/portrait/random`, `/api/portrait/restyle`, `/api/portrait/history/:id`, `/api/portrait/view`) so the LAN-only ComfyUI server never has to be exposed.
 
 The original uploaded portrait (if any) is held in browser memory while a generation is in flight, so the player can revert if they don't like the result.
 
@@ -259,7 +276,7 @@ The browser and CLI go through the same `buildPdf()` function, so what you get f
 
 ## Dice rolling
 
-`POST /api/dice/rolls` accepts a small allowlist of formulas (`1d100`, `2d10+50`, `d20`, `d12`, `d10`, `d8`, `d6`, `d4`) and logs the result so a GM can audit rolls after the fact.
+`POST /api/dice/rolls` accepts a small allowlist of formulas (`1d100`, `2d10+50`, `1d20`, `1d12`, `1d10`, `1d8`, `1d6`, `1d4`) and logs the result so a GM can audit rolls after the fact.
 
 ## Rules
 
@@ -268,9 +285,9 @@ The browser and CLI go through the same `buildPdf()` function, so what you get f
 
 ## Front-end scripts
 
-- `public/js/api.js`: Centralised browser API client used by UI actions (`auth`, `users`, `sessions`, sheets, portrait, dice, adventure, and rules endpoints).
-- `public/js/app.js`: Main SPA logic (auth flow, case file/account/rules tabs, case file rename modal, player assignment, GM/player sheet interactions, GM session overview table, session-scoped scenario info, session NPCs, embedded HTML rulebook viewer, the Export-PDF button, and The Domestic solo adventure presented as a built-in case file with URL step routing and local sheet persistence).
-- `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views — includes backstory support, portrait upload/camera/generation behaviour, occupation free-text, characteristic dropdowns with stat-total messaging, the advantages textbox + collapsible preset picker with stat-prereq disabling, common-skill dropdowns with the Sense-Vestigia / Magic auto-adjustments described above, expert/additional skill controls, custom-field controls, and the magic-section visibility toggle.
+- `public/js/api.js`: Centralised browser API client used by UI actions (`auth`, users, sessions, sheets, scenario info/sources, rolls, NPCs, LLM/service settings, ComfyUI settings, handouts, portrait, dice, adventure, and rules endpoints).
+- `public/js/app.js`: Main SPA logic (auth flow, case file/account/rules/admin tabs, case file rename modal, player and NPC allocation, GM/player sheet interactions, GM session overview table, session-scoped scenario info, server-side AI start/stop status, GM Chat and handouts, Edit Files asset handling, embedded HTML rulebook viewer, the Export-PDF button, and The Domestic solo adventure presented as a built-in case file with URL step routing and local sheet persistence).
+- `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views — includes backstory support, portrait upload/camera/generation/restyling behaviour, per-case portrait AI enablement, occupation free-text, RoL vs CoC-style ruleset display, characteristic dropdowns with stat-total messaging, the advantages textbox + collapsible preset picker with stat-prereq disabling, common-skill dropdowns with the Sense-Vestigia / Magic auto-adjustments described above, expert/additional skill controls, custom-field controls, and the magic-section visibility toggle.
 
 ## Utility scripts
 
@@ -334,4 +351,6 @@ If more decorations turn up later, adding them is manual — just drop the filen
 
 ## Data
 
-SQLite database stored at `DB_PATH`. Back it up by copying the `.db` file. The schema covers users, sessions, the session ↔ player join table, character sheets (one JSON blob per (session, user) pair), NPCs (including an optional full character-sheet JSON in the `sheet` column), the NPC↔case allocation join table (`npc_sessions`), per-case settings (`session_settings`), GM-assigned rolls (`session_rolls`), and per-user *Domestic* progress.
+SQLite database stored at `DB_PATH`. Back it up by copying the `.db` file. The schema covers users, sessions, the session ↔ player join table, character sheets (one JSON blob per (session, user) pair), NPCs (including an optional full character-sheet JSON in the central `npcs.sheet` column), NPC↔case allocation and per-case NPC working sheets (`npc_sessions`), per-case settings (`session_settings`), GM-assigned/self-service rolls (`session_rolls`), per-session wound state and temporary stat adjustments, and per-user *Domestic* progress.
+
+Global app-level AI/service overrides live outside SQLite in `data/app-config.json` (Ollama model/context/base URL, ComfyUI URL, and ComfyUI image/edit model choices). Case source files and generated artifacts live under `data/sessions/<session-name-slug>/`.

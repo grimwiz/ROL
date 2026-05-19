@@ -1112,6 +1112,32 @@ tr:hover td { background: var(--bg3); }
 .vis-gm { color: var(--warning); border-color: var(--warning); background: rgba(243,156,18,0.12); }
 .vis-player { color: #5fd49a; border-color: #2f6f4f; background: rgba(39,174,96,0.12); }
 
+/* ── Index image manager ── */
+.entity-img-table { padding: 0.6rem 0.9rem; }
+.entity-img-table > summary { cursor: pointer; font-size: 0.9rem; color: var(--text2); }
+.entity-img-table > summary strong { color: var(--text); }
+.table-scroll { overflow-x: auto; margin-top: 0.7rem; }
+table.eit { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+table.eit th, table.eit td { text-align: left; padding: 0.5rem 0.55rem; border-top: 1px solid var(--border); vertical-align: top; }
+table.eit th { color: var(--text2); font-weight: 600; border-top: none; }
+.eit-name { min-width: 140px; font-weight: 600; }
+.eit-name small { color: var(--text2); font-weight: 400; }
+.eit-art { width: 130px; }
+.eit-thumb { width: 110px; height: 110px; object-fit: cover; border-radius: calc(var(--radius) - 2px); border: 1px solid var(--border); display: block; }
+.eit-file { font-size: 0.7rem; color: var(--text2); margin-top: 0.25rem; word-break: break-all; }
+.eit-none { color: var(--text2); font-style: italic; }
+.eit-prompt { width: 100%; min-width: 220px; font-size: 0.78rem; resize: vertical; }
+.eit-actions { display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; min-width: 240px; }
+.eit-actions .btn { font-size: 0.72rem; padding: 0.12rem 0.45rem; }
+.eit-actions .dice-select { width: auto; font-size: 0.72rem; padding: 0.12rem 0.3rem; }
+.eit-status { flex-basis: 100%; font-size: 0.72rem; color: var(--text2); margin-top: 0.2rem; }
+.eit-status.saved { color: #5fd49a; }
+.eit-status.error { color: #e57373; }
+.eit-entity-row > td { border-top: 2px solid var(--border); background: rgba(255,255,255,0.015); }
+.eit-file-row > td { border-top: 1px dashed var(--border); }
+.eit-sub { color: var(--text2); text-align: center; width: 1.5rem; }
+.eit-orphan-head { margin: 1rem 0 0.4rem; font-weight: 600; color: var(--warning); border-top: 2px solid var(--border); padding-top: 0.7rem; }
+
 /* ── Assigned rolls ── */
 .roll-form { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
 .roll-form select, .roll-form input { margin: 0; }
@@ -1227,4 +1253,61 @@ tr:hover td { background: var(--bg3); }
 @media (max-width: 640px) {
   .about-hero { flex-direction: column; }
   .about-portrait { width: 100%; }
+}
+
+/* ── Printable export documents ── */
+/* Re-map the dark theme variables to print-friendly values for the whole
+   export, so every component (incl. inline color:var(--text2) styles) renders
+   dark-on-white. These apply on screen too, not only when printing. */
+.print-doc {
+  --bg: #fff; --bg2: #fff; --bg3: #fff; --border: #bbb;
+  --text: #111; --text2: #333; --accent: #222; --accent2: #222;
+  --warning: #7a4a00; --success: #1f6f3a; --danger: #a02020;
+  background: #fff; color: #111; max-width: 900px; margin: 0 auto; padding: 1.5rem 2rem 4rem;
+}
+/* Hard guarantee: nothing pale. Keeps borders/images intact. */
+.print-doc, .print-doc *:not(img):not(svg) { color: #111 !important; }
+.print-doc h1, .print-doc h2, .print-doc h3, .print-doc h4 { color: #000 !important; }
+.print-doc .card, .print-doc .scenario-entry-card, .print-doc .scenario-summary-card,
+.print-doc table, .print-doc th, .print-doc td { background: #fff !important; border-color: #bbb !important; }
+.print-doc .print-section { margin-top: 1.5rem; }
+.print-doc .print-cover { text-align: center; padding: 3rem 0; border-bottom: 2px solid #111; margin-bottom: 1rem; }
+
+/* The export is a static hardcopy — strip ALL interactive chrome (on screen
+   and in print), not just buttons: regenerate/revert actions, jump indexes,
+   tab strips, anything clickable. The Print/Close toolbar sits OUTSIDE
+   .print-doc so it is unaffected here. */
+.print-doc .btn, .print-doc button, .print-doc .scenario-section-actions,
+.print-doc .scenario-jump, .print-doc .scenario-jump-all, .print-doc .case-index,
+.print-doc [onclick], .print-doc .sheet-tabs,
+.print-doc input[type="button"], .print-doc input[type="submit"] { display: none !important; }
+/* Value-bearing fields stay (they hold sheet data) but render as flat text. */
+.print-doc select, .print-doc input, .print-doc textarea {
+  -webkit-appearance: none; appearance: none; border: none !important;
+  background: transparent !important; color: #111 !important; padding: 0 !important;
+  height: auto !important; max-height: none !important; overflow: visible !important; }
+.print-doc select { pointer-events: none; }
+.print-doc textarea { resize: none; white-space: pre-wrap; }
+.print-doc .scroll, .print-doc [class*="scroll"] {
+  height: auto !important; max-height: none !important; overflow: visible !important; }
+
+.print-toolbar { position: fixed; top: 0; right: 0; z-index: 9999; display: flex; gap: .5rem; padding: .6rem .8rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 0 0 0 var(--radius); }
+body.print-mode { overflow: auto; background: #fff; }
+body.print-mode #app { display: none !important; }
+
+@media print {
+  .print-toolbar { display: none !important; }
+  body.print-mode #app { display: none !important; }
+  .print-doc { max-width: none; margin: 0; padding: 0; }
+  /* Every export section starts on its own page (legacy prop for Chrome). */
+  .print-doc .print-section { break-before: page; page-break-before: always; }
+  /* Never orphan a heading at the foot of a page — keep titles with content. */
+  .print-doc h1, .print-doc h2, .print-doc h3, .print-doc h4,
+  .print-doc .card-title, .print-doc .scenario-section-header {
+    break-after: avoid; page-break-after: avoid; }
+  /* Only small atomic blocks avoid internal breaks; large content cards/tables
+     flow across pages so a tall card doesn't get shoved off, stranding its
+     title on the previous page. */
+  .print-doc .sheet-portrait, .print-doc figure, .print-doc tr { break-inside: avoid; }
+  a { color: #111 !important; text-decoration: none; }
 }

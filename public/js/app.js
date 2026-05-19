@@ -429,7 +429,10 @@ function applyLlmBusyUI(status) {
     box.hidden = !busy;
     const txt = box.querySelector('.llm-text');
     if (txt) {
-      const activeLabel = State.activeRegen && State.activeRegen.label;
+      const activeStatus = State.activeRegen && State.activeRegen.status
+        ? String(State.activeRegen.status).replace(/^Stop\s+·\s*/, '').trim()
+        : '';
+      const activeLabel = activeStatus || (State.activeRegen && State.activeRegen.label);
       const statusLabel = (status && status.last_section) || State.llmLastSection;
       const where = activeLabel || statusLabel ? ` · ${activeLabel || statusLabel}` : '';
       txt.textContent = `AI working${where}`;
@@ -847,7 +850,7 @@ async function openSession(sessionId, options = {}) {
       ${isGM ? `<div class="sheet-tab active" data-session-panel="overview" onclick="switchSessionPanel(${sessionId}, 'overview')">Overview</div>` : ''}
       <div class="sheet-tab${isGM ? '' : ' active'}" data-session-panel="characters" onclick="switchSessionPanel(${sessionId}, 'characters')">Characters</div>
       <div class="sheet-tab" data-session-panel="case-info" onclick="switchSessionPanel(${sessionId}, 'case-info')">Case Info</div>
-      <div class="sheet-tab" data-session-panel="player-info" onclick="switchSessionPanel(${sessionId}, 'player-info')">Player Info</div>
+      <div class="sheet-tab" data-session-panel="player-info" onclick="switchSessionPanel(${sessionId}, 'player-info')">Player Stories</div>
       <div class="sheet-tab" data-session-panel="entities" onclick="switchSessionPanel(${sessionId}, 'entities')">Places/NPC/Things</div>
       ${isGM ? `<div class="sheet-tab" data-session-panel="gm-info" onclick="switchSessionPanel(${sessionId}, 'gm-info')">GM Info</div>` : ''}
       ${isGM ? `<div class="sheet-tab" data-session-panel="raw-data" onclick="switchSessionPanel(${sessionId}, 'raw-data')">Edit Files</div>` : ''}
@@ -1779,6 +1782,10 @@ async function renderSessionOverview(sessionId) {
         <h2>Session Overview</h2>
         <p class="card-sub">At-a-glance condition, resources, notable skills, and combat notes for everyone in this case.</p>
       </div>
+      <div class="scenario-section-actions">
+        <button class="btn" onclick="exportPrintDoc(${sessionId}, 'player')" title="Assemble a printable hardcopy: case info, places/NPCs/things, and each player's sheet + story">Player printable</button>
+        <button class="btn" onclick="exportPrintDoc(${sessionId}, 'gm')" title="Assemble a printable hardcopy: GM info, overview, and allocated NPC sheets">GM printable</button>
+      </div>
     </div>
     <div id="session-alert"></div>
     ${renderOverviewTable('Player Characters', 'Assigned players in this case.', playerRows, 'No players assigned to this case yet.')}
@@ -1786,6 +1793,127 @@ async function renderSessionOverview(sessionId) {
     ${luckLedgerHtml(sessionId, (rollsData && rollsData.luck) || [])}
     ${rollHistoryHtml(sessionId, (rollsData && rollsData.rolls) || [])}`;
 }
+
+// ── Printable hardcopy export (browser Print → Save as PDF) ──────────────────
+// Assembles all relevant sections into one static, print-clean document so the
+// GM can Print → Save as PDF for an offline session. Sheets reuse the read-only
+// Characters layout; interactive chrome is stripped by the @media print CSS.
+function closePrintDoc() {
+  document.body.classList.remove('print-mode');
+  const d = el('print-doc'); if (d) d.remove();
+  const t = el('print-toolbar'); if (t) t.remove();
+}
+window.closePrintDoc = closePrintDoc;
+window.doPrintDoc = () => window.print();
+
+async function exportPrintDoc(sessionId, kind) {
+  closePrintDoc();
+  const toolbar = document.createElement('div');
+  toolbar.id = 'print-toolbar';
+  toolbar.className = 'print-toolbar';
+  toolbar.innerHTML = '<button class="btn btn-primary" onclick="doPrintDoc()">🖨 Print / Save PDF</button><button class="btn" onclick="closePrintDoc()">Close</button>';
+  document.body.appendChild(toolbar);
+  const doc = document.createElement('div');
+  doc.id = 'print-doc';
+  doc.className = 'print-doc';
+  doc.innerHTML = '<p style="padding:2rem;color:#555">Assembling document…</p>';
+  document.body.appendChild(doc);
+  document.body.classList.add('print-mode');
+  window.scrollTo(0, 0);
+
+  const sheetJobs = [];
+  // No .print-section wrapper here — the caller groups the sheet WITH its
+  // owning heading in one section so the title isn't orphaned on its own page.
+  const sheetBlock = (label, data, ruleset) => {
+    const id = `pdsheet-${sheetJobs.length}`;
+    sheetJobs.push({ id, data: data || {}, ruleset: ruleset || (data && data.ruleset) || 'rol' });
+    return `<h3>${esc(label)}</h3><div id="${id}"></div>`;
+  };
+
+  try {
+    const sess = ((typeof State === 'object' && State.sessions) || []).find((s) => s && s.id === sessionId);
+    const caseName = (sess && sess.name) || `Session ${sessionId}`;
+    const stamp = new Date().toLocaleString('en-GB');
+    let html = '';
+
+    if (kind === 'player') {
+      const base = await loadScenarioInfo(sessionId);
+      const players = await api.getSessionPlayers(sessionId);
+      const sheets = await api.getSheets(sessionId);
+      const sheetByUser = {};
+      sheets.forEach((s) => { sheetByUser[s.user_id] = s; });
+      const summary = base.summary || {};
+      const whatHappened = summary.what_has_happened || base.what_has_happened;
+      const sessions = scenarioArray(summary.session_summaries);
+      const ent = base.entities || {};
+      setScenarioImages(base.source_files);
+      html += `<div class="print-cover"><h1>${esc(caseName)}</h1><p>Player hardcopy — ${esc(stamp)}</p></div>`;
+      html += `<div class="print-section"><h2>Case Info</h2>${renderWhatHappenedSection(whatHappened, false)}${renderSessionAnalysis(sessions, false)}</div>`;
+      html += `<div class="print-section"><h2>Places / NPCs / Things</h2>
+        ${renderScenarioSection('Places', ent.locations || base.locations, 'No places generated.', '', false)}
+        ${renderScenarioSection('NPCs', ent.npcs || base.npcs, 'No NPCs generated.', '', false)}
+        ${renderScenarioSection('Things', ent.items || base.items, 'No things generated.', '', false)}</div>`;
+      for (const p of players) {
+        let info = null;
+        try { info = await api.getSessionScenarioInfo(sessionId, p.id); } catch (_) { info = null; }
+        const vNames = (info && info.viewer && info.viewer.character_names) || [];
+        const mine = info ? scenarioArray(info.entities && info.entities.characters).filter((c) => matchesCharacter(c, vNames)) : [];
+        if (info) setScenarioImages(info.source_files);
+        const sh = sheetByUser[p.id];
+        // One section per player: name + sheet + story stay together (page
+        // break before the player, not between their title and sheet).
+        html += `<div class="print-section">
+          <h2>${esc(p.username)}${vNames.length ? ` — ${esc(vNames.join(', '))}` : ''}</h2>
+          ${sheetBlock(`${p.username} — Character Sheet`, sh && sh.data, sh && sh.ruleset)}
+          ${renderScenarioSection('Player Story', mine, 'No story generated for this player.', '', false)}
+        </div>`;
+      }
+    } else {
+      const base = await loadScenarioInfo(sessionId);
+      const [players, sheets, npcs, rollsData] = await Promise.all([
+        api.getSessionPlayers(sessionId),
+        api.getSheets(sessionId),
+        api.getNpcs(sessionId),
+        api.getSessionRolls(sessionId).catch(() => ({}))
+      ]);
+      const sheetMap = {}; sheets.forEach((s) => { sheetMap[s.user_id] = s; });
+      const luckByUser = {}; ((rollsData && rollsData.luck) || []).forEach((l) => { luckByUser[l.user_id] = l; });
+      const playerRows = players.map((p) => {
+        const l = luckByUser[p.id];
+        const wl = l && l.wounds ? WOUND_KEYS.filter((w) => l.wounds[w]).map((w) => w[0].toUpperCase() + w.slice(1)) : [];
+        return { col1: p.username, name: (sheetMap[p.id] && sheetMap[p.id].data && sheetMap[p.id].data.name) || '—',
+          luck: l ? `${l.effective} eff${l.spent ? ` (−${l.spent} of ${l.base})` : ''}` : null,
+          wounds: wl.join(', '), d: (sheetMap[p.id] && sheetMap[p.id].data) || {} };
+      });
+      const npcRows = npcs.map((n) => ({ col1: (n.sheet && n.sheet.occupation) || n.role || 'NPC', name: n.name, d: n.sheet || {} }));
+      setScenarioImages(base.source_files);
+      html += `<div class="print-cover"><h1>${esc(caseName)}</h1><p>GM hardcopy — ${esc(stamp)}</p></div>`;
+      html += `<div class="print-section"><h2>GM Info</h2>${renderGmAnalysis(base)}</div>`;
+      html += `<div class="print-section"><h2>Overview</h2>
+        ${renderOverviewTable('Player Characters', 'Assigned players in this case.', playerRows, 'No players assigned.')}
+        ${renderOverviewTable('NPCs', 'NPCs allocated to this case.', npcRows, 'No NPCs allocated.')}</div>`;
+      // Each NPC sheet is its own section/page; the group heading folds into
+      // the first one so it isn't stranded on a page of its own.
+      html += npcs.map((n, i) => `<div class="print-section">${i === 0 ? '<h2>Allocated NPC Character Sheets</h2>' : ''}${sheetBlock(`${n.name} — NPC Sheet`, n.sheet, n.sheet && n.sheet.ruleset)}</div>`).join('');
+    }
+
+    doc.innerHTML = html || '<p style="padding:2rem">Nothing to export.</p>';
+    for (const job of sheetJobs) {
+      const host = el(job.id);
+      if (!host || typeof SheetForm === 'undefined') continue;
+      try {
+        SheetForm.setRuleset(job.ruleset || 'rol');
+        SheetForm.setSessionId(sessionId);
+        SheetForm.setPortraitAi(false);
+        SheetForm.render(host, job.data, true);
+      } catch (e) { host.innerHTML = `<p style="color:#a00">Sheet render failed: ${esc(e.message || e)}</p>`; }
+    }
+  } catch (e) {
+    doc.innerHTML = `<div style="padding:2rem;color:#a00">Export failed: ${esc(e.message || e)}</div>
+      <div style="padding:0 2rem"><button class="btn" onclick="closePrintDoc()">Close</button></div>`;
+  }
+}
+window.exportPrintDoc = exportPrintDoc;
 
 async function renderGMSessionView(sessionId, preferredUserId = null) {
   const [players, sheets, settings] = await Promise.all([
@@ -2071,13 +2199,343 @@ function entityPortraitPath(name) {
 }
 
 let scenarioImageMap = {};
+let scenarioGraphicFiles = [];
 function setScenarioImages(sourceFiles) {
   const m = {};
   (sourceFiles || []).forEach((f) => {
     if (f && f.kind === 'graphic' && f.path) m[String(f.path).split('/').pop().toLowerCase()] = f.path;
   });
   scenarioImageMap = m;
+  scenarioGraphicFiles = (sourceFiles || [])
+    .filter((f) => f && f.kind === 'graphic' && f.path)
+    .map((f) => {
+      const file = String(f.path).split('/').pop();
+      return {
+        path: f.path,
+        file,
+        stem: imgKey(file.replace(/\.[^.]+$/, '')),
+        visibility: f.visibility === 'gm' ? 'gm' : 'player',
+        prompt: typeof f.prompt === 'string' ? f.prompt : '',
+        modified_at: f.modified_at || ''
+      };
+    });
 }
+
+// Mirrors the server imgMatchKey: lowercase, runs of non-alphanumerics → "-".
+function imgKey(s) {
+  return String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+// Graphics whose filename PREFIX-matches an entity name (separators optional —
+// same rule the server-side index injector uses), so the table row shows the
+// artifact that "Regenerate Index" will attach to that entity.
+function entityGraphics(name) {
+  const key = imgKey(name);
+  if (key.replace(/-/g, '').length < 3) return [];
+  const pat = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/-/g, '-?');
+  const re = new RegExp(`^${pat}(?:-|$)`);
+  return scenarioGraphicFiles.filter((g) => re.test(g.stem));
+}
+
+// Default filename slug for an entity's generated artifact, so the deterministic
+// index injector picks it up on "Regenerate Index".
+function entitySlug(name) {
+  return imgKey(name).slice(0, 60) || 'entity';
+}
+
+// ── Index image manager ──────────────────────────────────────────────────────
+// A collapsed table at the foot of index pages (GM only). One row per index
+// entry; each row pulls the entry's Edit-Files artifact + prompt in so they can
+// be managed here, with a Generate column that drafts a prompt and a first
+// image. "Regenerate Index" reloads this page, so the table tracks the same
+// filename-prefix matching the deterministic injector uses.
+let eitRegistry = {};
+let eitBusy = false;
+// Last prompt used to generate for an entity, keyed `${sessionId}:${slug}`.
+// Survives the panel reload so the primary box keeps what the GM just used.
+let eitLastPrompt = {};
+// Landscape first → it is the default aspect (places/objects/scenes); the GM
+// switches to Portrait per-graphic for a single figure.
+const EIT_SIZES = [['landscape', 'Landscape'], ['portrait', 'Portrait'], ['square', 'Square'], ['character', 'Character'], ['intricate', 'Intricate']];
+
+function eitDesc(entry) {
+  if (!entry || typeof entry !== 'object') return String(entry || '');
+  const keys = ['content', 'description', 'summary', 'analysis', 'story', 'narrative', 'details', 'body', 'text', 'notes'];
+  const k = keys.find((x) => entry[x] != null && String(entry[x]).trim() !== '');
+  return k ? String(entry[k]).replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/[#*`>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 1500) : '';
+}
+
+// Build manager rows from the SAME grouped index items that render the visible
+// top-of-page jump index ([label, [{entry?, title, id}, …]]), so the table
+// always mirrors exactly what the GM sees indexed at the top.
+function eitFromIndex(indexGroups) {
+  const out = [];
+  (indexGroups || []).forEach(([label, items]) => {
+    (items || []).forEach((it) => {
+      const name = it && (it.title || it.name);
+      if (name) out.push({ name, kind: label, desc: eitDesc(it && it.entry) });
+    });
+  });
+  return out;
+}
+
+function renderEntityImageManager(sessionId, items) {
+  if (State.user.role !== 'gm') return '';
+  const rows = (items || []).filter((it) => it && it.name);
+  if (!rows.length) return '';
+  eitRegistry = {};
+  const sizeSel = (sid) => `<select id="${sid}-size" class="dice-select" title="Size / aspect ratio">${EIT_SIZES.map(([v, l], j) => `<option value="${esc(v)}"${j === 0 ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+  // Cache-bust by file mtime: Chrome reuses an identical <img src> from the
+  // in-document cache without a request after the SPA re-render, so a
+  // regenerated-in-place image (same filename) needs a changing URL to refresh.
+  const assetVer = (g) => scenarioAssetUrl(g.path) + (g.modified_at ? `?v=${encodeURIComponent(g.modified_at)}` : '');
+  let total = 0;
+  const matched = new Set();
+  // De-duplicated current titles → reassignment targets for orphaned graphics.
+  const titleOpts = [];
+  const seenSlug = new Set();
+  rows.forEach((it) => {
+    const s = entitySlug(it.name);
+    if (seenSlug.has(s)) return;
+    seenSlug.add(s);
+    titleOpts.push({ slug: s, label: `${it.name}${it.kind ? ` (${it.kind})` : ''}` });
+  });
+  const body = rows.map((it, i) => {
+    const id = `eit-${i}`;
+    const matches = entityGraphics(it.name);
+    matches.forEach((g) => matched.add(g.path));
+    total += matches.length;
+    const slug = entitySlug(it.name);
+    eitRegistry[id] = { sessionId, name: it.name, kind: it.kind || '', slug, path: '', desc: it.desc || '' };
+    const lastPrompt = eitLastPrompt[`${sessionId}:${slug}`] || '';
+    // Primary row: draft a prompt and generate an ADDITIONAL graphic. Multiple
+    // graphics per entry are allowed (e.g. a picture and a map) — each new one
+    // is a fresh title-slug file the index injector also attaches. The box
+    // keeps the last prompt used for this entity (restored across reload).
+    const primary = `<tr id="${id}-row" class="eit-entity-row">
+      <td class="eit-name">${esc(it.name)}${it.kind ? `<br><small>${esc(it.kind)}</small>` : ''}</td>
+      <td class="eit-art"><span class="eit-none">${matches.length ? `${matches.length} attached` : '— none —'}</span></td>
+      <td><textarea id="${id}-prompt" class="eit-prompt" rows="3" placeholder="Prompt for a NEW graphic — Draft, tweak, then Add">${esc(lastPrompt)}</textarea></td>
+      <td class="eit-actions">
+        <button class="btn btn-sm" onclick="eitDraft('${id}')" title="Have the AI write a prompt for this entry">Draft prompt</button>
+        ${sizeSel(id)}
+        <button class="btn btn-sm btn-primary" onclick="eitGenerate('${id}', false)" title="Generate an additional graphic (GM-only); filename is the title slug so Regenerate Index attaches it">${matches.length ? '+ Add graphic' : 'Generate'}</button>
+        <div class="eit-status" id="${id}-status"></div>
+      </td>
+    </tr>`;
+    // One sub-row per matched file — full per-file management.
+    const fileRows = matches.map((g, j) => {
+      const fid = `${id}-f${j}`;
+      eitRegistry[fid] = { sessionId, name: it.name, kind: it.kind || '', slug: entitySlug(it.name), path: g.path, desc: it.desc || '' };
+      return `<tr id="${fid}-row" class="eit-file-row">
+        <td class="eit-sub">↳</td>
+        <td class="eit-art">
+          <a href="${esc(assetVer(g))}" target="_blank" rel="noopener"><img src="${esc(assetVer(g))}" alt="${esc(g.file)}" loading="lazy" class="eit-thumb"></a>
+          <div class="eit-file">${esc(g.file)} <span class="vis-badge vis-${g.visibility === 'gm' ? 'gm' : 'player'}">${g.visibility === 'gm' ? 'GM' : 'Player'}</span></div>
+        </td>
+        <td><textarea id="${fid}-prompt" class="eit-prompt" rows="3" placeholder="This image's prompt">${esc(g.prompt || '')}</textarea></td>
+        <td class="eit-actions">
+          <button class="btn btn-sm" onclick="eitDraft('${fid}')" title="Rewrite this image's prompt with the AI">Draft</button>
+          <button class="btn btn-sm" onclick="eitSavePrompt('${fid}')">Save prompt</button>
+          ${sizeSel(fid)}
+          <button class="btn btn-sm btn-primary" onclick="eitGenerate('${fid}', true)" title="Re-render this image in place, keeping its filename">Regenerate</button>
+          <button class="btn btn-sm" onclick="eitToggleVis('${fid}')">${g.visibility === 'gm' ? 'Make Player' : 'Make GM'}</button>
+          <button class="btn btn-sm" onclick="eitRename('${fid}')">Rename</button>
+          <button class="btn btn-sm btn-danger" onclick="eitDelete('${fid}')">Delete</button>
+          <div class="eit-status" id="${fid}-status"></div>
+        </td>
+      </tr>`;
+    }).join('');
+    return primary + fileRows;
+  }).join('');
+  // Orphaned graphics: in-scope gallery images whose filename prefix matches no
+  // current index entry (a heading drifted on regeneration, or the file was
+  // generated under an old title). Reassign by renaming the prefix to a chosen
+  // current title's slug — the index injector then attaches it again.
+  const orphans = scenarioGraphicFiles.filter((g) => !matched.has(g.path));
+  const orphanSelect = (oid) => `<select id="${oid}-to" class="dice-select"><option value="">— choose current title —</option>${titleOpts.map((t) => `<option value="${esc(t.slug)}">${esc(t.label)}</option>`).join('')}</select>`;
+  const orphanBody = orphans.map((g, k) => {
+    const oid = `eito-${k}`;
+    eitRegistry[oid] = { sessionId, path: g.path };
+    return `<tr id="${oid}-row" class="eit-file-row">
+        <td class="eit-sub">⚠</td>
+        <td class="eit-art">
+          <a href="${esc(assetVer(g))}" target="_blank" rel="noopener"><img src="${esc(assetVer(g))}" alt="${esc(g.file)}" loading="lazy" class="eit-thumb"></a>
+          <div class="eit-file">${esc(g.file)} <span class="vis-badge vis-${g.visibility === 'gm' ? 'gm' : 'player'}">${g.visibility === 'gm' ? 'GM' : 'Player'}</span></div>
+        </td>
+        <td>${orphanSelect(oid)}</td>
+        <td class="eit-actions">
+          <button class="btn btn-sm btn-primary" onclick="eitReassign('${oid}')" title="Rename this file's prefix to the chosen title so Regenerate Index re-attaches it">Reassign</button>
+          <button class="btn btn-sm" onclick="eitRename('${oid}')">Rename…</button>
+          <button class="btn btn-sm btn-danger" onclick="eitDelete('${oid}')">Delete</button>
+          <div class="eit-status" id="${oid}-status"></div>
+        </td>
+      </tr>`;
+  }).join('');
+  const orphanTable = orphans.length ? `
+      <div class="eit-orphan-head">Unmatched graphics — ${orphans.length} not tied to any current index entry</div>
+      <div class="table-scroll">
+        <table class="eit">
+          <thead><tr><th></th><th>Graphic</th><th>Reassign to</th><th>Actions</th></tr></thead>
+          <tbody>${orphanBody}</tbody>
+        </table>
+      </div>` : '';
+  return `<details class="card entity-img-table" style="margin-top:1rem">
+      <summary><strong>Index image manager</strong> — ${rows.length} ${rows.length === 1 ? 'entry' : 'entries'}, ${total} graphic${total === 1 ? '' : 's'}${orphans.length ? `, ${orphans.length} unmatched` : ''}. Draft a prompt, tweak, Generate; files are named after the title so “Regenerate Index” attaches them. Add more than one per entry (e.g. a picture and a map).</summary>
+      <div class="table-scroll">
+        <table class="eit">
+          <thead><tr><th>Index entry</th><th>Artifact</th><th>Prompt</th><th>Actions / Generate</th></tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+      ${orphanTable}
+    </details>`;
+}
+
+function eitStatus(id, msg, cls) {
+  const s = el(`${id}-status`);
+  if (s) { s.textContent = msg || ''; s.className = `eit-status${cls ? ' ' + cls : ''}`; }
+}
+
+async function eitDraft(id) {
+  const r = eitRegistry[id];
+  if (!r) return;
+  if (eitBusy) { eitStatus(id, 'An AI task is already running.', 'error'); return; }
+  eitBusy = true;
+  llmPendingBegin('Draft image prompt');
+  eitStatus(id, 'Drafting prompt…');
+  try {
+    const out = await api.generateEntityGraphicPrompt(r.sessionId, { name: r.name, kind: r.kind, description: r.desc });
+    const ta = el(`${id}-prompt`);
+    if (ta && out && out.prompt) ta.value = out.prompt;
+    eitStatus(id, 'Prompt drafted — tweak then Generate.', 'saved');
+  } catch (e) {
+    eitStatus(id, e.message || 'Could not draft a prompt', 'error');
+  } finally {
+    eitBusy = false;
+    llmPendingEnd();
+  }
+}
+window.eitDraft = eitDraft;
+
+async function eitSavePrompt(id) {
+  const r = eitRegistry[id];
+  if (!r || !r.path) { eitStatus(id, 'Generate the image first.', 'error'); return; }
+  const ta = el(`${id}-prompt`);
+  try {
+    await api.saveSessionFilePrompt(r.sessionId, r.path, ta ? ta.value : '');
+    eitStatus(id, 'Prompt saved.', 'saved');
+  } catch (e) {
+    eitStatus(id, e.message || 'Save failed', 'error');
+  }
+}
+window.eitSavePrompt = eitSavePrompt;
+
+function eitToggleVis(id) {
+  const r = eitRegistry[id];
+  if (!r || !r.path) return;
+  const cur = scenarioGraphicFiles.find((g) => g.path === r.path);
+  toggleAssetVisibility(r.sessionId, r.path, cur && cur.visibility === 'gm' ? 'player' : 'gm');
+}
+window.eitToggleVis = eitToggleVis;
+
+function eitRename(id) {
+  const r = eitRegistry[id];
+  if (r && r.path) efRenameFile(r.sessionId, r.path);
+}
+window.eitRename = eitRename;
+
+function eitDelete(id) {
+  const r = eitRegistry[id];
+  if (r && r.path) efDeleteFile(r.sessionId, r.path);
+}
+window.eitDelete = eitDelete;
+
+// Reassign an orphaned graphic: rename its prefix to the chosen current
+// title's slug so the index injector attaches it again on Regenerate Index.
+async function eitReassign(oid) {
+  const r = eitRegistry[oid];
+  if (!r || !r.path) return;
+  const sel = el(`${oid}-to`);
+  const slug = sel ? sel.value : '';
+  if (!slug) { eitStatus(oid, 'Pick a current title first.', 'error'); return; }
+  try {
+    await api.renameSessionFile(r.sessionId, { path: r.path, name: slug });
+    eitStatus(oid, 'Reassigned — run Regenerate Index to attach it.', 'saved');
+    await reloadCurrentSessionPanel();
+  } catch (e) {
+    eitStatus(oid, e.message || 'Reassign failed', 'error');
+  }
+}
+window.eitReassign = eitReassign;
+
+// Generate (or Regenerate in place) an entity's artifact via ComfyUI, then save
+// it. Mirrors the GM-chat handout flow but writes a title-slug filename so the
+// deterministic index injector attaches it.
+async function eitGenerate(id, replace) {
+  const r = eitRegistry[id];
+  if (!r) return;
+  if (eitBusy) { eitStatus(id, 'An AI task is already running.', 'error'); return; }
+  const ta = el(`${id}-prompt`);
+  let promptText = ta ? ta.value.trim() : '';
+  const sizeSel = el(`${id}-size`);
+  const size = sizeSel ? sizeSel.value : 'portrait';
+  eitBusy = true;
+  llmPendingBegin(replace ? 'Regenerate image' : 'Generate image');
+  try {
+    if (!promptText) {
+      eitStatus(id, 'Drafting prompt…');
+      const out = await api.generateEntityGraphicPrompt(r.sessionId, { name: r.name, kind: r.kind, description: r.desc });
+      promptText = out && out.prompt ? out.prompt : '';
+      if (ta) ta.value = promptText;
+    }
+    if (!promptText) throw new Error('No prompt to generate from.');
+    // Persist the prompt at the moment Generate is pressed — not only on a
+    // successful save 10+ min later. Keep it in the entity box across reload,
+    // and for an existing file write its sidecar now so it survives even if
+    // the image generation fails.
+    eitLastPrompt[`${r.sessionId}:${r.slug}`] = promptText;
+    if (r.path) {
+      try { await api.saveSessionFilePrompt(r.sessionId, r.path, promptText); } catch (_) { /* best-effort */ }
+    }
+    eitStatus(id, 'Generating image…');
+    const q = await api.generateHandout(r.sessionId, promptText, size);
+    if (q && q.node_errors && Object.keys(q.node_errors).length) throw new Error('ComfyUI rejected the workflow.');
+    const promptId = q && q.prompt_id;
+    if (!promptId) throw new Error('ComfyUI returned no prompt_id.');
+    const started = Date.now();
+    let entry = null;
+    while (Date.now() - started < 10 * 60 * 1000) {
+      await new Promise((res) => setTimeout(res, 2000));
+      const h = await fetch(`/api/portrait/history/${encodeURIComponent(promptId)}`, { credentials: 'same-origin' });
+      if (h.ok) {
+        const e = (await h.json())[promptId];
+        if (e && e.status && e.status.completed) { entry = e; break; }
+        if (e && e.status && e.status.status_str === 'error') throw new Error('ComfyUI reported an error.');
+      }
+    }
+    if (!entry) throw new Error('Timed out waiting for ComfyUI.');
+    const outputs = entry.outputs || {};
+    const node = outputs['10'] || Object.values(outputs).find((o) => o && o.images);
+    const img = node && node.images && node.images[0];
+    if (!img) throw new Error('ComfyUI finished but returned no image.');
+    eitStatus(id, 'Saving…');
+    const saveBody = { filename: img.filename, subfolder: img.subfolder || '', type: img.type || 'output', prompt: promptText };
+    if (replace && r.path) saveBody.replace_path = r.path;
+    else saveBody.name = r.slug;
+    await api.saveHandout(r.sessionId, saveBody);
+    eitStatus(id, replace ? 'Regenerated.' : 'Generated (GM-only).', 'saved');
+    eitBusy = false;
+    await reloadCurrentSessionPanel();
+    return;
+  } catch (e) {
+    eitStatus(id, e.message || 'Generation failed', 'error');
+  } finally {
+    eitBusy = false;
+    llmPendingEnd();
+  }
+}
+window.eitGenerate = eitGenerate;
 
 function renderScenarioMedia(media) {
   const items = scenarioArray(media);
@@ -2197,6 +2655,21 @@ function scenarioJumpNav(items, ariaLabel) {
   }</nav>`;
 }
 
+function scenarioGroupedJumpIndex(groups) {
+  const html = (groups || []).map(([label, rawItems]) => {
+    const items = (rawItems || []).filter((it) => it && it.id && it.title);
+    if (!items.length) return '';
+    const links = items.map((it) => {
+      const onclick = it.gmBrief
+        ? `gmInfoSelectCharAndScroll(event,'${esc(it.gmBrief)}')`
+        : `scrollToAnchor(event,'${esc(it.id)}')`;
+      return `<a href="#${esc(it.id)}" onclick="${onclick}">${esc(it.title)}</a>`;
+    }).join('');
+    return `<div class="scenario-jump-group"><span class="scenario-jump-label">${esc(label)}</span><nav class="scenario-jump">${links}</nav></div>`;
+  }).filter(Boolean).join('');
+  return html ? `<div class="scenario-jump-all">${html}</div>` : '';
+}
+
 function renderScenarioSection(title, entries, emptyText, sectionId = '', inlineIndex = true) {
   const list = scenarioArray(entries);
   const items = scenarioSectionItems(title, entries, sectionId);
@@ -2218,6 +2691,16 @@ function renderScenarioSection(title, entries, emptyText, sectionId = '', inline
 function scenarioPageButton(sectionsCsv, label) {
   if (State.user.role !== 'gm') return '';
   return `<button class="btn btn-primary js-regen" onclick="regenerateScenarioPage(this, '${esc(sectionsCsv || '')}', '${esc(label)}')">${esc(label)}</button>`;
+}
+
+function scenarioIndexButton(sectionsCsv) {
+  if (State.user.role !== 'gm') return '';
+  return `<button class="btn" onclick="regenerateScenarioIndex(this, '${esc(sectionsCsv || '')}')">Regenerate Index</button>`;
+}
+
+function scenarioPageActions(sectionsCsv, label) {
+  if (State.user.role !== 'gm') return '';
+  return `<div class="scenario-section-actions">${scenarioIndexButton(sectionsCsv)}${scenarioPageButton(sectionsCsv, label)}</div>`;
 }
 
 // ── Lightweight, safe Markdown → HTML ────────────────────────────────────────
@@ -2322,10 +2805,26 @@ function renderSummaryIndex(headings) {
     </nav>`;
 }
 
+function structuredSummaryMarkdown(obj) {
+  if (!obj || typeof obj !== 'object') return '';
+  if (typeof obj.content === 'string') return obj.content;
+  if (typeof obj.body === 'string' && /[#*\->]/.test(obj.body)) return obj.body;
+  return '';
+}
+
+function structuredSummaryHeadingItems(obj, anchorPrefix) {
+  const md = structuredSummaryMarkdown(obj);
+  if (!md) return [];
+  return markdownToHtml(md, anchorPrefix).headings
+    .filter((h) => h.level <= 3)
+    .map((h) => ({ id: h.id, title: h.text }));
+}
+
 function presentationBadge(p) {
-  const mode = p === 'player' ? 'player' : (p === 'scene' ? 'scene' : '');
+  const mode = p === 'player' ? 'player' : (p === 'scene' ? 'scene' : (p === 'location' ? 'location' : ''));
   if (!mode) return '';
-  return `<span class="presentation-badge pb-${mode}">${mode === 'player' ? 'Per-player threads' : 'Scene timeline'}</span>`;
+  const label = mode === 'player' ? 'Per-player threads' : (mode === 'location' ? 'Location index' : 'Scene timeline');
+  return `<span class="presentation-badge pb-${mode}">${label}</span>`;
 }
 
 function scrollToAnchor(ev, id) {
@@ -2337,7 +2836,7 @@ window.scrollToAnchor = scrollToAnchor;
 
 // Renders a structured-summary object: { title?, presentation?, content(md), sources? }.
 // Falls back to legacy { body|summary } prose if no Markdown content is present.
-function renderStructuredSummary(obj, anchorPrefix) {
+function renderStructuredSummary(obj, anchorPrefix, showIndex = true) {
   if (!obj || typeof obj !== 'object') {
     return `<div class="scenario-body">${renderScenarioText(obj)}</div>`;
   }
@@ -2346,7 +2845,7 @@ function renderStructuredSummary(obj, anchorPrefix) {
   if (md) {
     const { html, headings } = markdownToHtml(md, anchorPrefix);
     return `${presentationBadge(obj.presentation)}
-      ${renderSummaryIndex(headings)}
+      ${showIndex ? renderSummaryIndex(headings) : ''}
       <div class="summary-content">${html}</div>
       ${renderScenarioSources(obj.sources)}`;
   }
@@ -2355,7 +2854,7 @@ function renderStructuredSummary(obj, anchorPrefix) {
     ${renderScenarioSources(obj.sources)}`;
 }
 
-function renderWhatHappenedSection(whatHappened) {
+function renderWhatHappenedSection(whatHappened, showIndex = true) {
   const actions = renderScenarioSectionActions('player.summary.what_has_happened');
   if (!whatHappened) {
     return `
@@ -2370,13 +2869,13 @@ function renderWhatHappenedSection(whatHappened) {
         <h3>${esc(whatHappened.title || 'What Has Happened So Far')}</h3>
         ${actions}
       </div>
-      <div class="card scenario-summary-card">
-        ${renderStructuredSummary(whatHappened, 'wh')}
+      <div class="card scenario-summary-card" id="case-summary-main">
+        ${renderStructuredSummary(whatHappened, 'wh', showIndex)}
       </div>
     </section>`;
 }
 
-function renderSessionAnalysis(entries) {
+function renderSessionAnalysis(entries, showIndex = true) {
   const actions = renderScenarioSectionActions('player.summary.session_summaries');
   const list = scenarioArray(entries);
   return `
@@ -2387,9 +2886,9 @@ function renderSessionAnalysis(entries) {
       </div>
       ${list.length
         ? list.map((entry, i) => `
-          <div class="card scenario-summary-card session-analysis-card">
+          <div class="card scenario-summary-card session-analysis-card" id="session-summary-${i + 1}">
             <div class="session-analysis-title">${esc((entry && (entry.title || entry.name)) || `Session ${i + 1}`)}</div>
-            ${renderStructuredSummary(entry, `s${i + 1}`)}
+            ${renderStructuredSummary(entry, `s${i + 1}`, showIndex)}
           </div>`).join('')
         : `<div class="empty scenario-empty"><p>No session analysis has been generated yet.</p></div>`}
     </section>`;
@@ -2484,17 +2983,36 @@ function gmInfoSelectChar(slug) {
 }
 window.gmInfoSelectChar = gmInfoSelectChar;
 
+function gmInfoSelectCharAndScroll(ev, slug) {
+  if (ev) ev.preventDefault();
+  gmInfoSelectChar(slug);
+  window.setTimeout(() => scrollToAnchor(null, `gmbrief_${slug}`), 0);
+}
+window.gmInfoSelectCharAndScroll = gmInfoSelectCharAndScroll;
+
+function gmActionItems(actions) {
+  return scenarioArray(actions).slice()
+    .sort((a, b) => gmPriorityRank(a && a.priority) - gmPriorityRank(b && b.priority))
+    .map((entry, i) => {
+      const title = entry && (entry.title || entry.name) || 'Action';
+      return { entry, title, id: `gm-action-${i + 1}-${gmSlug(title)}` };
+    });
+}
+
 function renderGmActions(actions) {
-  const list = scenarioArray(actions).slice().sort((a, b) => gmPriorityRank(a && a.priority) - gmPriorityRank(b && b.priority));
+  const list = gmActionItems(actions);
   if (!list.length) return '<div class="empty scenario-empty"><p>No GM actions generated yet.</p></div>';
-  return `<div class="gm-actions">${list.map((a) => `
-    <div class="card gm-action-card gm-prio-${esc(gmSlug(a.priority || 'normal'))}">
+  return `<div class="gm-actions">${list.map((it) => {
+    const a = it.entry || {};
+    return `
+    <div class="card gm-action-card gm-prio-${esc(gmSlug(a.priority || 'normal'))}" id="${esc(it.id)}">
       <div class="gm-action-head">
-        <div class="card-title">${esc(a.title || a.name || 'Action')}</div>
+        <div class="card-title">${esc(it.title)}</div>
         ${gmPill('priority', a.priority)}
       </div>
       ${renderRichText(a.content || a.description || a)}
-    </div>`).join('')}</div>`;
+    </div>`;
+  }).join('')}</div>`;
 }
 
 function renderGmAnalysis(info) {
@@ -2507,6 +3025,19 @@ function renderGmAnalysis(info) {
 
   const progress = scenarioArray(analysis.scenario_progress);
   const chars = gmCharIndex(analysis);
+  const progressItems = progress.map((entry, i) => {
+    const title = entry && (entry.title || entry.name) || `Pacing ${i + 1}`;
+    return { entry, title, id: `gm-progress-${i + 1}-${gmSlug(title)}` };
+  });
+  const actionItems = gmActionItems(analysis.gm_actions);
+  const topIndex = scenarioGroupedJumpIndex([
+    ['Pacing', progressItems],
+    ['Actions', actionItems],
+    ['Briefs', chars.map((c) => {
+      const slug = gmSlug(c.name);
+      return { id: `gmbrief_${slug}`, title: c.name, gmBrief: slug };
+    })]
+  ]);
   const briefsButton = scenarioPageButton('gm.plans_by_player,gm.next_deliverables,gm.fairness_engagement,gm.quiet_players', 'Regenerate Briefs');
 
   const pacing = `
@@ -2515,8 +3046,8 @@ function renderGmAnalysis(info) {
         <h3>Scenario Pacing</h3>
         ${renderScenarioSectionActions('gm.scenario_progress')}
       </div>
-      ${progress.length
-        ? progress.map((e, i) => `<div class="card scenario-summary-card">${(e && (e.title || e.name)) ? `<div class="session-analysis-title">${esc(e.title || e.name)}</div>` : ''}${renderStructuredSummary(e, `gp${i + 1}`)}</div>`).join('')
+      ${progressItems.length
+        ? progressItems.map((it, i) => `<div class="card scenario-summary-card" id="${esc(it.id)}">${it.title ? `<div class="session-analysis-title">${esc(it.title)}</div>` : ''}${renderStructuredSummary(it.entry, `gp${i + 1}`)}</div>`).join('')
         : '<div class="empty scenario-empty"><p>No pacing assessment generated yet.</p></div>'}
     </section>`;
 
@@ -2546,7 +3077,7 @@ function renderGmAnalysis(info) {
         : '<div class="empty scenario-empty"><p>No per-player analysis generated yet.</p></div>'}
     </section>`;
 
-  return `<div class="gm-private-analysis">${pacing}${actionsSection}${briefsSection}</div>`;
+  return `<div class="gm-private-analysis">${topIndex}${pacing}${actionsSection}${briefsSection}</div>`;
 }
 
 function renderScenarioSourceEditor(sources) {
@@ -2592,6 +3123,7 @@ function renderScenarioSourceEditor(sources) {
         <div class="ef-toolbar">
           <button class="btn btn-sm" onclick="efCreateFile(${State.currentSession})">+ New file</button>
           <button class="btn btn-sm" onclick="efUploadFile(${State.currentSession})">⤴ Upload</button>
+          <button class="btn btn-sm" onclick="efExtractNpcPortraits(${State.currentSession})" title="Copy allocated NPC sheet portraits into the player Gallery (only when you ask)">Extract NPC portraits</button>
         </div>
       </div>
       <div class="scenario-file-editor">
@@ -2617,6 +3149,7 @@ function renderScenarioSourceEditor(sources) {
               <button class="btn" onclick="efDownloadSelected(${State.currentSession})">Download</button>
               <button class="btn" onclick="efReplaceSelected(${State.currentSession})" title="Overwrite this file with one you upload">Replace</button>
               <button class="btn" onclick="efRenameSelected(${State.currentSession})" title="Rename this file (extension kept)">Rename</button>
+              <button class="btn btn-danger" onclick="efDeleteSelected(${State.currentSession})" title="Delete this file permanently">Delete</button>
               <span class="save-status" id="scenario-source-status"></span>
             </div>
           ` : '<div class="empty scenario-empty"><p>No editable markdown files are available.</p></div>'}
@@ -2655,6 +3188,7 @@ function assetFilesPanelHtml(sources) {
               <a class="btn btn-sm" href="${esc(url)}?download=1" download>Download</a>
               <button class="btn btn-sm" onclick="efReplaceFile(${State.currentSession}, '${esc(f.path)}')">Replace</button>
               <button class="btn btn-sm" onclick="efRenameFile(${State.currentSession}, '${esc(f.path)}')">Rename</button>
+              <button class="btn btn-sm btn-danger" onclick="efDeleteFile(${State.currentSession}, '${esc(f.path)}')">Delete</button>
             </div>
           </div>`;
         }).join('')}
@@ -2740,7 +3274,7 @@ async function renderSessionScenarioInfo(sessionId, mode = 'gm') {
           <h2>Edit Files</h2>
           <p class="card-sub">Edit player-visible source files and GM-only source files separately.</p>
         </div>
-        ${scenarioPageButton('', 'Bulk Regenerate')}
+        ${scenarioPageActions('', 'Bulk Regenerate')}
       </div>
       <div id="scenario-alert"></div>
       ${renderScenarioSourceEditor(sources || {})}`;
@@ -2753,7 +3287,7 @@ async function renderSessionScenarioInfo(sessionId, mode = 'gm') {
         <h2>GM Scenario Information</h2>
         ${info.gm_analysis && info.gm_analysis.generated_at ? `<p class="card-sub">Generated ${esc(new Date(info.gm_analysis.generated_at).toLocaleString('en-GB'))}</p>` : ''}
       </div>
-      ${scenarioPageButton('gm.scenario_progress,gm.plans_by_player,gm.next_deliverables,gm.fairness_engagement,gm.quiet_players,gm.gm_actions', 'Regenerate Page')}
+      ${scenarioPageActions('gm.scenario_progress,gm.plans_by_player,gm.next_deliverables,gm.fairness_engagement,gm.quiet_players,gm.gm_actions', 'Regenerate Page')}
     </div>
     <div id="scenario-alert"></div>
     ${renderGmAnalysis(info)}`;
@@ -2772,20 +3306,32 @@ async function renderSessionCaseInfo(sessionId) {
   }
   const summary = info.summary || {};
   const whatHappened = summary.what_has_happened || info.what_has_happened;
+  const sessions = scenarioArray(summary.session_summaries);
+  const summaryItems = structuredSummaryHeadingItems(whatHappened, 'wh');
+  const sessionIndexGroups = sessions.map((entry, i) => [
+    (entry && (entry.title || entry.name)) || `Session ${i + 1}`,
+    structuredSummaryHeadingItems(entry, `s${i + 1}`)
+  ]);
+  // One grouped index drives both the visible top index and the image-manager
+  // table — built as the index is assembled, not re-parsed from disk.
+  const indexGroups = [['Summary', summaryItems], ...sessionIndexGroups];
+  const topIndex = info.generated === false ? '' : scenarioGroupedJumpIndex(indexGroups);
   tab.innerHTML = `
     <div class="page-header">
       <div>
         <h2>Case Info</h2>
         ${info.generated_at ? `<p class="card-sub">Generated ${esc(new Date(info.generated_at).toLocaleString('en-GB'))}</p>` : ''}
       </div>
-      ${scenarioPageButton('player.summary.what_has_happened,player.summary.session_summaries', 'Regenerate Page')}
+      ${scenarioPageActions('player.summary.what_has_happened,player.summary.session_summaries', 'Regenerate Page')}
     </div>
     <div id="scenario-alert"></div>
     ${info.error ? `<div class="alert alert-danger">${esc(info.error)}</div>` : ''}
     ${info.generated === false
       ? `<div class="card scenario-summary-card"><div class="card-title">No case information generated yet</div><p class="card-sub">A GM can run the scenario regeneration to populate this from the session sources.</p></div>`
-      : `${renderWhatHappenedSection(whatHappened)}
-         ${renderSessionAnalysis(summary.session_summaries)}`}`;
+      : `${topIndex}
+         ${renderWhatHappenedSection(whatHappened, false)}
+         ${renderSessionAnalysis(sessions, false)}
+         ${renderEntityImageManager(sessionId, eitFromIndex(indexGroups))}`}`;
 }
 
 async function renderSessionPlayerInfo(sessionId) {
@@ -2807,7 +3353,7 @@ async function renderSessionPlayerInfo(sessionId) {
       .filter((c) => matchesCharacter(c, viewerNames));
     tab.innerHTML = `
       <div class="page-header">
-        <div><h2>Player Info</h2><p class="card-sub">Your character's story so far${viewerNames.length ? ` — ${esc(viewerNames.join(', '))}` : ''}.</p></div>
+        <div><h2>Player Stories</h2><p class="card-sub">Come up to speed: what you did, why, what's in flight, and what's planned${viewerNames.length ? ` — ${esc(viewerNames.join(', '))}` : ''}.</p></div>
       </div>
       <div id="scenario-alert"></div>
       ${renderScenarioSection('Your Story', mine, 'No story for your character has been generated yet.', '')}`;
@@ -2822,10 +3368,10 @@ async function renderSessionPlayerInfo(sessionId) {
     return;
   }
 
-  const pageButton = scenarioPageButton('player.entities.characters', 'Regenerate Page');
+  const pageButton = scenarioPageActions('player.entities.characters', 'Regenerate Page');
   if (!players.length) {
     tab.innerHTML = `
-      <div class="page-header"><div><h2>Player Info</h2></div>${pageButton}</div>
+      <div class="page-header"><div><h2>Player Stories</h2></div>${pageButton}</div>
       <div id="scenario-alert"></div>
       <div class="empty"><div class="empty-icon">👥</div><p>No players assigned to this session yet.</p></div>`;
     return;
@@ -2833,7 +3379,7 @@ async function renderSessionPlayerInfo(sessionId) {
 
   tab.innerHTML = `
     <div class="page-header">
-      <div><h2>Player Info</h2><p class="card-sub">Select a player to see exactly what they see.</p></div>
+      <div><h2>Player Stories</h2><p class="card-sub">Select a player to see exactly what they see — what they did, why, what's in flight, what's planned.</p></div>
       ${pageButton}
     </div>
     <div id="scenario-alert"></div>
@@ -2892,26 +3438,25 @@ async function renderSessionEntities(sessionId) {
   ];
   // One combined index at the very top, grouped, so anything further down the
   // page (NPCs, Things) is reachable from the top — not just Places.
-  const topIndex = groups.map(([t, e, , sid]) => {
-    const its = scenarioSectionItems(t, e, sid);
-    if (!its.length) return '';
-    const links = its.map((it) => `<a href="#${esc(it.id)}" onclick="scrollToAnchor(event,'${esc(it.id)}')">${esc(it.title)}</a>`).join('');
-    return `<div class="scenario-jump-group"><span class="scenario-jump-label">${esc(t)}</span><nav class="scenario-jump">${links}</nav></div>`;
-  }).filter(Boolean).join('');
+  // Build the grouped index once; the same items drive the visible top index
+  // AND the image-manager table (no separate on-disk re-derivation).
+  const indexGroups = groups.map(([t, e, , sid]) => [t, scenarioSectionItems(t, e, sid)]);
+  const topIndex = scenarioGroupedJumpIndex(indexGroups);
   tab.innerHTML = `
     <div class="page-header">
       <div>
         <h2>Places/NPC/Things</h2>
         ${info.generated_at ? `<p class="card-sub">Generated ${esc(new Date(info.generated_at).toLocaleString('en-GB'))}</p>` : ''}
       </div>
-      ${scenarioPageButton('player.entities.locations,player.entities.npcs,player.entities.items', 'Regenerate Page')}
+      ${scenarioPageActions('player.entities.locations,player.entities.npcs,player.entities.items', 'Regenerate Page')}
     </div>
     <div id="scenario-alert"></div>
     ${info.error ? `<div class="alert alert-danger">${esc(info.error)}</div>` : ''}
     ${info.generated === false
       ? `<div class="card scenario-summary-card"><div class="card-title">Nothing generated yet</div><p class="card-sub">A GM can run the scenario regeneration to populate places, NPCs, and notable things.</p></div>`
-      : `${topIndex ? `<div class="scenario-jump-all">${topIndex}</div>` : ''}
-         ${groups.map(([t, e, empty, sid]) => renderScenarioSection(t, e, empty, sid, false)).join('')}`}`;
+      : `${topIndex}
+         ${groups.map(([t, e, empty, sid]) => renderScenarioSection(t, e, empty, sid, false)).join('')}
+         ${renderEntityImageManager(sessionId, eitFromIndex(indexGroups))}`}`;
 }
 
 // Toggle the currently-selected markdown file in Edit Files between the GM-only
@@ -3033,6 +3578,43 @@ function efRenameSelected(sessionId) {
 }
 window.efRenameSelected = efRenameSelected;
 
+async function efDeleteFile(sessionId, assetPath) {
+  if (!assetPath) { showAlert('Select a file first.', 'danger', 'scenario-alert'); return; }
+  const label = String(assetPath).split('/').slice(-1)[0];
+  if (!confirm(`Delete "${label}" permanently? This also removes its saved prompt.`)) return;
+  try {
+    await api.deleteSessionFile(sessionId, assetPath);
+    showAlert(`Deleted ${label}.`, 'success', 'scenario-alert');
+    await reloadCurrentSessionPanel();
+  } catch (e) {
+    showAlert(e.message || 'Delete failed', 'danger', 'scenario-alert');
+  }
+}
+window.efDeleteFile = efDeleteFile;
+
+function efDeleteSelected(sessionId) {
+  const src = efSelectedSource();
+  if (!src) { showAlert('Select a file first.', 'danger', 'scenario-alert'); return; }
+  efDeleteFile(sessionId, src.path);
+}
+window.efDeleteSelected = efDeleteSelected;
+
+async function efExtractNpcPortraits(sessionId) {
+  if (!confirm('Copy allocated NPC sheet portraits into the player Gallery? Existing ones are left as-is.')) return;
+  try {
+    const r = await api.extractNpcPortraits(sessionId);
+    const n = r && r.extracted || 0;
+    showAlert(n
+      ? `Extracted ${n} NPC portrait${n === 1 ? '' : 's'}${r.skipped ? ` (${r.skipped} already present)` : ''}.`
+      : 'No new portraits to extract — all allocated NPCs with a sheet portrait already have a file.',
+      n ? 'success' : 'danger', 'scenario-alert');
+    if (n) await reloadCurrentSessionPanel();
+  } catch (e) {
+    showAlert(e.message || 'Extraction failed', 'danger', 'scenario-alert');
+  }
+}
+window.efExtractNpcPortraits = efExtractNpcPortraits;
+
 async function reloadCurrentSessionPanel() {
   if (!State.currentSession) return;
   await switchSessionPanel(State.currentSession, State.currentSessionPanel || 'case-info');
@@ -3062,11 +3644,13 @@ async function runStreamingRegen(btn, label, url, body) {
     }
   };
   const handle = (obj) => {
+    const progressName = obj.item_label || obj.item || obj.id;
     if (obj.type === 'start') setStatus(`${obj.id} ${obj.index}/${obj.total}…`);
     else if (obj.type === 'progress') {
       const m = obj.metrics;
-      if (m) setStatus(`${obj.id} prefill=${m.prompt_eval_count ?? '?'} out=${m.eval_count ?? '?'} ${m.tok_per_s ?? '?'}t/s ctx=${m.num_ctx ?? '?'}`);
-      else if (obj.chars != null) setStatus(`${obj.id} ${obj.chars}c ${Math.round((obj.elapsedMs || 0) / 1000)}s`);
+      if (m) setStatus(`${progressName} prefill=${m.prompt_eval_count ?? '?'} out=${m.eval_count ?? '?'} ${m.tok_per_s ?? '?'}t/s ctx=${m.num_ctx ?? '?'}`);
+      else if (obj.chars != null) setStatus(`${progressName} ${obj.chars}c ${Math.round((obj.elapsedMs || 0) / 1000)}s`);
+      else if (obj.item_label && obj.item_index && obj.item_total) setStatus(`${obj.item_label} ${obj.item_index}/${obj.item_total}…`);
     }
     else if (obj.type === 'done') setStatus(`${obj.id} ✓ ${obj.ms}ms`);
     else if (obj.type === 'error') errors.push(`${obj.id}: ${obj.error}`);
@@ -3145,6 +3729,25 @@ async function revertScenarioSection(sectionId, btn) {
   }
 }
 window.revertScenarioSection = revertScenarioSection;
+
+async function regenerateScenarioIndex(btn, sectionsCsv) {
+  if (!State.currentSession) return;
+  const sections = String(sectionsCsv || '').split(',').map((s) => s.trim()).filter(Boolean);
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Regenerating index...';
+  try {
+    await api.refreshScenarioIndex(State.currentSession, sections.length ? { sections } : {});
+    showAlert('Index and images refreshed.', 'success', 'scenario-alert');
+    await reloadCurrentSessionPanel();
+  } catch (e) {
+    showAlert(e.message || 'Could not regenerate index', 'danger', 'scenario-alert');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+window.regenerateScenarioIndex = regenerateScenarioIndex;
 
 async function saveSessionScenarioSources(sessionId, btn) {
   const status = el('scenario-source-status');

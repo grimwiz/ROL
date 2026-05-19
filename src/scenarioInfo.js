@@ -251,6 +251,33 @@ async function ollamaPs() {
   };
 }
 
+// Evict the resident Ollama model from VRAM and wait until /api/ps confirms
+// nothing is loaded. Used before a ComfyUI job so the image model has the GPU
+// (Ollama + a diffusion model co-resident OOMs the shared card). Fast no-op
+// when nothing is loaded; best-effort but verified by polling.
+async function freeOllama() {
+  let ps;
+  try { ps = await ollamaPs(); } catch { ps = null; }
+  if (!ps || !ps.name) return { freed: true, was_loaded: false };
+  // keep_alive:0 with no prompt makes Ollama unload the model immediately.
+  try {
+    await fetch(`${effectiveOllamaUrl()}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: ps.name, keep_alive: 0 }),
+      signal: AbortSignal.timeout(8000)
+    });
+  } catch { /* best-effort: poll below decides success */ }
+  const deadline = Date.now() + 15000;
+  while (Date.now() < deadline) {
+    let now;
+    try { now = await ollamaPs(); } catch { now = null; }
+    if (!now) return { freed: true, was_loaded: true };
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  return { freed: false, was_loaded: true, reason: 'timeout waiting for Ollama to unload' };
+}
+
 // Installed models enriched with each one's max context (cached,
 // metadata-only via /api/show). `context` is null when it can't be read.
 async function listOllamaModelsDetailed() {
@@ -580,13 +607,13 @@ const SCENARIO_SECTIONS = {
       '{',
       '  "id": "session-<n-or-slug>",',
       '  "title": "e.g. Session 2 — 25 April",',
-      '  "presentation": "player",',
+      '  "presentation": "scene",',
       '  "content": "Markdown string — same rules as below",',
       '  "known_by": ["all"],',
       '  "sources": [ { "path": "..." } ]',
       '}',
       '```',
-      '- For each session prefer `"presentation":"player"`: one `##` heading per player character covering what they did and where their thread stands. Use `"scene"` only if that whole session was played as one shared scene.',
+      '- Choose the best `presentation` for the actual source material: `"scene"` for chronological shared-table play, `"player"` for fragmented character-specific/WhatsApp threads, or `"location"` when the clearest recall structure is place-by-place. Do not force a character-centric layout when the party acted together.',
       '- `content` is GitHub-flavoured Markdown: `##` headings (turned into the index), `###` sub-points, `**bold**`, `-` bullets, `>` quotes. No raw HTML, no tables, no separate to-investigate list.',
       '- DEPTH: each session\'s `content` must be a thorough narrative of that session — do not compress it to a few lines. Cover every meaningful beat, who did what, what was learned, and what it changed. Err on the side of more detail.',
       '- Player-safe only. Preserve existing sessions unchanged unless the sources materially change them.'
@@ -598,13 +625,14 @@ const SCENARIO_SECTIONS = {
     artifact: 'player',
     path: ['entities', 'locations'],
     type: 'array',
-    goal: 'Maintain a full player-safe entry for every location of note: what it is, what has happened there in this case, its current state, who/what is connected to it, and why it matters. Be specific and complete, not a one-liner.',
+    goal: 'Maintain a full player-safe entry for every location of note, centred on that location as the subject: what it is, what has happened there in this case, its current state, who/what is connected to it, and why it matters. Be specific and complete, not a one-liner.',
     schemaHint: [
       'Return a JSON array. Each element:',
       '```json',
       '{ "id": "loc-slug", "name": "Location name", "known_by": ["all"], "content": "Markdown", "sources": [ { "path": "..." } ] }',
       '```',
-      '- `content` is GitHub-flavoured Markdown (**bold**, `-` bullets, optional `###` sub-headings). Cover: what the place is, everything that has happened there in THIS case, its current state, connected people/things, and its significance to the investigation.',
+      '- `content` is GitHub-flavoured Markdown (**bold**, `-` bullets, optional `###` sub-headings). Write from the optic of this place as the organising subject, not from the optic of each player character. Cover: what the place is, everything that has happened there in THIS case, its current state, connected people/things, and its significance to the investigation.',
+      '- `name` is the stable canonical name of the place — a short, time-invariant noun phrase. Never fold pervasive effects, current state, status, or situational qualifiers into `name` (write `12a Prince of Wales Road`, NOT `12a Prince of Wales Road & The Dampening Field`); such detail belongs in `content`. Reuse the exact prior `name` whenever the item still represents the same place, so saved artifacts stay associated with it.',
       '- Be thorough — this is the players\' only record. Every top-level item needs `known_by` (["all"] or exact roster character names). Never invent places or events not in the case sources.'
     ].join('\n')
   },
@@ -614,13 +642,14 @@ const SCENARIO_SECTIONS = {
     artifact: 'player',
     path: ['entities', 'npcs'],
     type: 'array',
-    goal: 'Maintain a full player-safe entry for every NPC the players know of: who they are, every interaction the party has had with them, what they want or did, relationships, current state, and significance. Specific and complete, not a one-liner.',
+    goal: 'Maintain a full player-safe entry for every NPC the players know of, centred on that NPC as the subject: who they are, every interaction the party has had with them, what they appear to want or did, relationships, current state, and significance. Specific and complete, not a one-liner.',
     schemaHint: [
       'Return a JSON array. Each element:',
       '```json',
       '{ "id": "npc-slug", "name": "NPC name", "known_by": ["all"], "content": "Markdown", "sources": [ { "path": "..." } ] }',
       '```',
-      '- `content` is GitHub-flavoured Markdown. Cover: who they are (as the players understand it), every interaction the investigators have had with them, what they appear to want, relationships, current status/whereabouts, and why they matter.',
+      '- `content` is GitHub-flavoured Markdown. Write from the optic of this NPC as the organising subject, not from the optic of each player character. Cover: who they are (as the players understand it), every interaction the investigators have had with them, what they appear to want, relationships, current status/whereabouts, and why they matter.',
+      '- `name` is the stable canonical name of the NPC — their established name/title only. Never fold current state, role changes, status, or situational qualifiers into `name`; such detail belongs in `content`. Reuse the exact prior `name` whenever the item still represents the same person, so saved artifacts stay associated with them.',
       '- Be thorough. Every item needs `known_by` (["all"] or exact roster character names). Only include NPCs and facts the players have actually encountered; never import people from the world-reference files.'
     ].join('\n')
   },
@@ -630,13 +659,14 @@ const SCENARIO_SECTIONS = {
     artifact: 'player',
     path: ['entities', 'items'],
     type: 'array',
-    goal: 'Maintain a full player-safe entry for every notable object, artefact, document, or piece of evidence: what it is, how the party came to know of it, what it does or reveals, where it is and who controls it, and why it matters. Specific and complete.',
+    goal: 'Maintain a full player-safe entry for every notable object, artefact, document, or piece of evidence, centred on that thing as the subject: what it is, how the party came to know of it, what it does or reveals, where it is and who controls it, and why it matters. Specific and complete.',
     schemaHint: [
       'Return a JSON array. Each element:',
       '```json',
       '{ "id": "item-slug", "name": "Thing name", "known_by": ["all"], "content": "Markdown", "sources": [ { "path": "..." } ] }',
       '```',
-      '- `content` is GitHub-flavoured Markdown. Cover: what it is, how/when it entered the case, what it does or reveals, current whereabouts and who holds/controls it, and its significance.',
+      '- `content` is GitHub-flavoured Markdown. Write from the optic of this item as the organising subject, not from the optic of each player character. Cover: what it is, how/when it entered the case, what it does or reveals, current whereabouts and who holds/controls it, and its significance.',
+      '- `name` is the stable canonical name of the thing — a short, time-invariant noun phrase. Never fold current state, location, status, or situational qualifiers into `name`; such detail belongs in `content`. Reuse the exact prior `name` whenever the item still represents the same thing, so saved artifacts stay associated with it.',
       '- Be thorough. Every item needs `known_by` (["all"] or exact roster character names). Only include things established in the case sources.'
     ].join('\n')
   },
@@ -646,15 +676,16 @@ const SCENARIO_SECTIONS = {
     artifact: 'player',
     path: ['entities', 'characters'],
     type: 'array',
-    goal: 'Maintain one EXHAUSTIVE per-player-character story — fuller than the session analysis. For each character: everything they have personally done, found, said, and decided across the whole case; who they have interacted with; what they are carrying or hold; and exactly where each of their threads now stands. This is the deepest player-facing record; multiple paragraphs and sub-headings per character are expected.',
+    goal: 'Maintain one EXHAUSTIVE per-player-character story whose purpose is to let that player instantly come back up to speed: what they did and WHY, who they dealt with, what is in flight (unresolved or awaiting a result), and what is planned next — fuller than the session analysis. DEFAULT PRESENCE: the player characters act as a group, so treat every character as PRESENT at each shared scene, location, or visit (e.g. if the party went to the house or to the canal, all of them went) UNLESS the sources clearly show that character was absent or split off; attribute shared/group actions to each present character, not only the one explicitly named. Cover everything they personally did, found, said, and decided across the whole case, with their motivation; multiple paragraphs and sub-headings per character are expected.',
     schemaHint: [
       'Return a JSON array, one element per player character (use the roster). Each element:',
       '```json',
       '{ "id": "char-slug", "name": "Character name", "known_by": ["Character name"], "content": "Markdown", "sources": [ { "path": "..." } ] }',
       '```',
-      '- `content` is GitHub-flavoured Markdown with `###` sub-headings (e.g. What they\'ve done, Relationships, Where their threads stand), `**bold**`, `-` bullets.',
-      '- EXHAUSTIVE and chronological where it helps: do not summarise to a few lines — this must be the fullest account of that character\'s personal involvement, richer than the per-session analysis.',
-      '- Default `known_by` to just that character\'s own name (their personal story is theirs); use ["all"] only for parts the whole table plainly shares. Never invent actions the sources do not show.'
+      '- `content` is GitHub-flavoured Markdown using these `###` sub-headings in order: `### What they did & why`, `### Relationships`, `### In flight` (unresolved threads / awaiting a result), `### Planned / next` (their intended next steps). Use `**bold**` and `-` bullets within.',
+      '- SHARED PRESENCE: unless the sources clearly show a character was absent or split off, treat them as present at every group scene/location/visit and write their personal account of it — do not omit a character from a shared event just because only another character was named in the transcript.',
+      '- EXHAUSTIVE and chronological where it helps: do not summarise to a few lines — this must be the fullest account of that character\'s personal involvement (with motivation), richer than the per-session analysis.',
+      '- Default `known_by` to just that character\'s own name (their personal story is theirs); use ["all"] only for parts the whole table plainly shares. Never invent actions the sources do not show (but shared presence at a group scene is the default, not an invention).'
     ].join('\n')
   },
   'gm.scenario_progress': {
@@ -822,13 +853,24 @@ function listSessionSourceFiles(session, options = {}) {
     if (!includePrivate && visibility === 'gm') return;
 
     const stat = fs.statSync(fullPath);
-    files.push({
+    const kind = getFileKind(ext);
+    const record = {
       path: repoRelative(fullPath),
-      kind: getFileKind(ext),
+      kind,
       visibility,
       size_bytes: stat.size,
       modified_at: stat.mtime.toISOString()
-    });
+    };
+    // A graphic's generating prompt lives in a "<file>.prompt.txt" sidecar
+    // (itself never listed). Surface it so the Edit Files / index table can
+    // show and edit it without a second round-trip.
+    if (kind === 'graphic') {
+      try {
+        const sidecar = `${fullPath}.prompt.txt`;
+        if (fs.existsSync(sidecar)) record.prompt = fs.readFileSync(sidecar, 'utf8').trim();
+      } catch { /* non-fatal */ }
+    }
+    files.push(record);
   }
 
   if (fs.existsSync(paths.root)) {
@@ -1130,9 +1172,12 @@ function emptyGmAnalysis() {
 }
 
 // Extract each allocated NPC's character-sheet portrait to a player-visible
-// file "<NPC Name>-portrait.png" in the case Gallery, if it isn't there yet.
-// Idempotent; the file becomes the source of truth once written.
-function ensureNpcPortraitFiles(session, db) {
+// file "<NPC Name>-portrait.png" in the case Gallery. GM-triggered only (never
+// run automatically) so a portrait the GM deletes stays deleted. Skips any
+// that already exist. Returns { extracted, skipped, files }.
+function extractNpcPortraitFiles(sessionId, db) {
+  const session = getSessionById(db, sessionId);
+  if (!session) { const e = new Error('Session not found'); e.statusCode = 404; throw e; }
   let rows;
   try {
     rows = db.prepare(`
@@ -1140,8 +1185,9 @@ function ensureNpcPortraitFiles(session, db) {
       JOIN npc_sessions ns ON ns.npc_id = n.id
       WHERE ns.session_id = ?
     `).all(session.id);
-  } catch { return; }
-  if (!rows || !rows.length) return;
+  } catch { rows = []; }
+  const result = { extracted: 0, skipped: 0, files: [] };
+  if (!rows || !rows.length) return result;
   const paths = ensureSessionDataFolders(session);
   for (const row of rows) {
     const name = String(row.name || '').trim();
@@ -1153,12 +1199,15 @@ function ensureNpcPortraitFiles(session, db) {
     if (!m) continue;
     const base = name.replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'npc';
     const dest = path.join(paths.gallery, `${base}-portrait.png`);
-    if (fs.existsSync(dest)) continue;
+    if (fs.existsSync(dest)) { result.skipped += 1; continue; }
     try {
       fs.mkdirSync(paths.gallery, { recursive: true });
       fs.writeFileSync(dest, Buffer.from(m[1], 'base64'));
+      result.extracted += 1;
+      result.files.push(repoRelative(dest));
     } catch { /* non-fatal */ }
   }
+  return result;
 }
 
 function loadSessionScenarioInfoForUser(sessionId, user, db) {
@@ -1166,7 +1215,9 @@ function loadSessionScenarioInfoForUser(sessionId, user, db) {
   if (!session) return null;
   const paths = ensureSessionDataFolders(session);
   const isGM = user && user.role === 'gm';
-  ensureNpcPortraitFiles(session, db);
+  // NPC sheet portraits are extracted only when the GM explicitly asks
+  // (extractNpcPortraitFiles); never auto-written on a read, so a deleted
+  // portrait stays deleted.
   let parsed;
   try {
     parsed = readJsonFile(paths.scenarioInfo);
@@ -1326,7 +1377,7 @@ function normaliseSectionValue(config, value) {
   return { title: config.title, body: String(value || '').trim() };
 }
 
-function writeArtifactForSection(session, paths, config, artifact) {
+function writeArtifactForSection(session, paths, config, artifact, options = {}) {
   if (config.artifact === 'player') {
     artifact.session = { id: session.id, name: session.name };
     artifact.source_files = listSessionSourceFiles(session, { includePrivate: false });
@@ -1335,7 +1386,7 @@ function writeArtifactForSection(session, paths, config, artifact) {
   } else {
     artifact.session = { id: session.id, name: session.name };
   }
-  artifact.generated_at = new Date().toISOString();
+  if (options.touchGeneratedAt !== false) artifact.generated_at = new Date().toISOString();
   const artifactPath = artifactPathForSection(paths, config);
   ensureParentDir(artifactPath);
   fs.writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`, 'utf8');
@@ -1723,6 +1774,12 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
     if (typeof onProgress === 'function' && stats) {
       try { onProgress({ label, chars: content.length, elapsedMs: Date.now() - startedMs, metrics: { ...stats, num_ctx: numCtx } }); } catch { /* best-effort */ }
     }
+    // Raw token figures for every AI call (local model = $0 actual; cost
+    // mapping, if any, is done outside the app from these log lines).
+    if (stats) {
+      const lbl = label == null ? '' : String(label);
+      console.info(`[ai.tokens] model=${effectiveOllamaModel()} label=${/\s/.test(lbl) ? JSON.stringify(lbl) : lbl} prompt_tokens=${stats.prompt_eval_count ?? ''} completion_tokens=${stats.eval_count ?? ''} total_ms=${stats.total_ms ?? ''}`);
+    }
     return content;
   } catch (e) {
     if (controller.signal.aborted) {
@@ -1769,30 +1826,65 @@ function imageLine(caption, file) {
   return `![${String(caption || '').replace(/[\[\]]/g, '')}](${file})`;
 }
 
-// Inject standalone image refs into a Markdown `content` string: under any
+// Remove EVERY standalone image line. Image delivery is fully deterministic:
+// the indexer rebuilds refs from scratch each pass, so a stale, renamed,
+// out-of-scope, portrait, or model-hallucinated `![](...)` line just vanishes
+// — nothing is matched/whitelisted to decide what to keep.
+function stripAutoImageLines(md) {
+  return String(md || '').split('\n')
+    .filter((line) => !/^!\[[^\]]*\]\([^)\s]+\)$/.test(line.trim()))
+    .join('\n');
+}
+
+// Inject standalone image refs into a Markdown `content` string: under EVERY
 // `##`/`###` heading whose text prefix-matches a file, plus (for entity items)
-// a leading image when the item's own name matches. Idempotent.
+// the first content heading when the item's own name matches. Each file is
+// injected at most once per content block (under the earliest heading it
+// matches), so multi-section prose like the case summary shows a picture under
+// each relevant heading without duplication. Idempotent.
 function injectImagesIntoContent(content, itemName, imgs) {
-  let md = String(content == null ? '' : content);
-  // 1) Per-heading matches.
+  let md = stripAutoImageLines(String(content == null ? '' : content));
   const lines = md.split('\n');
   const out = [];
+  let anyHeadingMatched = false;
+  const pushImages = (caption, matches) => {
+    const pending = matches.filter((im) => !mdHasImage(out.join('\n'), im.file) && !mdHasImage(md, im.file));
+    if (!pending.length) return false;
+    for (const im of pending) out.push('', imageLine(caption, im.file), '');
+    return true;
+  };
+
+  // 1) Per-heading matches. EVERY heading gets its own prefix-matched image(s);
+  // pushImages dedupes per file so a file lands under the first heading only.
   for (const line of lines) {
     out.push(line);
     const h = line.trim().match(/^#{2,4}\s+(.*?)\s*#*$/);
     if (h) {
-      for (const im of imagesForName(h[1], imgs)) {
-        if (!mdHasImage(out.join('\n'), im.file) && !mdHasImage(md, im.file)) {
-          out.push('', imageLine(h[1].trim(), im.file), '');
-        }
+      const matches = imagesForName(h[1], imgs);
+      if (matches.length && pushImages(h[1].trim(), matches)) {
+        anyHeadingMatched = true;
       }
     }
   }
   md = out.join('\n');
-  // 2) Whole-item name match → image at the very top of the entry.
-  if (itemName) {
-    for (const im of imagesForName(itemName, imgs)) {
-      if (!mdHasImage(md, im.file)) md = `${imageLine(itemName, im.file)}\n\n${md}`;
+
+  // 2) Whole-item name fallback — only if no heading received any image.
+  if (!anyHeadingMatched && itemName) {
+    const matches = imagesForName(itemName, imgs).filter((im) => !mdHasImage(md, im.file));
+    if (matches.length) {
+      const itemLines = md.split('\n');
+      const next = [];
+      let placed = false;
+      for (const line of itemLines) {
+        next.push(line);
+        if (!placed && line.trim().match(/^#{2,4}\s+(.*?)\s*#*$/)) {
+          for (const im of matches) next.push('', imageLine(itemName, im.file), '');
+          placed = true;
+        }
+      }
+      md = placed
+        ? next.join('\n')
+        : `${matches.map((im) => imageLine(itemName, im.file)).join('\n\n')}\n\n${md}`;
     }
   }
   return md;
@@ -1803,16 +1895,18 @@ function injectImagesIntoContent(content, itemName, imgs) {
 // on the model emitting Markdown image syntax. sourceFiles is already
 // visibility-scoped for this section.
 function injectImagesIntoValue(value, config, sourceFiles) {
+  if (value == null) return value;
+  // In-scope graphics eligible for inline insertion. NPC portraits are excluded
+  // here only — they render per entity card, so injecting them in prose too
+  // would double up. (Stripping is unconditional, so nothing needs whitelisting
+  // to be removed.)
   const imgs = (sourceFiles || [])
     .filter((f) => f && f.kind === 'graphic' && f.path)
     .map((f) => {
       const file = String(f.path).split('/').pop();
       return { file, stem: imgMatchKey(file.replace(/\.[^.]+$/, '')) };
     })
-    // NPC portraits are rendered directly per entity card (always 0.3LHS),
-    // not injected into prose — exclude them here to avoid double display.
     .filter((im) => !/-?portrait$/.test(im.stem));
-  if (!imgs.length || value == null) return value;
 
   const fixItem = (item) => {
     if (!item || typeof item !== 'object' || typeof item.content !== 'string') return item;
@@ -1934,7 +2028,8 @@ function itemFocusPrompt(config, item) {
       `- id: "${item.key}" (use exactly this id)`,
       `- title: based on "${item.title}" (you may append a date if the sources give one)`,
       `Cover everything that happened in THIS session, grounded only in its transcript`,
-      `(${item.file}) plus the World Reference for term clarification.`
+      `(${item.file}) plus the World Reference for term clarification.`,
+      '- Choose the `presentation` that best fits THIS session: "scene" for chronological shared-group play, "player" for fragmented character-specific/WhatsApp threads, or "location" for place-by-place recall. Do not make a session character-centric unless the transcript itself is fragmented that way.'
     );
   } else if (config.id === 'player.entities.characters') {
     head.push(
@@ -2038,11 +2133,15 @@ async function regenerateScenarioSection(sessionId, sectionId, db, opts = {}) {
     for (let i = 0; i < items.length; i += 1) {
       if (opts.signal && opts.signal.aborted) throw new Error('cancelled');
       const it = items[i];
-      if (typeof opts.onProgress === 'function') {
-        try { opts.onProgress({ label: config.id, item: it.key, index: i + 1, total: items.length }); } catch { /* best-effort */ }
-      }
+      const itemLabel = it.title || it.name || it.key;
+      const itemProgress = (p = {}) => {
+        if (typeof opts.onProgress === 'function') {
+          try { opts.onProgress({ ...p, item: it.key, item_label: itemLabel, item_index: i + 1, item_total: items.length }); } catch { /* best-effort */ }
+        }
+      };
+      itemProgress({ label: config.id });
       const prompt = renderLoopedItemPrompt(session, db, config, it, sourceFiles);
-      const raw = await callOllama(prompt, { label: `${config.id}:${it.key}`, signal: opts.signal, onProgress: opts.onProgress });
+      const raw = await callOllama(prompt, { label: itemLabel, signal: opts.signal, onProgress: itemProgress });
       let obj;
       try {
         obj = JSON.parse(extractJsonCandidate(raw));
@@ -2094,6 +2193,44 @@ function listScenarioSectionIds(options = {}) {
   }
   if (options.artifact) ids = ids.filter((id) => SCENARIO_SECTIONS[id].artifact === options.artifact);
   return ids;
+}
+
+function cloneJsonValue(value) {
+  if (value == null) return value;
+  try { return JSON.parse(JSON.stringify(value)); } catch { return value; }
+}
+
+// Re-run deterministic post-processing (currently image insertion + artifact
+// source-file refresh) without calling Ollama. The browser-rendered indexes are
+// rebuilt on reload from the same stored JSON.
+function refreshScenarioIndexes(sessionId, db, options = {}) {
+  const session = getSessionById(db, sessionId);
+  if (!session) return null;
+  const ids = listScenarioSectionIds(options);
+  if (!ids.length) {
+    const error = new Error('No matching scenario sections to refresh');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const refreshed = [];
+  const outputPaths = new Set();
+  for (const id of ids) {
+    const section = readScenarioSection(session, id);
+    if (!section) continue;
+    const { config, paths, artifact, value } = section;
+    const artifactPath = artifactPathForSection(paths, config);
+    if (!fs.existsSync(artifactPath)) continue;
+    if (value == null) continue;
+    const sourceFiles = listSessionSourceFiles(session, { includePrivate: config.artifact === 'gm' });
+    const nextValue = injectImagesIntoValue(cloneJsonValue(value), config, sourceFiles);
+    setPathValue(artifact, config.path, nextValue);
+    artifact.indexed_at = new Date().toISOString();
+    writeArtifactForSection(session, paths, config, artifact, { touchGeneratedAt: false });
+    refreshed.push(id);
+    outputPaths.add(repoRelative(artifactPath));
+  }
+  return { session: session.id, refreshed, output_paths: [...outputPaths] };
 }
 
 // Single generation path: regenerate one, many, or all scenario sections via the
@@ -2297,11 +2434,25 @@ function revertScenarioSection(sessionId, sectionId, db) {
 // Persist a GM-generated handout image into the session's GM-only gallery
 // (GM/Gallery). Never visible to players until the GM moves it to the
 // player gallery from Edit Files.
-function saveSessionHandout(sessionId, db, { bytes, name, ext, prompt } = {}) {
+function saveSessionHandout(sessionId, db, { bytes, name, ext, prompt, replacePath } = {}) {
   const session = getSessionById(db, sessionId);
   if (!session) { const e = new Error('Session not found'); e.statusCode = 404; throw e; }
   if (!bytes || !bytes.length) { const e = new Error('No image data to save'); e.statusCode = 400; throw e; }
   const paths = ensureSessionDataFolders(session);
+  // Regenerate-in-place: overwrite an existing in-scope graphic's bytes,
+  // keeping its filename (so the index injector keeps matching it) and
+  // visibility; refresh its prompt sidecar too.
+  if (replacePath) {
+    const cleaned = String(replacePath).replace(/^\/+/, '');
+    const target = path.resolve(REPO_ROOT, cleaned.startsWith('data/') ? cleaned : path.join(repoRelative(paths.root), cleaned));
+    if (!isInside(paths.root, target)) { const e = new Error('Path is outside the case folder'); e.statusCode = 400; throw e; }
+    if (!fs.existsSync(target) || !fs.statSync(target).isFile()) { const e = new Error('File to replace not found'); e.statusCode = 404; throw e; }
+    if (!GRAPHIC_EXTENSIONS.has(path.extname(target).toLowerCase())) { const e = new Error('Target is not a graphic'); e.statusCode = 400; throw e; }
+    fs.writeFileSync(target, bytes);
+    const pTxt = String(prompt == null ? '' : prompt).trim();
+    if (pTxt) fs.writeFileSync(`${target}.prompt.txt`, pTxt + '\n', 'utf8');
+    return { path: repoRelative(target), file: path.basename(target), replaced: true };
+  }
   const dir = paths.gmGallery;
   fs.mkdirSync(dir, { recursive: true });
   const safeExt = GRAPHIC_EXTENSIONS.has(String(ext || '').toLowerCase()) ? String(ext).toLowerCase() : '.png';
@@ -2322,6 +2473,16 @@ function saveSessionHandout(sessionId, db, { bytes, name, ext, prompt } = {}) {
 }
 
 // Toggle a session asset between GM-only and player-visible by moving it
+// Carry a graphic's "<file>.prompt.txt" sidecar with the image whenever the
+// image moves (visibility toggle, rename). Without this the prompt is stranded
+// in the old folder and the editor shows a blank box. Best-effort.
+function carryPromptSidecar(src, dest) {
+  try {
+    const from = `${src}.prompt.txt`;
+    if (fs.existsSync(from)) fs.renameSync(from, `${dest}.prompt.txt`);
+  } catch { /* non-fatal */ }
+}
+
 // between the GM and player areas, which is what classifySessionFileVisibility
 // keys off. Mapping (round-trips): GM/Gallery ⇄ Gallery (artifacts) and
 // GM/<x> ⇄ input/<x> (markdown sources etc.). Returns new path + visibility.
@@ -2359,6 +2520,7 @@ function setSessionAssetVisibility(sessionId, db, requestPath, visibility) {
   if (fs.existsSync(dest)) { const e = new Error('A file with that name already exists in the target area'); e.statusCode = 409; throw e; }
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.renameSync(src, dest);
+  carryPromptSidecar(src, dest);
   return { path: repoRelative(dest), visibility: want };
 }
 
@@ -2446,7 +2608,88 @@ function renameSessionFile(sessionId, db, { path: requestPath, name } = {}) {
   if (!isInside(paths.root, dest)) { const e = new Error('Resolved name is invalid'); e.statusCode = 400; throw e; }
   if (fs.existsSync(dest)) { const e = new Error(`"${newBase}" already exists in that folder`); e.statusCode = 409; throw e; }
   fs.renameSync(src, dest);
+  carryPromptSidecar(src, dest);
   return { path: repoRelative(dest), file: newBase, visibility: classifySessionFileVisibility(dest, paths) };
+}
+
+// Delete an in-scope file (Edit Files). Same structural guards as Rename, so
+// the canonical sources / generated artifacts can't be removed. A graphic's
+// "<file>.prompt.txt" sidecar (kept out of the asset listings) is removed too.
+function deleteSessionFile(sessionId, db, { path: requestPath } = {}) {
+  const session = getSessionById(db, sessionId);
+  if (!session) { const e = new Error('Session not found'); e.statusCode = 404; throw e; }
+  const paths = ensureSessionDataFolders(session);
+  const cleaned = String(requestPath || '').replace(/^\/+/, '');
+  const src = path.resolve(REPO_ROOT, cleaned.startsWith('data/') ? cleaned : path.join(repoRelative(paths.root), cleaned));
+  if (!isInside(paths.root, src)) { const e = new Error('Path is outside the case folder'); e.statusCode = 400; throw e; }
+  if (!fs.existsSync(src) || !fs.statSync(src).isFile()) { const e = new Error('File not found'); e.statusCode = 404; throw e; }
+  const ext = path.extname(src).toLowerCase();
+  if (!ASSET_EXTENSIONS.has(ext)) { const e = new Error('Not a deletable asset'); e.statusCode = 400; throw e; }
+  const base = path.basename(src);
+  const rootRel = normaliseSlash(path.relative(paths.root, src));
+  if (rootRel.startsWith('output_player/') || rootRel.startsWith('output_gm/')
+      || GENERATED_FILENAMES.has(base) || base === 'player.md' || base === 'gm.md') {
+    const e = new Error('This file is structural and cannot be deleted'); e.statusCode = 400; throw e;
+  }
+  fs.unlinkSync(src);
+  const sidecar = `${src}.prompt.txt`;
+  if (fs.existsSync(sidecar)) { try { fs.unlinkSync(sidecar); } catch { /* non-fatal */ } }
+  return { path: repoRelative(src), deleted: true };
+}
+
+// Write/replace the "<file>.prompt.txt" sidecar for an in-scope graphic so an
+// edited prompt can be saved without regenerating the image.
+function saveSessionFilePrompt(sessionId, db, { path: requestPath, text } = {}) {
+  const session = getSessionById(db, sessionId);
+  if (!session) { const e = new Error('Session not found'); e.statusCode = 404; throw e; }
+  const paths = ensureSessionDataFolders(session);
+  const cleaned = String(requestPath || '').replace(/^\/+/, '');
+  const src = path.resolve(REPO_ROOT, cleaned.startsWith('data/') ? cleaned : path.join(repoRelative(paths.root), cleaned));
+  if (!isInside(paths.root, src)) { const e = new Error('Path is outside the case folder'); e.statusCode = 400; throw e; }
+  if (!fs.existsSync(src) || !fs.statSync(src).isFile()) { const e = new Error('File not found'); e.statusCode = 404; throw e; }
+  if (!GRAPHIC_EXTENSIONS.has(path.extname(src).toLowerCase())) { const e = new Error('Prompts attach to graphics only'); e.statusCode = 400; throw e; }
+  const sidecar = `${src}.prompt.txt`;
+  const body = String(text == null ? '' : text).trim();
+  if (body) fs.writeFileSync(sidecar, body + '\n', 'utf8');
+  else if (fs.existsSync(sidecar)) fs.unlinkSync(sidecar);
+  return { path: repoRelative(src), prompt: body };
+}
+
+// One-shot LLM call: turn an index entity (event/place/NPC/thing) into a single
+// text-to-image prompt. `style` is the resolved per-case art style (caller
+// supplies it). Returns the cleaned prompt string.
+async function generateEntityImagePrompt(sessionId, db, { name, kind, description, style } = {}, opts = {}) {
+  const session = getSessionById(db, sessionId);
+  if (!session) { const e = new Error('Session not found'); e.statusCode = 404; throw e; }
+  const subject = String(name || '').trim();
+  if (!subject) { const e = new Error('An entity name is required'); e.statusCode = 400; throw e; }
+  const styleText = String(style || '').trim();
+  const ctx = String(description || '').trim().slice(0, 4000);
+  const kindWord = ({ npc: 'character', npcs: 'character', location: 'place', locations: 'place',
+    place: 'place', places: 'place', item: 'object', items: 'object', thing: 'object',
+    event: 'scene', events: 'scene' }[String(kind || '').toLowerCase()]) || 'subject';
+  const user = [
+    `Write a single vivid text-to-image generation prompt for this ${kindWord} from a Rivers of London tabletop case.`,
+    `Subject: ${subject}`,
+    ctx ? `Reference notes (do not contradict these):\n${ctx}` : '',
+    styleText ? `Render it in this art style: ${styleText}` : '',
+    'Describe concrete visual detail (composition, setting, lighting, mood). One paragraph, no preamble, no markdown, no quotes, no headings — output ONLY the prompt text.'
+  ].filter(Boolean).join('\n\n');
+  const raw = await callOllama(user, {
+    label: `image-prompt: ${subject}`,
+    signal: opts.signal,
+    messages: [
+      { role: 'system', content: 'You are an art director writing concise, concrete prompts for an image generation model. You reply with prompt text only — no commentary, no markdown.' },
+      { role: 'user', content: user }
+    ]
+  });
+  const cleaned = String(raw || '')
+    .replace(/^```[a-z]*\n?|\n?```$/gi, '')
+    .replace(/^\s*(prompt|image prompt)\s*:\s*/i, '')
+    .replace(/^["'`]+|["'`]+$/g, '')
+    .trim();
+  if (!cleaned) { const e = new Error('The model returned an empty prompt'); e.statusCode = 502; throw e; }
+  return { prompt: cleaned };
 }
 
 function resolveSessionAssetPath(sessionId, requestPath, db, isGM = false) {
@@ -2554,6 +2797,7 @@ module.exports = {
   writeSessionSources,
   SCENARIO_SECTIONS,
   listScenarioSectionIds,
+  refreshScenarioIndexes,
   regenerateScenarioSection,
   regenerateScenarioSections,
   revertScenarioSection,
@@ -2569,6 +2813,10 @@ module.exports = {
   createSessionFile,
   replaceSessionFile,
   renameSessionFile,
+  deleteSessionFile,
+  saveSessionFilePrompt,
+  extractNpcPortraitFiles,
+  generateEntityImagePrompt,
   effectiveOllamaModel,
   setOllamaModel,
   ollamaContextConfig,
@@ -2576,6 +2824,7 @@ module.exports = {
   listOllamaModels,
   listOllamaModelsDetailed,
   ollamaPs,
+  freeOllama,
   effectiveOllamaUrl,
   effectiveComfyuiUrl,
   setServiceUrl,

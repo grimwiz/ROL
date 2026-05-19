@@ -55,6 +55,7 @@ const api = (() => {
     saveSessionScenarioSources: (sessionId, data) => req('PUT', `/sessions/${sessionId}/scenario-sources`, data),
     regenerateScenarioSections: (sessionId, body) => req('POST', `/sessions/${sessionId}/scenario-info/regenerate`, body || {}),
     regenerateScenarioSection: (sessionId, sectionId) => req('POST', `/sessions/${sessionId}/scenario-info/sections/${encodeURIComponent(sectionId)}/regenerate`),
+    refreshScenarioIndex: (sessionId, body) => req('POST', `/sessions/${sessionId}/scenario-info/refresh-index`, body || {}),
     revertScenarioSection: (sessionId, sectionId) => req('POST', `/sessions/${sessionId}/scenario-info/sections/${encodeURIComponent(sectionId)}/revert`),
     exportGmChat: (sessionId, messages) => req('POST', `/sessions/${sessionId}/chat/export`, { messages }),
     getSessionSettings: (sessionId) => req('GET', `/sessions/${sessionId}/settings`),
@@ -93,5 +94,9 @@ const api = (() => {
     createSessionFile: (sessionId, data) => req('POST', `/sessions/${sessionId}/files`, data),
     replaceSessionFile: (sessionId, data) => req('POST', `/sessions/${sessionId}/files/replace`, data),
     renameSessionFile: (sessionId, data) => req('POST', `/sessions/${sessionId}/files/rename`, data),
+    deleteSessionFile: (sessionId, path) => req('POST', `/sessions/${sessionId}/files/delete`, { path }),
+    saveSessionFilePrompt: (sessionId, path, text) => req('POST', `/sessions/${sessionId}/files/prompt`, { path, text }),
+    extractNpcPortraits: (sessionId) => req('POST', `/sessions/${sessionId}/npc-portraits/extract`, {}),
+    generateEntityGraphicPrompt: (sessionId, data) => req('POST', `/sessions/${sessionId}/entities/graphic-prompt`, data),
   };
 })();

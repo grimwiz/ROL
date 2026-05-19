@@ -12,6 +12,7 @@ const {
   loadSessionScenarioInfoForUser,
   readSessionSources,
   writeSessionSources,
+  refreshScenarioIndexes,
   regenerateScenarioSection,
   regenerateScenarioSections,
   revertScenarioSection,
@@ -26,6 +27,10 @@ const {
   createSessionFile,
   replaceSessionFile,
   renameSessionFile,
+  deleteSessionFile,
+  saveSessionFilePrompt,
+  extractNpcPortraitFiles,
+  generateEntityImagePrompt,
   effectiveOllamaModel,
   setOllamaModel,
   ollamaContextConfig,
@@ -33,6 +38,7 @@ const {
   listOllamaModels,
   listOllamaModelsDetailed,
   ollamaPs,
+  freeOllama,
   effectiveComfyuiUrl,
   setServiceUrl,
   servicesConfig,
@@ -997,6 +1003,7 @@ router.post('/sessions/:id/scenario-info/regenerate', requireGM, async (req, res
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
   if (await rejectIfAiBusy(res)) return; // normal 409 BEFORE streaming starts
+  await prepareGpuForLlm();
   const t0 = Date.now();
   const stepAt = new Map();
   // Stream NDJSON progress so the client sees live per-section timing/metrics
@@ -1214,6 +1221,7 @@ router.post('/sessions/:id/scenario-info/sections/:sectionId/regenerate', requir
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
   if (await rejectIfAiBusy(res)) return; // normal 409 BEFORE streaming starts
+  await prepareGpuForLlm();
   const t0 = Date.now();
   const sectionId = req.params.sectionId;
   const controller = new AbortController();
@@ -1262,13 +1270,34 @@ router.post('/sessions/:id/scenario-info/sections/:sectionId/revert', requireGM,
   }
 });
 
+router.post('/sessions/:id/scenario-info/refresh-index', requireGM, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  try {
+    const sections = Array.isArray(req.body && req.body.sections) ? req.body.sections : null;
+    const result = refreshScenarioIndexes(session.id, db, { sections });
+    if (!result) return res.status(404).json({ error: 'Session not found' });
+    logLine('scenario.index.refresh', {
+      session: session.id,
+      sections: (result.refreshed || []).length,
+      output_paths: result.output_paths
+    });
+    res.json(result);
+  } catch (e) {
+    res.status(e.statusCode || 500).json({ error: e.message || 'Could not refresh scenario indexes' });
+  }
+});
+
 router.get('/sessions/:id/scenario-info/assets/*', requireAuth, (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
   const filePath = resolveSessionAssetPath(session.id, req.params[0], db, req.user.role === 'gm');
   if (!filePath) return res.status(404).json({ error: 'Scenario asset not found' });
   if (req.query.download) return res.download(filePath, path.basename(filePath));
-  res.sendFile(filePath);
+  // Regenerate-in-place keeps the filename, so the browser must revalidate
+  // every time (no-cache) rather than reuse a stale in-session copy. ETag /
+  // Last-Modified stay on, so an unchanged file is a cheap 304.
+  res.sendFile(filePath, { cacheControl: false, headers: { 'Cache-Control': 'no-cache' } });
 });
 
 // GM-only brainstorming chat for a case. Streams NDJSON: {delta} lines then
@@ -1277,6 +1306,7 @@ router.post('/sessions/:id/chat', requireGM, async (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
   if (await rejectIfAiBusy(res)) return;
+  await prepareGpuForLlm();
   const controller = new AbortController();
   // Detect a real client disconnect via the RESPONSE close (guarded by
   // writableEnded). req 'close' fires as soon as the request body is read,
@@ -1534,19 +1564,43 @@ const COMFYUI_IDLE_UNLOAD_MS = (() => {
 })();
 let comfyUnloadTimer = null;
 
-async function runComfyUnload() {
-  comfyUnloadTimer = null;
+// Free ComfyUI's VRAM (unload diffusion models). Best-effort with a short
+// timeout so a down/asleep ComfyUI never stalls an LLM request.
+async function freeComfy(reason) {
   try {
     const r = await fetch(`${effectiveComfyuiUrl()}/free`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ unload_models: true, free_memory: true })
+      body: JSON.stringify({ unload_models: true, free_memory: true }),
+      signal: AbortSignal.timeout(5000)
     });
-    logLine('comfy.idle_unload', { ok: r.ok, status: r.status });
+    logLine('comfy.free', { reason: reason || 'idle', ok: r.ok, status: r.status });
   } catch (e) {
     // Best-effort: ComfyUI may be down/asleep. Nothing to recover.
-    logLine('comfy.idle_unload_error', { error: String((e && e.message) || e) });
+    logLine('comfy.free_error', { reason: reason || 'idle', error: String((e && e.message) || e) });
   }
+}
+
+async function runComfyUnload() {
+  comfyUnloadTimer = null;
+  await freeComfy('idle');
+}
+
+// Explicit single-GPU handoff. Ollama and ComfyUI cannot be co-resident, so
+// before starting one we evict the other's model and wait for the VRAM back.
+// Called by every AI-initiating route AFTER its busy-gate passes.
+async function prepareGpuForImage() {
+  try {
+    const r = await freeOllama();
+    logLine('gpu.handoff', { to: 'image', ollama_freed: !!(r && r.freed), detail: r });
+  } catch (e) {
+    logLine('gpu.handoff_error', { to: 'image', error: String((e && e.message) || e) });
+  }
+}
+async function prepareGpuForLlm() {
+  // Cancel any pending idle-unload (we're freeing it now) then free it.
+  if (comfyUnloadTimer) { clearTimeout(comfyUnloadTimer); comfyUnloadTimer = null; }
+  await freeComfy('llm-handoff');
 }
 
 function touchComfyActivity() {
@@ -1585,6 +1639,10 @@ const PORTRAIT_COMPOSITION = 'serious expression, three-quarters view, bust port
 // "not photorealistic" clause lives here (it is style-specific), unlike the
 // style-agnostic quality negatives in PORTRAIT_NEGATIVE_PROMPT.
 const DEFAULT_PORTRAIT_STYLE = 'Art Nouveau portrait styling with a restrained Art Deco frame around the portrait, clean elegant linework, muted earthy palette with antique gold accents, painterly illustration, not photorealistic, not modern snapshot';
+// Aspect-neutral art style for index-entity graphics (places, objects, scenes,
+// people). Deliberately carries NO "portrait", framing, or composition wording
+// — those break sites and objects. Conveys only medium/era/palette.
+const DEFAULT_ENTITY_ART_STYLE = 'painterly period illustration, clean elegant linework, muted earthy palette with antique gold accents, atmospheric naturalistic lighting, not photorealistic, not a modern photo';
 const PORTRAIT_RANDOM_WORKFLOW_TEMPLATE = {
   '1': { class_type: 'UNETLoader', inputs: { unet_name: QWEN_IMAGE_MODELS.diffusionModel, weight_dtype: 'default' } },
   '2': { class_type: 'ModelSamplingAuraFlow', inputs: { model: ['1', 0], shift: 3.1 } },
@@ -1945,6 +2003,7 @@ router.post('/portrait/random', requireAuth, async (req, res, next) => {
       prompt: promptText
     });
 
+    await prepareGpuForImage();
     touchComfyActivity();
     const upstream = await fetch(`${effectiveComfyuiUrl()}/prompt`, {
       method: 'POST',
@@ -2014,6 +2073,7 @@ router.post('/portrait/restyle', requireAuth, async (req, res, next) => {
       prompt: instruction
     });
 
+    await prepareGpuForImage();
     touchComfyActivity();
     const upstream = await fetch(`${effectiveComfyuiUrl()}/prompt`, {
       method: 'POST',
@@ -2106,6 +2166,7 @@ router.post('/sessions/:id/handouts/generate', requireGM, async (req, res, next)
     workflow['8'].inputs.seed = seed;
     workflow['10'].inputs.filename_prefix = 'ROL_handout';
     logLine('handout.generate', { userId: req.user.id, sessionId: session.id, seed, size: sizeKey, width: size.width, height: size.height, prompt });
+    await prepareGpuForImage();
     touchComfyActivity();
     const upstream = await fetch(`${effectiveComfyuiUrl()}/prompt`, {
       method: 'POST',
@@ -2124,7 +2185,7 @@ router.post('/sessions/:id/handouts/save', requireGM, async (req, res, next) => 
   try {
     const session = getAccessibleSession(req, res, req.params.id);
     if (!session) return;
-    const { filename, subfolder, type, name, prompt } = req.body || {};
+    const { filename, subfolder, type, name, prompt, replace_path } = req.body || {};
     if (!filename) return res.status(400).json({ error: 'Missing image reference.' });
     touchComfyActivity();
     const url = new URL(`${effectiveComfyuiUrl()}/view`);
@@ -2135,7 +2196,7 @@ router.post('/sessions/:id/handouts/save', requireGM, async (req, res, next) => 
     if (!up.ok) return res.status(502).json({ error: `Could not fetch the image from ComfyUI (HTTP ${up.status}).` });
     const buf = Buffer.from(await up.arrayBuffer());
     const ext = path.extname(String(filename)).toLowerCase() || '.png';
-    const saved = saveSessionHandout(session.id, db, { bytes: buf, name, ext, prompt });
+    const saved = saveSessionHandout(session.id, db, { bytes: buf, name, ext, prompt, replacePath: replace_path });
     res.json({ ok: true, ...saved });
   } catch (e) {
     if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
@@ -2208,6 +2269,72 @@ router.post('/sessions/:id/files/replace', requireGM, (req, res, next) => {
     const bytes = fileBytesFromBody(req.body);
     if (bytes === null) return res.status(400).json({ error: 'Provide text or content_base64.' });
     res.json(replaceSessionFile(session.id, db, { path: req.body && req.body.path, bytes }));
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// Delete a file (Edit Files). Structural sources/artifacts are refused
+// server-side; a graphic's .prompt.txt sidecar is removed alongside it.
+router.post('/sessions/:id/files/delete', requireGM, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    res.json(deleteSessionFile(session.id, db, { path: req.body && req.body.path }));
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// Save an edited image prompt (its "<file>.prompt.txt" sidecar) without
+// regenerating the picture.
+router.post('/sessions/:id/files/prompt', requireGM, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    res.json(saveSessionFilePrompt(session.id, db, {
+      path: req.body && req.body.path,
+      text: req.body && req.body.text
+    }));
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// GM-triggered only: extract allocated NPC sheet portraits into the player
+// Gallery. Never runs on a read, so a deleted portrait stays deleted.
+router.post('/sessions/:id/npc-portraits/extract', requireGM, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    res.json(extractNpcPortraitFiles(session.id, db));
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// Have the LLM draft a text-to-image prompt for an index entity, using the
+// per-case art style. Subject to the shared single-AI-task gate.
+router.post('/sessions/:id/entities/graphic-prompt', requireGM, async (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    if (await rejectIfAiBusy(res)) return;
+    await prepareGpuForLlm();
+    // Index-entity graphics are NOT character-sheet portraits — never reuse the
+    // per-case portrait_style here; it would force portrait aspect/framing onto
+    // places and objects.
+    const result = await generateEntityImagePrompt(session.id, db, {
+      name: req.body && req.body.name,
+      kind: req.body && req.body.kind,
+      description: req.body && req.body.description,
+      style: DEFAULT_ENTITY_ART_STYLE
+    });
+    res.json(result);
   } catch (e) {
     if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
     next(e);
