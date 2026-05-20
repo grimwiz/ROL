@@ -318,12 +318,17 @@ The browser and CLI go through the same `buildPdf()` function, so what you get f
 
 ## Rulebook files
 
-- Place the supplied rulebook files in `Rivers_of_London/` with matching base names:
+- Keep the full supplied rulebook files in the gitignored `private/rulebook-source/` folder with matching base names. That folder is never served by the web app:
   - `cha3200_-_rivers_of_london_1.4.md`
   - `cha3200_-_rivers_of_london_1.4.html`
   - `cha3200_-_rivers_of_london_1.4_artifacts/` (image references used by the HTML/Markdown)
-  - `RoL_Charsheet.pdf` (blank Chaosium sheet, used as the PDF-export template)
-- The server exposes the rulebook at `/rules-files/*`.
+- The free *The Domestic* files live in `Rivers_of_London/`:
+  - `The Domestic.md`
+  - `CHA3201 - The Domestic.pdf`
+  - `image-blacklist.txt`
+- The blank character sheet used for PDF export lives in `Rivers_of_London/RoL_Charsheet.pdf`.
+- The compact paraphrased rules corpus lives in `Rivers_of_London/rules/`.
+- The server exposes only `Rivers_of_London/` at `/rules-files/*`; it must never serve `private/`.
 - Authenticated API endpoints:
   - `GET /api/rules` (returns direct HTML/Markdown file URLs)
   - `GET /api/rules/search?q=…` (server-side full-text search)

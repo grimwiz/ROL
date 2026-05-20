@@ -8,6 +8,7 @@
     "dev": "node --watch src/server.js",
     "check:domestic": "node scripts/check-domestic-adventure.js",
     "scenario:regenerate": "node scripts/regenerate-scenario-info.js",
+    "extract:source": "node scripts/build-extracted-source.js",
     "npcs:extract": "node scripts/extract-rulebook-npcs.js",
     "npcs:seed": "node scripts/seed-npcs.js",
     "npcs:export": "node scripts/export-rulebook-npcs.js",

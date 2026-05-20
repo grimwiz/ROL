@@ -13,7 +13,7 @@ const fs = require('fs');
 const path = require('path');
 
 const REPO_ROOT = path.join(__dirname, '..');
-const RULEBOOK = path.join(REPO_ROOT, 'Rivers_of_London', 'cha3200_-_rivers_of_london_1.4.md');
+const RULEBOOK = path.join(REPO_ROOT, 'private', 'rulebook-source', 'cha3200_-_rivers_of_london_1.4.md');
 const OUT_DIR = path.join(REPO_ROOT, 'Rivers_of_London', 'globaldata', 'npcs');
 
 const COMMON_SKILL_NAMES = [

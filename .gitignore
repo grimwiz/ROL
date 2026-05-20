@@ -1,7 +1,11 @@
 /node_modules
 /data/
 /comfyui-output.png
+/private/
 Rivers_of_London/test_write
+Rivers_of_London/rules/source/raw/
 tim.json
 tim.pdf
 verify_output.pdf
+**/__pycache__/
+*.pyc

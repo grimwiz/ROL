@@ -3,10 +3,13 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const { spawn } = require('child_process');
 const db = require('./db');
 const { signToken, requireAuth, requireGM, COOKIE_NAME, COOKIE_OPTS } = require('./auth');
 const { loadDomesticAdventure } = require('./domesticAdventure');
 const {
+  DATA_ROOT,
+  findSessionCover,
   ensureSessionDataFolderById,
   renameSessionDataFolder,
   loadSessionScenarioInfoForUser,
@@ -19,6 +22,7 @@ const {
   resolveSessionAssetPath,
   regenerateNpcSummaries,
   streamGmChat,
+  streamRulesChat,
   writeGmChatExport,
   ollamaStatus,
   cancelOllama,
@@ -29,7 +33,6 @@ const {
   renameSessionFile,
   deleteSessionFile,
   saveSessionFilePrompt,
-  extractNpcPortraitFiles,
   generateEntityImagePrompt,
   effectiveOllamaModel,
   setOllamaModel,
@@ -623,8 +626,9 @@ router.get('/allocatable-cases', requireGM, (req, res) => {
 // ── Sessions ──────────────────────────────────────────────────────────────────
 
 router.get('/sessions', requireAuth, (req, res) => {
+  const isGM = req.user.role === 'gm';
   let sessions;
-  if (req.user.role === 'gm') {
+  if (isGM) {
     sessions = db.prepare(`
       SELECT s.*, COUNT(sp.user_id) as player_count
       FROM sessions s
@@ -639,6 +643,9 @@ router.get('/sessions', requireAuth, (req, res) => {
       WHERE sp.user_id = ? AND COALESCE(s.description, '') != ? ORDER BY s.created_at DESC
     `).all(req.user.id, DOMESTIC_SYSTEM_DESCRIPTION);
   }
+  // Attach a cover image per session, scoped to the viewer's role: players
+  // only see a cover that lives in the player-visible Gallery.
+  sessions = sessions.map((s) => ({ ...s, cover_image: findSessionCover(s, isGM) || null }));
   res.json(sessions);
 });
 
@@ -1454,23 +1461,252 @@ router.post('/sessions/:id/stat-adjustments/:adjId/clear', requireGM, (req, res)
 
 // ── Rules library ────────────────────────────────────────────────────────────
 
-const rulesRoot = path.join(__dirname, '..', 'Rivers_of_London');
-const rulesBaseName = 'cha3200_-_rivers_of_london_1.4';
-const rulesMdPath = path.join(rulesRoot, `${rulesBaseName}.md`);
-const rulesHtmlPath = path.join(rulesRoot, `${rulesBaseName}.html`);
+const rulesRoot = path.join(__dirname, '..', 'Rivers_of_London', 'rules', 'rules');
+
+function htmlEscape(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function markdownInline(value) {
+  return htmlEscape(value)
+    .replace(/`([^`]+?)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
+}
+
+function stripPublicRulesComments(markdown) {
+  return String(markdown || '').replace(/<!--[\s\S]*?-->\s*/g, '').trim();
+}
+
+function firstMarkdownHeading(markdown, fallback) {
+  const match = String(markdown || '').match(/^#\s+(.+)$/m);
+  return match ? match[1].trim() : fallback;
+}
+
+function listRuleDocuments() {
+  if (!fs.existsSync(rulesRoot)) return [];
+  return fs.readdirSync(rulesRoot)
+    .filter((name) => /^\d{2}-.*\.md$/i.test(name))
+    .sort((a, b) => a.localeCompare(b))
+    .map((filename) => {
+      const filePath = path.join(rulesRoot, filename);
+      const markdown = stripPublicRulesComments(fs.readFileSync(filePath, 'utf8'));
+      return {
+        filename,
+        title: firstMarkdownHeading(markdown, filename.replace(/\.md$/i, '')),
+        markdown
+      };
+    });
+}
 
 function loadRulesIndex() {
-  if (!fs.existsSync(rulesMdPath) || !fs.existsSync(rulesHtmlPath)) {
-    return null;
-  }
-
-  const markdown = fs.readFileSync(rulesMdPath, 'utf8');
+  const documents = listRuleDocuments();
+  if (!documents.length) return null;
+  const markdown = [
+    '# Rivers of London Compact Rules Reference',
+    '',
+    ...documents.flatMap((doc) => [doc.markdown, ''])
+  ].join('\n').trim();
   const lines = markdown.split(/\r?\n/);
   return {
+    documents,
     markdown,
     lines,
-    htmlPath: `/rules-files/${rulesBaseName}.html`,
-    markdownPath: `/rules-files/${rulesBaseName}.md`
+    htmlPath: '/api/rules/print',
+    markdownPath: '/api/rules/markdown'
+  };
+}
+
+function isMarkdownTableSeparator(line) {
+  return /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+}
+
+function parseMarkdownTableRow(line) {
+  return String(line || '')
+    .trim()
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .split('|')
+    .map((cell) => cell.trim());
+}
+
+function renderRulesMarkdownHtml(markdown) {
+  const lines = String(markdown || '').replace(/\r\n?/g, '\n').split('\n');
+  const out = [];
+  let paragraph = [];
+  let inList = false;
+  let inCode = false;
+  let codeLines = [];
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    out.push(`<p>${markdownInline(paragraph.join(' '))}</p>`);
+    paragraph = [];
+  };
+  const closeList = () => {
+    if (!inList) return;
+    out.push('</ul>');
+    inList = false;
+  };
+  const flushCode = () => {
+    out.push(`<pre><code>${htmlEscape(codeLines.join('\n'))}</code></pre>`);
+    codeLines = [];
+  };
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const raw = lines[i];
+    const trimmed = raw.trim();
+
+    if (trimmed.startsWith('```')) {
+      if (inCode) {
+        flushCode();
+        inCode = false;
+      } else {
+        flushParagraph();
+        closeList();
+        inCode = true;
+        codeLines = [];
+      }
+      continue;
+    }
+    if (inCode) {
+      codeLines.push(raw);
+      continue;
+    }
+
+    if (!trimmed) {
+      flushParagraph();
+      closeList();
+      continue;
+    }
+
+    if (trimmed.includes('|') && i + 1 < lines.length && isMarkdownTableSeparator(lines[i + 1])) {
+      flushParagraph();
+      closeList();
+      const headers = parseMarkdownTableRow(trimmed);
+      i += 2;
+      const rows = [];
+      while (i < lines.length && lines[i].trim().includes('|')) {
+        rows.push(parseMarkdownTableRow(lines[i]));
+        i += 1;
+      }
+      i -= 1;
+      out.push('<table>');
+      out.push(`<thead><tr>${headers.map((cell) => `<th>${markdownInline(cell)}</th>`).join('')}</tr></thead>`);
+      out.push(`<tbody>${rows.map((row) => `<tr>${row.map((cell) => `<td>${markdownInline(cell)}</td>`).join('')}</tr>`).join('')}</tbody>`);
+      out.push('</table>');
+      continue;
+    }
+
+    const heading = trimmed.match(/^(#{1,4})\s+(.+)$/);
+    if (heading) {
+      flushParagraph();
+      closeList();
+      const level = heading[1].length;
+      const tag = `h${Math.min(level, 4)}`;
+      out.push(`<${tag}>${markdownInline(heading[2].replace(/#+\s*$/, '').trim())}</${tag}>`);
+      continue;
+    }
+
+    const bullet = trimmed.match(/^[-*+]\s+(.+)$/);
+    if (bullet) {
+      flushParagraph();
+      if (!inList) {
+        out.push('<ul>');
+        inList = true;
+      }
+      out.push(`<li>${markdownInline(bullet[1].trim())}</li>`);
+      continue;
+    }
+
+    closeList();
+    paragraph.push(trimmed);
+  }
+
+  if (inCode) flushCode();
+  flushParagraph();
+  closeList();
+  return out.join('\n');
+}
+
+function renderRulesPrintableHtml(rulesIndex) {
+  const body = renderRulesMarkdownHtml(rulesIndex.markdown);
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Rivers of London Compact Rules Reference</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; background: #f4f2ed; color: #1f2428; font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { max-width: 920px; margin: 0 auto; padding: 2rem 2.25rem 3rem; background: #fff; min-height: 100vh; box-shadow: 0 0 0 1px #ddd7cc; }
+    h1, h2, h3, h4 { line-height: 1.2; margin: 1.6rem 0 0.65rem; break-after: avoid; }
+    h1 { font-size: 2rem; border-bottom: 2px solid #222; padding-bottom: 0.35rem; }
+    h2 { font-size: 1.45rem; border-bottom: 1px solid #cfc7ba; padding-bottom: 0.25rem; }
+    h3 { font-size: 1.15rem; }
+    p, li { max-width: 76ch; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.92rem; break-inside: avoid; }
+    th, td { border: 1px solid #cfc7ba; padding: 0.42rem 0.5rem; vertical-align: top; }
+    th { background: #eee8dc; text-align: left; }
+    code { background: #f0eee8; padding: 0.05rem 0.22rem; border-radius: 3px; }
+    pre { background: #f0eee8; padding: 0.75rem; overflow-x: auto; }
+    .print-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-bottom: 1rem; }
+    .print-actions button { border: 1px solid #777; background: #fff; padding: 0.35rem 0.65rem; border-radius: 4px; cursor: pointer; }
+    @media print {
+      body { background: #fff; }
+      main { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+      .print-actions { display: none; }
+      h1 { page-break-before: auto; }
+      h1:not(:first-of-type) { page-break-before: always; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="print-actions"><button type="button" onclick="window.print()">Print</button></div>
+    ${body}
+  </main>
+</body>
+</html>`;
+}
+
+function stripLargeSheetValues(value) {
+  if (Array.isArray(value)) return value.map(stripLargeSheetValues);
+  if (!value || typeof value !== 'object') {
+    if (typeof value === 'string' && /^data:image\//i.test(value)) return '[image data omitted]';
+    if (typeof value === 'string' && value.length > 4000) return `${value.slice(0, 4000)}... [truncated]`;
+    return value;
+  }
+  const out = {};
+  for (const [key, child] of Object.entries(value)) {
+    if (/portrait|image/i.test(key) && typeof child === 'string' && child.length > 200) {
+      out[key] = '[image data omitted]';
+    } else {
+      out[key] = stripLargeSheetValues(child);
+    }
+  }
+  return out;
+}
+
+function loadRulesCharacterContext(user) {
+  const rows = db.prepare(`
+    SELECT cs.session_id, s.name AS session_name, cs.updated_at, cs.data
+    FROM character_sheets cs
+    JOIN sessions s ON s.id = cs.session_id
+    WHERE cs.user_id = ?
+    ORDER BY cs.updated_at DESC, cs.session_id DESC
+  `).all(user.id);
+  return {
+    user: { id: user.id, username: user.username, role: user.role },
+    characters: rows.map((row) => ({
+      session_id: row.session_id,
+      session_name: row.session_name,
+      updated_at: row.updated_at,
+      sheet: stripLargeSheetValues(parseStoredSheetData(row.data))
+    }))
   };
 }
 
@@ -1479,12 +1715,29 @@ router.get('/rules', requireAuth, (req, res) => {
   if (!rulesIndex) {
     return res.status(404).json({ error: 'Rules files are not available on the server.' });
   }
+  // Pre-rendered HTML lets the client embed the rules inline (no iframe) and
+  // hand the same HTML to the print-doc overlay used by Case Files → Overview.
   res.json({
-    files: {
-      html: rulesIndex.htmlPath,
-      markdown: rulesIndex.markdownPath
-    }
+    title: 'Rivers of London Compact Rules Reference',
+    sections: rulesIndex.documents.map((doc) => ({ filename: doc.filename, title: doc.title })),
+    html: renderRulesMarkdownHtml(rulesIndex.markdown)
   });
+});
+
+router.get('/rules/markdown', requireAuth, (req, res) => {
+  const rulesIndex = loadRulesIndex();
+  if (!rulesIndex) {
+    return res.status(404).json({ error: 'Rules files are not available on the server.' });
+  }
+  res.type('text/markdown').send(`${rulesIndex.markdown}\n`);
+});
+
+router.get('/rules/print', requireAuth, (req, res) => {
+  const rulesIndex = loadRulesIndex();
+  if (!rulesIndex) {
+    return res.status(404).send('Rules files are not available on the server.');
+  }
+  res.type('html').send(renderRulesPrintableHtml(rulesIndex));
 });
 
 router.get('/rules/search', requireAuth, (req, res) => {
@@ -1530,6 +1783,36 @@ router.get('/rules/search', requireAuth, (req, res) => {
       markdown: rulesIndex.markdownPath
     }
   });
+});
+
+router.post('/rules/chat', requireAuth, async (req, res) => {
+  const rulesIndex = loadRulesIndex();
+  if (!rulesIndex) {
+    return res.status(404).json({ error: 'Rules files are not available on the server.' });
+  }
+  if (await rejectIfAiBusy(res)) return;
+  await prepareGpuForLlm();
+  const controller = new AbortController();
+  res.on('close', () => { if (!res.writableEnded) controller.abort(new Error('client disconnected')); });
+  res.setHeader('Content-Type', 'application/x-ndjson');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+  const t0 = Date.now();
+  try {
+    logLine('ruleschat.start', { userId: req.user.id });
+    await streamRulesChat(rulesIndex.markdown, loadRulesCharacterContext(req.user), req.body && req.body.messages, {
+      signal: controller.signal,
+      onToken: (delta) => res.write(`${JSON.stringify({ delta })}\n`)
+    });
+    logLine('ruleschat.done', { userId: req.user.id, ms: Date.now() - t0 });
+    res.write(`${JSON.stringify({ done: true })}\n`);
+  } catch (e) {
+    const cancelled = controller.signal.aborted || e.cancelled;
+    logLine(cancelled ? 'ruleschat.cancelled' : 'ruleschat.error', { userId: req.user.id, ms: Date.now() - t0, error: e.message });
+    res.write(`${JSON.stringify(cancelled ? { cancelled: true, error: e.message || 'Rules chat cancelled' } : { error: e.message || 'Rules chat failed' })}\n`);
+  }
+  res.end();
 });
 
 // ── Portrait proxy (ComfyUI + PhotoMaker) ─────────────────────────────────────
@@ -2304,19 +2587,6 @@ router.post('/sessions/:id/files/prompt', requireGM, (req, res, next) => {
   }
 });
 
-// GM-triggered only: extract allocated NPC sheet portraits into the player
-// Gallery. Never runs on a read, so a deleted portrait stays deleted.
-router.post('/sessions/:id/npc-portraits/extract', requireGM, (req, res, next) => {
-  try {
-    const session = getAccessibleSession(req, res, req.params.id);
-    if (!session) return;
-    res.json(extractNpcPortraitFiles(session.id, db));
-  } catch (e) {
-    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
-    next(e);
-  }
-});
-
 // Have the LLM draft a text-to-image prompt for an index entity, using the
 // per-case art style. Subject to the shared single-AI-task gate.
 router.post('/sessions/:id/entities/graphic-prompt', requireGM, async (req, res, next) => {
@@ -2359,6 +2629,34 @@ router.post('/sheet/render-pdf', requireAuth, async (req, res) => {
     console.error('PDF render failed:', e);
     res.status(500).json({ error: e.message || 'PDF render failed' });
   }
+});
+
+// GM-only: stream a .zip of the entire data/ folder (SQLite DB, case files,
+// galleries, app-config) for an out-of-band backup. Spawned `zip` writes the
+// archive to stdout — no temp file, no buffering, no dependency. Archive
+// entries are rooted at `data/...` so it restores cleanly over the repo.
+router.get('/admin/backup', requireGM, (req, res) => {
+  const parent = path.dirname(DATA_ROOT);
+  const base = path.basename(DATA_ROOT);
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  res.setHeader('Content-Type', 'application/zip');
+  res.setHeader('Content-Disposition', `attachment; filename="rol-backup-${stamp}.zip"`);
+  const zip = spawn('zip', ['-r', '-q', '-', base], { cwd: parent });
+  let failed = false;
+  zip.on('error', (e) => {
+    failed = true;
+    logLine('admin.backup_error', { error: String((e && e.message) || e) });
+    if (!res.headersSent) res.status(500).json({ error: 'zip is not available on the server' });
+    else res.end();
+  });
+  zip.stdout.pipe(res);
+  zip.on('close', (code) => {
+    if (!failed && code !== 0) logLine('admin.backup_error', { code });
+    if (!res.writableEnded) res.end();
+  });
+  // Client aborted the download — don't leave a zip process running.
+  req.on('close', () => { try { zip.kill('SIGKILL'); } catch (_) { /* gone */ } });
+  logLine('admin.backup', { userId: req.user && req.user.id });
 });
 
 module.exports = router;

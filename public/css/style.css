@@ -711,11 +711,39 @@ tr:hover td { background: var(--bg3); }
 }
 
 /* ── Rules library ───────────────────────────────────────── */
+.rules-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  gap: 1rem;
+  align-items: start;
+}
 .rules-access-card .rules-links {
   margin-top: 0.75rem;
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
+}
+.rules-section-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+.rules-section-list span {
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  border-radius: 999px;
+  padding: 0.18rem 0.5rem;
+  font-size: 0.78rem;
+  color: var(--text2);
+}
+.rules-chat-card {
+  position: sticky;
+  top: 0.75rem;
+}
+.rules-chat-wrap {
+  height: calc(100vh - 19rem);
+  min-height: 420px;
 }
 .rules-search-actions { margin-bottom: 0.75rem; }
 .rules-results-list {
@@ -760,6 +788,11 @@ tr:hover td { background: var(--bg3); }
   min-height: 70vh;
   border: none;
   background: #fff;
+}
+@media (max-width: 1100px) {
+  .rules-layout { grid-template-columns: 1fr; }
+  .rules-chat-card { position: static; }
+  .rules-chat-wrap { height: 440px; }
 }
 
 /* ── Modal ───────────────────────────────────────────────── */
@@ -1053,16 +1086,18 @@ tr:hover td { background: var(--bg3); }
   max-width: 100%; height: auto; display: block;
   border: 1px solid var(--border); border-radius: var(--radius);
 }
-/* Filename-tagged inline layout: text wraps around left/right floats. */
-.scenario-figure.sf-full { width: 100%; }
+/* Filename-tagged inline layout: title block sits above, figure floats
+   left/right, prose wraps beside it. The natural CSS pattern.
+   Stepping (figure overflowing into the next card) is prevented by
+   `display: flow-root` on the cards/body — that creates a Block Formatting
+   Context that contains the float without needing a clearfix hack. */
+.scenario-figure.sf-full { width: 100%; margin: 0.75rem 0; }
 .scenario-figure.sf-left,
 .scenario-figure.sf-right { width: var(--sf-w, 30%); max-width: 70%; }
 .scenario-figure.sf-left { float: left; margin: 0.2rem 1rem 0.5rem 0; }
 .scenario-figure.sf-right { float: right; margin: 0.2rem 0 0.5rem 1rem; }
-/* Contain floats within the prose block (so they can't escape the card),
-   but DON'T clear at headings — text and headings should wrap beside the
-   image, which is the whole point of LHS/RHS. */
-.scenario-body::after, .summary-content::after { content: ""; display: block; clear: both; }
+.scenario-entry-card, .scenario-summary-card,
+.scenario-body, .summary-content { display: flow-root; }
 @media (max-width: 700px) {
   .scenario-figure.sf-left, .scenario-figure.sf-right {
     float: none; width: 100%; max-width: 100%; margin: 0.75rem 0;
@@ -1310,4 +1345,126 @@ body.print-mode #app { display: none !important; }
      title on the previous page. */
   .print-doc .sheet-portrait, .print-doc figure, .print-doc tr { break-inside: avoid; }
   a { color: #111 !important; text-decoration: none; }
+}
+
+/* ── P0: brand identity, splash & login ───────────────────────────────────── */
+.brand-mark { width: 56px; height: 56px; color: var(--accent2); display: block; }
+.brand-mark.lg { width: 72px; height: 72px; }
+.brand-splash { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+.brand-word {
+  font-size: 1.9rem; font-weight: 700; letter-spacing: 0.06em;
+  color: var(--text); text-transform: none;
+}
+.brand-tag { color: var(--text2); font-size: 0.85rem; letter-spacing: 0.03em; margin-top: 0.4rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .brand-splash { animation: brand-rise 0.5s ease-out both; }
+  .brand-mark { animation: brand-glow 3.2s ease-in-out infinite; }
+  @keyframes brand-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes brand-glow { 0%, 100% { opacity: 0.85; } 50% { opacity: 1; filter: drop-shadow(0 0 6px rgba(160,149,232,0.45)); } }
+}
+
+/* Atmospheric login: original generated backdrop + legibility overlay */
+.login-page { position: relative; overflow: hidden; }
+.login-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background: url('/img/login-bg.png') center / cover no-repeat;
+}
+.login-bg::after {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at center, rgba(10,10,16,0.35) 0%, rgba(10,10,16,0.78) 70%, rgba(10,10,16,0.92) 100%),
+    linear-gradient(180deg, rgba(10,10,16,0.45) 0%, rgba(10,10,16,0.2) 40%, rgba(10,10,16,0.8) 100%);
+}
+.login-page .login-card {
+  position: relative; z-index: 1;
+  background: color-mix(in srgb, var(--bg2) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  box-shadow: 0 24px 60px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.02) inset;
+  backdrop-filter: blur(6px) saturate(1.1);
+  -webkit-backdrop-filter: blur(6px) saturate(1.1);
+}
+.login-header { display: flex; flex-direction: column; align-items: center; }
+.login-header .brand-mark { margin-bottom: 0.6rem; }
+.login-header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: 0.05em; color: var(--text); }
+.login-header p { font-size: 0.84rem; color: var(--text2); margin-top: 0.2rem; letter-spacing: 0.04em; }
+
+/* ── P1: dual-theme tokens & toggle ───────────────────────────────────────── */
+:root { --focus: #a095e8; }
+/* Dark stays the default (the existing :root values). The light theme is a
+   hand-tuned map for WCAG-readable contrast — never an inversion of dark. */
+:root[data-theme="light"] {
+  --bg: #f6f5f9;
+  --bg2: #ffffff;
+  --bg3: #ecebf3;
+  --border: #d4d0e0;
+  --text: #1d1b2a;
+  --text2: #5b5570;
+  --accent: #5d50b8;
+  --accent2: #4a3f96;
+  --danger: #b3271e;
+  --danger-bg: #fbe9e7;
+  --success: #1f7a44;
+  --warning: #9a5b00;
+  --focus: #5d50b8;
+  color-scheme: light;
+}
+:root[data-theme="dark"] { color-scheme: dark; }
+
+/* Focus ring (consistent across both themes, theme-tinted). */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: calc(var(--radius) / 2);
+}
+
+/* Theme toggle button in the nav. */
+.theme-toggle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+  cursor: pointer;
+}
+.theme-toggle:hover { background: var(--bg2); border-color: var(--accent); color: var(--accent2); }
+.theme-toggle svg { display: block; }
+
+/* Nav brand: SVG mark instead of emoji */
+.nav-brand { gap: 0.55rem; }
+.brand-mark.sm { width: 22px; height: 22px; color: var(--accent2); }
+
+/* Light theme: the atmospheric photo backdrop is designed for dark. Swap to a
+   clean light gradient so the login reads correctly there. */
+:root[data-theme="light"] .login-page { background: linear-gradient(180deg, #eceaf6 0%, #f6f5f9 60%, #ffffff 100%); }
+:root[data-theme="light"] .login-bg { display: none; }
+:root[data-theme="light"] .login-page .login-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  box-shadow: 0 18px 50px -28px rgba(35, 26, 80, 0.25);
+  backdrop-filter: none;
+}
+
+/* Light theme: the dice-roller and llm-status colours that were tuned for the
+   dark palette stay readable via tokens; nothing component-level to override. */
+
+/* Respect user motion preferences globally for any P0/P1 transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Case Files: optional cover image per session card ────────────────────── */
+.session-card .session-cover {
+  display: block;
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  border-radius: calc(var(--radius) - 2px);
+  border: 1px solid var(--border);
+  margin-top: 0.8rem;
 }

@@ -96,7 +96,6 @@ const api = (() => {
     renameSessionFile: (sessionId, data) => req('POST', `/sessions/${sessionId}/files/rename`, data),
     deleteSessionFile: (sessionId, path) => req('POST', `/sessions/${sessionId}/files/delete`, { path }),
     saveSessionFilePrompt: (sessionId, path, text) => req('POST', `/sessions/${sessionId}/files/prompt`, { path, text }),
-    extractNpcPortraits: (sessionId) => req('POST', `/sessions/${sessionId}/npc-portraits/extract`, {}),
     generateEntityGraphicPrompt: (sessionId, data) => req('POST', `/sessions/${sessionId}/entities/graphic-prompt`, data),
   };
 })();

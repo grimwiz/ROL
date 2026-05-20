@@ -1,0 +1,12 @@
+{
+  "name": "The Folly — Investigator Case Files",
+  "short_name": "The Folly",
+  "description": "Case files, character sheets and scenario tools for a Rivers of London tabletop game.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#15131f",
+  "theme_color": "#15131f",
+  "icons": [
+    { "src": "/favicon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" }
+  ]
+}

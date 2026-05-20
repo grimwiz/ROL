@@ -1,0 +1,52 @@
+# Source Map
+
+Last seeded: 2026-05-20.
+
+The final extracted corpus should be ordered by conceptual dependency, not by the rulebook's paragraph order. The source map tracks coverage; it does not define final reading order.
+
+Status values:
+
+- `unreviewed` - not yet checked against extraction goals.
+- `parsed-ok` - markdown appears usable, but content has not been rewritten.
+- `needs-pdf-check` - markdown, table, order, or OCR quality is doubtful.
+- `extracted-draft` - paraphrased content exists but has not had completion review.
+- `reviewed-complete` - extracted content has passed source coverage, style review, and the PDF gate in `pdf-review.md`.
+- `excluded` - intentionally omitted from the extracted corpus.
+
+## Top-Level Coverage
+
+| Source area | Printed pages | Destination | Status | Notes |
+|---|---:|---|---|---|
+| Front matter, credits, legal text, handout credits, playtesters | front matter | none | excluded | Not play or scenario content. Keep attribution awareness only. |
+| Foreword and introductory fiction | 6-9 approx. | none | excluded | Fiction and authorial commentary are not part of the compact corpus. |
+| Introduction and overview | 10-16 | `rules/00-system-overview.md`, `scenario/00-table-frame.md` | extracted-draft | Dice basics, glossary, table roles, and system frame drafted in `rules/00-system-overview.md`; scenario framing still pending. |
+| The Domestic | 17-42 | none | excluded | Solo game material is explicitly out of scope. Do not mine it for extracted rules unless a later pass identifies a rule missing everywhere else. |
+| Chapter 1: Creating Characters | 43-78 | `rules/01-character-model.md`, `rules/03-character-creation.md` | extracted-draft | Character model and base creation procedure drafted, including occupations, advantages, starting skills, starting magic, affluence, contacts, equipment, and weapons. Needs completion review against PDF before `reviewed-complete`. |
+| Chapter 2: Skills | 79-102 | `rules/04-skills.md` | extracted-draft | Skill values, specialisations, common skills, expert skills, combat skills, opposition/difficulty notes, and pushing guidance drafted. Needs PDF check for two markdown ordering issues before completion. |
+| Chapter 3: Basic Rules | 103-160 | `rules/02-core-resolution.md`, `rules/05-advancement.md`, `rules/06-combat.md`, `rules/07-damage-and-healing.md`, `rules/08-chases.md` | extracted-draft | Core resolution, Luck, opposed rolls, Trying Your Luck, and impairment roll effects drafted; advancement, combat, damage/healing, chases, and vehicle rules still pending. |
+| Chapter 4: Newtonian Magic | 161-194 | `rules/09-magic.md`, `rules/10-spells.md` | extracted-draft | Vestigia, signare, magic points, spellcasting, boosting, technology, sensing spells, and HTD drafted in `rules/09-magic.md`; spell catalog and trees pending in `rules/10-spells.md`. |
+| Chapter 5: Working Together for Stranger London | 195-230 | `scenario/policing-and-investigations.md`, `scenario/gm-procedures.md` | unreviewed | Police structure, investigations, police powers, resources, GM advice, tone, pacing, tech, player issues. |
+| Chapter 6: A Rogues' Gallery | 231-258 | `scenario/npcs-and-beings.md`, `rules/11-demi-monde.md` | unreviewed | NPC summaries and stat-block routing; demi-monde rules and beings. Avoid reproducing long character prose. |
+| Chapter 7: Welcome to London | 259-284 | `scenario/folly-and-london.md`, `scenario/case-seeds.md` | unreviewed | Folly induction, Society history, organisations, building, London orientation, rivers, pubs, nazareths, case seeds. |
+| Chapter 8: The Bookshop | 285-308 | `scenario/bookshop-reference.md` | unreviewed | GM-only scenario material. Extract only if useful as reusable scenario reference; do not create a replacement adventure text by default. |
+| Chapter 9: Additional Rules | 309-342 | `rules/12-advanced-options.md`, `scenario/case-design.md` | unreviewed | Advanced creation, troupe play, organisations, fae PCs, new skills/spells, enchantments, combat options, poison, case writing. |
+| Appendix A: Ready-to-Play Investigators | 343-349 | `rules/pregens.md` or none | unreviewed | Mechanics may be useful as examples/templates; avoid copying backstories. |
+| Appendix B: Rules Summaries | 350-360 | `rules/quick-reference.md` | needs-pdf-check | Useful completeness checklist, but initial markdown inspection shows ordering and table issues. |
+| Appendix C: Bibliography | 361-362 | none | excluded | Not needed for compact play corpus. |
+| Appendix D: Maps and Handouts | 363-369 | scenario assets or none | unreviewed | Do not copy images by default. Use only as source pointers if needed for scenario reference. |
+| Index, character sheets, contributor bios, back matter | 370-end | none | excluded | Index can help find subjects; sheets may inform app fields but are not extracted prose. |
+
+## Completion Rule
+
+A section can only be marked `reviewed-complete` when:
+
+- Its destination file contains every rule or scenario fact needed from that source area.
+- Any omitted examples, flavour, fiction, or advice are noted as intentionally out of scope.
+- The corresponding row in `pdf-review.md` is `pdf-checked` or `excluded`.
+- Any uncertain markdown conversion has been checked against the PDF, fixed, and closed in `parse-issues.md`.
+- No linked gap remains open in `pdf-review.md`.
+- The result follows `style-guide.md`.
+
+## Source Staging
+
+Use `npm run extract:source` to generate `private/extracted-source/rulebook-relevant.md` and its manifest. The raw seed is gitignored and may be sent to an LLM as preparatory source material. The final paraphrased corpus must still be written into `rules/` and `scenario/`.

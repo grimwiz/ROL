@@ -4,14 +4,41 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Folly – Investigator Case Files</title>
+  <meta name="description" content="Case files, character sheets and scenario tools for a Rivers of London tabletop game.">
+  <meta name="theme-color" content="#15131f" id="meta-theme-color">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/favicon.svg">
+  <link rel="manifest" href="/site.webmanifest">
+  <!-- No flash of wrong theme: resolve the theme before the stylesheet paints.
+       'auto' (or unset) follows the OS; P1 adds the in-app toggle. -->
+  <script>
+    (function () {
+      try {
+        var pref = localStorage.getItem('folly-theme') || 'auto';
+        var dark = pref === 'dark' || (pref === 'auto' &&
+          (!window.matchMedia || !matchMedia('(prefers-color-scheme: light)').matches));
+        var t = dark ? 'dark' : 'light';
+        document.documentElement.dataset.theme = t;
+        document.documentElement.style.colorScheme = t;
+      } catch (e) { document.documentElement.dataset.theme = 'dark'; }
+    })();
+  </script>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
   <div id="app">
     <div id="loading-screen" class="loading-screen">
       <div class="loading-inner">
-        <div class="folly-logo">🔮</div>
-        <p>Loading case files…</p>
+        <div class="brand-splash">
+          <svg class="brand-mark" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+            <path d="M20 50V30a12 12 0 0 1 24 0v20" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+            <line x1="15" y1="50" x2="49" y2="50" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <path d="M32 23c2.7 2.5 4.2 4.9 4.2 7.3a4.2 4.2 0 0 1-8.4 0c0-1 .4-2.1 1.3-3.3C30.4 25.9 31.5 24.4 32 23Z" fill="currentColor"/>
+            <circle cx="32" cy="13" r="2.3" fill="currentColor" opacity="0.6"/>
+          </svg>
+          <div class="brand-word">The Folly</div>
+        </div>
+        <p class="brand-tag">Opening case files…</p>
       </div>
     </div>
   </div>

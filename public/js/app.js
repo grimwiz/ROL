@@ -11,6 +11,8 @@ const State = {
   scenarioSources: null,
   scenarioSelectedSourceIndex: null,
   rulesFiles: null,
+  rulesSections: [],
+  rulesChat: { messages: [], streaming: false, controller: null },
   domesticAdventure: null,
   domesticCurrentStep: null,
   domesticSavedStep: null,
@@ -312,6 +314,54 @@ async function init() {
   }
 }
 
+// ── Theme: Auto / Light / Dark (P1 dual-theme) ───────────────────────────────
+// The no-FOUC bootstrap in index.html resolves the theme before CSS paints.
+// This module owns the in-app toggle, persistence, and live OS reaction.
+const THEME_KEY = 'folly-theme';
+const THEME_COLOR = { dark: '#15131f', light: '#f6f5f9' };
+const THEME_ICONS = {
+  auto: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>',
+  light: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="12" r="5"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></g></svg>',
+  dark: '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'
+};
+const THEME_LABELS = { auto: 'Theme: Auto (follows system)', light: 'Theme: Light', dark: 'Theme: Dark' };
+let themeMqlBound = false;
+function getThemePref() { try { return localStorage.getItem(THEME_KEY) || 'auto'; } catch { return 'auto'; } }
+function setThemePref(p) { try { localStorage.setItem(THEME_KEY, p); } catch { /* private mode */ } }
+function resolveTheme(pref) {
+  if (pref === 'dark' || pref === 'light') return pref;
+  return (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+}
+function applyTheme() {
+  const pref = getThemePref();
+  const effective = resolveTheme(pref);
+  document.documentElement.dataset.theme = effective;
+  document.documentElement.style.colorScheme = effective;
+  const meta = document.getElementById('meta-theme-color');
+  if (meta) meta.setAttribute('content', THEME_COLOR[effective]);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) {
+    btn.innerHTML = THEME_ICONS[pref];
+    btn.setAttribute('aria-label', THEME_LABELS[pref]);
+    btn.setAttribute('title', THEME_LABELS[pref]);
+    btn.setAttribute('aria-pressed', pref === 'dark' ? 'true' : 'false');
+    btn.dataset.themePref = pref;
+  }
+  if (!themeMqlBound && window.matchMedia) {
+    const mql = matchMedia('(prefers-color-scheme: light)');
+    const onChange = () => { if (getThemePref() === 'auto') applyTheme(); };
+    if (mql.addEventListener) mql.addEventListener('change', onChange);
+    else if (mql.addListener) mql.addListener(onChange);
+    themeMqlBound = true;
+  }
+}
+function cycleTheme() {
+  const order = ['auto', 'light', 'dark'];
+  setThemePref(order[(order.indexOf(getThemePref()) + 1) % order.length]);
+  applyTheme();
+}
+window.cycleTheme = cycleTheme;
+
 // ── Login ─────────────────────────────────────────────────────────────────────
 function renderLoginPage() {
   const app = el('app');
@@ -321,47 +371,70 @@ function renderLoginPage() {
     div.id = 'login-page';
     div.className = 'page login-page';
     div.innerHTML = `
+      <div class="login-bg" aria-hidden="true"></div>
       <div class="login-card">
         <div class="login-header">
-          <div class="logo">🔮</div>
+          <svg class="brand-mark lg" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+            <path d="M20 50V30a12 12 0 0 1 24 0v20" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+            <line x1="15" y1="50" x2="49" y2="50" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <path d="M32 23c2.7 2.5 4.2 4.9 4.2 7.3a4.2 4.2 0 0 1-8.4 0c0-1 .4-2.1 1.3-3.3C30.4 25.9 31.5 24.4 32 23Z" fill="currentColor"/>
+            <circle cx="32" cy="13" r="2.3" fill="currentColor" opacity="0.6"/>
+          </svg>
           <h1>The Folly</h1>
           <p>Investigator Case Files</p>
         </div>
         <div id="login-alert"></div>
-        <div class="form-group">
-          <label>Username</label>
-          <input type="text" id="login-user" autocomplete="username" autocapitalize="none">
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" id="login-pass" autocomplete="current-password">
-        </div>
-        <button class="btn btn-primary btn-full" id="login-btn">Sign in</button>
+        <form id="login-form" autocomplete="on">
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="login-user" name="username" autocomplete="username" autocapitalize="none">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="login-pass" name="password" autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn btn-primary btn-full" id="login-btn">Sign in</button>
+        </form>
       </div>`;
     app.appendChild(div);
   }
   showPage('login-page');
 
   const btn = el('login-btn');
+  const form = el('login-form');
   const doLogin = async () => {
     btn.disabled = true; btn.textContent = 'Signing in…';
     try {
       resetUserScopedState();
-      State.user = await api.login(el('login-user').value, el('login-pass').value);
+      const u = el('login-user'); const p = el('login-pass');
+      State.user = await api.login(u.value, p.value);
+      // Clear inputs immediately on success so password managers (Bitwarden
+      // etc.) that finalise the save on the form's submit event don't see
+      // hanging credentials and queue a prompt to fire on a later button.
+      try { u.value = ''; p.value = ''; } catch (_) { /* best-effort */ }
       await renderMain();
+      // renderMain() also removes #login-page (covers session-restore path
+      // too); leaving this here is idempotent and harmless.
+      const loginPage = el('login-page');
+      if (loginPage) loginPage.remove();
     } catch (e) {
       showAlert(e.message, 'danger', 'login-alert');
       btn.disabled = false; btn.textContent = 'Sign in';
     }
   };
-  btn.onclick = doLogin;
-  el('login-pass').onkeydown = e => { if (e.key === 'Enter') doLogin(); };
+  // Submit on Enter or button click dispatches a real submit event — the
+  // signal password managers use to confirm a login completed.
+  form.addEventListener('submit', (e) => { e.preventDefault(); doLogin(); });
 }
 
 // ── Main shell ────────────────────────────────────────────────────────────────
 async function renderMain() {
   const app = el('app');
   el('loading-screen') && el('loading-screen').remove();
+  // Remove the login form from the DOM regardless of how we got here (fresh
+  // login OR session-restore on refresh) so password managers never see a
+  // hidden login form and misread later button clicks as a re-submit.
+  el('login-page') && el('login-page').remove();
   if (!el('main-page')) {
     const div = document.createElement('div');
     div.id = 'main-page';
@@ -373,7 +446,15 @@ async function renderMain() {
 
   el('main-page').innerHTML = `
     <nav class="nav">
-      <div class="nav-brand">🔮 The Folly</div>
+      <div class="nav-brand">
+        <svg class="brand-mark sm" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <path d="M20 50V30a12 12 0 0 1 24 0v20" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+          <line x1="15" y1="50" x2="49" y2="50" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          <path d="M32 23c2.7 2.5 4.2 4.9 4.2 7.3a4.2 4.2 0 0 1-8.4 0c0-1 .4-2.1 1.3-3.3C30.4 25.9 31.5 24.4 32 23Z" fill="currentColor"/>
+          <circle cx="32" cy="13" r="2.3" fill="currentColor" opacity="0.6"/>
+        </svg>
+        <span>The Folly</span>
+      </div>
       <div class="nav-tabs">
         <button class="nav-tab active" data-tab="sessions" onclick="switchTab('sessions')">Case Files</button>
         <button class="nav-tab" data-tab="rules" onclick="switchTab('rules')">Rules</button>
@@ -381,6 +462,7 @@ async function renderMain() {
         <button class="nav-tab" data-tab="about" onclick="switchTab('about')">About</button>
       </div>
       <div class="nav-right">
+        <button id="theme-toggle" class="theme-toggle" type="button" onclick="cycleTheme()" aria-label="Theme: change" title="Theme"></button>
         <span id="nav-llm-status" class="llm-status" hidden title="An AI task is running (only one runs at a time on the shared GPU)">
           <span class="llm-dot"></span><span class="llm-text">AI working…</span>
           ${isGM ? '<button type="button" class="llm-stop" onclick="stopActiveRegen()" hidden>Stop</button>' : ''}
@@ -405,6 +487,7 @@ async function renderMain() {
     <div id="tab-about" class="main" style="display:none"></div>`;
 
   showPage('main-page');
+  applyTheme();
   startLlmStatusPolling();
   await restoreUiFromUrl(true);
 }
@@ -716,6 +799,11 @@ function renderDomesticCard() {
 
 function renderSessionCard(s) {
   const isGM = State.user.role === 'gm';
+  // Optional cover: a graphic in the session Gallery whose stem matches the
+  // session name (server-resolved per-viewer; null when none exists).
+  const cover = s.cover_image
+    ? `<img class="session-cover" src="${esc(scenarioAssetUrl(s.cover_image, s.id))}" alt="${esc(s.name)}" loading="lazy">`
+    : '';
   return `<div class="card session-card" onclick="openSession(${s.id})">
     <div class="card-header">
       <div>
@@ -728,6 +816,7 @@ function renderSessionCard(s) {
       </div>` : ''}
     </div>
     ${isGM ? `<p class="player-count">👥 ${s.player_count || 0} player${s.player_count !== 1 ? 's' : ''}</p>` : ''}
+    ${cover}
   </div>`;
 }
 
@@ -855,7 +944,7 @@ async function openSession(sessionId, options = {}) {
       ${isGM ? `<div class="sheet-tab" data-session-panel="gm-info" onclick="switchSessionPanel(${sessionId}, 'gm-info')">GM Info</div>` : ''}
       ${isGM ? `<div class="sheet-tab" data-session-panel="raw-data" onclick="switchSessionPanel(${sessionId}, 'raw-data')">Edit Files</div>` : ''}
       ${isGM ? `<div class="sheet-tab" data-session-panel="npcs" onclick="switchSessionPanel(${sessionId}, 'npcs')">NPCs</div>` : ''}
-      ${isGM ? `<div class="sheet-tab" data-session-panel="gm-chat" onclick="switchSessionPanel(${sessionId}, 'gm-chat')">AI Support</div>` : ''}
+      <div class="sheet-tab" data-session-panel="gm-chat" onclick="switchSessionPanel(${sessionId}, 'gm-chat')">AI Support</div>
     </div>
     <div id="session-content"><p style="color:var(--text2)">Loading…</p></div>`;
 
@@ -882,7 +971,7 @@ async function switchSessionPanel(sessionId, panel) {
     else if (panel === 'raw-data') await renderSessionScenarioInfo(sessionId, 'raw');
     else if (panel === 'npcs') await renderSessionNpcs(sessionId);
     else if (panel === 'overview') await renderSessionOverview(sessionId);
-    else if (panel === 'gm-chat') await renderSessionGmChat(sessionId);
+    else if (panel === 'gm-chat') await renderSessionAiSupport(sessionId);
     else await renderSessionCharacters(sessionId);
   } finally {
     applyLlmBusyUI({
@@ -1018,6 +1107,38 @@ function setGmChatStreaming(on) {
   if (send) send.style.display = on ? 'none' : '';
   if (stop) stop.style.display = on ? '' : 'none';
   if (text) text.disabled = on;
+}
+
+// AI Support — minimal v1: hosts the rules-chat (rules + the user's character
+// JSON) so both players and GMs can ask rules questions in-session. The full
+// role-aware refactor (player case context, GM attachable character/NPC JSONs)
+// is the follow-up.
+async function renderSessionAiSupport(sessionId) {
+  const tab = el('session-content');
+  if (!tab) return;
+  const isGM = State.user.role === 'gm';
+  tab.innerHTML = `
+    <div class="page-header">
+      <div>
+        <h2>AI Support</h2>
+        <p class="card-sub">Ask rules questions. Grounded in the compact rules reference${isGM ? '' : ' and your stored character sheet'}.</p>
+      </div>
+      <button class="btn btn-sm" onclick="clearRulesChat()">Clear</button>
+    </div>
+    <div id="rules-chat-alert"></div>
+    <div class="gmchat-wrap">
+      <div class="gmchat-log" id="rules-chat-log"></div>
+      <div class="gmchat-compose">
+        <textarea id="rules-chat-text" rows="3" placeholder="Ask how a rule works, or how it applies to your character…" onkeydown="rulesChatKey(event)"></textarea>
+        <div class="gmchat-actions">
+          <span style="flex:1"></span>
+          <button class="btn btn-primary" id="rules-chat-send" onclick="sendRulesChat()">Send</button>
+          <button class="btn" id="rules-chat-stop" onclick="stopRulesChat()" style="display:none">Stop</button>
+        </div>
+      </div>
+    </div>`;
+  renderRulesChatLog();
+  setRulesChatStreaming(State.rulesChat.streaming);
 }
 
 async function renderSessionGmChat(sessionId) {
@@ -1806,6 +1927,38 @@ function closePrintDoc() {
 window.closePrintDoc = closePrintDoc;
 window.doPrintDoc = () => window.print();
 
+// Inject a sheet-data portrait into every entry card whose title matches a
+// known character/NPC name. Single source of truth (the sheet), one technique
+// for both players and NPCs — no special cases, no reliance on Gallery files.
+function injectSheetPortraits(root, portraitsByName) {
+  if (!root || !portraitsByName) return;
+  const norm = (s) => String(s || '').toLowerCase().trim();
+  const map = {};
+  Object.keys(portraitsByName).forEach((k) => { map[norm(k)] = portraitsByName[k]; });
+  root.querySelectorAll('.scenario-entry-card').forEach((card) => {
+    const titleEl = card.querySelector('.card-title');
+    if (!titleEl) return;
+    const dataUri = map[norm(titleEl.textContent)];
+    if (!dataUri) return;
+    if (card.querySelector('.scenario-figure')) return; // already has one
+    let body = card.querySelector('.scenario-body');
+    if (!body) {
+      body = document.createElement('div');
+      body.className = 'scenario-body';
+      (card.querySelector('.card-header') || card).insertAdjacentElement('afterend', body);
+    }
+    const fig = document.createElement('figure');
+    fig.className = 'scenario-figure sf-left';
+    fig.style.setProperty('--sf-w', '30%');
+    const img = document.createElement('img');
+    img.src = dataUri;
+    img.alt = titleEl.textContent;
+    img.loading = 'lazy';
+    fig.appendChild(img);
+    body.insertBefore(fig, body.firstChild);
+  });
+}
+
 async function exportPrintDoc(sessionId, kind) {
   closePrintDoc();
   const toolbar = document.createElement('div');
@@ -1835,13 +1988,22 @@ async function exportPrintDoc(sessionId, kind) {
     const caseName = (sess && sess.name) || `Session ${sessionId}`;
     const stamp = new Date().toLocaleString('en-GB');
     let html = '';
+    const portraitsByName = {};
 
     if (kind === 'player') {
       const base = await loadScenarioInfo(sessionId);
-      const players = await api.getSessionPlayers(sessionId);
-      const sheets = await api.getSheets(sessionId);
+      const [players, sheets, npcs] = await Promise.all([
+        api.getSessionPlayers(sessionId),
+        api.getSheets(sessionId),
+        api.getNpcs(sessionId)
+      ]);
       const sheetByUser = {};
       sheets.forEach((s) => { sheetByUser[s.user_id] = s; });
+      // Unified portrait source: the sheet. Player characters' portraits live
+      // on their sheet.data.portrait; NPC portraits on npc.sheet.portrait. One
+      // map keyed by name → data URI, used by injectSheetPortraits below.
+      sheets.forEach((s) => { const d = s && s.data; if (d && d.name && d.portrait) portraitsByName[d.name] = d.portrait; });
+      npcs.forEach((n) => { if (n && n.name && n.sheet && n.sheet.portrait) portraitsByName[n.name] = n.sheet.portrait; });
       const summary = base.summary || {};
       const whatHappened = summary.what_has_happened || base.what_has_happened;
       const sessions = scenarioArray(summary.session_summaries);
@@ -1908,6 +2070,7 @@ async function exportPrintDoc(sessionId, kind) {
         SheetForm.render(host, job.data, true);
       } catch (e) { host.innerHTML = `<p style="color:#a00">Sheet render failed: ${esc(e.message || e)}</p>`; }
     }
+    injectSheetPortraits(doc, portraitsByName);
   } catch (e) {
     doc.innerHTML = `<div style="padding:2rem;color:#a00">Export failed: ${esc(e.message || e)}</div>
       <div style="padding:0 2rem"><button class="btn" onclick="closePrintDoc()">Close</button></div>`;
@@ -2624,8 +2787,13 @@ function renderScenarioEntry(entry, fallbackTitle = 'Entry', anchorId = '') {
         </div>
       </div>
       ${(() => {
-        const pp = entityPortraitPath(title);
-        const fig = pp ? `<figure class="scenario-figure sf-left" style="--sf-w:30%"><img src="${esc(scenarioAssetUrl(pp))}" alt="${esc(title)}" loading="lazy"></figure>` : '';
+        // Prefer the read-time DB portrait (NPCs.sheet.portrait / sheets.data.portrait)
+        // attached by the server; fall back to a Gallery file via entityPortraitPath
+        // so any custom GM-uploaded picture without a backing sheet still works.
+        const fromDb = (data && typeof data.portrait === 'string' && data.portrait) ? data.portrait : '';
+        const pp = fromDb ? '' : entityPortraitPath(title);
+        const src = fromDb || (pp ? scenarioAssetUrl(pp) : '');
+        const fig = src ? `<figure class="scenario-figure sf-left" style="--sf-w:30%"><img src="${esc(src)}" alt="${esc(title)}" loading="lazy"></figure>` : '';
         return (fig || bodyHtml) ? `<div class="scenario-body">${fig}${bodyHtml}</div>` : '';
       })()}
       ${blocks.join('')}
@@ -3123,7 +3291,6 @@ function renderScenarioSourceEditor(sources) {
         <div class="ef-toolbar">
           <button class="btn btn-sm" onclick="efCreateFile(${State.currentSession})">+ New file</button>
           <button class="btn btn-sm" onclick="efUploadFile(${State.currentSession})">⤴ Upload</button>
-          <button class="btn btn-sm" onclick="efExtractNpcPortraits(${State.currentSession})" title="Copy allocated NPC sheet portraits into the player Gallery (only when you ask)">Extract NPC portraits</button>
         </div>
       </div>
       <div class="scenario-file-editor">
@@ -3598,22 +3765,6 @@ function efDeleteSelected(sessionId) {
   efDeleteFile(sessionId, src.path);
 }
 window.efDeleteSelected = efDeleteSelected;
-
-async function efExtractNpcPortraits(sessionId) {
-  if (!confirm('Copy allocated NPC sheet portraits into the player Gallery? Existing ones are left as-is.')) return;
-  try {
-    const r = await api.extractNpcPortraits(sessionId);
-    const n = r && r.extracted || 0;
-    showAlert(n
-      ? `Extracted ${n} NPC portrait${n === 1 ? '' : 's'}${r.skipped ? ` (${r.skipped} already present)` : ''}.`
-      : 'No new portraits to extract — all allocated NPCs with a sheet portrait already have a file.',
-      n ? 'success' : 'danger', 'scenario-alert');
-    if (n) await reloadCurrentSessionPanel();
-  } catch (e) {
-    showAlert(e.message || 'Extraction failed', 'danger', 'scenario-alert');
-  }
-}
-window.efExtractNpcPortraits = efExtractNpcPortraits;
 
 async function reloadCurrentSessionPanel() {
   if (!State.currentSession) return;
@@ -4539,16 +4690,16 @@ function loadAboutTab() {
 }
 
 // ── Rules tab ────────────────────────────────────────────────────────────────
+// Inline-render the rules HTML from the server. Print uses the same print-doc
+// overlay pattern as Case Files → Overview (see exportPrintDoc / closePrintDoc),
+// so the layout, pagination, contrast and Print/Close toolbar are all shared.
 async function loadRulesTab() {
   const tab = el('tab-rules');
   if (!tab) return;
 
-  let files = State.rulesFiles;
-  if (!files) {
+  if (!State.rulesIndex) {
     try {
-      const rules = await api.getRules();
-      files = rules.files;
-      State.rulesFiles = files;
+      State.rulesIndex = await api.getRules();
     } catch (e) {
       tab.innerHTML = `
         <div class="page-header"><h2>Rules Library</h2></div>
@@ -4556,17 +4707,172 @@ async function loadRulesTab() {
       return;
     }
   }
+  const idx = State.rulesIndex;
 
   tab.innerHTML = `
-    <div class="page-header"><h2>Rules Library</h2></div>
-    <div class="card">
-      <div class="card-title">Rivers of London Rulebook</div>
-      <p class="card-sub">The HTML rulebook is shown below. Use your browser's built-in find (Ctrl/Cmd + F) to search.</p>
-      <div class="rulebook-pane">
-        <iframe src="${esc(files.html)}" title="Rivers of London rulebook" loading="lazy"></iframe>
+    <div class="page-header">
+      <div>
+        <h2>${esc(idx.title || 'Rules Library')}</h2>
+        <p class="card-sub">Compact extracted reference from <code>Rivers_of_London/rules/rules</code>. Browser find works on this page.</p>
       </div>
-    </div>`;
+      <button class="btn btn-primary" type="button" onclick="openRulesPrintDoc()">🖨 Print rules</button>
+    </div>
+    ${idx.sections && idx.sections.length
+      ? `<nav class="rules-toc" aria-label="Rules sections">${idx.sections.map((s) => `<span>${esc(s.title)}</span>`).join('')}</nav>`
+      : ''}
+    <article class="card rulebook-body">${idx.html || '<p>(no rule files found)</p>'}</article>`;
 }
+
+// Open the rules in the same print-doc overlay used by Case Files → Overview
+// (closePrintDoc tears it down). The @media print CSS already handles the
+// page-break / contrast / hide-chrome rules.
+function openRulesPrintDoc() {
+  if (typeof closePrintDoc === 'function') closePrintDoc();
+  const idx = State.rulesIndex;
+  const html = (idx && idx.html) || '';
+  const title = (idx && idx.title) || 'Rivers of London Compact Rules Reference';
+  const toolbar = document.createElement('div');
+  toolbar.id = 'print-toolbar';
+  toolbar.className = 'print-toolbar';
+  toolbar.innerHTML = '<button class="btn btn-primary" onclick="doPrintDoc()">🖨 Print / Save PDF</button><button class="btn" onclick="closePrintDoc()">Close</button>';
+  document.body.appendChild(toolbar);
+  const doc = document.createElement('div');
+  doc.id = 'print-doc';
+  doc.className = 'print-doc';
+  doc.innerHTML = `<div class="print-cover"><h1>${esc(title)}</h1></div><div class="print-section">${html}</div>`;
+  document.body.appendChild(doc);
+  document.body.classList.add('print-mode');
+  window.scrollTo(0, 0);
+}
+window.openRulesPrintDoc = openRulesPrintDoc;
+
+function rulesChatLogHtml() {
+  const st = State.rulesChat;
+  if (!st.messages.length) {
+    return '<div class="empty" style="padding:1.5rem"><p>Ask about a mechanic, a roll, character creation, skills, Luck, or magic. This chat is grounded in the compact rules only.</p></div>';
+  }
+  return st.messages.map((m) => {
+    const who = m.role === 'user' ? 'You' : 'Assistant';
+    let body = esc(m.content || '') + (m.streaming ? '<span class="gmchat-caret">▍</span>' : '');
+    if (m.error) body += `<div class="gmchat-error">Error: ${esc(m.error)}</div>`;
+    return `<div class="gmchat-msg gmchat-${m.role}"><div class="gmchat-who">${who}</div><div class="gmchat-body">${body || '<em style="color:var(--text2)">...</em>'}</div></div>`;
+  }).join('');
+}
+
+function renderRulesChatLog() {
+  const log = el('rules-chat-log');
+  if (!log) return;
+  log.innerHTML = rulesChatLogHtml();
+  log.scrollTop = log.scrollHeight;
+}
+
+function setRulesChatStreaming(on) {
+  const send = el('rules-chat-send');
+  const stop = el('rules-chat-stop');
+  const text = el('rules-chat-text');
+  if (send) send.style.display = on ? 'none' : '';
+  if (stop) stop.style.display = on ? '' : 'none';
+  if (text) text.disabled = on;
+}
+
+function rulesChatKey(ev) {
+  if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) {
+    ev.preventDefault();
+    sendRulesChat();
+  }
+}
+window.rulesChatKey = rulesChatKey;
+
+async function sendRulesChat() {
+  const st = State.rulesChat;
+  if (st.streaming) return;
+  const textEl = el('rules-chat-text');
+  const text = (textEl && textEl.value || '').trim();
+  if (!text) return;
+  textEl.value = '';
+  st.messages.push({ role: 'user', content: text });
+  const reply = { role: 'assistant', content: '', streaming: true };
+  st.messages.push(reply);
+  renderRulesChatLog();
+  await runRulesStream(reply);
+}
+window.sendRulesChat = sendRulesChat;
+
+async function runRulesStream(reply) {
+  const st = State.rulesChat;
+  const cut = st.messages.indexOf(reply);
+  const payload = st.messages.slice(0, cut < 0 ? st.messages.length : cut)
+    .map(({ role, content }) => ({ role, content }));
+  reply.content = '';
+  reply.error = null;
+  reply.streaming = true;
+  st.controller = new AbortController();
+  st.streaming = true;
+  setRulesChatStreaming(true);
+  llmPendingBegin('Rules Chat');
+  renderRulesChatLog();
+  try {
+    const res = await fetch('/api/rules/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ messages: payload }),
+      signal: st.controller.signal
+    });
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (_) {}
+      throw new Error(msg);
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    const handle = (line) => {
+      const t = line.trim();
+      if (!t) return;
+      let obj;
+      try { obj = JSON.parse(t); } catch { return; }
+      if (obj.delta) { reply.content += obj.delta; renderRulesChatLog(); }
+      else if (obj.error) { reply.error = obj.error; }
+    };
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let nl;
+      while ((nl = buffer.indexOf('\n')) >= 0) {
+        handle(buffer.slice(0, nl));
+        buffer = buffer.slice(nl + 1);
+      }
+    }
+    handle(buffer);
+  } catch (e) {
+    if (e.name === 'AbortError') reply.error = reply.content ? null : 'Stopped.';
+    else reply.error = e.message || 'Rules chat failed';
+  } finally {
+    reply.streaming = false;
+    if (!reply.content && !reply.error) st.messages = st.messages.filter((m) => m !== reply);
+    st.streaming = false;
+    st.controller = null;
+    setRulesChatStreaming(false);
+    llmPendingEnd();
+    renderRulesChatLog();
+  }
+}
+
+function stopRulesChat() {
+  const st = State.rulesChat;
+  if (st.controller) st.controller.abort();
+}
+window.stopRulesChat = stopRulesChat;
+
+function clearRulesChat() {
+  const st = State.rulesChat;
+  if (st.streaming) return;
+  st.messages = [];
+  renderRulesChatLog();
+}
+window.clearRulesChat = clearRulesChat;
 
 // The Domestic opens inside the Case File page, like any other case file.
 async function openDomestic(options = {}) {
@@ -4791,7 +5097,10 @@ async function renderAdminAccounts() {
   host.innerHTML = `
     <div class="page-header">
       <h2>Accounts</h2>
-      <button class="btn btn-primary" onclick="openCreateUser()">+ New account</button>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <a class="btn" href="/api/admin/backup" title="Download a .zip of the entire data folder — SQLite DB, case files, galleries, config">⤓ Data backup (.zip)</a>
+        <button class="btn btn-primary" onclick="openCreateUser()">+ New account</button>
+      </div>
     </div>
     <div id="users-alert"></div>
     <div class="card">
