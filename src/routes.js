@@ -1692,6 +1692,27 @@ function isCocStyleSheetKey(key) {
   return COC_STYLE_SHEET_KEYS.has(k);
 }
 
+function isMasteredSpellText(value) {
+  const text = String(value || '').toLowerCase();
+  if (/\bunmastered\b|\bnot\s+mastered\b/.test(text)) return false;
+  return /\bmastered\b|\bmastery\b/.test(text);
+}
+
+function masteredSpellCountForSheet(sheet) {
+  return (Array.isArray(sheet && sheet.magic_spells) ? sheet.magic_spells : []).filter((spell) => {
+    if (!spell || typeof spell !== 'object') return false;
+    if (spell.mastered === true) return true;
+    if (spell.mastered === false) return false;
+    if (!String(spell.name || '').trim()) return false;
+    return isMasteredSpellText(spell.order);
+  }).length;
+}
+
+function calculatedMagicPointsForSheet(sheet) {
+  const pow = parseInt(String(sheet && sheet.pow == null ? '' : sheet.pow).replace(/[^0-9-]/g, ''), 10);
+  return Number.isFinite(pow) && pow > 0 ? Math.round(pow / 5) + masteredSpellCountForSheet(sheet) : '';
+}
+
 // Drop base64 image payloads from a sheet (they're not useful as text to the
 // LLM). In the default Rivers-of-London ruleset, also remove CoC-style fields
 // so the AI never receives hidden/disabled mechanics as character data. Long
@@ -1718,6 +1739,20 @@ function stripSheetValuesForRulesAi(value, ruleset) {
   return out;
 }
 
+function sheetForRulesAi(value, ruleset) {
+  const sheet = stripSheetValuesForRulesAi(value, ruleset);
+  if (!sheet || typeof sheet !== 'object' || Array.isArray(sheet)) return sheet;
+  const calculatedMp = calculatedMagicPointsForSheet(sheet);
+  if (calculatedMp === '') return sheet;
+  const derived = sheet.derived && typeof sheet.derived === 'object' && !Array.isArray(sheet.derived) ? { ...sheet.derived } : {};
+  const storedMp = parseInt(String(derived.mp == null ? '' : derived.mp).replace(/[^0-9-]/g, ''), 10);
+  if (!Number.isFinite(storedMp) || storedMp < calculatedMp) {
+    derived.mp = String(calculatedMp);
+    sheet.derived = derived;
+  }
+  return sheet;
+}
+
 function loadRulesCharacterContext(user, sessionId) {
   const activeSessionId = Number.isFinite(Number(sessionId)) ? Number(sessionId) : null;
   // Always include the requesting user's own character sheets (useful for
@@ -1742,7 +1777,7 @@ function loadRulesCharacterContext(user, sessionId) {
       session_name: row.session_name,
       updated_at: row.updated_at,
       ruleset,
-      sheet: stripSheetValuesForRulesAi(parseStoredSheetData(row.data), ruleset)
+      sheet: sheetForRulesAi(parseStoredSheetData(row.data), ruleset)
     };
   });
   // GM in a specific session: also surface every session character sheet and
@@ -1771,7 +1806,7 @@ function loadRulesCharacterContext(user, sessionId) {
           session_name: row.session_name,
           updated_at: row.updated_at,
           ruleset,
-          sheet: stripSheetValuesForRulesAi(parseStoredSheetData(row.data), ruleset)
+          sheet: sheetForRulesAi(parseStoredSheetData(row.data), ruleset)
         });
       }
     } catch (_) { /* best-effort */ }
@@ -1788,7 +1823,7 @@ function loadRulesCharacterContext(user, sessionId) {
           id: row.id,
           name: row.name,
           ruleset: sessionRuleset,
-          sheet: stripSheetValuesForRulesAi(parsed || {}, sessionRuleset)
+          sheet: sheetForRulesAi(parsed || {}, sessionRuleset)
         });
       }
     } catch (_) { /* best-effort */ }

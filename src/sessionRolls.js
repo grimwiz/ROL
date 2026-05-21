@@ -149,6 +149,22 @@ function rowToRoll(row) {
 
 const STATS = ['luck', 'hp', 'mp'];
 
+function isMasteredSpellText(value) {
+  const text = String(value || '').toLowerCase();
+  if (/\bunmastered\b|\bnot\s+mastered\b/.test(text)) return false;
+  return /\bmastered\b|\bmastery\b/.test(text);
+}
+
+function masteredSpellCount(sheet) {
+  return (Array.isArray(sheet && sheet.magic_spells) ? sheet.magic_spells : []).filter((spell) => {
+    if (!spell || typeof spell !== 'object') return false;
+    if (spell.mastered === true) return true;
+    if (spell.mastered === false) return false;
+    if (!String(spell.name || '').trim()) return false;
+    return isMasteredSpellText(spell.order);
+  }).length;
+}
+
 // Base values from the player's sheet for this case (never written back):
 // Luck stat, derived current HP and MP.
 function sheetBaseStats(db, sessionId, userId) {
@@ -157,7 +173,8 @@ function sheetBaseStats(db, sessionId, userId) {
   let sheet = null;
   try { sheet = sheetRow && sheetRow.data ? JSON.parse(sheetRow.data) : null; } catch { sheet = null; }
   const d = (sheet && sheet.derived) || {};
-  return { luck: num(sheet && sheet.luck), hp: num(d.hp), mp: num(d.mp) };
+  const calculatedMp = sheet ? (num(sheet.pow) ? Math.round(num(sheet.pow) / 5) + masteredSpellCount(sheet) : 0) : 0;
+  return { luck: num(sheet && sheet.luck), hp: num(d.hp), mp: Math.max(num(d.mp), calculatedMp) };
 }
 
 function statAdjustmentSum(db, sessionId, userId, stat) {

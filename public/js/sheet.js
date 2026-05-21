@@ -130,6 +130,36 @@ const SheetForm = (() => {
     return d10() + d10() + 50;
   }
 
+  function isMasteredSpellText(value) {
+    const text = String(value || '').toLowerCase();
+    if (/\bunmastered\b|\bnot\s+mastered\b/.test(text)) return false;
+    return /\bmastered\b|\bmastery\b/.test(text);
+  }
+
+  function isMasteredSpell(spell) {
+    if (!spell || typeof spell !== 'object') return false;
+    if (spell.mastered === true) return true;
+    if (spell.mastered === false) return false;
+    if (!String(spell.name || '').trim()) return false;
+    return isMasteredSpellText(spell.order);
+  }
+
+  function masteredSpellCountFromData(d) {
+    return (Array.isArray(d && d.magic_spells) ? d.magic_spells : []).filter(isMasteredSpell).length;
+  }
+
+  function masteredSpellCountFromDom() {
+    return Array.from(document.querySelectorAll('#magic-spells .magic-spell-row')).filter((row) => {
+      const name = ((row.querySelector('.spell-name') || {}).value || '').trim();
+      const order = ((row.querySelector('.spell-order') || {}).value || '').trim();
+      return name && isMasteredSpellText(order);
+    }).length;
+  }
+
+  function magicPointsFromPow(pow, masteredSpellCount) {
+    return pow ? Math.round(pow / 5) + masteredSpellCount : '';
+  }
+
   function calcDerived() {
     const con = getStatValue('con');
     const siz = getStatValue('siz');
@@ -138,7 +168,7 @@ const SheetForm = (() => {
     const rol = !sizEnabled();
     const hp = (!rol && siz && con) ? Math.round((con + siz) / 10) : '';
     const san = pow ? pow : '';
-    const mp  = pow ? Math.round(pow / 5) : '';
+    const mp  = magicPointsFromPow(pow, masteredSpellCountFromDom());
     const buildRaw = (!rol && str && siz) ? str + siz : null;
     let build = '';
     if (buildRaw !== null) {
@@ -343,8 +373,15 @@ const SheetForm = (() => {
 
   function renderSkillValueSelect(id, value, readonly) {
     const rdAttr = readonly ? ' disabled' : '';
-    const options = SKILL_PERCENT_OPTIONS.map((n) => {
-      const selectedAttr = String(value || '30') === String(n) ? ' selected' : '';
+    const parsedValue = parseInt(String(value || '').replace(/[^0-9-]/g, ''), 10);
+    const optionValues = [...SKILL_PERCENT_OPTIONS];
+    if (Number.isFinite(parsedValue) && !optionValues.includes(parsedValue)) {
+      optionValues.push(parsedValue);
+      optionValues.sort((a, b) => a - b);
+    }
+    const selectedValue = Number.isFinite(parsedValue) ? String(parsedValue) : String(value || '30');
+    const options = optionValues.map((n) => {
+      const selectedAttr = selectedValue === String(n) ? ' selected' : '';
       return `<option value="${n}"${selectedAttr}>${n}%</option>`;
     }).join('');
     return `<select id="${id}" class="csk-val"${rdAttr}>${options}</select>`;
@@ -404,8 +441,8 @@ const SheetForm = (() => {
       : '<div class="sheet-portrait-empty">No picture</div>';
   }
 
-  function renderDerivedField(field, label, value, autoValue, readonly) {
-    const isAuto = !value || value === String(autoValue);
+  function renderDerivedField(field, label, value, autoValue, readonly, legacyAutoValues = []) {
+    const isAuto = !value || value === String(autoValue) || legacyAutoValues.map(String).includes(String(value));
     const displayVal = isAuto ? autoValue : value;
     if (readonly) {
       return fg(label, `<input type="text" value="${esc(displayVal)}" readonly>`);
@@ -491,6 +528,8 @@ const SheetForm = (() => {
     const rdAttr = readonly ? ' readonly' : '';
     const derived = d.derived || {};
     const autoD = calcDerivedFromData(d);
+    const powValue = parseInt(d.pow, 10) || 0;
+    const legacyMpAuto = powValue ? Math.round(powValue / 5) : '';
     const showMagicSection = isMagicCapableData(d);
 
     container.innerHTML = `
@@ -561,12 +600,12 @@ const SheetForm = (() => {
       <div class="derived-grid">
         ${sizEnabled() ? renderDerivedField('hp', 'HP', derived.hp || '', autoD.hp, readonly) : ''}
         ${renderDerivedField('san',   'SAN',     derived.san   || '', autoD.san,   readonly)}
-        ${renderDerivedField('mp',    'MP',      derived.mp    || '', autoD.mp,    readonly)}
+        ${renderDerivedField('mp',    'MP',      derived.mp    || '', autoD.mp,    readonly, [legacyMpAuto])}
         ${sizEnabled() ? renderDerivedField('build', 'Build', derived.build || '', autoD.build, readonly) : ''}
         ${fg('Move', `<input type="text" id="sf_derived_move" value="${esc(derived.move || d.mov || '')}" placeholder="e.g. 8"${rdAttr}>`)}
         ${renderDerivedField('luck', 'Luck', d.luck || '', (d.luck && String(d.luck).trim()) ? d.luck : rollStartingLuck(), readonly)}
       </div>
-      ${!readonly ? `<p class="card-sub" style="margin-top:0.35rem">${sizEnabled() ? 'HP, SAN, MP and Build are auto-calculated from base stats' : 'SAN and MP are auto-calculated from POW'}; Luck "Auto" rolls 2D10+50. Click "Manual" to override.</p>` : ''}
+      ${!readonly ? `<p class="card-sub" style="margin-top:0.35rem">${sizEnabled() ? 'HP, SAN and Build are auto-calculated from base stats; MP is POW/5 plus mastered spells' : 'SAN is auto-calculated from POW; MP is POW/5 plus mastered spells'}; Luck "Auto" rolls 2D10+50. Click "Manual" to override.</p>` : ''}
     </div>
   </div>
 
@@ -704,7 +743,7 @@ const SheetForm = (() => {
     const rol = !sizEnabled();
     const hp  = (!rol && siz && con) ? Math.round((con + siz) / 10) : '';
     const san = pow || '';
-    const mp  = pow ? Math.round(pow / 5) : '';
+    const mp  = magicPointsFromPow(pow, masteredSpellCountFromData(d));
     const buildRaw = (!rol && str && siz) ? str + siz : null;
     let build = '';
     if (buildRaw !== null) {
@@ -834,6 +873,7 @@ const SheetForm = (() => {
     const section = document.getElementById('magic-section');
     if (!section) return;
     section.style.display = isMagicCapableFromDom() ? '' : 'none';
+    updateDerivedDisplay();
   }
 
   function initialiseDynamicFields(readonly) {
