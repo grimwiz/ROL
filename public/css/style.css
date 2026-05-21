@@ -710,90 +710,9 @@ tr:hover td { background: var(--bg3); }
   margin: -0.7rem 0 1rem;
 }
 
-/* ── Rules library ───────────────────────────────────────── */
-.rules-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
-  gap: 1rem;
-  align-items: start;
-}
-.rules-access-card .rules-links {
-  margin-top: 0.75rem;
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-.rules-section-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.75rem;
-}
-.rules-section-list span {
-  border: 1px solid var(--border);
-  background: var(--bg3);
-  border-radius: 999px;
-  padding: 0.18rem 0.5rem;
-  font-size: 0.78rem;
-  color: var(--text2);
-}
-.rules-chat-card {
-  position: sticky;
-  top: 0.75rem;
-}
-.rules-chat-wrap {
-  height: calc(100vh - 19rem);
-  min-height: 420px;
-}
-.rules-search-actions { margin-bottom: 0.75rem; }
-.rules-results-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-.rules-result-item {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.7rem 0.8rem;
-}
-.rules-result-title {
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-.rules-result-title span {
-  font-weight: 400;
-  color: var(--text2);
-  font-size: 0.82rem;
-}
-.rules-result-item p {
-  color: var(--text2);
-  font-size: 0.86rem;
-}
 .adventure-description p { margin-bottom: 0.8rem; }
 .adventure-description p:last-child { margin-bottom: 0; }
 .adventure-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-
-
-.rulebook-pane {
-  margin-top: 0.9rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  min-height: 70vh;
-  background: var(--bg3);
-}
-.rulebook-pane iframe {
-  width: 100%;
-  min-height: 70vh;
-  border: none;
-  background: #fff;
-}
-@media (max-width: 1100px) {
-  .rules-layout { grid-template-columns: 1fr; }
-  .rules-chat-card { position: static; }
-  .rules-chat-wrap { height: 440px; }
-}
 
 /* ── Modal ───────────────────────────────────────────────── */
 .modal-backdrop {
@@ -1013,8 +932,11 @@ tr:hover td { background: var(--bg3); }
 .gmchat-wrap {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 13rem);
+  /* Page chrome (nav + session header + sub-tabs + AI-Support header) varies;
+     leave generous breathing room so the compose row never scrolls off. */
+  height: calc(100vh - 22rem);
   min-height: 320px;
+  max-height: 78vh;
 }
 .gmchat-log {
   border: 1px solid var(--border);
@@ -1048,6 +970,12 @@ tr:hover td { background: var(--bg3); }
 .gmchat-compose { margin-top: 0.75rem; flex: 0 0 auto; }
 .gmchat-compose textarea { width: 100%; resize: vertical; }
 .gmchat-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: center; }
+/* Inline compose: Send/Stop sit to the right of the textarea instead of below
+   it — saves vertical space on the AI Support page so the controls stay on
+   screen without scrolling. */
+.gmchat-compose-inline { display: flex; gap: 0.5rem; align-items: stretch; }
+.gmchat-compose-inline textarea { flex: 1 1 auto; min-height: 4.5rem; }
+.gmchat-actions-side { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0; flex: 0 0 auto; align-items: stretch; }
 .gmchat-mode { display: inline-flex; gap: 0.25rem; }
 .gmchat-mode .btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .gmchat-image { max-width: 320px; max-height: 420px; width: auto; height: auto; border: 1px solid var(--border); border-radius: var(--radius); display: block; }
@@ -1345,6 +1273,10 @@ body.print-mode #app { display: none !important; }
      title on the previous page. */
   .print-doc .sheet-portrait, .print-doc figure, .print-doc tr { break-inside: avoid; }
   a { color: #111 !important; text-decoration: none; }
+  body.rules-print-mode .nav, body.rules-print-mode .rules-print-actions { display: none !important; }
+  body.rules-print-mode #tab-rules { display: block !important; padding: 0; }
+  body.rules-print-mode #tab-rules .print-doc { max-width: none; margin: 0; padding: 0; }
+  body.rules-print-mode #tab-rules .print-doc .print-section { break-before: auto; page-break-before: auto; }
 }
 
 /* ── P0: brand identity, splash & login ───────────────────────────────────── */

@@ -1673,40 +1673,130 @@ function renderRulesPrintableHtml(rulesIndex) {
 </html>`;
 }
 
-function stripLargeSheetValues(value) {
-  if (Array.isArray(value)) return value.map(stripLargeSheetValues);
+function normaliseSheetRuleset(value) {
+  return value === 'coc' ? 'coc' : 'rol';
+}
+
+const COC_STYLE_SHEET_KEYS = new Set([
+  'siz',
+  'hp', 'basehp', 'currenthp', 'maxhp', 'hpbase', 'hpcurrent', 'hpmax',
+  'hitpoint', 'hitpoints', 'basehitpoints', 'currenthitpoints', 'maxhitpoints',
+  'hitpointsbase', 'hitpointscurrent', 'hitpointsmax',
+  'san', 'sanity', 'basesan', 'currentsan', 'maxsan', 'sanbase', 'sancurrent', 'sanmax',
+  'basesanity', 'currentsanity', 'maxsanity', 'sanitybase', 'sanitycurrent', 'sanitymax',
+  'build'
+]);
+
+function isCocStyleSheetKey(key) {
+  const k = String(key || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  return COC_STYLE_SHEET_KEYS.has(k);
+}
+
+// Drop base64 image payloads from a sheet (they're not useful as text to the
+// LLM). In the default Rivers-of-London ruleset, also remove CoC-style fields
+// so the AI never receives hidden/disabled mechanics as character data. Long
+// prose strings — backgrounds, motivations, history, notes — pass through
+// unchanged; they directly inform how the LLM answers questions about a
+// character.
+function stripSheetValuesForRulesAi(value, ruleset) {
+  const sheetRuleset = normaliseSheetRuleset(ruleset);
+  if (Array.isArray(value)) return value.map((child) => stripSheetValuesForRulesAi(child, sheetRuleset));
   if (!value || typeof value !== 'object') {
     if (typeof value === 'string' && /^data:image\//i.test(value)) return '[image data omitted]';
-    if (typeof value === 'string' && value.length > 4000) return `${value.slice(0, 4000)}... [truncated]`;
     return value;
   }
   const out = {};
   for (const [key, child] of Object.entries(value)) {
-    if (/portrait|image/i.test(key) && typeof child === 'string' && child.length > 200) {
+    if (sheetRuleset !== 'coc' && isCocStyleSheetKey(key)) {
+      continue;
+    } else if (/portrait|image/i.test(key) && typeof child === 'string' && child.length > 200) {
       out[key] = '[image data omitted]';
     } else {
-      out[key] = stripLargeSheetValues(child);
+      out[key] = stripSheetValuesForRulesAi(child, sheetRuleset);
     }
   }
   return out;
 }
 
-function loadRulesCharacterContext(user) {
-  const rows = db.prepare(`
-    SELECT cs.session_id, s.name AS session_name, cs.updated_at, cs.data
+function loadRulesCharacterContext(user, sessionId) {
+  const activeSessionId = Number.isFinite(Number(sessionId)) ? Number(sessionId) : null;
+  // Always include the requesting user's own character sheets (useful for
+  // players asking rules-about-my-character questions).
+  const ownParams = [user.id];
+  const ownSessionFilter = activeSessionId ? ' AND cs.session_id = ?' : '';
+  if (activeSessionId) ownParams.push(activeSessionId);
+  const ownRows = db.prepare(`
+    SELECT cs.session_id, cs.user_id, s.name AS session_name, cs.updated_at, cs.data,
+           COALESCE(ss.ruleset, 'rol') AS ruleset
     FROM character_sheets cs
     JOIN sessions s ON s.id = cs.session_id
-    WHERE cs.user_id = ?
+    LEFT JOIN session_settings ss ON ss.session_id = cs.session_id
+    WHERE cs.user_id = ?${ownSessionFilter}
     ORDER BY cs.updated_at DESC, cs.session_id DESC
-  `).all(user.id);
-  return {
-    user: { id: user.id, username: user.username, role: user.role },
-    characters: rows.map((row) => ({
+  `).all(...ownParams);
+  const characters = ownRows.map((row) => {
+    const ruleset = normaliseSheetRuleset(row.ruleset);
+    return {
       session_id: row.session_id,
+      user_id: row.user_id,
       session_name: row.session_name,
       updated_at: row.updated_at,
-      sheet: stripLargeSheetValues(parseStoredSheetData(row.data))
-    }))
+      ruleset,
+      sheet: stripSheetValuesForRulesAi(parseStoredSheetData(row.data), ruleset)
+    };
+  });
+  // GM in a specific session: also surface every session character sheet and
+  // every allocated NPC sheet so "tell me about Andrew" works without a paste.
+  const npcs = [];
+  if (activeSessionId && user.role === 'gm') {
+    const sessionRuleset = normaliseSheetRuleset(sessionRolls.getSettings(db, activeSessionId).ruleset);
+    try {
+      const sessionRows = db.prepare(`
+        SELECT cs.session_id, cs.user_id, u.username, s.name AS session_name, cs.updated_at, cs.data,
+               COALESCE(ss.ruleset, 'rol') AS ruleset
+        FROM character_sheets cs
+        JOIN sessions s ON s.id = cs.session_id
+        JOIN users u ON u.id = cs.user_id
+        LEFT JOIN session_settings ss ON ss.session_id = cs.session_id
+        WHERE cs.session_id = ?
+      `).all(activeSessionId);
+      for (const row of sessionRows) {
+        // Skip duplicates already added via ownRows (same session+user combo).
+        if (characters.some((c) => c.session_id === row.session_id && c.user_id === row.user_id)) continue;
+        const ruleset = normaliseSheetRuleset(row.ruleset);
+        characters.push({
+          session_id: row.session_id,
+          user_id: row.user_id,
+          username: row.username,
+          session_name: row.session_name,
+          updated_at: row.updated_at,
+          ruleset,
+          sheet: stripSheetValuesForRulesAi(parseStoredSheetData(row.data), ruleset)
+        });
+      }
+    } catch (_) { /* best-effort */ }
+    try {
+      const npcRows = db.prepare(`
+        SELECT n.id, n.name, n.sheet FROM npcs n
+        JOIN npc_sessions ns ON ns.npc_id = n.id
+        WHERE ns.session_id = ?
+      `).all(activeSessionId);
+      for (const row of npcRows) {
+        let parsed = null;
+        try { parsed = row.sheet ? JSON.parse(row.sheet) : null; } catch { parsed = null; }
+        npcs.push({
+          id: row.id,
+          name: row.name,
+          ruleset: sessionRuleset,
+          sheet: stripSheetValuesForRulesAi(parsed || {}, sessionRuleset)
+        });
+      }
+    } catch (_) { /* best-effort */ }
+  }
+  return {
+    user: { id: user.id, username: user.username, role: user.role },
+    characters,
+    npcs
   };
 }
 
@@ -1801,7 +1891,8 @@ router.post('/rules/chat', requireAuth, async (req, res) => {
   const t0 = Date.now();
   try {
     logLine('ruleschat.start', { userId: req.user.id });
-    await streamRulesChat(rulesIndex.markdown, loadRulesCharacterContext(req.user), req.body && req.body.messages, {
+    const sessionId = req.body && Number.isFinite(Number(req.body.sessionId)) ? Number(req.body.sessionId) : null;
+    await streamRulesChat(rulesIndex.markdown, loadRulesCharacterContext(req.user, sessionId), req.body && req.body.messages, {
       signal: controller.signal,
       onToken: (delta) => res.write(`${JSON.stringify({ delta })}\n`)
     });

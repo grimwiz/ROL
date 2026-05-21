@@ -10,9 +10,8 @@ const State = {
   scenarioInfo: null,
   scenarioSources: null,
   scenarioSelectedSourceIndex: null,
-  rulesFiles: null,
-  rulesSections: [],
   rulesChat: { messages: [], streaming: false, controller: null },
+  aiSupportMode: {},  // per-session GM AI Support mode: 'gm' (default) | 'rules'
   domesticAdventure: null,
   domesticCurrentStep: null,
   domesticSavedStep: null,
@@ -157,7 +156,6 @@ function resetUserScopedState() {
   State.currentSheetUserId = null;
   State.npcs = [];
   State.scenarioInfo = null;
-  State.rulesFiles = null;
   resetDomesticRuntimeState();
 }
 
@@ -928,11 +926,9 @@ async function openSession(sessionId, options = {}) {
   tab.innerHTML = `
     <div class="page-header">
       <div>
-        <button class="btn btn-sm" onclick="loadSessionsTab()" style="margin-bottom:0.5rem">← Back</button>
         <h2>${esc(session.name)}</h2>
         ${session.description ? `<p style="color:var(--text2);font-size:0.88rem">${esc(session.description)}</p>` : ''}
       </div>
-      ${isGM ? `<button class="btn btn-primary btn-sm" onclick="openAssignPlayer(${sessionId})">+ Assign player</button>` : ''}
     </div>
     <div id="session-alert"></div>
     <div class="sheet-tabs session-subtabs">
@@ -1109,29 +1105,53 @@ function setGmChatStreaming(on) {
   if (text) text.disabled = on;
 }
 
-// AI Support — minimal v1: hosts the rules-chat (rules + the user's character
-// JSON) so both players and GMs can ask rules questions in-session. The full
-// role-aware refactor (player case context, GM attachable character/NPC JSONs)
-// is the follow-up.
+// AI Support — role-aware dispatch with an optional GM mode toggle.
+// Player: rules-chat surface (rules + their character JSON). No toggle.
+// GM, mode='gm' (default): renderSessionGmChat — Brainstorm + Image + Save.
+// GM, mode='rules': rules-chat surface, with a toggle back to GM Chat.
+// The toggle is rendered in both GM views so the GM can always switch modes.
+function aiSupportToggleHtml(sessionId, mode) {
+  return `<div class="gmchat-mode" role="group" aria-label="AI Support mode">
+    <button type="button" class="btn btn-sm${mode === 'gm' ? ' active' : ''}" onclick="setAiSupportMode(${sessionId}, 'gm')">💬 GM Chat</button>
+    <button type="button" class="btn btn-sm${mode === 'rules' ? ' active' : ''}" onclick="setAiSupportMode(${sessionId}, 'rules')">📖 Rules</button>
+  </div>`;
+}
+
+function setAiSupportMode(sessionId, mode) {
+  State.aiSupportMode[sessionId] = mode === 'rules' ? 'rules' : 'gm';
+  renderSessionAiSupport(sessionId);
+}
+window.setAiSupportMode = setAiSupportMode;
+
 async function renderSessionAiSupport(sessionId) {
+  const isGM = State.user.role === 'gm';
+  const mode = State.aiSupportMode[sessionId] || 'gm';
+  if (isGM && mode === 'gm') {
+    return renderSessionGmChat(sessionId);
+  }
+  // Rules-chat panel: player path (no toggle), or GM-in-rules-mode (with toggle).
   const tab = el('session-content');
   if (!tab) return;
-  const isGM = State.user.role === 'gm';
+  const subText = isGM
+    ? 'Ask rules questions. Grounded in the compact rules reference.'
+    : 'Ask rules questions. Grounded in the compact rules reference and your stored character sheet.';
   tab.innerHTML = `
     <div class="page-header">
       <div>
         <h2>AI Support</h2>
-        <p class="card-sub">Ask rules questions. Grounded in the compact rules reference${isGM ? '' : ' and your stored character sheet'}.</p>
+        <p class="card-sub">${subText}</p>
       </div>
-      <button class="btn btn-sm" onclick="clearRulesChat()">Clear</button>
+      <div style="display:flex;gap:0.5rem;align-items:center">
+        ${isGM ? aiSupportToggleHtml(sessionId, 'rules') : ''}
+        <button class="btn btn-sm" onclick="clearRulesChat()">Clear</button>
+      </div>
     </div>
     <div id="rules-chat-alert"></div>
     <div class="gmchat-wrap">
       <div class="gmchat-log" id="rules-chat-log"></div>
-      <div class="gmchat-compose">
-        <textarea id="rules-chat-text" rows="3" placeholder="Ask how a rule works, or how it applies to your character…" onkeydown="rulesChatKey(event)"></textarea>
-        <div class="gmchat-actions">
-          <span style="flex:1"></span>
+      <div class="gmchat-compose gmchat-compose-inline">
+        <textarea id="rules-chat-text" rows="3" placeholder="Ask how a rule works, or how it applies${isGM ? ' to a character' : ' to your character'}…" onkeydown="rulesChatKey(event)"></textarea>
+        <div class="gmchat-actions gmchat-actions-side">
           <button class="btn btn-primary" id="rules-chat-send" onclick="sendRulesChat()">Send</button>
           <button class="btn" id="rules-chat-stop" onclick="stopRulesChat()" style="display:none">Stop</button>
         </div>
@@ -1151,7 +1171,8 @@ async function renderSessionGmChat(sessionId) {
         <h2>AI Support</h2>
         <p class="card-sub">Private brainstorming grounded in this case's GM material. Never shown to players; ephemeral (cleared on reload).</p>
       </div>
-      <div style="display:flex;gap:0.5rem">
+      <div style="display:flex;gap:0.5rem;align-items:center">
+        ${aiSupportToggleHtml(sessionId, 'gm')}
         <button class="btn btn-sm" onclick="exportGmChat(${sessionId}, this)">Save to GM notes</button>
         <button class="btn btn-sm" onclick="clearGmChat(${sessionId})">Clear</button>
       </div>
@@ -2088,7 +2109,7 @@ async function renderGMSessionView(sessionId, preferredUserId = null) {
 
   const content = el('session-content');
   if (players.length === 0) {
-    content.innerHTML = `<div class="empty"><div class="empty-icon">👥</div><p>No players assigned to this session yet.</p></div>`;
+    content.innerHTML = `<div class="empty"><div class="empty-icon">👥</div><p>No players assigned to this session yet.</p><button class="btn btn-primary" style="margin-top:1rem" onclick="openAssignPlayer(${sessionId})">+ Assign player</button></div>`;
     return;
   }
 
@@ -2097,14 +2118,15 @@ async function renderGMSessionView(sessionId, preferredUserId = null) {
   window.gmSheetMap = sheetMap;
 
   content.innerHTML = `
-    <div style="margin-bottom:1rem">
-      <div class="sheet-tabs" id="gm-sheet-tabs">
+    <div style="margin-bottom:1rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+      <div class="sheet-tabs" id="gm-sheet-tabs" style="flex:1 1 auto">
         ${players.map((p, i) => `
           <div class="sheet-tab${i===0?' active':''}" onclick="gmSelectSheet(${p.id},'${esc(p.username)}')" id="stab_${p.id}">
             ${esc(p.username)}
             ${!sheetMap[p.id] ? ' <span style="opacity:0.5;font-size:0.75rem">(empty)</span>' : ''}
           </div>`).join('')}
       </div>
+      <button class="btn btn-sm" onclick="openAssignPlayer(${sessionId})" title="Assign another player to this case">+ Assign player</button>
     </div>
     <div style="margin-bottom:1rem;display:flex;gap:0.75rem;align-items:center">
       <span id="gm-viewing-label" style="color:var(--text2);font-size:0.88rem"></span>
@@ -4690,9 +4712,6 @@ function loadAboutTab() {
 }
 
 // ── Rules tab ────────────────────────────────────────────────────────────────
-// Inline-render the rules HTML from the server. Print uses the same print-doc
-// overlay pattern as Case Files → Overview (see exportPrintDoc / closePrintDoc),
-// so the layout, pagination, contrast and Print/Close toolbar are all shared.
 async function loadRulesTab() {
   const tab = el('tab-rules');
   if (!tab) return;
@@ -4710,41 +4729,22 @@ async function loadRulesTab() {
   const idx = State.rulesIndex;
 
   tab.innerHTML = `
-    <div class="page-header">
-      <div>
-        <h2>${esc(idx.title || 'Rules Library')}</h2>
-        <p class="card-sub">Compact extracted reference from <code>Rivers_of_London/rules</code>. Browser find works on this page.</p>
-      </div>
-      <button class="btn btn-primary" type="button" onclick="openRulesPrintDoc()">🖨 Print rules</button>
+    <div class="page-header rules-print-actions">
+      <h2>${esc(idx.title || 'Rules Library')}</h2>
+      <button class="btn btn-primary" type="button" onclick="printRulesTab()">🖨 Print rules</button>
     </div>
-    ${idx.sections && idx.sections.length
-      ? `<nav class="rules-toc" aria-label="Rules sections">${idx.sections.map((s) => `<span>${esc(s.title)}</span>`).join('')}</nav>`
-      : ''}
-    <article class="card rulebook-body">${idx.html || '<p>(no rule files found)</p>'}</article>`;
+    <article class="print-doc rules-document">
+      <div class="print-cover"><h1>${esc(idx.title || 'Rivers of London Compact Rules Reference')}</h1></div>
+      <div class="print-section">${idx.html || '<p>(no rule files found)</p>'}</div>
+    </article>`;
 }
 
-// Open the rules in the same print-doc overlay used by Case Files → Overview
-// (closePrintDoc tears it down). The @media print CSS already handles the
-// page-break / contrast / hide-chrome rules.
-function openRulesPrintDoc() {
-  if (typeof closePrintDoc === 'function') closePrintDoc();
-  const idx = State.rulesIndex;
-  const html = (idx && idx.html) || '';
-  const title = (idx && idx.title) || 'Rivers of London Compact Rules Reference';
-  const toolbar = document.createElement('div');
-  toolbar.id = 'print-toolbar';
-  toolbar.className = 'print-toolbar';
-  toolbar.innerHTML = '<button class="btn btn-primary" onclick="doPrintDoc()">🖨 Print / Save PDF</button><button class="btn" onclick="closePrintDoc()">Close</button>';
-  document.body.appendChild(toolbar);
-  const doc = document.createElement('div');
-  doc.id = 'print-doc';
-  doc.className = 'print-doc';
-  doc.innerHTML = `<div class="print-cover"><h1>${esc(title)}</h1></div><div class="print-section">${html}</div>`;
-  document.body.appendChild(doc);
-  document.body.classList.add('print-mode');
-  window.scrollTo(0, 0);
+function printRulesTab() {
+  document.body.classList.add('rules-print-mode');
+  window.print();
+  setTimeout(() => document.body.classList.remove('rules-print-mode'), 500);
 }
-window.openRulesPrintDoc = openRulesPrintDoc;
+window.printRulesTab = printRulesTab;
 
 function rulesChatLogHtml() {
   const st = State.rulesChat;
@@ -4816,7 +4816,7 @@ async function runRulesStream(reply) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ messages: payload }),
+      body: JSON.stringify({ messages: payload, sessionId: State.currentSession || null }),
       signal: st.controller.signal
     });
     if (!res.ok) {
@@ -4891,7 +4891,6 @@ async function openDomestic(options = {}) {
   tab.innerHTML = `
     <div class="page-header">
       <div>
-        <button class="btn btn-sm" onclick="loadSessionsTab()" style="margin-bottom:0.5rem">← Back</button>
         <h2>The Domestic</h2>
         <p style="color:var(--text2);font-size:0.88rem">Solo adventure — play through the case and build your character as you go.</p>
       </div>
