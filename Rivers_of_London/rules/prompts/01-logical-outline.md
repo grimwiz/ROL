@@ -16,8 +16,7 @@ Requirements:
 
 Output:
 
-- Final `rules/` file list with section headings.
+- Final numbered rules file list with section headings.
 - Final `scenario/` file list with section headings.
 - Cross-reference list for rules that depend on other files.
 - Subjects intentionally omitted, with reasons.
-

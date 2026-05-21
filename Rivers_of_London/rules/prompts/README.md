@@ -10,4 +10,4 @@ The intended flow is:
 4. `03-scenario-draft.md` - draft one scenario reference file at a time from the raw seed.
 5. `04-completeness-review.md` - compare a draft against the raw seed and list missing nuances.
 
-Do not paste generated final text back into the raw source folder. Final paraphrased files go in `../rules/` or `../scenario/`.
+Do not paste generated final text back into the raw source folder. Final paraphrased rules files go in `../`; scenario files go in `../scenario/`.

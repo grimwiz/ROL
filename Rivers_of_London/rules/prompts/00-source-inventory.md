@@ -17,8 +17,7 @@ Requirements:
 
 Output:
 
-- Proposed logical ordering for `rules/`.
+- Proposed logical ordering for the numbered rules files.
 - Proposed logical ordering for `scenario/`.
 - A missing/uncertain source checklist.
 - A table mapping source sections to target files.
-

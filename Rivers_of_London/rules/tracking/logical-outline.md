@@ -8,19 +8,19 @@ The final extracted corpus should be organised for efficient use by experienced 
 
 | Order | File | Purpose | Source areas |
 |---:|---|---|---|
-| 00 | `rules/00-system-overview.md` | Premise, table roles, investigators, dice, glossary, one-page resolution summary. | `intro-core`, `intro-glossary`, `rules-summaries` |
-| 01 | `rules/01-character-model.md` | Characteristics, skills, half values, Luck, MOV, magic points, damage states, sheet vocabulary. | `character-creation`, `core-rules`, `newtonian-magic`, `rules-summaries` |
-| 02 | `rules/02-core-resolution.md` | When to roll, goals, difficulty, success levels, pushing, bonus/penalty dice, human limits, Luck, opposed rolls. | `core-rules`, `skills`, `rules-summaries` |
-| 03 | `rules/03-character-creation.md` | Step-by-step investigator creation, occupations, advantages, skill selection, backstory, affluence, equipment, starting magic. | `character-creation`, `additional-rules` |
-| 04 | `rules/04-skills.md` | Skill catalog, skill bases, specialisations, opposition/difficulty guidance, pushing consequences. | `skills`, `additional-rules` |
-| 05 | `rules/05-advancement.md` | Investigator development phase, development points, training, skill increases, spells, advantages, employment/backstory review. | `core-rules`, `rules-summaries` |
-| 06 | `rules/06-combat.md` | Combat sequence, turns, actions, responses, melee, ranged, manoeuvres, armour, ranged modifiers, combat FAQ. | `core-rules`, `additional-rules`, `rules-summaries` |
-| 07 | `rules/07-damage-and-healing.md` | Damage rolls, weapon/spell damage interaction, damage conditions, impairment, healing, mortal wounds, other damage, poison. | `core-rules`, `additional-rules`, `rules-summaries` |
-| 08 | `rules/08-chases.md` | Foot chases, pursuit/fleeing flow, ranged attacks during chases, vehicle chases and vehicle damage. | `core-rules`, `rules-summaries` |
-| 09 | `rules/09-magic.md` | Vestigia, signare, magic points, casting, mastered/unmastered spells, sensing casting, boosting, technology, HTD. | `newtonian-magic`, `rules-summaries` |
-| 10 | `rules/10-spells.md` | Spell catalog with order, prerequisites, cost, effect, mastered/unmastered behavior, boost notes, trees. | `newtonian-magic`, `additional-rules` |
-| 11 | `rules/11-demi-monde.md` | Glamour, thematic power, demi-monde Luck, cold iron, non-Newtonian special abilities, PC-facing fae/Quiet People options. | `rogues-and-demi-monde`, `additional-rules`, `rules-summaries` |
-| 12 | `rules/12-advanced-options.md` | Advanced creation, disadvantages, troupe play, organisations, new skills/spells, enchantments, demon traps, rose jars, expanded combat. | `additional-rules` |
+| 00 | `00-system-overview.md` | Premise, table roles, investigators, dice, glossary, one-page resolution summary. | `intro-core`, `intro-glossary`, `rules-summaries` |
+| 01 | `01-character-model.md` | Characteristics, skills, half values, Luck, MOV, magic points, damage states, sheet vocabulary. | `character-creation`, `core-rules`, `newtonian-magic`, `rules-summaries` |
+| 02 | `02-core-resolution.md` | When to roll, goals, difficulty, success levels, pushing, bonus/penalty dice, human limits, Luck, opposed rolls. | `core-rules`, `skills`, `rules-summaries` |
+| 03 | `03-character-creation.md` | Step-by-step investigator creation, occupations, advantages, skill selection, backstory, affluence, equipment, starting magic. | `character-creation`, `additional-rules` |
+| 04 | `04-skills.md` | Skill catalog, skill bases, specialisations, opposition/difficulty guidance, pushing consequences. | `skills`, `additional-rules` |
+| 05 | `05-advancement.md` | Investigator development phase, development points, training, skill increases, spells, advantages, employment/backstory review. | `core-rules`, `rules-summaries` |
+| 06 | `06-combat.md` | Combat sequence, turns, actions, responses, melee, ranged, manoeuvres, armour, ranged modifiers, combat FAQ. | `core-rules`, `additional-rules`, `rules-summaries` |
+| 07 | `07-damage-and-healing.md` | Damage rolls, weapon/spell damage interaction, damage conditions, impairment, healing, mortal wounds, other damage, poison. | `core-rules`, `additional-rules`, `rules-summaries` |
+| 08 | `08-chases.md` | Foot chases, pursuit/fleeing flow, ranged attacks during chases, vehicle chases and vehicle damage. | `core-rules`, `rules-summaries` |
+| 09 | `09-magic.md` | Vestigia, signare, magic points, casting, mastered/unmastered spells, sensing casting, boosting, technology, HTD. | `newtonian-magic`, `rules-summaries` |
+| 10 | `10-spells.md` | Spell catalog with order, prerequisites, cost, effect, mastered/unmastered behavior, boost notes, trees. | `newtonian-magic`, `additional-rules` |
+| 11 | `11-demi-monde.md` | Glamour, thematic power, demi-monde Luck, cold iron, non-Newtonian special abilities, PC-facing fae/Quiet People options. | `rogues-and-demi-monde`, `additional-rules`, `rules-summaries` |
+| 12 | `12-advanced-options.md` | Advanced creation, disadvantages, troupe play, organisations, new skills/spells, enchantments, demon traps, rose jars, expanded combat. | `additional-rules` |
 
 ## Scenario Files
 
@@ -38,19 +38,19 @@ The final extracted corpus should be organised for efficient use by experienced 
 
 ## Drafting Order
 
-1. `rules/00-system-overview.md`
-2. `rules/01-character-model.md`
-3. `rules/02-core-resolution.md`
-4. `rules/03-character-creation.md`
-5. `rules/04-skills.md`
-6. `rules/09-magic.md`
-7. `rules/10-spells.md`
-8. `rules/06-combat.md`
-9. `rules/07-damage-and-healing.md`
-10. `rules/08-chases.md`
-11. `rules/05-advancement.md`
-12. `rules/11-demi-monde.md`
-13. `rules/12-advanced-options.md`
+1. `00-system-overview.md`
+2. `01-character-model.md`
+3. `02-core-resolution.md`
+4. `03-character-creation.md`
+5. `04-skills.md`
+6. `09-magic.md`
+7. `10-spells.md`
+8. `06-combat.md`
+9. `07-damage-and-healing.md`
+10. `08-chases.md`
+11. `05-advancement.md`
+12. `11-demi-monde.md`
+13. `12-advanced-options.md`
 14. Scenario files in numbered order.
 
 ## Cross-Reference Rules

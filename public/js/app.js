@@ -4713,7 +4713,7 @@ async function loadRulesTab() {
     <div class="page-header">
       <div>
         <h2>${esc(idx.title || 'Rules Library')}</h2>
-        <p class="card-sub">Compact extracted reference from <code>Rivers_of_London/rules/rules</code>. Browser find works on this page.</p>
+        <p class="card-sub">Compact extracted reference from <code>Rivers_of_London/rules</code>. Browser find works on this page.</p>
       </div>
       <button class="btn btn-primary" type="button" onclick="openRulesPrintDoc()">🖨 Print rules</button>
     </div>

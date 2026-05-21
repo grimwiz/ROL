@@ -36,4 +36,4 @@ Current default generation excludes *The Domestic*, the full Chapter 8 scenario,
 - Draft base rules before optional rules.
 - Draft spell and skill catalogs from normalized templates, not source paragraph order.
 - Draft scenario files by operational use: Folly operations, police process, London gazetteer, NPC/beings, case design, case seeds.
-- Keep raw source in `private/`; only paraphrased outputs belong in tracked `rules/` and `scenario/`.
+- Keep raw source in `private/`; only paraphrased outputs belong in tracked numbered rules files and `scenario/`.

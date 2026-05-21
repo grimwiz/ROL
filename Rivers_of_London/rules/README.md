@@ -6,11 +6,19 @@ The goal is a player- and GM-usable corpus for experienced roleplayers: complete
 
 ## Layout
 
-- `rules/` - core and optional game mechanics needed to play.
+- `NN-*.md` - core and optional game mechanics needed to play. Files marked `extracted-draft` in their source comments have not yet had final completeness review.
 - `scenario/` - setting, Folly process, policing, locations, organisations, NPC-useful background, and case-design material.
 - `source/` - instructions for raw source staging in the gitignored repo-root `private/` folder.
 - `prompts/` - prompt sequence for inventory, outline, drafting, and completeness review.
 - `tracking/` - source coverage, subject routing, PDF gate status, parse concerns, and review history.
+
+Expected rules coverage includes:
+
+- System overview, character model, character creation, and advancement.
+- Skills, core d100 procedures, Luck, opposed rolls, impairment, and development.
+- Combat, damage, healing, chases, and vehicles.
+- Newtonian magic, spellcasting, vestigia, signare, and spell lists.
+- Demi-monde mechanics and optional rules.
 
 ## Ground Rules
 

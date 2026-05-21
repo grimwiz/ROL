@@ -35,22 +35,34 @@ Decision or next check:
 Problem:
 The markdown conversion appears to place the Wealthy heading before the Poor affluence text, likely due to page/image layout.
 Decision or next check:
-`rules/03-character-creation.md` follows the surrounding prose and the apparent four-bracket order: Poor, Average, Wealthy, Rich. Check the PDF table before marking Chapter 1 reviewed-complete.
+`03-character-creation.md` follows the surrounding prose and the apparent four-bracket order: Poor, Average, Wealthy, Rich. Check the PDF table before marking Chapter 1 reviewed-complete.
 
 2026-05-20 - Chapter 2, Drive/Navigate difficulty bullets:
 Problem:
 The markdown appears to split or misplace one difficulty bullet around Drive and Navigate, placing heavy-traffic pursuit near Navigate.
 Decision or next check:
-`rules/04-skills.md` assigns light/heavy traffic pursuit to Drive and route/landmark problems to Navigate. Check the PDF before marking Chapter 2 reviewed-complete.
+`04-skills.md` assigns light/heavy traffic pursuit to Drive and route/landmark problems to Navigate. Check the PDF before marking Chapter 2 reviewed-complete.
 
 2026-05-20 - Chapter 2, Read Lips/Ride page break:
 Problem:
 The opening Read Lips paragraph appears split by a page break and partly inserted under the Ride section.
 Decision or next check:
-`rules/04-skills.md` reconstructs Read Lips from the surrounding lines: line of sight, one visible speaker gives only that side, and proficient users can communicate silently. Check the PDF before marking Chapter 2 reviewed-complete.
+`04-skills.md` reconstructs Read Lips from the surrounding lines: line of sight, one visible speaker gives only that side, and proficient users can communicate silently. Check the PDF before marking Chapter 2 reviewed-complete.
 
 2026-05-20 - Chapter 4, Table 10 Signare:
 Problem:
 The Signare table columns are shifted and several dice-roll rows are malformed in the markdown.
 Decision or next check:
-`rules/09-magic.md` keeps the signare creation procedure but does not reproduce the malformed random table. Check the PDF if a random signare generator is needed later.
+`09-magic.md` keeps the signare creation procedure but does not reproduce the malformed random table. Check the PDF if a random signare generator is needed later.
+
+2026-05-21 - Chapter 3 combat and chase ordering:
+Problem:
+The markdown and Appendix B summaries contain displaced combat step ordering. Some response examples, chase Luck bullets, and vehicle combat bullets are interleaved with neighbouring sections.
+Decision or next check:
+`06-combat.md` and `08-chases.md` use the surrounding Chapter 3 prose as primary source and Appendix B only as a checklist. Verify the final procedure order against the PDF before marking Chapter 3 complete.
+
+2026-05-21 - Chapter 3 tables:
+Problem:
+Firearms, cover protection, other damage, and vehicle tables appear usable in markdown but may contain conversion or ordering errors.
+Decision or next check:
+Check each table against the printed PDF before marking Chapter 3 complete.

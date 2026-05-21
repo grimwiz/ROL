@@ -1461,7 +1461,7 @@ router.post('/sessions/:id/stat-adjustments/:adjId/clear', requireGM, (req, res)
 
 // ── Rules library ────────────────────────────────────────────────────────────
 
-const rulesRoot = path.join(__dirname, '..', 'Rivers_of_London', 'rules', 'rules');
+const rulesRoot = path.join(__dirname, '..', 'Rivers_of_London', 'rules');
 
 function htmlEscape(value) {
   return String(value == null ? '' : value)

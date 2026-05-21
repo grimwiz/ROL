@@ -2,7 +2,7 @@
 
 This folder is for preparing source material before distillation.
 
-Generated raw source files belong in the repo-root `private/extracted-source/`, which is gitignored because it contains copied rulebook text. The final extracted corpus belongs in `../rules/` and `../scenario/`.
+Generated raw source files belong in the repo-root `private/extracted-source/`, which is gitignored because it contains copied rulebook text. Final paraphrased rules files belong in `../`; scenario files belong in `../scenario/`.
 
 ## Build the Raw Seed
 
