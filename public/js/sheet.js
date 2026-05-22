@@ -50,8 +50,9 @@ const SheetForm = (() => {
   function setPortraitAi(on) { _portraitAi = on !== false; }
   function sizEnabled() { return _ruleset === 'coc'; }
 
-  const STAT_OPTIONS = [10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90];
-  const SKILL_PERCENT_OPTIONS = [20,25,30,35,40,45,50,55,60,65,70,75,80];
+  const RANGE_0_TO_95_BY_5 = Array.from({ length: 20 }, (_, i) => i * 5);
+  const STAT_OPTIONS = RANGE_0_TO_95_BY_5;
+  const SKILL_PERCENT_OPTIONS = RANGE_0_TO_95_BY_5;
   const STAT_KEYS = ['str', 'con', 'dex', 'int', 'pow', 'siz'];
   const COMMON_SKILL_NAMES = [
     'Athletics',
@@ -358,37 +359,49 @@ const SheetForm = (() => {
     return `<div class="form-group"><label>${label}</label>${inner}</div>`;
   }
 
+  function parseNumericOption(value) {
+    const n = parseInt(String(value == null ? '' : value).replace(/[^0-9-]/g, ''), 10);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function optionValuesWithCurrent(baseOptions, value) {
+    const parsed = parseNumericOption(value);
+    const values = [...baseOptions];
+    if (parsed !== null && !values.includes(parsed)) {
+      values.push(parsed);
+      values.sort((a, b) => a - b);
+    }
+    return values;
+  }
+
+  function renderNumericSelect(id, value, readonly, baseOptions, opts = {}) {
+    const parsed = parseNumericOption(value);
+    const fallback = opts.fallback == null ? '' : String(opts.fallback);
+    const selectedValue = parsed !== null ? String(parsed) : fallback;
+    const attrs = [
+      id ? `id="${esc(id)}"` : '',
+      opts.className ? `class="${esc(opts.className)}"` : '',
+      readonly ? 'disabled' : ''
+    ].filter(Boolean).join(' ');
+    const blank = opts.includeBlank === false ? '' : `<option value=""${selectedValue === '' ? ' selected' : ''}>–</option>`;
+    const options = optionValuesWithCurrent(baseOptions, value).map((n) => {
+      const selectedAttr = selectedValue === String(n) ? ' selected' : '';
+      return `<option value="${n}"${selectedAttr}>${n}${opts.suffix || ''}</option>`;
+    }).join('');
+    return `<select${attrs ? ` ${attrs}` : ''}>${blank}${options}</select>`;
+  }
+
   // ── Render helpers ─────────────────────────────────────────────────────────
   function renderStatSelect(statKey, value, readonly) {
-    const rdAttr = readonly ? ' disabled' : '';
-    const options = STAT_OPTIONS.map((n) => {
-      const selectedAttr = String(value || '') === String(n) ? ' selected' : '';
-      return `<option value="${n}"${selectedAttr}>${n}</option>`;
-    }).join('');
-    return `<select id="sf_${statKey}"${rdAttr}>
-      <option value="">–</option>
-      ${options}
-    </select>`;
+    return renderNumericSelect(`sf_${statKey}`, value, readonly, STAT_OPTIONS);
   }
 
   function renderSkillValueSelect(id, value, readonly) {
-    const rdAttr = readonly ? ' disabled' : '';
-    const parsedValue = parseInt(String(value || '').replace(/[^0-9-]/g, ''), 10);
-    const optionValues = [...SKILL_PERCENT_OPTIONS];
-    if (Number.isFinite(parsedValue) && !optionValues.includes(parsedValue)) {
-      optionValues.push(parsedValue);
-      optionValues.sort((a, b) => a - b);
-    }
-    const selectedValue = Number.isFinite(parsedValue) ? String(parsedValue) : String(value || '30');
-    const options = optionValues.map((n) => {
-      const selectedAttr = selectedValue === String(n) ? ' selected' : '';
-      return `<option value="${n}"${selectedAttr}>${n}%</option>`;
-    }).join('');
-    return `<select id="${id}" class="csk-val"${rdAttr}>${options}</select>`;
+    return renderNumericSelect(id, value, readonly, SKILL_PERCENT_OPTIONS, { className: 'csk-val', suffix: '%', fallback: '30', includeBlank: false });
   }
 
   function renderPercentInput(id, value, readonly, extraClass = '') {
-    return `<input type="number" id="${id}" class="${extraClass}" value="${esc(value)}" min="0" max="100"${readonly ? ' readonly' : ''}>`;
+    return renderNumericSelect(id, value, readonly, SKILL_PERCENT_OPTIONS, { className: extraClass, suffix: '%', includeBlank: false });
   }
 
   function renderCombatSkillRow(sk, i, readonly) {
@@ -486,7 +499,7 @@ const SheetForm = (() => {
     const dis = readonly ? ' disabled' : '';
     return `<div class="language-row">
       <input type="text" class="lang-name" value="${esc(lg.name || '')}" placeholder="e.g. Latin"${rdAttr}>
-      <input type="number" class="lang-val" value="${esc(lg.value || '')}" placeholder="%" min="0" max="100"${rdAttr}>
+      ${renderNumericSelect('', lg.value || '', readonly, SKILL_PERCENT_OPTIONS, { className: 'lang-val', suffix: '%' })}
       <label class="lang-own" title="Mother tongue — a free starting language"><input type="checkbox" class="lang-own-cb"${lg.own ? ' checked' : ''}${dis}> Own</label>
       ${!readonly ? `<button type="button" class="btn btn-inline-remove" title="Remove language" onclick="SheetForm.removeLanguage(this)">✕</button>` : '<span></span>'}
     </div>`;
@@ -637,7 +650,7 @@ const SheetForm = (() => {
               <input type="text" id="sf_msk_name_${i}" class="msk-name" value="${esc(sk.name)}" placeholder="Skill name"${rdAttr}>
               ${!readonly ? `<button type="button" class="btn btn-inline-remove" title="Remove expert skill" onclick="SheetForm.removeMandatory(this)">✕</button>` : ''}
             </div>
-            <input type="number" id="sf_msk_val_${i}" class="msk-val" value="${esc(sk.value)}" placeholder="%" min="0" max="100"${rdAttr}>
+            ${renderNumericSelect(`sf_msk_val_${i}`, sk.value, readonly, SKILL_PERCENT_OPTIONS, { className: 'msk-val', suffix: '%' })}
           </div>`).join('')}
       </div>
       ${!readonly ? `<button type="button" class="btn btn-sm" style="margin-top:0.5rem" onclick="SheetForm.addMandatory()">+ Add expert skill</button>` : ''}
@@ -893,9 +906,11 @@ const SheetForm = (() => {
     if (advantagesText) advantagesText.addEventListener('input', updateMagicSectionVisibility);
     document.querySelectorAll('.combat-skill-full').forEach((el) => {
       el.addEventListener('input', updateCombatSkillHalves);
+      el.addEventListener('change', updateCombatSkillHalves);
     });
     document.querySelectorAll('.msk-name, .msk-val, .ask-name, .ask-val').forEach((el) => {
       el.addEventListener('input', updateMagicSectionVisibility);
+      el.addEventListener('change', updateMagicSectionVisibility);
     });
     document.querySelectorAll('#sf_magic_tradition, #sf_magic_notes, .spell-name, .spell-order, .spell-notes').forEach((el) => {
       el.addEventListener('input', updateMagicSectionVisibility);
@@ -912,9 +927,12 @@ const SheetForm = (() => {
       <input type="text" id="sf_msk_name_${i}" class="msk-name" placeholder="Skill name">
       <button type="button" class="btn btn-inline-remove" title="Remove expert skill" onclick="SheetForm.removeMandatory(this)">✕</button>
     </div>
-    <input type="number" id="sf_msk_val_${i}" class="msk-val" placeholder="%" min="0" max="100">`;
+    ${renderNumericSelect(`sf_msk_val_${i}`, '', false, SKILL_PERCENT_OPTIONS, { className: 'msk-val', suffix: '%' })}`;
     grid.appendChild(div);
-    div.querySelectorAll('.msk-name, .msk-val').forEach((el) => el.addEventListener('input', updateMagicSectionVisibility));
+    div.querySelectorAll('.msk-name, .msk-val').forEach((el) => {
+      el.addEventListener('input', updateMagicSectionVisibility);
+      el.addEventListener('change', updateMagicSectionVisibility);
+    });
   }
 
   function removeMandatory(btn) {
@@ -945,9 +963,12 @@ const SheetForm = (() => {
       <input type="text" id="sf_ask_name_${i}" class="ask-name" placeholder="Skill name">
       <button type="button" class="btn btn-inline-remove" title="Remove skill" onclick="SheetForm.removeAdditional(this)">✕</button>
     </div>
-    <input type="number" id="sf_ask_val_${i}" class="ask-val" placeholder="%" min="0" max="100">`;
+    ${renderNumericSelect(`sf_ask_val_${i}`, '', false, SKILL_PERCENT_OPTIONS, { className: 'ask-val', suffix: '%' })}`;
     grid.appendChild(div);
-    div.querySelectorAll('.ask-name, .ask-val').forEach((el) => el.addEventListener('input', updateMagicSectionVisibility));
+    div.querySelectorAll('.ask-name, .ask-val').forEach((el) => {
+      el.addEventListener('input', updateMagicSectionVisibility);
+      el.addEventListener('change', updateMagicSectionVisibility);
+    });
   }
 
   function removeAdditional(btn) {

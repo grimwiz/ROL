@@ -571,7 +571,7 @@ Pushing: take an obvious watching position or film the target. Failed pushed rol
 
 ### Ride
 
-Ride covers saddle horses, donkeys, mules, mount care, riding gear, galloping, difficult terrain, breaking in riding animals, and controlling mounts.
+Ride covers ridden mounts (horses, donkeys, mules): looking after the animal, handling its tack, and keeping control at a gallop or over difficult ground.
 
 Special rules:
 

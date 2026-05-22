@@ -32,3 +32,30 @@ Use this as the chronological audit trail for extraction passes.
 - Drafted `07-damage-and-healing.md` covering damage rolls, spell damage, damage conditions, fatal blows, post-fight recovery, mortal wounds, first aid, medical aid, mortal-wound consequences, impairment recovery, other forms of damage, asphyxiation/drowning, and poison.
 - Drafted `08-chases.md` covering foot chases, chase turn structure, burst of speed, negotiating obstacles, Luck and pushing, fleeing, pursuing, multiple NPCs, ranged attacks during chases, vehicle chases, vehicular combat, vehicle damage, control rolls, firearms against vehicles, repairs, and the vehicle table.
 - Left Chapter 3 as `extracted-draft`: the markdown source has ordering/interleaving issues in combat, Appendix B is explicitly untrusted as canonical, and the PDF gate remains open.
+
+## 2026-05-22
+
+PDF gate pass. Installed `poppler-utils`/`pypdf`; extracted every PDF page to text at `private/extracted-source/pdf-text/full-layout.txt`. Calibrated the page mapping: `PDF index = printed page + 1`.
+
+Verification standard applied: locked content (numbers, skill/spell/table names, table values, defined game terms, reproduced tables) must match the PDF exactly; editorial prose must be paraphrased and is expected to diverge from the source wording.
+
+Gap Register and parse-issues items checked against the PDF:
+
+- Living Standards table (Ch1, p.58): draft order and bracket details correct; no fix. Gap closed.
+- Drive/Navigate difficulty bullets (Ch2, p.83-84): draft correct; no fix. Gap closed.
+- Read Lips/Ride (Ch2, p.96-97): Read Lips correct. Fixed `04-skills.md` Ride scope - removed unsupported "breaking in animals"/"controlling mounts" and re-paraphrased to the actual scope. Gap closed.
+- Signare (Ch4, p.164-169): transcribed the full 100-row Table 10 (Sound/Smell/Other Sensation) into `09-magic.md` for rules compatibility, and tightened the signare creation procedure (three categories; choose one each or roll all three and keep two). Gap closed.
+- Chapter 3 combat/chase ordering (p.126-128, 151-157): six-step sequence, four responses, chase mechanics, "first to two" win, "two consecutive" continuation, and vehicular combat all match the drafts. No ordering errors. Issue closed.
+- Chapter 3 tables (Tables 5/6/7/8, p.132/138/149/159): all four match the drafts exactly. No conversion errors. Issue closed.
+
+Additional PDF checks confirmed accurate with no fix needed:
+
+- `01-character-model.md`: 280-point characteristic buy, 30-80 range, blocks of 10, advantage prereqs, Luck 2D10+50, MOV 8, skill base values, language rules.
+- `02-core-resolution.md`: success levels (Critical 01, Hard <=half, Regular <=full, Fumble 100, impaired fumble 90+), Regular/Hard difficulty, 70 opposition threshold.
+- `05-advancement.md`: development phase stages, 1 DP/session, skill-increase tiers (+10/+5/+1 to 80/90/99), new-skill and spell limits, advantage costs (5/10), training cap.
+- `06-combat.md`: combat manoeuvres (STR-50 auto-fail, outcomes), armour values, outnumbered.
+- `07-damage-and-healing.md`: damage conditions, post-fight recovery, mortal-wound recovery (choose two), first aid (INT, 1h->2h), medical aid modifiers, other-damage/asphyxiation/poison tables.
+
+Net result: codex's drafts reconstructed Chapters 1-4 accurately from the damaged markdown. Only one factual error was found and fixed (Ride scope); `09-magic.md` gained Table 10 plus a sharper signare procedure.
+
+Still pending: full prose pass of `00-system-overview.md`, the remainder of `03-character-creation.md` and `04-skills.md` skill entries, magic spellcasting/HTD detail in `09-magic.md`, and Chapters 5-9 / Appendices (feed not-yet-drafted files).

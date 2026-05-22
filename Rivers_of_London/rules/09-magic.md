@@ -72,11 +72,118 @@ Rules:
 - Detect signare with Sense Vestigia using the vestigia rules.
 - Signare can identify the practitioner behind a spell or magical trace if the observer has sufficient context.
 - A teacher's signare leaves an inherited element in apprentices.
-- A practitioner investigator creates a signare during character creation.
-- A signare usually combines two or three sensory elements.
-- If trained by a practitioner with a known signare, include one element from the teacher's signare as a third element.
+- A practitioner investigator creates a signare during character creation, once they take the Magic skill.
+- A signare is built from three sensory categories: a sound, a smell, and one other sensation. Pick one element per category, or roll randomly across the three categories and keep any two of the rolled results.
+- If trained by a practitioner with a known signare, one element of the teacher's signare carries over as a third element.
 
 Fae investigators generally do not have signare. A successful Sense Vestigia roll on a fae investigator reveals something strange and otherworldly rather than a practitioner signature.
+
+### Table 10: Signare
+
+Roll 1D100 separately on each column, or choose entries directly. Descriptions are prompts and may be adjusted to taste.
+
+| 1D100 | Sound | Smell | Other Sensation |
+|---:|---|---|---|
+| 1 | A blackbird's song | Freshly baked bread | The flash of sunlight low in the sky |
+| 2 | The soft grunting of a pig | The breath of a dying person | A sense that there's someone behind you right now |
+| 3 | A guitar being tuned | Passing by an Indian restaurant | Moonlight shadows |
+| 4 | The wind in the trees | The smoke from an extinguished candle | The flicker of seagull wings |
+| 5 | Children's laughter | School changing rooms | The movement of bugs in the air |
+| 6 | The ringing of glass wind chimes | Grandmother's cupboard under the stairs | The taste of blood in your mouth |
+| 7 | A motorbike engine rumbling | Hot chips (fries) and vinegar | The taste of fresh apple |
+| 8 | A match being struck | Wet dogs | The feel of plunging your hands into a bowl of hot washing-up water |
+| 9 | The rustling of newspaper | The heavy scent of lilies | Pins and needles |
+| 10 | The click-clack of knitting needles | The first day of spring | A sudden desire to dance |
+| 11 | A cascade of musical notes like running water | Alcohol | A chill down your spine |
+| 12 | A fingertip running around the rim of a wine glass | Bananas | A warm fireside |
+| 13 | A whispering clash like the sound of cymbals | Belgian chocolate | The aftermath of a photo flash |
+| 14 | A woman's voice singing | A bowl of rotting shrimp | Awe |
+| 15 | A dog barking | The yeasty smell of uncooked bread | Bicycles |
+| 16 | Rain on a corrugated metal roof | Brick dust | The bite of cold metal |
+| 17 | Children playing football in the distance | Burned wood | A blast of bone-numbing cold |
+| 18 | The muffled rumble of engines underground | Burning candlewax | Blood |
+| 19 | A child crying | Burnt earth | A burst of heat, like stepping out into the hot sun |
+| 20 | Chisels on stone | Carbolic soap | Children bouncing up and down in excitement |
+| 21 | The clash of machines | Cement dust | Concrete walls |
+| 22 | The click-click of insect legs and mandibles | Cigarette smoke | Cricket and beer on a sunny summer's afternoon |
+| 23 | The clinkety-clink of a pianoforte | Cigars | Dad blowing up a paddling pool |
+| 24 | A clockwork tick | Pipe tobacco | Desire |
+| 25 | Evensong | Clean laundry | Disappointment |
+| 26 | The flick-flick-flick of an old-fashioned film projector | Coal dust | Evening television flickering through net curtains |
+| 27 | The grinding of metal teeth | Coffee | Excitement |
+| 28 | A deep, rumbling growl | Old cooking fat | Exultation |
+| 29 | The heavy slap of men carrying weight on their shoulders | Cooking smells | A screaming sense of fear |
+| 30 | Jazz heard on a Bakelite radio | Cut wood | The feel of rolling tobacco |
+| 31 | Heartfelt laughter | Diesel | The feel of wet papier mâché |
+| 32 | Your Mum shouting | Drains | Dogs fighting |
+| 33 | Piano music—pub sing-along style ("Roll Out the Barrel"/"Knees Up, Mother Brown") | Dried sweat | The flicker of insect wings |
+| 34 | The rattle of a hand-powered machine (butter churn) | Dust | Fresh and cool |
+| 35 | The ring of hammers on metal | Petrichor | The greasy tension of magic |
+| 36 | A saxophone solo | Expensive cologne | The rough texture of a hemp rope |
+| 37 | Running feet | A farmyard | The hot, communal breath of the hive |
+| 38 | Screams of excitement | Fish guts | Hot steam |
+| 39 | Ringing silence | The sea | A hot summer afternoon |
+| 40 | Shouting | Formaldehyde | A hungry dog/wolf |
+| 41 | A shrieking voice (inhuman—almost like cats fighting) | Fresh loam | Illegal acceleration |
+| 42 | Singing | Freshly mown grass | The taste of lemon drops |
+| 43 | Snatches of music | Furniture polish | A metallic taste |
+| 44 | The sound of a crowd cheering | Gunpowder | Pain |
+| 45 | The sound of ripping fabric | Pine needles | People dancing |
+| 46 | The sounds of an outdoor market (shouting, traders' calls, haggling) | Horse manure | Plunging face first into an icy stream |
+| 47 | A strange cry, like a seagull | Horses | Pride |
+| 48 | The fluttering of paper wings | Hot oil | Rushing |
+| 49 | The sound of anvils ringing like bells | Hot plastic and dust | A sense of despair |
+| 50 | A trembling chime | Hyacinth | A skin-crawling sensation, like your face being stroked by thousands of tiny cilia |
+| 51 | A trombone | Incense | The slip-slide of lip balm |
+| 52 | Whispered conversations | Leather | Surge of sexual desire |
+| 53 | Wind breathing through the strings of a harp | Liquorice | The taste of greasy food |
+| 54 | A yappy little dog | Machine oil | The taste of green curry |
+| 55 | The deep contented purr of a cat | New car seats | The taste of fresh orange |
+| 56 | Whispering of papers | Oily water | The taste of macaroni cheese |
+| 57 | The click and whirr of a cuckoo clock | Ozone | The taste of pizza |
+| 58 | A horse's whinny | Patchouli oil | The taste of vodka |
+| 59 | Sheep bleating | Pepper | Terror |
+| 60 | Water babbling over stones | Petrol (gasoline) | A lover's kiss |
+| 61 | Rushing water | A pigsty | The controlled terror and excitement of a rollercoaster |
+| 62 | The clang of a church bell | Roast pork | A huge crowd |
+| 63 | A wheezing, groaning sound | Rotting straw | The heat of the kiln |
+| 64 | The blare of a trumpet | Roast beef | The last drop into oblivion |
+| 65 | The loud rattle of thunder | Sherbet | The promise of beer and skittles |
+| 66 | Pottery breaking | Silage | The sensation of rain |
+| 67 | A kettle boiling | A slaughterhouse | Tick-tock precision |
+| 68 | Creaking floorboards | An old cinema | A warm, snuggly blanket |
+| 69 | The lazy drone of insect wings | Spilled port | The touch of velvet on the cheek |
+| 70 | The fizzing of a newly opened bottle of pop (soda) | Spirit gum | Treacle |
+| 71 | A short, sharp grunt | Stale beer | A twist and punch sensation |
+| 72 | The honking of geese | Stilton | A surge of strength |
+| 73 | A car horn blaring | Suburban roses | Violence |
+| 74 | A balloon bursting | Earl Grey tea | Walking home from the pub by moonlight |
+| 75 | Bees buzzing | Tinned cat food | The whetstone scrape of a blade |
+| 76 | The drip, drip, drip of a leaking tap | Unwashed bodies | A flash of movement out of the corner of your eye |
+| 77 | The soft clucking of chickens | Menthol rub | The feeling of sand between your toes |
+| 78 | A brief snatch of a favourite TV show theme tune | A waft of dank air | Scratchy new clothing |
+| 79 | Loud rock music | Newly washed cars | The soft caress of silk |
+| 80 | The hoot of an owl | Wet pavement | A tightness in the chest |
+| 81 | An unhappy moan | Wet wool | A sick knot in the pit of your stomach |
+| 82 | An old-fashioned rotary phone ringing | A whiff of gunmetal | The sharp stab of a needle |
+| 83 | The screech of car brakes | Rosemary | Dampness |
+| 84 | A thin, high-pitched wail | Thyme | Loneliness |
+| 85 | The insistent beeping of an alarm clock | Molasses/treacle | Sorrow |
+| 86 | A short, sharp whistle | Molasses | Elation |
+| 87 | A loud splash | Lemon juice | Relief |
+| 88 | Coughing | Frying bacon | The feeling of rain on your face |
+| 89 | The snipping of scissors | Orange zest | A shiver |
+| 90 | The whir and clatter of a sewing machine | Frying onions | A hot flush |
+| 91 | Splintering wood | Ripe strawberries | A moment of dizziness |
+| 92 | A bull's bellow | Fresh doughnuts | An electric shock |
+| 93 | The snapping of a twig underfoot | Suntan lotion | Goosebumps |
+| 94 | A key turning in a lock | Mothballs | Aches and pains |
+| 95 | A pigeon cooing | Bleach | Numbness |
+| 96 | Breaking glass | Toast | A cool breeze across the skin |
+| 97 | A zip being pulled open or shut | Peppermint | A sudden release of tension |
+| 98 | The hiss of escaping steam | Lavender | Toothache |
+| 99 | An ice cream van's chime | Old books | Snow falling on your tongue |
+| 100 | Gunfire | Coconut | The taste of your favourite food |
 
 ## Newtonian Spells
 
