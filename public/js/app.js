@@ -1031,6 +1031,13 @@ function gmChat(sessionId) {
   return gmChatState[sessionId];
 }
 
+function renderAiMarkdown(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  _richSeq += 1;
+  return `<div class="chat-markdown">${markdownToHtml(text, `chat${_richSeq}`).html}</div>`;
+}
+
 function gmChatLogHtml(sessionId) {
   const st = gmChat(sessionId);
   if (!st.messages.length) {
@@ -1074,8 +1081,10 @@ function gmChatLogHtml(sessionId) {
           </div>
         </div></div>`;
     }
-    let body = esc(m.content || '') + (m.streaming ? '<span class="gmchat-caret">▍</span>' : '');
-    if (m.kind === 'image' && m.role === 'user') body = `🖼 ${body}`;
+    const markdownBody = m.role === 'assistant';
+    let body = markdownBody ? renderAiMarkdown(m.content || '') : esc(m.content || '');
+    if (m.streaming) body += '<span class="gmchat-caret">▍</span>';
+    if (m.kind === 'image' && m.role === 'user') body = `Image: ${body}`;
     if (m.error) body += `<div class="gmchat-error">⚠ ${esc(m.error)}</div>`;
     let actions = '';
     if (!st.streaming && m.kind !== 'image') {
@@ -1085,7 +1094,7 @@ function gmChatLogHtml(sessionId) {
         actions = `<div class="gmchat-msg-actions"><button class="btn btn-sm" onclick="regenerateGmAnswer(${sessionId}, ${i})" title="Run this prompt again for a fresh answer">↻ Regenerate</button></div>`;
       }
     }
-    return `<div class="gmchat-msg gmchat-${m.role}"><div class="gmchat-who">${who}</div><div class="gmchat-body">${body || '<em style="color:var(--text2)">…</em>'}</div>${actions}</div>`;
+    return `<div class="gmchat-msg gmchat-${m.role}"><div class="gmchat-who">${who}</div><div class="gmchat-body${markdownBody ? ' gmchat-markdown-body' : ''}">${body || '<em style="color:var(--text2)">…</em>'}</div>${actions}</div>`;
   }).join('');
 }
 
@@ -2308,10 +2317,13 @@ function scenarioText(value) {
 
 let _richSeq = 0;
 function looksMarkdown(s) {
-  return /(^|\n)\s{0,3}#{1,4}\s|\*\*[^*\n]+\*\*|(^|\n)\s*[-*+]\s+|(^|\n)\s*>\s+|`[^`]+`/.test(s);
+  return /(^|\n)\s{0,3}#{1,6}\s|\*\*[^*\n]+\*\*|(^|\n)\s*(?:[-*+]|\d+\.)\s+|(^|\n)\s*>\s+|`[^`]+`|(^|\n)\s*\|.*\|\s*(?:\n|$)|!\[[^\]]*\]\([^)]+\)/.test(s);
 }
 function stripPara(html) {
-  return String(html).replace(/^\s*<p>/, '').replace(/<\/p>\s*$/, '');
+  return String(html)
+    .replace(/^\s*<div class="summary-content">([\s\S]*)<\/div>\s*$/, '$1')
+    .replace(/^\s*<p>/, '')
+    .replace(/<\/p>\s*$/, '');
 }
 // Renders a value as prose. Strings with Markdown get the rich renderer
 // (headings/bold/lists) so record cards read like the "what has happened" page.
@@ -2339,10 +2351,8 @@ function renderRichText(value) {
 function renderScenarioText(value) {
   const text = scenarioText(value).trim();
   if (!text) return '';
-  return text
-    .split(/\n{2,}/)
-    .map((paragraph) => `<p>${esc(paragraph).replace(/\n/g, '<br>')}</p>`)
-    .join('');
+  _richSeq += 1;
+  return markdownToHtml(text, `t${_richSeq}`).html;
 }
 
 function scenarioAssetUrl(filePath, sessionId = State.currentSession) {
@@ -2385,6 +2395,7 @@ function entityPortraitPath(name) {
 
 let scenarioImageMap = {};
 let scenarioGraphicFiles = [];
+let scenarioDbImageMap = {};
 function setScenarioImages(sourceFiles) {
   const m = {};
   (sourceFiles || []).forEach((f) => {
@@ -2404,6 +2415,44 @@ function setScenarioImages(sourceFiles) {
         modified_at: f.modified_at || ''
       };
     });
+}
+
+function isTrustedDbImageSrc(src) {
+  return /^data:image\/(?:png|jpe?g|gif|webp);base64,/i.test(String(src || '').trim());
+}
+
+function addScenarioDbImage(map, name, src) {
+  const label = String(name || '').trim();
+  const imageSrc = String(src || '').trim();
+  const slug = imgKey(label);
+  if (!label || slug.replace(/-/g, '').length < 2 || !isTrustedDbImageSrc(imageSrc)) return;
+  const keys = [
+    label.toLowerCase(),
+    slug,
+    `${slug}-portrait`,
+    `${slug}.png`,
+    `${slug}-portrait.png`,
+    `${slug}.jpg`,
+    `${slug}-portrait.jpg`
+  ];
+  keys.forEach((key) => { map[key] = imageSrc; });
+}
+
+function setScenarioDbImages(info) {
+  const m = {};
+  const walk = (node, depth = 0) => {
+    if (!node || depth > 8) return;
+    if (Array.isArray(node)) {
+      node.forEach((item) => walk(item, depth + 1));
+      return;
+    }
+    if (typeof node !== 'object') return;
+    const name = node.name || node.title || node.character || node.player;
+    if (name && typeof node.portrait === 'string') addScenarioDbImage(m, name, node.portrait);
+    Object.keys(node).forEach((key) => walk(node[key], depth + 1));
+  };
+  walk(info);
+  scenarioDbImageMap = m;
 }
 
 // Mirrors the server imgMatchKey: lowercase, runs of non-alphanumerics → "-".
@@ -2918,7 +2967,159 @@ function mdInline(s) {
     .replace(/`([^`]+?)`/g, '<code>$1</code>');
 }
 
+function cleanMarkdownImageRef(src) {
+  let value = String(src || '').trim().replace(/^<|>$/g, '');
+  const token = value.match(/^(?:db:)?portrait:(.+)$/i) || value.match(/^db:(.+)$/i);
+  if (token) value = token[1].trim();
+  return value;
+}
+
+function markdownImageLookupKeys(src) {
+  const cleaned = cleanMarkdownImageRef(src);
+  if (!cleaned || /^[a-z][a-z0-9+.-]*:/i.test(cleaned)) return [];
+  const noQuery = cleaned.split(/[?#]/)[0].replace(/^\/+/, '');
+  let decoded = noQuery;
+  try { decoded = decodeURIComponent(noQuery); } catch (_) {}
+  const base = decoded.split('/').pop();
+  const stem = base.replace(/\.[a-z0-9]+$/i, '');
+  const unportrait = stem.replace(/[-_.]?portrait$/i, '');
+  return Array.from(new Set([
+    cleaned.toLowerCase(),
+    noQuery.toLowerCase(),
+    decoded.toLowerCase(),
+    base.toLowerCase(),
+    imgKey(stem),
+    imgKey(unportrait),
+    `${imgKey(unportrait)}-portrait`,
+    `${imgKey(unportrait)}.png`,
+    `${imgKey(unportrait)}-portrait.png`,
+    `${imgKey(unportrait)}.jpg`,
+    `${imgKey(unportrait)}-portrait.jpg`
+  ].filter(Boolean)));
+}
+
+function resolveMarkdownImage(src) {
+  const raw = String(src || '').trim();
+  if (!raw) return null;
+  if (/^(?:https?|file|data|javascript|vbscript):/i.test(raw)) return null;
+  const keys = markdownImageLookupKeys(raw);
+  for (const key of keys) {
+    const repoPath = scenarioImageMap[key];
+    if (repoPath) return { url: scenarioAssetUrl(repoPath), layoutName: key, source: 'file' };
+  }
+  for (const key of keys) {
+    const dbSrc = scenarioDbImageMap[key];
+    if (dbSrc) return { url: dbSrc, layoutName: key, source: 'db' };
+  }
+  return null;
+}
+
+function renderMissingMarkdownImage(src, caption) {
+  return `<div class="scenario-figure-missing">image not available to this view: <code>${esc(src)}</code>${caption ? ` - ${esc(caption)}` : ''}</div>`;
+}
+
+let _markdownIt = null;
+function getMarkdownIt() {
+  if (_markdownIt) return _markdownIt;
+  const factory = (typeof window !== 'undefined') ? window.markdownit : null;
+  if (typeof factory !== 'function') return null;
+  const md = factory({
+    html: false,
+    xhtmlOut: false,
+    breaks: true,
+    linkify: false,
+    typographer: false
+  });
+  const renderToken = md.renderer.renderToken.bind(md.renderer);
+  const mappedHeadingTag = (tag) => {
+    const level = Number(String(tag || '').replace(/^h/i, '')) || 2;
+    if (level <= 2) return 'h4';
+    if (level === 3) return 'h5';
+    return 'h6';
+  };
+  const paragraphOnlyImage = (tokens, idx) => {
+    const inline = tokens[idx + 1];
+    const children = inline && inline.type === 'inline' ? (inline.children || []) : [];
+    return children.length > 0 && children.every((child) => (
+      child.type === 'image' ||
+      child.type === 'softbreak' ||
+      (child.type === 'text' && !String(child.content || '').trim())
+    ));
+  };
+
+  md.renderer.rules.heading_open = (tokens, idx, options, env, self) => {
+    const token = tokens[idx];
+    const inline = tokens[idx + 1];
+    const level = Number(String(token.tag || '').replace(/^h/i, '')) || 2;
+    const text = inline && inline.type === 'inline' ? inline.content.trim() : '';
+    const used = env.usedHeadings || (env.usedHeadings = {});
+    const id = `${env.anchorPrefix || 'md'}-${mdSlug(text, used)}`;
+    if (text) env.headings.push({ id, text, level });
+    token.attrSet('id', id);
+    token.attrJoin('class', `summary-h summary-h${level}`);
+    token.tag = mappedHeadingTag(token.tag);
+    return renderToken(tokens, idx, options);
+  };
+  md.renderer.rules.heading_close = (tokens, idx, options) => {
+    tokens[idx].tag = mappedHeadingTag(tokens[idx].tag);
+    return renderToken(tokens, idx, options);
+  };
+  md.renderer.rules.paragraph_open = (tokens, idx, options) => (
+    paragraphOnlyImage(tokens, idx) ? '' : renderToken(tokens, idx, options)
+  );
+  md.renderer.rules.paragraph_close = (tokens, idx, options) => (
+    paragraphOnlyImage(tokens, idx - 2) ? '' : renderToken(tokens, idx, options)
+  );
+  md.renderer.rules.bullet_list_open = (tokens, idx, options) => {
+    tokens[idx].attrJoin('class', 'summary-points');
+    return renderToken(tokens, idx, options);
+  };
+  md.renderer.rules.ordered_list_open = (tokens, idx, options) => {
+    tokens[idx].attrJoin('class', 'summary-points');
+    return renderToken(tokens, idx, options);
+  };
+  md.renderer.rules.table_open = (tokens, idx, options) => {
+    tokens[idx].attrJoin('class', 'markdown-table');
+    return `<div class="markdown-table-wrap">${renderToken(tokens, idx, options)}`;
+  };
+  md.renderer.rules.table_close = (tokens, idx, options) => `${renderToken(tokens, idx, options)}</div>`;
+  md.renderer.rules.image = (tokens, idx, options, env) => {
+    const token = tokens[idx];
+    const src = token.attrGet('src') || '';
+    const caption = token.content || token.attrGet('alt') || '';
+    const resolved = resolveMarkdownImage(src);
+    if (!resolved) return renderMissingMarkdownImage(src, caption);
+    const lay = scenarioFigureLayout(resolved.layoutName || src);
+    const figStyle = lay.style ? ` style="${lay.style}"` : '';
+    const capHtml = caption ? `<figcaption>${md.renderInline(caption, env)}</figcaption>` : '';
+    return `<figure class="scenario-figure ${lay.cls}"${figStyle}><img src="${esc(resolved.url)}" alt="${esc(caption || src)}" loading="lazy">${capHtml}</figure>`;
+  };
+  const defaultLinkOpen = md.renderer.rules.link_open || ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options));
+  md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+    const href = tokens[idx].attrGet('href') || '';
+    if (/^https?:/i.test(href)) {
+      tokens[idx].attrSet('target', '_blank');
+      tokens[idx].attrSet('rel', 'noopener noreferrer');
+    }
+    return defaultLinkOpen(tokens, idx, options, env, self);
+  };
+
+  _markdownIt = md;
+  return _markdownIt;
+}
+
+function renderMarkdownItHtml(source, anchorPrefix) {
+  const md = getMarkdownIt();
+  if (!md) return null;
+  const env = { anchorPrefix, headings: [], usedHeadings: {} };
+  return { html: md.render(String(source == null ? '' : source), env), headings: env.headings };
+}
+
 function markdownToHtml(md, anchorPrefix) {
+  return renderMarkdownItHtml(md, anchorPrefix) || legacyMarkdownToHtml(md, anchorPrefix);
+}
+
+function legacyMarkdownToHtml(md, anchorPrefix) {
   const used = {};
   const headings = [];
   const lines = String(md == null ? '' : md).replace(/\r\n?/g, '\n').split('\n');
@@ -2949,16 +3150,15 @@ function markdownToHtml(md, anchorPrefix) {
     if (imageLine) {
       flushPara(); closeList(); closeQuote();
       const cap = imageLine[1].trim();
-      const base = String(imageLine[2]).split('/').pop().toLowerCase();
-      const repoPath = scenarioImageMap[base];
-      if (repoPath) {
-        const lay = scenarioFigureLayout(base);
-        out.push(`<figure class="scenario-figure ${lay.cls}"${lay.style ? ` style="${lay.style}"` : ''}><img src="${esc(scenarioAssetUrl(repoPath))}" alt="${esc(cap || base)}" loading="lazy">${cap ? `<figcaption>${mdInline(esc(cap))}</figcaption>` : ''}</figure>`);
+      const resolved = resolveMarkdownImage(imageLine[2]);
+      if (resolved) {
+        const lay = scenarioFigureLayout(resolved.layoutName || imageLine[2]);
+        out.push(`<figure class="scenario-figure ${lay.cls}"${lay.style ? ` style="${lay.style}"` : ''}><img src="${esc(resolved.url)}" alt="${esc(cap || imageLine[2])}" loading="lazy">${cap ? `<figcaption>${mdInline(esc(cap))}</figcaption>` : ''}</figure>`);
       } else {
         // Diagnostic: the model emitted an image ref but the filename is not
         // in the viewer's in-scope set (wrong name, not a Player Handout, or
         // not regenerated since). Shown so this is visible, not silent.
-        out.push(`<div class="scenario-figure-missing">🖼️ image not available to this view: <code>${esc(imageLine[2])}</code>${cap ? ` — “${esc(cap)}”` : ''}</div>`);
+        out.push(renderMissingMarkdownImage(imageLine[2], cap));
       }
       continue;
     }
@@ -3432,6 +3632,7 @@ async function loadScenarioInfo(sessionId, asUser) {
   const info = await api.getSessionScenarioInfo(sessionId, asUser);
   if (!asUser) State.scenarioInfo = info;
   setScenarioImages(info && info.source_files);
+  setScenarioDbImages(info);
   return info;
 }
 
@@ -3455,6 +3656,8 @@ async function renderSessionScenarioInfo(sessionId, mode = 'gm') {
   }
 
   if (mode === 'raw') {
+    setScenarioImages(sources && sources.source_files);
+    setScenarioDbImages(null);
     // The Edit Files page holds no AI-generated artifacts, so its action is the
     // full bulk regenerate (empty section list = all sections).
     tab.innerHTML = `
@@ -3599,6 +3802,7 @@ async function scenarioSelectPlayer(sessionId, userId, username) {
     return;
   }
   setScenarioImages(info && info.source_files);
+  setScenarioDbImages(info);
   const viewerNames = (info.viewer && info.viewer.character_names) || [];
   const mine = scenarioArray(info.entities && info.entities.characters)
     .filter((c) => matchesCharacter(c, viewerNames));
@@ -4731,18 +4935,23 @@ async function loadRulesTab() {
   tab.innerHTML = `
     <div class="page-header rules-print-actions">
       <h2>${esc(idx.title || 'Rules Library')}</h2>
-      <button class="btn btn-primary" type="button" onclick="printRulesTab()">🖨 Print rules</button>
+      <button class="btn btn-primary" type="button" onclick="printRulesTab()">Print rules</button>
     </div>
-    <article class="print-doc rules-document">
+    <article class="rules-document">
       <div class="print-cover"><h1>${esc(idx.title || 'Rivers of London Compact Rules Reference')}</h1></div>
       <div class="print-section">${idx.html || '<p>(no rule files found)</p>'}</div>
     </article>`;
 }
 
 function printRulesTab() {
+  const doc = document.querySelector('#tab-rules .rules-document');
+  if (doc) doc.classList.add('print-doc');
   document.body.classList.add('rules-print-mode');
   window.print();
-  setTimeout(() => document.body.classList.remove('rules-print-mode'), 500);
+  setTimeout(() => {
+    document.body.classList.remove('rules-print-mode');
+    if (doc) doc.classList.remove('print-doc');
+  }, 500);
 }
 window.printRulesTab = printRulesTab;
 
@@ -4753,9 +4962,11 @@ function rulesChatLogHtml() {
   }
   return st.messages.map((m) => {
     const who = m.role === 'user' ? 'You' : 'Assistant';
-    let body = esc(m.content || '') + (m.streaming ? '<span class="gmchat-caret">▍</span>' : '');
+    const markdownBody = m.role === 'assistant';
+    let body = markdownBody ? renderAiMarkdown(m.content || '') : esc(m.content || '');
+    if (m.streaming) body += '<span class="gmchat-caret">▍</span>';
     if (m.error) body += `<div class="gmchat-error">Error: ${esc(m.error)}</div>`;
-    return `<div class="gmchat-msg gmchat-${m.role}"><div class="gmchat-who">${who}</div><div class="gmchat-body">${body || '<em style="color:var(--text2)">...</em>'}</div></div>`;
+    return `<div class="gmchat-msg gmchat-${m.role}"><div class="gmchat-who">${who}</div><div class="gmchat-body${markdownBody ? ' gmchat-markdown-body' : ''}">${body || '<em style="color:var(--text2)">...</em>'}</div></div>`;
   }).join('');
 }
 

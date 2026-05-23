@@ -12,7 +12,7 @@ Rivers of London RPG campaign-support web app. It combines multi-user GM/player 
 ## Setup
 
 ```bash
-# Install dependencies
+# Install/update dependencies from package-lock.json
 npm install
 
 # (Optional) Set environment variables — see below
@@ -26,18 +26,23 @@ npm start
 # Validate The Domestic adventure parsing/reachability
 npm run check:domestic
 
+# Optional after dependency changes
+npm audit
+
 # Regenerate a session's scenario information (same Ollama path as the web app)
 npm run scenario:regenerate -- --scenario 1
 ```
 
 The app will be available on `http://localhost:3000` (or your configured port).
 
+Node does not auto-install missing packages on server start. Re-run `npm install` after pulling changes that update `package.json` or `package-lock.json`.
+
 ## First run
 
 On first start, if no users exist, a default GM account is created:
 
 - **Username:** `gm`
-- **Password:** the value of `GM_INITIAL_PASSWORD` env var, or `changeme123` if not set
+- **Password:** the value of `GM_INITIAL_PASSWORD` env var, or a generated password printed to the server log if not set
 
 **Change this password immediately** via Admin → Accounts → Change password.
 
@@ -54,7 +59,7 @@ On first start, if no users exist, a default GM account is created:
 | `OLLAMA_KEEP_ALIVE` | `30m` | Ollama model keep-alive sent with chat/generation calls |
 | `JWT_SECRET` | *(insecure default)* | Secret for signing JWTs — **must be set in production** |
 | `DB_PATH` | `./data/folly.db` | Path to the SQLite database file |
-| `GM_INITIAL_PASSWORD` | `changeme123` | Password for auto-created GM account (first run only) |
+| `GM_INITIAL_PASSWORD` | *(generated)* | Password for auto-created GM account (first run only) |
 | `NODE_ENV` | — | Set to `production` to enable secure cookies (requires HTTPS) |
 | `TRUST_PROXY` | `1` | Express trust-proxy hops (set to your reverse-proxy depth) |
 | `COMFYUI_URL` | LAN default | Base URL of a reachable ComfyUI server (portraits and GM handouts) |
@@ -286,7 +291,7 @@ The browser and CLI go through the same `buildPdf()` function, so what you get f
 ## Front-end scripts
 
 - `public/js/api.js`: Centralised browser API client used by UI actions (`auth`, users, sessions, sheets, scenario info/sources, rolls, NPCs, LLM/service settings, ComfyUI settings, handouts, portrait, dice, adventure, and rules endpoints).
-- `public/js/app.js`: Main SPA logic (auth flow, case file/account/rules/admin tabs, case file rename modal, player and NPC allocation, GM/player sheet interactions, GM session overview table, session-scoped scenario info, server-side AI start/stop status, GM Chat and handouts, Edit Files asset handling, embedded HTML rulebook viewer, the Export-PDF button, and The Domestic solo adventure presented as a built-in case file with URL step routing and local sheet persistence).
+- `public/js/app.js`: Main SPA logic (auth flow, case file/account/rules/admin tabs, case file rename modal, player and NPC allocation, GM/player sheet interactions, GM session overview table, session-scoped scenario info, safe Markdown rendering via `markdown-it`, server-side AI start/stop status, GM Chat and handouts, Edit Files asset handling, embedded HTML rulebook viewer, the Export-PDF button, and The Domestic solo adventure presented as a built-in case file with URL step routing and local sheet persistence).
 - `public/js/sheet.js`: Character sheet renderer/collector used by both player and GM editing views — includes backstory support, portrait upload/camera/generation/restyling behaviour, per-case portrait AI enablement, occupation free-text, RoL vs CoC-style ruleset display, characteristic dropdowns with stat-total messaging, the advantages textbox + collapsible preset picker with stat-prereq disabling, common-skill dropdowns with the Sense-Vestigia / Magic auto-adjustments described above, expert/additional skill controls, custom-field controls, and the magic-section visibility toggle.
 
 ## Utility scripts

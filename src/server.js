@@ -19,6 +19,9 @@ else app.set('trust proxy', trustProxy);
 // the rest of the sheet JSON.
 app.use(express.json({ limit: '20mb' }));
 app.use(cookieParser());
+app.get('/js/vendor/markdown-it.min.js', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'node_modules', 'markdown-it', 'dist', 'markdown-it.min.js'));
+});
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/rules-files', requireAuth, express.static(path.join(__dirname, '..', 'Rivers_of_London')));
 

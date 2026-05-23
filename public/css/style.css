@@ -893,12 +893,28 @@ tr:hover td { background: var(--bg3); }
 
 .summary-content { color: var(--text); line-height: 1.55; }
 .summary-content p { margin: 0 0 0.7rem; }
-.summary-content .summary-h { color: var(--accent2); margin: 1.1rem 0 0.45rem; line-height: 1.3; scroll-margin-top: 1rem; }
-.summary-content .summary-h2 { font-size: 1.02rem; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; }
-.summary-content .summary-h3 { font-size: 0.94rem; color: var(--text); }
-.summary-content .summary-h4 { font-size: 0.88rem; color: var(--text2); }
-.summary-content ul.summary-points { margin: 0.3rem 0 0.8rem; padding-left: 1.25rem; }
-.summary-content ul.summary-points li { margin: 0.2rem 0; }
+.summary-content .summary-h,
+.scenario-body .summary-h { color: var(--accent2); margin: 1.1rem 0 0.45rem; line-height: 1.3; scroll-margin-top: 1rem; }
+.summary-content .summary-h1,
+.summary-content .summary-h2,
+.scenario-body .summary-h1,
+.scenario-body .summary-h2 { font-size: 1.02rem; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; }
+.summary-content .summary-h3,
+.scenario-body .summary-h3 { font-size: 0.94rem; color: var(--text); }
+.summary-content .summary-h4,
+.summary-content .summary-h5,
+.summary-content .summary-h6,
+.scenario-body .summary-h4,
+.scenario-body .summary-h5,
+.scenario-body .summary-h6 { font-size: 0.88rem; color: var(--text2); }
+.summary-content ul.summary-points,
+.summary-content ol.summary-points,
+.scenario-body ul.summary-points,
+.scenario-body ol.summary-points { margin: 0.3rem 0 0.8rem; padding-left: 1.25rem; }
+.summary-content ul.summary-points li,
+.summary-content ol.summary-points li,
+.scenario-body ul.summary-points li,
+.scenario-body ol.summary-points li { margin: 0.2rem 0; }
 .summary-content blockquote {
   margin: 0.6rem 0;
   padding: 0.4rem 0.9rem;
@@ -906,12 +922,57 @@ tr:hover td { background: var(--bg3); }
   color: var(--text2);
   font-style: italic;
 }
-.summary-content code {
+.scenario-body blockquote {
+  margin: 0.6rem 0;
+  padding: 0.4rem 0.9rem;
+  border-left: 3px solid var(--accent);
+  color: var(--text2);
+  font-style: italic;
+}
+.summary-content code,
+.scenario-body code {
   background: var(--bg3);
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 0.05rem 0.3rem;
   font-size: 0.85em;
+}
+.summary-content pre,
+.scenario-body pre {
+  overflow: auto;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  margin: 0.7rem 0;
+}
+.summary-content pre code,
+.scenario-body pre code {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.markdown-table-wrap {
+  overflow-x: auto;
+  margin: 0.7rem 0 1rem;
+}
+.markdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 420px;
+  font-size: 0.9rem;
+}
+.markdown-table th,
+.markdown-table td {
+  border: 1px solid var(--border);
+  padding: 0.42rem 0.55rem;
+  vertical-align: top;
+  text-align: left;
+}
+.markdown-table th {
+  background: var(--bg3);
+  color: var(--accent2);
+  font-weight: 700;
 }
 .session-analysis-card { margin-top: 1rem; }
 .session-analysis-title {
@@ -965,6 +1026,40 @@ tr:hover td { background: var(--bg3); }
   color: var(--text);
 }
 .gmchat-user .gmchat-body { background: rgba(124, 111, 212, 0.16); border-color: var(--accent); }
+.gmchat-markdown-body {
+  white-space: normal;
+  min-width: min(38rem, 100%);
+}
+.gmchat-markdown-body .chat-markdown > *:first-child { margin-top: 0; }
+.gmchat-markdown-body .chat-markdown > *:last-child { margin-bottom: 0; }
+.gmchat-markdown-body p { margin: 0 0 0.65rem; }
+.gmchat-markdown-body h4,
+.gmchat-markdown-body h5,
+.gmchat-markdown-body h6 {
+  color: var(--accent2);
+  line-height: 1.25;
+  margin: 0.9rem 0 0.45rem;
+}
+.gmchat-markdown-body h4 { font-size: 1rem; }
+.gmchat-markdown-body h5 { font-size: 0.94rem; }
+.gmchat-markdown-body h6 { font-size: 0.88rem; color: var(--text2); }
+.gmchat-markdown-body ul,
+.gmchat-markdown-body ol {
+  margin: 0.25rem 0 0.75rem;
+  padding-left: 1.35rem;
+}
+.gmchat-markdown-body li { margin: 0.18rem 0; }
+.gmchat-markdown-body .markdown-table-wrap {
+  max-width: 100%;
+  margin: 0.55rem 0 0.75rem;
+}
+.gmchat-markdown-body .markdown-table { min-width: 32rem; }
+.gmchat-markdown-body code {
+  background: var(--bg2);
+}
+.gmchat-markdown-body pre {
+  max-width: 100%;
+}
 .gmchat-caret { color: var(--accent2); animation: gmchat-blink 1s steps(1) infinite; }
 @keyframes gmchat-blink { 50% { opacity: 0; } }
 .gmchat-compose { margin-top: 0.75rem; flex: 0 0 auto; }
@@ -1216,6 +1311,88 @@ table.eit th { color: var(--text2); font-weight: 600; border-top: none; }
 @media (max-width: 640px) {
   .about-hero { flex-direction: column; }
   .about-portrait { width: 100%; }
+}
+
+/* ── Rules browser view ── */
+body:not(.rules-print-mode) #tab-rules .rules-document {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text);
+  line-height: 1.6;
+}
+body:not(.rules-print-mode) #tab-rules .rules-document .print-cover { display: none; }
+body:not(.rules-print-mode) #tab-rules .rules-document .print-section { margin: 0; }
+body:not(.rules-print-mode) #tab-rules .rules-document h1,
+body:not(.rules-print-mode) #tab-rules .rules-document h2,
+body:not(.rules-print-mode) #tab-rules .rules-document h3,
+body:not(.rules-print-mode) #tab-rules .rules-document h4 {
+  color: var(--accent2);
+  line-height: 1.25;
+  margin: 1.4rem 0 0.6rem;
+}
+body:not(.rules-print-mode) #tab-rules .rules-document h1 {
+  font-size: 1.45rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.35rem;
+}
+body:not(.rules-print-mode) #tab-rules .rules-document h2 {
+  font-size: 1.18rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.25rem;
+}
+body:not(.rules-print-mode) #tab-rules .rules-document h3 { font-size: 1.02rem; color: var(--text); }
+body:not(.rules-print-mode) #tab-rules .rules-document h4 { font-size: 0.95rem; color: var(--text2); }
+body:not(.rules-print-mode) #tab-rules .rules-document p,
+body:not(.rules-print-mode) #tab-rules .rules-document li {
+  max-width: none;
+}
+body:not(.rules-print-mode) #tab-rules .rules-document p,
+body:not(.rules-print-mode) #tab-rules .rules-document ul,
+body:not(.rules-print-mode) #tab-rules .rules-document pre,
+body:not(.rules-print-mode) #tab-rules .rules-document table {
+  margin-bottom: 0.75rem;
+}
+body:not(.rules-print-mode) #tab-rules .rules-document ul {
+  padding-left: 1.35rem;
+}
+body:not(.rules-print-mode) #tab-rules .rules-document table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  font-size: 0.92rem;
+}
+body:not(.rules-print-mode) #tab-rules .rules-document th,
+body:not(.rules-print-mode) #tab-rules .rules-document td {
+  border: 1px solid var(--border);
+  padding: 0.42rem 0.55rem;
+  vertical-align: top;
+  text-align: left;
+}
+body:not(.rules-print-mode) #tab-rules .rules-document th {
+  background: var(--bg3);
+  color: var(--accent2);
+}
+body:not(.rules-print-mode) #tab-rules .rules-document code {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05rem 0.25rem;
+}
+body:not(.rules-print-mode) #tab-rules .rules-document pre {
+  overflow: auto;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+}
+body:not(.rules-print-mode) #tab-rules .rules-document pre code {
+  background: transparent;
+  border: 0;
+  padding: 0;
 }
 
 /* ── Printable export documents ── */
