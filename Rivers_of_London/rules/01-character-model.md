@@ -1,6 +1,6 @@
 # Character Model
 
-<!-- Source: character-creation, skills, core-rules, newtonian-magic, rules-summaries. Status: extracted-draft. -->
+<!-- Source: character-creation, skills, core-rules, newtonian-magic, rules-summaries. Status: reviewed-complete. -->
 
 This file defines the recurring numbers and sheet terms used by the rest of the rules.
 

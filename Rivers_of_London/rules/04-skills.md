@@ -1,6 +1,6 @@
 # Skills
 
-<!-- Source: skills, character-creation, core-rules. Status: extracted-draft. -->
+<!-- Source: skills, character-creation, core-rules. Status: reviewed-complete. -->
 
 This file is the canonical skill reference. Character creation values are summarised here and fully routed through `03-character-creation.md`; rolling procedure, difficulty, pushing, opposed rolls, and Luck are in `02-core-resolution.md`.
 

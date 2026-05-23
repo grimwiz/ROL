@@ -1,11 +1,24 @@
 # TODO
 
-- **Rulebook app-content migration handoff.** The next rulebook/data step is
-  captured in `Rivers_of_London/rules/tracking/app-content-handoff.md`: split
-  core vs extended rules, add the Admin extended-rules toggle, introduce
-  canonical seed/reset content, surface The Bookshop as a resettable built-in
-  case, and seed editable lore with default GM/player visibility. Follow that
-  plan in order so the app remains usable after each step.
+- **Rulebook extraction first; app-content plan parked.** The app-facing basic
+  rules corpus (`Rivers_of_London/rules/00` through `11`) is now extracted,
+  PDF-checked, and marked `reviewed-complete`. Finish the remaining
+  scenario/lore/Bookshop extraction before moving content around in the app or
+  adding permission/reset systems. The prior app-content migration plan is
+  saved in `Rivers_of_London/rules/tracking/app-content-handoff.md`, but it is
+  now explicitly parked for review. Before implementing it, reassess whether
+  advanced options should produce a mutated `rules-advanced/` corpus rather
+  than being appended as a separate "extended rules" section. The extracted
+  advanced-rule source summary now lives in
+  `Rivers_of_London/rules-advanced-source/` so wildcard loading of
+  app-facing rules cannot include it accidentally.
+
+- **Remaining rulebook extraction targets.** Use the tracking files under
+  `Rivers_of_London/rules/tracking/` as the source of truth. The basic rules
+  prerequisite for advanced-rule mutation is complete. Known remaining areas
+  include scenario/lore extraction from Chapters 6-7, the Chapter 8 Bookshop
+  reusable-reference scope decision, and appendix material only where it is
+  useful as source pointers or safe reusable data.
 
 - **Visibility-set artifacts (master folder + audience copies).** Replace the
   folder-based GM-only/Player-Handout toggle with a per-artifact visibility

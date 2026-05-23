@@ -1,10 +1,10 @@
 # Advanced Options
 
-<!-- Source: additional-rules, printed pages 309-317 and 321-335. Status: extracted-draft. -->
+<!-- Source: additional-rules, printed pages 309-335. Status: extracted-draft; PDF checked. -->
 
 This file collects optional and advanced rules. Use them selectively. Standard investigator creation, skills, combat, damage, and magic remain in the earlier numbered files.
 
-Chapter 9's lower-fae and Quiet Person investigator rules are extracted in `11-demi-monde.md`.
+Optional lower-fae and Quiet Person investigator rules are held here so the basic rules corpus stays clean for later advanced-rule mutation.
 
 ## Advanced Character Creation
 
@@ -168,6 +168,87 @@ The investigators do not have to be police or law enforcement. A group could be 
 ### Base of Operations
 
 A base may be formal, informal, fixed, or mobile. It may provide only basic shelter and meeting space, or it may include resources such as records, magical protections, a library, an armoury, specialist equipment, vehicles, or local contacts. Keep the base consistent with the organisation's funding, access, and story position.
+
+## Playing Demi-Monde Investigators
+
+These options apply only if the GM permits demi-monde player investigators.
+
+### Lower Fae Investigators
+
+Creation follows normal investigator creation except:
+
+- Player genii locorum are not supported.
+- A lower fae's Luck equals POW and refreshes daily at a set time chosen during creation.
+- Lower fae cannot take the Magical advantage.
+- Lower fae cannot learn or use Newtonian spells.
+- Lower fae do not have magic points.
+- Lower fae do not have the glamour.
+- Sense Vestigia starts at 60.
+- The player chooses an affinity that fits the character concept.
+- Backstory should include demi-monde relatives, friends, adversaries, obligations, or contacts.
+
+The player chooses the fixed daily Luck refresh time during character creation. It can be a clock time or a predictable daily event such as sunrise or sunset.
+
+### Fae Affinity Costs
+
+Use Luck to create affinity manifestations.
+
+| Manifestation | Luck cost | Mechanical benchmark |
+| --- | ---: | --- |
+| Everyday | 5 | Colour or minor utility. Can automatically achieve something equivalent to a Regular skill success, such as opening a standard lock with a lock affinity. |
+| Significant | 20 | Meaningful impact on a character or scene. Can automatically achieve something equivalent to a Hard skill success, such as making an unfamiliar animal follow a simple instruction with an animal affinity. |
+
+The GM may increase the cost for an especially difficult, spectacular, or high-impact outcome. With GM permission, a lower fae may attempt a once-per-case-file impressive manifestation for a suitably large Luck spend.
+
+Fae investigators cannot use an affinity to inflict damage directly. Indirect harm is possible if the fictional effect would cause it, such as causing a fall or directing an animal to attack.
+
+### Sample Affinities
+
+| Affinity | Everyday manifestation, 5 Luck | Significant manifestation, 20 Luck |
+| --- | --- | --- |
+| Air | Create a draft strong enough to close a door. | Gust of wind pushes a person 2 metres/yards unless they succeed on STR. |
+| Animals | Make an animal docile. | Give an animal a one-sentence instruction it can reasonably understand. |
+| Earth | Dig a 1 metre/yard square, 1 metre/yard deep hole in compacted earth within a few minutes. | Earth tremor unbalances someone within 10 metres/yards unless they succeed on DEX; on failure they are shaken and drop what they hold. |
+| Fire | Ignite non-living flammable material by touch, as with a match. | Ignite non-living flammable material quickly and intensely, as with a burning torch. |
+| Mechanical | Fix a mechanical watch and make it tick. | Fix mechanical car problems in under 10 minutes and make the car run like new. |
+| Mechanical, locks | Open a lock that would require a Regular Locksmith success. | Open a lock that would require a Hard Locksmith success. |
+| Plants | Make a small bouquet's worth of flowers bloom on demand. | Move branches, swell wood in a door, create an obstruction, or create a route of escape. |
+| Water | Breathe underwater for several minutes or shape a small volume of water. | Breathe underwater for an hour or direct a water jet from a hose, tap, or similar source. |
+
+### Quiet Person Investigators
+
+Quiet People are available as investigators only with GM approval. Use lower fae creation rules with these additional adjustments:
+
+- They cannot use Newtonian magic.
+- They do not have magic points.
+- They do not have the glamour.
+- Sense Vestigia starts at 60.
+- Occupations are usually Tradesperson, Farmer, Lecturer, or a close variant tied to ceramics, farming, teaching, engineering, or underground society.
+- Broader surface-world occupations require GM approval and a plausible backstory.
+- Backstory should include ties to the Quiet Person community and possibly the wider demi-monde.
+
+### Quiet Person Earth Affinity
+
+Quiet People use the Earth affinity as their baseline. They may also emulate the following Newtonian spell effects by spending Luck instead of magic points:
+
+| Emulated spell effect | Luck cost |
+| --- | ---: |
+| Terra | 5 |
+| Rock Drill | 10 |
+| Impello Vibrato | 20 |
+| The Coffin Bell | 20 |
+
+When a Quiet Person uses thematic power, they emit vestigia. Either use the profile vestigia or create one using the signare process in `09-magic.md`: roll three times on Table 10, discard one result, then add either a momentary blast of heat or the smell of a pigsty as a third element if neither was rolled.
+
+### Quiet Person Sensitivity
+
+| Environment | Observation modifier |
+| --- | --- |
+| Quiet and dimly lit | Bonus die. |
+| Bright or noisy enough to be uncomfortable | Penalty die. |
+| Total darkness | They cannot see. |
+
+Bright sunlight with strong shadows or the noise level of a busy supermarket is enough to justify the penalty.
 
 ## Skills Revisited
 

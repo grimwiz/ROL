@@ -1,6 +1,6 @@
 # Chases
 
-<!-- Source: core-rules, rules-summaries. Status: extracted-draft; PDF check pending. -->
+<!-- Source: core-rules, rules-summaries. Status: reviewed-complete. -->
 
 ## Chase Frame
 

@@ -8,10 +8,10 @@ Record specific markdown conversion problems that should be checked against the 
 |---|---|---|
 | Whole markdown file | Page numbers, decorative images, and page headers appear as standalone headings or image references. | Ignore as extraction content; use printed page numbers in source map for review. |
 | Table of contents | The converted table is split across columns and includes noisy punctuation. | Use only for initial page routing; verify exact ranges during extraction. |
-| Appendix B: Rules Summaries | Some bullets appear out of order, especially combat steps and magic summary material. | Check against PDF before using as canonical quick-reference source. |
-| Chapter 5: police acronyms/slang table | The final rows appear malformed and duplicated in markdown. | Check PDF table before extracting. |
+| Appendix B: Rules Summaries | Some bullets appear out of order, especially combat steps and magic summary material. | RESOLVED FOR BASE RULES 2026-05-23: checked directly against PDF p.350-360 as a checklist for `00`-`11`; no standalone quick-reference output is required unless requested later. |
+| Chapter 5: police acronyms/slang table | The final rows appear malformed and duplicated in markdown. | RESOLVED 2026-05-23: checked Table 12 directly against PDF p.214-216 and extracted a cleaned glossary into `scenario/policing-and-investigations.md`. |
 | Spell trees and some tables | Several tree/table layouts may be image-only or split by page artifacts. | Chapter 4 spell list/trees were checked against rendered PDF pages on 2026-05-23. Keep this issue open for later tables/trees outside the Chapter 4 spell catalog. |
-| Chapter 3 damage/combat tables | Large tables may be split by images or page breaks. | Verify against PDF before marking any damage/combat section complete. |
+| Chapter 3 damage/combat tables | Large tables may be split by images or page breaks. | RESOLVED 2026-05-23: Chapter 3 tables and prose were checked against the PDF; `02`, `05`, `06`, `07`, and `08` are reviewed-complete for the basic rules corpus. |
 | Chapter 7 maps and location references | Map numbers appear in headings and text; images are not directly useful as prose. | Extract only useful location facts; track any map-dependent uncertainty. |
 | Character sheets and handouts after the index | OCR includes form labels and layout fragments. | Exclude unless a later app-specific task needs field mapping. |
 
@@ -83,4 +83,10 @@ RESOLVED 2026-05-23: Rendered and checked the spell list plus Impello and Shield
 Problem:
 The markdown source interleaves several Chapter 9 sections and tables, including age/MOV ordering, organisation prompts, non-Newtonian ability text, alternative damage bullets, and the poison table.
 Decision or next check:
-RESOLVED 2026-05-23: Drafted `12-advanced-options.md` from PDF-checked printed p.309-317 and p.321-335, with lower-fae/Quiet Person rules already checked into `11-demi-monde.md` from p.318-321. Table 14 Optional Hit Locations and Table 15 Poisons were checked against the PDF. Case-writing guidance p.336-342 remains out of this rules file and pending for `scenario/case-design.md`.
+RESOLVED 2026-05-23: Drafted `../rules-advanced-source/12-advanced-options.md` from PDF-checked printed p.309-335, including lower-fae/Quiet Person PC rules from p.318-321. Table 14 Optional Hit Locations and Table 15 Poisons were checked against the PDF. Case-writing guidance p.336-342 remains in `scenario/case-design.md`.
+
+2026-05-23 - Basic rules corpus contamination:
+Problem:
+Optional lower-fae and Quiet Person player-investigator rules were drafted in app-facing `11-demi-monde.md`, which meant wildcard rule loading could treat them as basic rules.
+Decision or next check:
+RESOLVED 2026-05-23: moved those optional PC rules to `../rules-advanced-source/12-advanced-options.md`; `11-demi-monde.md` now keeps only base demi-monde mechanics and creature-facing rules.

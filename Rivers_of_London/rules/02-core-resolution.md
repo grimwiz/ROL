@@ -1,6 +1,6 @@
 # Core Resolution
 
-<!-- Source: core-rules, skills, rules-summaries. Status: extracted-draft. -->
+<!-- Source: core-rules, skills, rules-summaries. Status: reviewed-complete. -->
 
 ## When to Roll
 
@@ -310,4 +310,3 @@ Recovery from impairment is covered in `07-damage-and-healing.md`.
 ## Failure Without Dead Ends
 
 Failed rolls should keep play moving where possible. Prefer complications, cost, capture, loss, delay, bargains, injury, changed circumstances, or partial success over outcomes that end the investigation.
-

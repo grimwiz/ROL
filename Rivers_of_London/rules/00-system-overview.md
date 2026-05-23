@@ -1,6 +1,6 @@
 # System Overview
 
-<!-- Source: intro-core, intro-glossary, rules-summaries. Status: extracted-draft. -->
+<!-- Source: intro-core, intro-glossary, rules-summaries. Status: reviewed-complete. -->
 
 ## Game Frame
 
@@ -85,4 +85,3 @@ Player-facing rules can assume the following:
 - Magic exists but is not public knowledge in normal society.
 - Some investigators may know Newtonian magic; others contribute through mundane expertise.
 - The game supports investigative, social, magical, and physical problem-solving.
-

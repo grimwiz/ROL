@@ -1,6 +1,6 @@
 # Spells
 
-<!-- Source: newtonian-magic, printed pages 178-193, including spell list/tree images on pages 179, 181, and 185. Status: extracted-draft. -->
+<!-- Source: newtonian-magic, printed pages 178-193, including spell list/tree images on pages 179, 181, and 185. Status: reviewed-complete. -->
 
 This file contains the Chapter 4 Newtonian spell catalog. General casting procedure, magic points, mastery, boosting limits, technology sanding, spell detection, and HTD are in `09-magic.md`.
 

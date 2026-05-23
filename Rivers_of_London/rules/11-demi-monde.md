@@ -1,8 +1,8 @@
 # Demi-Monde Rules
 
-<!-- Source: rogues-and-demi-monde, additional-rules. Status: extracted-draft. -->
+<!-- Source: rogues-and-demi-monde. Status: reviewed-complete. -->
 
-This file covers mechanical treatment for fae, genii locorum, ghosts, vampires, Quiet People, and other demi-monde beings. NPC biographies, recurring-character summaries, London context, and case-use notes belong in `scenario/`.
+This file covers mechanical treatment for fae, genii locorum, ghosts, vampires, Quiet People, and other demi-monde beings. NPC biographies, recurring-character summaries, London context, case-use notes, and optional demi-monde investigator rules belong outside the basic rules corpus.
 
 ## Scope and Terms
 
@@ -53,8 +53,6 @@ Use this when the target has been told about the glamour and how to resist it.
 
 If an investigator is targeted, they may spend Luck to overcome a failed POW roll. They may also push the POW roll as an attempt to resist; a second failure places them fully at the glamour user's mercy.
 
-Lower fae investigators do not have access to the glamour by default.
-
 ## Luck of the Demi-Monde
 
 Non-human demi-monde characters have Luck points.
@@ -66,7 +64,7 @@ Rules:
 - Demi-monde characters spend Luck under the normal Luck rules unless a specific power gives a different use.
 - Their Luck can support acts that seem improbably skilful or luck-defying.
 
-For player lower fae, the player chooses the fixed daily refresh time during character creation. It can be a clock time or a predictable daily event such as sunrise or sunset.
+For NPCs, set the fixed refresh time only if it matters in play.
 
 ## Gifted Luck
 
@@ -195,7 +193,7 @@ Common rules:
 
 - Luck of the Demi-Monde.
 - Earth affinity.
-- Sense Vestigia 60 in sample profiles and as a player-character rule.
+- Sense Vestigia 60 in sample profiles.
 - Not vulnerable to cold iron by default.
 - Often emit vestigia when using thematic powers: a momentary blast of heat and the smell of a pigsty are the profile examples.
 - Bonus die to Observation in quiet and/or dimly lit locations.
@@ -214,83 +212,6 @@ Use these as mechanical flags rather than fixed limits.
 | Lower fae | Broad category for beings such as Zachary Palmer. They can have demi-monde Luck and a narrow affinity, such as locks. They are not normally cold-iron vulnerable. |
 | Talking foxes | Intelligent, speaking foxes. Use their profile skills and language notes; do not assume glamour or thematic power unless a case file gives it. |
 | Trolls | Lower fae associated with rivers, banks, or bridges. Use demi-monde Luck and profile traits; not cold-iron vulnerable by default. |
-
-## Lower Fae Investigators
-
-The following rules apply only if the GM permits lower fae player investigators.
-
-Creation follows normal investigator creation except:
-
-- Player genii locorum are not supported.
-- A lower fae's Luck equals POW and refreshes daily at a set time chosen during creation.
-- Lower fae cannot take the Magical advantage.
-- Lower fae cannot learn or use Newtonian spells.
-- Lower fae do not have magic points.
-- Lower fae do not have the glamour.
-- Sense Vestigia starts at 60.
-- The player chooses an affinity that fits the character concept.
-- Backstory should include demi-monde relatives, friends, adversaries, obligations, or contacts.
-
-### Fae Affinity Costs
-
-Use Luck to create affinity manifestations.
-
-| Manifestation | Luck cost | Mechanical benchmark |
-|---|---:|---|
-| Everyday | 5 | Colour or minor utility. Can automatically achieve something equivalent to a Regular skill success, such as opening a standard lock with a lock affinity. |
-| Significant | 20 | Meaningful impact on a character or scene. Can automatically achieve something equivalent to a Hard skill success, such as making an unfamiliar animal follow a simple instruction with an animal affinity. |
-
-The GM may increase the cost for an especially difficult, spectacular, or high-impact outcome. With GM permission, a lower fae may attempt a once-per-case-file impressive manifestation for a suitably large Luck spend.
-
-Fae investigators cannot use an affinity to inflict damage directly. Indirect harm is possible if the fictional effect would cause it, such as causing a fall or directing an animal to attack.
-
-### Sample Affinities
-
-| Affinity | Everyday manifestation, 5 Luck | Significant manifestation, 20 Luck |
-|---|---|---|
-| Air | Create a draft strong enough to close a door. | Gust of wind pushes a person 2 metres/yards unless they succeed on STR. |
-| Animals | Make an animal docile. | Give an animal a one-sentence instruction it can reasonably understand. |
-| Earth | Dig a 1 metre/yard square, 1 metre/yard deep hole in compacted earth within a few minutes. | Earth tremor unbalances someone within 10 metres/yards unless they succeed on DEX; on failure they are shaken and drop what they hold. |
-| Fire | Ignite non-living flammable material by touch, as with a match. | Ignite non-living flammable material quickly and intensely, as with a burning torch. |
-| Mechanical | Fix a mechanical watch and make it tick. | Fix mechanical car problems in under 10 minutes and make the car run like new. |
-| Mechanical, locks | Open a lock that would require a Regular Locksmith success. | Open a lock that would require a Hard Locksmith success. |
-| Plants | Make a small bouquet's worth of flowers bloom on demand. | Move branches, swell wood in a door, create an obstruction, or create a route of escape. |
-| Water | Breathe underwater for several minutes or shape a small volume of water. | Breathe underwater for an hour or direct a water jet from a hose, tap, or similar source. |
-
-## Quiet Person Investigators
-
-Quiet People are available as investigators only with GM approval. Use lower fae creation rules with these additional adjustments:
-
-- They cannot use Newtonian magic.
-- They do not have magic points.
-- They do not have the glamour.
-- Sense Vestigia starts at 60.
-- Occupations are usually Tradesperson, Farmer, Lecturer, or a close variant tied to ceramics, farming, teaching, engineering, or underground society.
-- Broader surface-world occupations require GM approval and a plausible backstory.
-- Backstory should include ties to the Quiet Person community and possibly the wider demi-monde.
-
-### Quiet Person Earth Affinity
-
-Quiet People use the Earth affinity as their baseline. They may also emulate the following Newtonian spell effects by spending Luck instead of magic points:
-
-| Emulated spell effect | Luck cost |
-|---|---:|
-| Terra | 5 |
-| Rock Drill | 10 |
-| Impello Vibrato | 20 |
-| The Coffin Bell | 20 |
-
-When a Quiet Person uses thematic power, they emit vestigia. Either use the profile vestigia or create one using the signare process in `09-magic.md`: roll three times on Table 10, discard one result, then add either a momentary blast of heat or the smell of a pigsty as a third element if neither was rolled.
-
-### Quiet Person Sensitivity
-
-| Environment | Observation modifier |
-|---|---|
-| Quiet and dimly lit | Bonus die. |
-| Bright or noisy enough to be uncomfortable | Penalty die. |
-| Total darkness | They cannot see. |
-
-Bright sunlight with strong shadows or the noise level of a busy supermarket is enough to justify the penalty.
 
 ## Non-Newtonian Special Abilities
 
@@ -315,4 +236,3 @@ Rules:
 - Base weapon damage: 1.
 - The sword can store magic points; NPC examples use 10 points for an apprentice and 20 for a master.
 - A trained Mystic Art practitioner may spend 1 magic point to gain a bonus die on a damage roll made with the sword.
-

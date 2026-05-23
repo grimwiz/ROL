@@ -2,6 +2,26 @@
 
 Last updated: 2026-05-23.
 
+## Status: Parked For Review
+
+This plan is deliberately parked until the remaining scenario/lore/Bookshop
+extraction is finished. The app-facing basic rules corpus is complete, but the
+content work still has non-rules extraction open. This file captures useful
+implementation ideas, but several steps are too large or too
+app-architecture-heavy for the current phase and should be reviewed before any
+code work starts.
+
+Do not begin the manifest, Admin toggle, canonical copy/reset, Bookshop
+surfacing, or visibility implementation from this file until extraction is
+complete and the design has been rechecked.
+
+Current priority:
+
+- Finish extracting and PDF-checking the remaining scenario/lore/Bookshop data.
+- Keep source/provenance tracking current.
+- Decide how base and advanced rules should be represented before changing the
+  app rule-loading model.
+
 This handoff captures the next app/data work after the rules transcription pass. It is written so another agent can continue in small steps, with the project remaining usable after each step.
 
 ## Current State
@@ -9,8 +29,12 @@ This handoff captures the next app/data work after the rules transcription pass.
 Recent uncommitted rules extraction work:
 
 - `Rivers_of_London/rules/10-spells.md` created.
-- `Rivers_of_London/rules/11-demi-monde.md` created.
-- `Rivers_of_London/rules/12-advanced-options.md` created.
+- `Rivers_of_London/rules/00` through `11` marked `reviewed-complete` for the
+  app-facing basic rules corpus.
+- `Rivers_of_London/rules/11-demi-monde.md` cleaned so optional lower-fae and
+  Quiet Person player-investigator rules no longer load as basic rules.
+- `Rivers_of_London/rules-advanced-source/12-advanced-options.md` created
+  outside the app-facing rules folder and now holding those optional PC rules.
 - Tracking files updated under `Rivers_of_London/rules/tracking/`.
 
 Checks already run for those files:
@@ -76,6 +100,8 @@ Important files:
 
 ## Key Design Decisions
 
+These decisions are provisional and need review before implementation.
+
 Use a manifest, not filename guessing, for rules.
 
 Add:
@@ -103,15 +129,54 @@ Suggested shape:
       "id": "extended",
       "title": "Extended Rules",
       "default_enabled": false,
-      "files": [
-        "12-advanced-options.md"
-      ]
+      "files": []
     }
   ]
 }
 ```
 
-In the actual first implementation, include all existing core files in order. The exact extended list can start with `12-advanced-options.md` only. Keep `10-spells.md` and `11-demi-monde.md` in core unless the GM explicitly wants spells/demi-monde hidden as advanced; they are needed for normal play once magic or demi-monde PCs/NPCs exist.
+In the actual first implementation, include all existing core files in order. Do not directly include `Rivers_of_London/rules-advanced-source/12-advanced-options.md` in an app-facing manifest; it is an extracted source summary, not a resolved advanced rule corpus. Keep `10-spells.md` and `11-demi-monde.md` in core unless the GM explicitly wants spells/demi-monde hidden as advanced; they are needed for normal play once magic, demi-monde NPCs, or demi-monde case phenomena exist.
+
+## Design Issue To Review: Advanced Rules May Mutate Core Rules
+
+The earlier core/extended design assumes that advanced options can be appended
+as an extra group. That may be the wrong model for rules analysis, especially
+for AI Support. Several optional rules alter existing procedures rather than
+adding isolated new topics. If the advanced material is just tagged onto the
+end, retrieval can answer from the base section when the advanced procedure is
+the intended campaign rule, or blend incompatible base and advanced procedures.
+
+Examples of likely mutations:
+
+- Advanced character creation changes the base creation procedure.
+- Disadvantages alter character creation and advantage selection.
+- Optional combat rules alter surprise, prone combat, held actions,
+  interruption, automatic fire, and firearm handling.
+- Alternative damage alters the base damage-resolution procedure.
+- Detailed poison rules alter the base poison procedure.
+- Higher-order/custom spells, enchantments, demon traps, and rose jars alter
+  the magic/spell reference rather than living only as appendix notes.
+
+Plausible architecture to review after extraction:
+
+- Keep `Rivers_of_London/rules/` as the base/core extracted corpus.
+- Keep `Rivers_of_London/rules-advanced-source/12-advanced-options.md` as the
+  extracted source summary of optional rules, so the derivation can be repeated
+  and audited.
+- Generate or maintain a derived `Rivers_of_London/rules-advanced/` corpus
+  where affected base files are copied and deliberately mutated by the optional
+  rules.
+- Track each mutation with:
+  - source advanced section
+  - affected base file/heading
+  - replacement/addition behavior
+  - whether the advanced rule supersedes, supplements, or adds an option beside
+    the base rule
+- Prefer a repeatable generation/review process if possible, so changes to the
+  base extracted rules can be replayed into the advanced corpus.
+
+This is only a design note for now. Do not implement it until the remaining
+source extraction is complete.
 
 Use a canonical seed area for bundled editable content.
 
@@ -142,7 +207,8 @@ Goal: leave the repo clean except intentional docs/rules changes.
 
 Work:
 
-- Review `10-spells.md`, `11-demi-monde.md`, `12-advanced-options.md`.
+- Review `10-spells.md`, `11-demi-monde.md`, and
+  `../rules-advanced-source/12-advanced-options.md`.
 - Run `git diff --check`.
 - Commit or otherwise preserve the current transcription work before app changes.
 
@@ -229,7 +295,7 @@ Consistent project state:
 
 Suggested checks:
 
-- Ask rules chat about a `12-advanced-options.md` topic with toggle on: answer should use it.
+- Ask rules chat about an advanced-rule topic with toggle on: answer should use the resolved advanced corpus, not the raw source summary.
 - Turn toggle off and ask the same topic: answer should say compact rules for this case do not include it.
 - `/api/rules/search?q=automatic&sessionId=<id>` changes with the toggle.
 

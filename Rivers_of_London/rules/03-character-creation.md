@@ -1,8 +1,8 @@
 # Character Creation
 
-<!-- Source: character-creation, newtonian-magic-starting-spells, character-sheet-notes. Status: extracted-draft. -->
+<!-- Source: character-creation, newtonian-magic-starting-spells, character-sheet-notes. Status: reviewed-complete. -->
 
-This file gives the base investigator creation procedure. Optional advanced creation, disadvantages, investigator organisations, and experience packages belong in `12-advanced-options.md`.
+This file gives the base investigator creation procedure. Optional advanced creation, disadvantages, investigator organisations, and experience packages are extracted in `../rules-advanced-source/12-advanced-options.md` and are not part of the app-facing base rules.
 
 ## Creation Sequence
 

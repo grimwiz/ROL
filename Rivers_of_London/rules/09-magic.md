@@ -1,6 +1,6 @@
 # Newtonian Magic
 
-<!-- Source: newtonian-magic, skills, core-rules, rules-summaries. Status: extracted-draft. -->
+<!-- Source: newtonian-magic, skills, core-rules, rules-summaries. Status: reviewed-complete. -->
 
 This file covers magic systems and procedures. Individual spell effects, spell prerequisites, and spell trees belong in `10-spells.md`.
 
