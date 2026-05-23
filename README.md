@@ -155,6 +155,7 @@ Each case file detail view splits scenario knowledge into **Overview**, **Charac
 - **Overview** — GM-only at-a-glance session board for player characters and allocated NPCs: conditions, resources, notable skills, weapons, and play notes.
 - **Characters** — per-player editable character sheets. Players only see their own sheet; the GM can edit all assigned player sheets.
 - **Case Info** — the "what has happened so far" analysis and per-session analysis. The model returns structured Markdown (headings, bold, bulleted beats) rendered with a clickable index. Session summaries can choose the most useful `presentation`: *scene* for chronological shared-table play, *player* for fragmented character-specific/WhatsApp threads, or *location* for place-by-place recall. Outstanding leads, in-flight actions, and open questions are woven into the prose rather than listed separately, because an explicit to-investigate checklist is itself a spoiler.
+- **Handouts** — player-only read view of player-visible source Markdown, graphics, and PDFs from the case files. It uses the same visibility filtering as scenario generation and has no edit/delete controls.
 - **Player Info** — per-character story. A player sees only their own character's story. A GM gets a player selector mirroring the Characters tab and can preview exactly what each player sees (filtered server-side via `?as_user=`).
 - **NPC/Places/Things** — player-visible Places, NPCs, and notable Things (objects/artefacts/evidence). These entries are entity-centric: each NPC/place/item is written from the point of view of that subject, not as another per-player report.
 - **NPCs** — allocated NPC sheets for this case, using per-case working copies as described above.
@@ -184,6 +185,12 @@ data/sessions/<session-name-slug>/gm_sections.json
 ```
 
 Root markdown and `input/` files support player-facing analysis. `GM/` files support private planning, pacing, per-player deliverables, fairness/engagement tracking, and quiet-player prompts. The global seed files are copied into the session folder when missing or empty, so a GM can empty a local seeded file to restore it from `Rivers_of_London/globaldata`. Players can read the rulebook directly in-app, so no game-overview file is seeded into sessions or fed to the model.
+
+### Built-in Bookshop case
+
+**The Bookshop** is a built-in sandbox case that appears beside GM-created cases and opens in the normal case UI. Its canonical source lives under `Rivers_of_London/canonical/cases/bookshop/`; on server start the app creates or refreshes the normal session row marked with `system_key = bookshop`, copies any missing seeded files into `data/sessions/the-bookshop/`, and allocates the case cast from JSON NPC sheets.
+
+GMs can edit the live copy, move assets between GM/player visibility, regenerate scenario information, and use GM Chat against the case. The case card exposes **Reset**, which restores the seeded files and canonical per-case NPC sheets from the archive without changing the canonical source. Built-in cases cannot be renamed or deleted from the case list.
 
 ### One generation path
 

@@ -2871,7 +2871,8 @@ function writeSessionNpcSummary(sessionId, db) {
   if (!session) return false;
   const paths = ensureSessionDataFolders(session);
   const rows = db.prepare(`
-    SELECT n.* FROM npcs n
+    SELECT n.*, ns.sheet AS case_sheet
+    FROM npcs n
     JOIN npc_sessions ns ON ns.npc_id = n.id
     WHERE ns.session_id = ?
     ORDER BY n.name COLLATE NOCASE
@@ -2888,7 +2889,8 @@ function writeSessionNpcSummary(sessionId, db) {
   } else {
     for (const row of rows) {
       let sheet = null;
-      try { sheet = row.sheet ? JSON.parse(row.sheet) : null; } catch { sheet = null; }
+      const sheetJson = row.case_sheet || row.sheet;
+      try { sheet = sheetJson ? JSON.parse(sheetJson) : null; } catch { sheet = null; }
       const occupation = (sheet && sheet.occupation) || row.role || '';
       lines.push(`## ${row.name}${occupation ? ` — ${occupation}` : ''}`, '');
       const blurb = (sheet && (sheet.reputation || sheet.backstory)) || row.summary || '';

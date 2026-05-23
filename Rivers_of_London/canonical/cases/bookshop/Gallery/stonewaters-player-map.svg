@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" role="img" aria-labelledby="title desc">
+  <title id="title">Stonewaters player map</title>
+  <desc id="desc">Player-facing sketch map of Stonewaters bookshop.</desc>
+  <rect width="1000" height="700" fill="#f7f3ea"/>
+  <text x="500" y="58" text-anchor="middle" font-family="Georgia, serif" font-size="34" fill="#29343a">Stonewaters Bookshop</text>
+  <text x="500" y="90" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#566">Player-facing layout sketch</text>
+  <rect x="90" y="120" width="820" height="470" fill="#fffdf8" stroke="#29343a" stroke-width="4"/>
+  <line x1="90" y1="410" x2="910" y2="410" stroke="#29343a" stroke-width="3"/>
+  <line x1="620" y1="120" x2="620" y2="410" stroke="#29343a" stroke-width="3"/>
+  <line x1="330" y1="120" x2="330" y2="410" stroke="#29343a" stroke-width="3"/>
+  <line x1="740" y1="410" x2="740" y2="590" stroke="#29343a" stroke-width="3"/>
+  <rect x="420" y="574" width="160" height="16" fill="#29343a"/>
+  <text x="500" y="630" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#29343a">Street entrance</text>
+  <g fill="#d9e4dc" stroke="#61706b" stroke-width="2">
+    <rect x="130" y="155" width="160" height="32"/>
+    <rect x="130" y="205" width="160" height="32"/>
+    <rect x="130" y="255" width="160" height="32"/>
+    <rect x="370" y="155" width="205" height="32"/>
+    <rect x="370" y="205" width="205" height="32"/>
+    <rect x="370" y="255" width="205" height="32"/>
+    <rect x="660" y="155" width="205" height="32"/>
+    <rect x="660" y="205" width="205" height="32"/>
+    <rect x="660" y="255" width="205" height="32"/>
+    <rect x="120" y="455" width="220" height="32"/>
+    <rect x="120" y="510" width="220" height="32"/>
+  </g>
+  <rect x="386" y="446" width="130" height="70" fill="#efe2c5" stroke="#7b6948" stroke-width="3"/>
+  <text x="451" y="487" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#29343a">Tills</text>
+  <rect x="780" y="440" width="85" height="120" fill="#e7d1c3" stroke="#7a5a48" stroke-width="3"/>
+  <text x="822" y="493" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#29343a">Office</text>
+  <text x="822" y="516" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#566">staff only</text>
+  <g stroke="#29343a" stroke-width="4" fill="none">
+    <path d="M635 536h80v-22h-60v-22h60v-22h-60v-22h60"/>
+  </g>
+  <text x="675" y="565" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#29343a">Stairs</text>
+  <text x="210" y="350" text-anchor="middle" font-family="Georgia, serif" font-size="24" fill="#29343a">Art</text>
+  <text x="475" y="350" text-anchor="middle" font-family="Georgia, serif" font-size="24" fill="#29343a">Cookery</text>
+  <text x="765" y="350" text-anchor="middle" font-family="Georgia, serif" font-size="24" fill="#29343a">Children / YA</text>
+  <text x="235" y="570" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#29343a">Tables and displays</text>
+  <text x="500" y="675" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#566">This sketch records the public areas investigators can observe during the initial visit.</text>
+</svg>

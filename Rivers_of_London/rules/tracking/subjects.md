@@ -68,5 +68,5 @@ Use this file to decide where a subject belongs before extracting it. Add rows w
 | Rivers and genii locorum | `scenario/folly-and-london.md` | Chapter 7, Chapter 6 | unreviewed | Include scenario-facing relationships and locations. |
 | Demi-monde pubs and nazareths | `scenario/folly-and-london.md` | Chapter 7 | unreviewed | Include operational rules and case hooks. |
 | Case seeds | `scenario/case-seeds.md` | Chapter 7 | unreviewed | Convert to compact prompts, not copied prose. |
-| The Bookshop reusable reference | `scenario/bookshop-reference.md` | Chapter 8 | unreviewed | Only extract if wanted as reference; avoid replacing the adventure. |
+| The Bookshop sandbox case | `../canonical/cases/bookshop/` | Chapter 8 | extracted-draft | Paraphrased built-in case source with player brief, GM notes, cast, clues, locations, handouts, and schematic maps. Used as a resettable app testing case rather than a reusable rules reference. |
 | Case file design | `scenario/case-design.md` | Chapter 9 | extracted-draft | Writing cases, source use, antagonist, hook, scenes, clues, conclusion, setting research, and campaign structure drafted from PDF-checked p.336-342. |

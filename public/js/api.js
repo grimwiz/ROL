@@ -43,6 +43,7 @@ const api = (() => {
     createSession: (data) => req('POST', '/sessions', data),
     updateSession: (id, data) => req('PUT', `/sessions/${id}`, data),
     deleteSession: (id) => req('DELETE', `/sessions/${id}`),
+    resetCanonicalSession: (id) => req('POST', `/sessions/${id}/reset-canonical`, {}),
     getSessionPlayers: (id) => req('GET', `/sessions/${id}/players`),
     addPlayer: (sessionId, userId) => req('POST', `/sessions/${sessionId}/players`, { user_id: userId }),
     removePlayer: (sessionId, userId) => req('DELETE', `/sessions/${sessionId}/players/${userId}`),

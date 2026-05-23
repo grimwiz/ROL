@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 780" role="img" aria-labelledby="title desc">
+  <title id="title">Stonewaters GM map</title>
+  <desc id="desc">GM-only Stonewaters map showing investigation notes and hidden magical features.</desc>
+  <rect width="1100" height="780" fill="#f2efe6"/>
+  <text x="550" y="52" text-anchor="middle" font-family="Georgia, serif" font-size="34" fill="#26323a">Stonewaters GM Map</text>
+  <text x="550" y="82" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#6b5a47">GM-only: clues, hazards, and spirit routes</text>
+  <rect x="80" y="110" width="660" height="520" fill="#fffdf8" stroke="#26323a" stroke-width="4"/>
+  <line x1="80" y1="420" x2="740" y2="420" stroke="#26323a" stroke-width="3"/>
+  <line x1="318" y1="110" x2="318" y2="420" stroke="#26323a" stroke-width="3"/>
+  <line x1="530" y1="110" x2="530" y2="420" stroke="#26323a" stroke-width="3"/>
+  <line x1="605" y1="420" x2="605" y2="630" stroke="#26323a" stroke-width="3"/>
+  <rect x="330" y="614" width="150" height="16" fill="#26323a"/>
+  <text x="405" y="666" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#26323a">Street entrance</text>
+  <g fill="#d9e4dc" stroke="#61706b" stroke-width="2">
+    <rect x="112" y="150" width="165" height="28"/>
+    <rect x="112" y="202" width="165" height="28"/>
+    <rect x="112" y="254" width="165" height="28"/>
+    <rect x="350" y="150" width="142" height="28"/>
+    <rect x="350" y="202" width="142" height="28"/>
+    <rect x="350" y="254" width="142" height="28"/>
+    <rect x="565" y="150" width="130" height="28"/>
+    <rect x="565" y="202" width="130" height="28"/>
+    <rect x="565" y="254" width="130" height="28"/>
+    <rect x="112" y="466" width="210" height="30"/>
+    <rect x="112" y="520" width="210" height="30"/>
+  </g>
+  <text x="198" y="344" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#26323a">Art</text>
+  <text x="424" y="344" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#26323a">Cookery</text>
+  <text x="630" y="344" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#26323a">Children</text>
+  <rect x="646" y="450" width="64" height="124" fill="#e7d1c3" stroke="#7a5a48" stroke-width="3"/>
+  <text x="678" y="503" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#26323a">Office</text>
+  <text x="678" y="523" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#6b5a47">CCTV</text>
+  <g stroke="#26323a" stroke-width="4" fill="none">
+    <path d="M522 580h55v-18h-40v-18h40v-18h-40v-18h40v-18h-40"/>
+  </g>
+  <text x="552" y="607" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#26323a">Stairs down</text>
+  <ellipse cx="413" cy="502" rx="54" ry="38" fill="#edd9a4" stroke="#a67b2e" stroke-width="3"/>
+  <text x="413" y="508" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#26323a">Bookfall</text>
+  <path d="M625 320c-70 18-112 58-126 120s-52 98-116 112" fill="none" stroke="#b34d42" stroke-width="5" stroke-dasharray="13 12"/>
+  <text x="534" y="386" font-family="Arial, sans-serif" font-size="14" fill="#8a2e2e">spirit moves stock</text>
+  <circle cx="630" cy="162" r="18" fill="#c94d45" opacity="0.75"/>
+  <text x="655" y="168" font-family="Arial, sans-serif" font-size="14" fill="#8a2e2e">Story Time trigger</text>
+  <circle cx="678" cy="493" r="16" fill="#5e7da5" opacity="0.8"/>
+  <text x="704" y="498" font-family="Arial, sans-serif" font-size="14" fill="#31506d">CCTV clue</text>
+  <rect x="800" y="140" width="230" height="240" fill="#fffdf8" stroke="#26323a" stroke-width="4"/>
+  <text x="915" y="170" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#26323a">Basement</text>
+  <circle cx="915" cy="264" r="78" fill="#e9dec3" stroke="#7b6948" stroke-width="3"/>
+  <circle cx="915" cy="264" r="30" fill="#b6c3bf" stroke="#50625d" stroke-width="3"/>
+  <text x="915" y="269" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#26323a">dome</text>
+  <path d="M846 250c38-42 100-42 138 0" fill="none" stroke="#b34d42" stroke-width="5" stroke-dasharray="10 8"/>
+  <text x="915" y="358" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#8a2e2e">Spirit anchored to old venue</text>
+  <rect x="800" y="415" width="230" height="160" fill="#fffdf8" stroke="#26323a" stroke-width="4"/>
+  <text x="915" y="445" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#26323a">GM Notes</text>
+  <text x="820" y="480" font-family="Arial, sans-serif" font-size="14" fill="#26323a">1. Warwick injured near tills.</text>
+  <text x="820" y="510" font-family="Arial, sans-serif" font-size="14" fill="#26323a">2. CCTV shows books move.</text>
+  <text x="820" y="540" font-family="Arial, sans-serif" font-size="14" fill="#26323a">3. Vestigia strongest below.</text>
+  <text x="820" y="570" font-family="Arial, sans-serif" font-size="14" fill="#26323a">4. Night visit escalates hazard.</text>
+  <text x="550" y="724" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#6b5a47">Keep this file GM-only until you intentionally move it to player visibility.</text>
+</svg>

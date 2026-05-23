@@ -51,6 +51,7 @@ const {
   comfyModelsConfig
 } = require('./scenarioInfo');
 const sessionRolls = require('./sessionRolls');
+const { resetCanonicalCase } = require('./canonicalContent');
 const { buildPdf } = require('../scripts/export-character-sheet');
 
 const router = express.Router();
@@ -662,6 +663,7 @@ router.put('/sessions/:id', requireGM, (req, res) => {
   if (!name) return res.status(400).json({ error: 'name required' });
   const previous = db.prepare('SELECT * FROM sessions WHERE id = ?').get(req.params.id);
   if (!previous) return res.status(404).json({ error: 'Session not found' });
+  if (previous.system_key) return res.status(400).json({ error: 'Built-in case files cannot be renamed. Edit the case files or use Reset instead.' });
   const result = db.prepare('UPDATE sessions SET name = ?, description = ? WHERE id = ?').run(name, description || null, req.params.id);
   if (!result.changes) return res.status(404).json({ error: 'Session not found' });
   if (previous.description !== DOMESTIC_SYSTEM_DESCRIPTION && description !== DOMESTIC_SYSTEM_DESCRIPTION) {
@@ -672,9 +674,19 @@ router.put('/sessions/:id', requireGM, (req, res) => {
 });
 
 router.delete('/sessions/:id', requireGM, (req, res) => {
+  const previous = db.prepare('SELECT * FROM sessions WHERE id = ?').get(req.params.id);
+  if (previous && previous.system_key) return res.status(400).json({ error: 'Built-in case files cannot be deleted. Use Reset to restore the canonical copy.' });
   const result = db.prepare('DELETE FROM sessions WHERE id = ?').run(req.params.id);
   if (!result.changes) return res.status(404).json({ error: 'Session not found' });
   res.json({ ok: true });
+});
+
+router.post('/sessions/:id/reset-canonical', requireGM, (req, res) => {
+  try {
+    res.json({ ok: true, ...resetCanonicalCase(db, req.params.id) });
+  } catch (e) {
+    res.status(e.statusCode || 500).json({ error: e.message || 'Reset failed' });
+  }
 });
 
 // Session player assignments

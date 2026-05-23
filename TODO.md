@@ -1,24 +1,36 @@
 # TODO
 
-- **Rulebook extraction first; app-content plan parked.** The app-facing basic
-  rules corpus (`Rivers_of_London/rules/00` through `11`) is now extracted,
-  PDF-checked, and marked `reviewed-complete`. Finish the remaining
-  scenario/lore/Bookshop extraction before moving content around in the app or
-  adding permission/reset systems. The prior app-content migration plan is
-  saved in `Rivers_of_London/rules/tracking/app-content-handoff.md`, but it is
-  now explicitly parked for review. Before implementing it, reassess whether
-  advanced options should produce a mutated `rules-advanced/` corpus rather
-  than being appended as a separate "extended rules" section. The extracted
-  advanced-rule source summary now lives in
-  `Rivers_of_London/rules-advanced-source/` so wildcard loading of
-  app-facing rules cannot include it accidentally.
+- **Rulebook extraction first; broad app-content plan parked.** The app-facing
+  basic rules corpus (`Rivers_of_London/rules/00` through `11`) is now
+  extracted, PDF-checked, and marked `reviewed-complete`. The Bookshop has been
+  handled as a narrow built-in sandbox case seeded from
+  `Rivers_of_London/canonical/cases/bookshop/`, but the broader ruleset-toggle,
+  lore/settings seeding, and visibility redesign remain parked for review in
+  `Rivers_of_London/rules/tracking/app-content-handoff.md`. Before implementing
+  those, reassess whether advanced options should produce a mutated
+  `rules-advanced/` corpus rather than being appended as a separate "extended
+  rules" section. The extracted advanced-rule source summary now lives in
+  `Rivers_of_London/rules-advanced-source/` so wildcard loading of app-facing
+  rules cannot include it accidentally.
 
 - **Remaining rulebook extraction targets.** Use the tracking files under
   `Rivers_of_London/rules/tracking/` as the source of truth. The basic rules
   prerequisite for advanced-rule mutation is complete. Known remaining areas
-  include scenario/lore extraction from Chapters 6-7, the Chapter 8 Bookshop
-  reusable-reference scope decision, and appendix material only where it is
-  useful as source pointers or safe reusable data.
+  include scenario/lore extraction from Chapters 6-7 and appendix material only
+  where it is useful as source pointers or safe reusable data. Chapter 8 now has
+  a paraphrased, resettable built-in case rather than a general rules reference.
+
+- **Per-character/private handout visibility.** A basic read-only player
+  **Handouts** tab now lists player-visible Markdown, graphics, and PDFs without
+  edit/delete controls. The remaining gap is finer-grained artifact visibility:
+  per-character handouts, archived artifacts, and a clearer GM workflow for
+  granting/revoking access without moving files between folders.
+
+- **Case ownership and GM permissions.** The app currently has role-only GM
+  authority: every GM can manage every case. This is acceptable for the Bookshop
+  teaching/demo case, but it will not hold once multiple GMs each own different
+  cases. Add case ownership or GM-case allocation before supporting independent
+  GM-run campaigns.
 
 - **Visibility-set artifacts (master folder + audience copies).** Replace the
   folder-based GM-only/Player-Handout toggle with a per-artifact visibility

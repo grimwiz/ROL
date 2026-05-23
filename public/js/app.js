@@ -797,10 +797,21 @@ function renderDomesticCard() {
 
 function renderSessionCard(s) {
   const isGM = State.user.role === 'gm';
+  const builtIn = !!s.system_key;
   // Optional cover: a graphic in the session Gallery whose stem matches the
   // session name (server-resolved per-viewer; null when none exists).
   const cover = s.cover_image
     ? `<img class="session-cover" src="${esc(scenarioAssetUrl(s.cover_image, s.id))}" alt="${esc(s.name)}" loading="lazy">`
+    : '';
+  const actions = isGM
+    ? (builtIn
+      ? `<div style="display:flex;gap:0.5rem">
+        <button class="btn btn-sm" onclick="event.stopPropagation();resetCanonicalSession(${s.id})">Reset</button>
+      </div>`
+      : `<div style="display:flex;gap:0.5rem">
+        <button class="btn btn-sm" onclick="event.stopPropagation();openEditSession(${s.id})">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteSession(${s.id})">Delete</button>
+      </div>`)
     : '';
   return `<div class="card session-card" onclick="openSession(${s.id})">
     <div class="card-header">
@@ -808,12 +819,9 @@ function renderSessionCard(s) {
         <div class="card-title">${esc(s.name)}</div>
         ${s.description ? `<div class="card-sub">${esc(s.description)}</div>` : ''}
       </div>
-      ${isGM ? `<div style="display:flex;gap:0.5rem">
-        <button class="btn btn-sm" onclick="event.stopPropagation();openEditSession(${s.id})">Edit</button>
-        <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteSession(${s.id})">Delete</button>
-      </div>` : ''}
+      ${actions}
     </div>
-    ${isGM ? `<p class="player-count">👥 ${s.player_count || 0} player${s.player_count !== 1 ? 's' : ''}</p>` : ''}
+    ${isGM ? `<p class="player-count">${builtIn ? 'Built-in test case' : `👥 ${s.player_count || 0} player${s.player_count !== 1 ? 's' : ''}`}</p>` : ''}
     ${cover}
   </div>`;
 }
@@ -880,6 +888,18 @@ async function deleteSession(id) {
   } catch (e) { showAlert(e.message, 'danger', 'sessions-alert'); }
 }
 
+async function resetCanonicalSession(id) {
+  if (!confirm('Reset this built-in case from its canonical copy? Local edits to seeded files will be overwritten.')) return;
+  try {
+    const result = await api.resetCanonicalSession(id);
+    await loadSessionsTab({ skipUrlUpdate: true });
+    const npcBits = result.npcs ? ` NPCs: ${result.npcs.allocated || 0} allocated, ${result.npcs.restored || 0} restored.` : '';
+    showAlert(`Reset complete: ${result.copied || 0} file${result.copied === 1 ? '' : 's'} restored.${npcBits}`, 'success', 'sessions-alert');
+  } catch (e) {
+    showAlert(e.message, 'danger', 'sessions-alert');
+  }
+}
+
 // ── Session detail view ───────────────────────────────────────────────────────
 function gmSelectedPlayerStorageKey(sessionId) {
   return `gm_selected_player_${State.user ? State.user.id : 'anon'}_${sessionId}`;
@@ -935,6 +955,7 @@ async function openSession(sessionId, options = {}) {
       ${isGM ? `<div class="sheet-tab active" data-session-panel="overview" onclick="switchSessionPanel(${sessionId}, 'overview')">Overview</div>` : ''}
       <div class="sheet-tab${isGM ? '' : ' active'}" data-session-panel="characters" onclick="switchSessionPanel(${sessionId}, 'characters')">Characters</div>
       <div class="sheet-tab" data-session-panel="case-info" onclick="switchSessionPanel(${sessionId}, 'case-info')">Case Info</div>
+      ${!isGM ? `<div class="sheet-tab" data-session-panel="handouts" onclick="switchSessionPanel(${sessionId}, 'handouts')">Handouts</div>` : ''}
       <div class="sheet-tab" data-session-panel="player-info" onclick="switchSessionPanel(${sessionId}, 'player-info')">Player Stories</div>
       <div class="sheet-tab" data-session-panel="entities" onclick="switchSessionPanel(${sessionId}, 'entities')">Places/NPC/Things</div>
       ${isGM ? `<div class="sheet-tab" data-session-panel="gm-info" onclick="switchSessionPanel(${sessionId}, 'gm-info')">GM Info</div>` : ''}
@@ -961,6 +982,7 @@ async function switchSessionPanel(sessionId, panel) {
   if (content) content.innerHTML = '<p style="color:var(--text2)">Loading…</p>';
   try {
     if (panel === 'case-info') await renderSessionCaseInfo(sessionId);
+    else if (panel === 'handouts') await renderSessionScenarioInfo(sessionId, 'raw');
     else if (panel === 'player-info') await renderSessionPlayerInfo(sessionId);
     else if (panel === 'entities') await renderSessionEntities(sessionId);
     else if (panel === 'gm-info') await renderSessionScenarioInfo(sessionId, 'gm');
@@ -3475,12 +3497,13 @@ function renderScenarioSourceEditor(sources) {
   if (State.user.role !== 'gm') {
     return `
       <div class="card scenario-summary-card">
-        <div class="card-title">Player-Visible Sources</div>
+        <div class="card-title">Handouts</div>
         ${markdownSources.length ? markdownSources.map((source) => `
           <div class="scenario-subtitle">${esc(source.relative_path || source.path || 'Source')}</div>
           <div class="scenario-body">${renderScenarioText(source.content || '')}</div>
         `).join('') : '<p class="card-sub">No player-visible source files are available.</p>'}
-      </div>`;
+      </div>
+      ${assetFilesPanelHtml(sources, false)}`;
   }
 
   const editableSources = (markdownSources.length ? markdownSources : [
@@ -3550,7 +3573,7 @@ function renderScenarioSourceEditor(sources) {
 
 // View-only preview of image/PDF assets (handouts, maps, clippings) on the
 // Edit Files page — the markdown editor can't show these.
-function assetFilesPanelHtml(sources) {
+function assetFilesPanelHtml(sources, editable = true) {
   const files = scenarioArray(sources.source_files)
     .filter((f) => f && (f.kind === 'graphic' || f.kind === 'pdf'));
   if (!files.length) return '';
@@ -3573,11 +3596,13 @@ function assetFilesPanelHtml(sources) {
             <span>${esc(label)}</span>
             <span class="vis-badge vis-${player ? 'player' : 'gm'}">${player ? 'Player Handout' : 'GM Only'}</span>
             <div class="asset-card-actions">
-              <button class="btn btn-sm" onclick="toggleAssetVisibility(${State.currentSession}, '${esc(f.path)}', '${player ? 'gm' : 'player'}')">${player ? 'Make GM Only' : 'Make Player Handout'}</button>
-              <a class="btn btn-sm" href="${esc(url)}?download=1" download>Download</a>
-              <button class="btn btn-sm" onclick="efReplaceFile(${State.currentSession}, '${esc(f.path)}')">Replace</button>
-              <button class="btn btn-sm" onclick="efRenameFile(${State.currentSession}, '${esc(f.path)}')">Rename</button>
-              <button class="btn btn-sm btn-danger" onclick="efDeleteFile(${State.currentSession}, '${esc(f.path)}')">Delete</button>
+              ${editable ? `
+                <button class="btn btn-sm" onclick="toggleAssetVisibility(${State.currentSession}, '${esc(f.path)}', '${player ? 'gm' : 'player'}')">${player ? 'Make GM Only' : 'Make Player Handout'}</button>
+                <a class="btn btn-sm" href="${esc(url)}?download=1" download>Download</a>
+                <button class="btn btn-sm" onclick="efReplaceFile(${State.currentSession}, '${esc(f.path)}')">Replace</button>
+                <button class="btn btn-sm" onclick="efRenameFile(${State.currentSession}, '${esc(f.path)}')">Rename</button>
+                <button class="btn btn-sm btn-danger" onclick="efDeleteFile(${State.currentSession}, '${esc(f.path)}')">Delete</button>
+              ` : `<a class="btn btn-sm" href="${esc(url)}?download=1" download>Download</a>`}
             </div>
           </div>`;
         }).join('')}
@@ -3656,6 +3681,7 @@ async function renderSessionScenarioInfo(sessionId, mode = 'gm') {
   }
 
   if (mode === 'raw') {
+    const editable = State.user.role === 'gm';
     setScenarioImages(sources && sources.source_files);
     setScenarioDbImages(null);
     // The Edit Files page holds no AI-generated artifacts, so its action is the
@@ -3663,10 +3689,10 @@ async function renderSessionScenarioInfo(sessionId, mode = 'gm') {
     tab.innerHTML = `
       <div class="page-header">
         <div>
-          <h2>Edit Files</h2>
-          <p class="card-sub">Edit player-visible source files and GM-only source files separately.</p>
+          <h2>${editable ? 'Edit Files' : 'Handouts'}</h2>
+          <p class="card-sub">${editable ? 'Edit player-visible source files and GM-only source files separately.' : 'Player-visible case files, maps, and handouts.'}</p>
         </div>
-        ${scenarioPageActions('', 'Bulk Regenerate')}
+        ${editable ? scenarioPageActions('', 'Bulk Regenerate') : ''}
       </div>
       <div id="scenario-alert"></div>
       ${renderScenarioSourceEditor(sources || {})}`;

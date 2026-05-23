@@ -2,22 +2,23 @@
 
 Last updated: 2026-05-23.
 
-## Status: Parked For Review
+## Status: Parked For Review, With Bookshop Sandbox Delivered
 
-This plan is deliberately parked until the remaining scenario/lore/Bookshop
-extraction is finished. The app-facing basic rules corpus is complete, but the
-content work still has non-rules extraction open. This file captures useful
+This plan is deliberately parked until the remaining scenario/lore extraction is
+finished. The app-facing basic rules corpus is complete, and the Bookshop has
+now been implemented as a narrow resettable sandbox case. The broader content
+plan still has non-rules extraction open. This file captures useful
 implementation ideas, but several steps are too large or too
 app-architecture-heavy for the current phase and should be reviewed before any
-code work starts.
+additional broad code work starts.
 
-Do not begin the manifest, Admin toggle, canonical copy/reset, Bookshop
-surfacing, or visibility implementation from this file until extraction is
-complete and the design has been rechecked.
+Do not begin the Admin rules toggle, advanced-rules mutation, general lore
+seeding, or visibility redesign from this file until extraction is complete and
+the design has been rechecked.
 
 Current priority:
 
-- Finish extracting and PDF-checking the remaining scenario/lore/Bookshop data.
+- Finish extracting and PDF-checking the remaining scenario/lore data.
 - Keep source/provenance tracking current.
 - Decide how base and advanced rules should be represented before changing the
   app rule-loading model.
@@ -36,6 +37,12 @@ Recent uncommitted rules extraction work:
 - `Rivers_of_London/rules-advanced-source/12-advanced-options.md` created
   outside the app-facing rules folder and now holding those optional PC rules.
 - Tracking files updated under `Rivers_of_London/rules/tracking/`.
+- Narrow Bookshop sandbox implementation delivered:
+  - Canonical seed files under `Rivers_of_London/canonical/cases/bookshop/`.
+  - Live resettable case under `data/sessions/the-bookshop/`.
+  - Cast allocated from JSON NPC sheets into the normal NPC management model.
+  - Startup seeding/reset plumbing in `src/canonicalContent.js`.
+  - `sessions.system_key` marks the built-in session.
 
 Checks already run for those files:
 
@@ -301,6 +308,9 @@ Suggested checks:
 
 ### Step 4 - Add Canonical Seed/Reset Plumbing
 
+Status: partially delivered for the Bookshop case only on 2026-05-23. Re-review
+before generalising to lore/settings or other bundled content.
+
 Goal: support built-in content that can be copied, edited, and reset.
 
 Work:
@@ -333,6 +343,9 @@ Suggested checks:
 
 ### Step 5 - Surface The Bookshop As A Built-In Case
 
+Status: delivered on 2026-05-23 as an assignable normal session marked with
+`system_key = bookshop`; The Domestic remains a special solo case.
+
 Goal: show The Bookshop beside GM-created cases and The Domestic, but use the normal case UI.
 
 Work:
@@ -359,6 +372,10 @@ Suggested checks:
 - Reset restores a deliberately edited file.
 
 ### Step 6 - Extract The Bookshop Into Canonical Case Data
+
+Status: delivered as an extracted draft on 2026-05-23. The content is
+paraphrased and designed as a testing sandbox for scenario preparation, GM Chat,
+AI Support, handouts, and visibility handling.
 
 Goal: make The Bookshop usable as a test case.
 

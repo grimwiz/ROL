@@ -175,6 +175,15 @@ if (setColumns2.length && !setColumns2.some((c) => c.name === 'portrait_style'))
   db.exec("ALTER TABLE session_settings ADD COLUMN portrait_style TEXT");
 }
 
+// Built-in editable cases, such as The Bookshop, are normal sessions with a
+// stable system key. Their files are seeded from Rivers_of_London/canonical
+// into data/sessions/<slug>/ and can be reset without touching the seed copy.
+const sessionColumns = db.prepare("PRAGMA table_info(sessions)").all();
+if (sessionColumns.length && !sessionColumns.some((c) => c.name === 'system_key')) {
+  db.exec("ALTER TABLE sessions ADD COLUMN system_key TEXT");
+}
+db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_system_key ON sessions(system_key) WHERE system_key IS NOT NULL");
+
 // Per-case NPC working copy. NULL ⇒ not yet initialised ⇒ fall back to the
 // central npcs.sheet. Seeded from the central pool when an NPC is allocated;
 // the GM can edit it per-case and explicitly write it back to central.
