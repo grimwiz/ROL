@@ -10,7 +10,7 @@ Record specific markdown conversion problems that should be checked against the 
 | Table of contents | The converted table is split across columns and includes noisy punctuation. | Use only for initial page routing; verify exact ranges during extraction. |
 | Appendix B: Rules Summaries | Some bullets appear out of order, especially combat steps and magic summary material. | Check against PDF before using as canonical quick-reference source. |
 | Chapter 5: police acronyms/slang table | The final rows appear malformed and duplicated in markdown. | Check PDF table before extracting. |
-| Spell trees and some tables | Several tree/table layouts may be image-only or split by page artifacts. | Check PDF or image artifacts before extracting spell prerequisites and branching dependencies. |
+| Spell trees and some tables | Several tree/table layouts may be image-only or split by page artifacts. | Chapter 4 spell list/trees were checked against rendered PDF pages on 2026-05-23. Keep this issue open for later tables/trees outside the Chapter 4 spell catalog. |
 | Chapter 3 damage/combat tables | Large tables may be split by images or page breaks. | Verify against PDF before marking any damage/combat section complete. |
 | Chapter 7 maps and location references | Map numbers appear in headings and text; images are not directly useful as prose. | Extract only useful location facts; track any map-dependent uncertainty. |
 | Character sheets and handouts after the index | OCR includes form labels and layout fragments. | Exclude unless a later app-specific task needs field mapping. |
@@ -72,3 +72,15 @@ Firearms, cover protection, other damage, and vehicle tables appear usable in ma
 Decision or next check:
 Check each table against the printed PDF before marking Chapter 3 complete.
 RESOLVED 2026-05-22: PDF checked - Table 5 Firearms (p.132), Table 6 Cover Protection (p.138), Table 7 Other Forms of Damage (p.149), Table 8 Vehicles (p.159). All four tables match the drafts (`06-combat.md`, `07-damage-and-healing.md`, `08-chases.md`) exactly. No conversion or ordering errors.
+
+2026-05-23 - Chapter 4 spell catalog and trees:
+Problem:
+The markdown source interleaves some adjacent spell text and loses the visual spell-tree structure on printed p.179, 181, and 185.
+Decision or next check:
+RESOLVED 2026-05-23: Rendered and checked the spell list plus Impello and Shield trees from the PDF. `10-spells.md` uses the PDF text for p.178-193 and corrects the markdown interleaves: Bumblebee text stays with Bumblebee, Grasping Hand damage stays with Grasping Hand, and Impello Vibrato collapse timing stays with Impello Vibrato rather than Light Bulb.
+
+2026-05-23 - Chapter 9 optional rules:
+Problem:
+The markdown source interleaves several Chapter 9 sections and tables, including age/MOV ordering, organisation prompts, non-Newtonian ability text, alternative damage bullets, and the poison table.
+Decision or next check:
+RESOLVED 2026-05-23: Drafted `12-advanced-options.md` from PDF-checked printed p.309-317 and p.321-335, with lower-fae/Quiet Person rules already checked into `11-demi-monde.md` from p.318-321. Table 14 Optional Hit Locations and Table 15 Poisons were checked against the PDF. Case-writing guidance p.336-342 remains out of this rules file and pending for `scenario/case-design.md`.

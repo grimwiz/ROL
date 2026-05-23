@@ -1,5 +1,12 @@
 # TODO
 
+- **Rulebook app-content migration handoff.** The next rulebook/data step is
+  captured in `Rivers_of_London/rules/tracking/app-content-handoff.md`: split
+  core vs extended rules, add the Admin extended-rules toggle, introduce
+  canonical seed/reset content, surface The Bookshop as a resettable built-in
+  case, and seed editable lore with default GM/player visibility. Follow that
+  plan in order so the app remains usable after each step.
+
 - **Visibility-set artifacts (master folder + audience copies).** Replace the
   folder-based GM-only/Player-Handout toggle with a per-artifact visibility
   set. Layout:

@@ -1,6 +1,6 @@
 # Source Map
 
-Last seeded: 2026-05-20. Last updated: 2026-05-21.
+Last seeded: 2026-05-20. Last updated: 2026-05-23.
 
 The final extracted corpus should be ordered by conceptual dependency, not by the rulebook's paragraph order. The source map tracks coverage; it does not define final reading order.
 
@@ -24,12 +24,12 @@ Status values:
 | Chapter 1: Creating Characters | 43-78 | `01-character-model.md`, `03-character-creation.md` | extracted-draft | Character model and base creation procedure drafted, including occupations, advantages, starting skills, starting magic, affluence, contacts, equipment, and weapons. Needs completion review against PDF before `reviewed-complete`. |
 | Chapter 2: Skills | 79-102 | `04-skills.md` | extracted-draft | Skill values, specialisations, common skills, expert skills, combat skills, opposition/difficulty notes, and pushing guidance drafted. Needs PDF check for two markdown ordering issues before completion. |
 | Chapter 3: Basic Rules | 103-160 | `02-core-resolution.md`, `05-advancement.md`, `06-combat.md`, `07-damage-and-healing.md`, `08-chases.md` | extracted-draft | Core resolution, Luck, opposed rolls, Trying Your Luck, impairment, advancement, combat, damage/healing, chases, and vehicle rules drafted. Needs PDF check before completion. |
-| Chapter 4: Newtonian Magic | 161-194 | `09-magic.md`, `10-spells.md` | extracted-draft | Vestigia, signare, magic points, spellcasting, boosting, technology, sensing spells, and HTD drafted in `09-magic.md`; spell catalog and trees pending in `10-spells.md`. |
+| Chapter 4: Newtonian Magic | 161-194 | `09-magic.md`, `10-spells.md` | extracted-draft | Vestigia, signare, magic points, spellcasting, boosting, technology, sensing spells, and HTD drafted in `09-magic.md`; Chapter 4 spell catalog, prerequisites, boosts, and spell-tree dependencies drafted in `10-spells.md`. |
 | Chapter 5: Working Together for Stranger London | 195-230 | `scenario/policing-and-investigations.md`, `scenario/gm-procedures.md` | unreviewed | Police structure, investigations, police powers, resources, GM advice, tone, pacing, tech, player issues. |
-| Chapter 6: A Rogues' Gallery | 231-258 | `scenario/npcs-and-beings.md`, `11-demi-monde.md` | unreviewed | NPC summaries and stat-block routing; demi-monde rules and beings. Avoid reproducing long character prose. |
+| Chapter 6: A Rogues' Gallery | 231-258 | `scenario/npcs-and-beings.md`, `11-demi-monde.md` | extracted-draft | Demi-monde mechanics drafted in `11-demi-monde.md`; scenario-facing NPC summaries and stat-block routing remain pending. Avoid reproducing long character prose. |
 | Chapter 7: Welcome to London | 259-284 | `scenario/folly-and-london.md`, `scenario/case-seeds.md` | unreviewed | Folly induction, Society history, organisations, building, London orientation, rivers, pubs, nazareths, case seeds. |
 | Chapter 8: The Bookshop | 285-308 | `scenario/bookshop-reference.md` | unreviewed | GM-only scenario material. Extract only if useful as reusable scenario reference; do not create a replacement adventure text by default. |
-| Chapter 9: Additional Rules | 309-342 | `12-advanced-options.md`, `scenario/case-design.md` | unreviewed | Advanced creation, troupe play, organisations, fae PCs, new skills/spells, enchantments, combat options, poison, case writing. |
+| Chapter 9: Additional Rules | 309-342 | `12-advanced-options.md`, `scenario/case-design.md` | extracted-draft | Optional rules drafted in `12-advanced-options.md`: advanced creation, disadvantages, troupe play, investigator organisations, new skills, higher/custom spells, enchantments, demon traps, rose jars, non-Newtonian ability design, optional combat, alternative damage, and detailed poisons. Lower-fae and Quiet Person PC rules are in `11-demi-monde.md`. Case-writing guidance remains pending for `scenario/case-design.md`. |
 | Appendix A: Ready-to-Play Investigators | 343-349 | `pregens.md` or none | unreviewed | Mechanics may be useful as examples/templates; avoid copying backstories. |
 | Appendix B: Rules Summaries | 350-360 | `quick-reference.md` | needs-pdf-check | Useful completeness checklist, but initial markdown inspection shows ordering and table issues. |
 | Appendix C: Bibliography | 361-362 | none | excluded | Not needed for compact play corpus. |

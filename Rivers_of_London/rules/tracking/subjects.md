@@ -1,6 +1,6 @@
 # Subject Index
 
-Last seeded: 2026-05-20. Last updated: 2026-05-21.
+Last seeded: 2026-05-20. Last updated: 2026-05-23.
 
 Use this file to decide where a subject belongs before extracting it. Add rows when a later pass discovers a topic that does not fit cleanly.
 
@@ -11,9 +11,9 @@ Use this file to decide where a subject belongs before extracting it. Add rows w
 | Dice, d100 reading, roll terminology | `00-system-overview.md` | Introduction, Appendix B | extracted-draft | Practical dice procedure and basic roll categories drafted. |
 | Character creation overview | `03-character-creation.md` | Chapter 1, Appendix B | extracted-draft | Base step order and prerequisites drafted. Appendix B still useful as later checklist. |
 | Occupations | `03-character-creation.md` | Chapter 1 | extracted-draft | Required/recommended skills, key constraints, contacts, and equipment prompts drafted. |
-| Characteristics, half values, Luck, MOV, age | `01-character-model.md`, `03-character-creation.md`, `12-advanced-options.md` | Chapter 1, Chapter 9 | extracted-draft | Base characteristic model, half values, Luck, MOV, and base age rule drafted; optional age revisions pending. |
+| Characteristics, half values, Luck, MOV, age | `01-character-model.md`, `03-character-creation.md`, `12-advanced-options.md` | Chapter 1, Chapter 9 | extracted-draft | Base characteristic model, half values, Luck, MOV, base age rule, optional free characteristic allocation, and optional age/MOV adjustments drafted. |
 | Advantages | `03-character-creation.md` | Chapter 1 | extracted-draft | Base advantage list, major tags, prerequisites, and effects drafted. |
-| Disadvantages | `12-advanced-options.md` | Chapter 9 | unreviewed | Optional rules. |
+| Disadvantages | `12-advanced-options.md` | Chapter 9 | extracted-draft | Optional disadvantage list, limits, and mechanical effects drafted. |
 | Starting skill selection | `03-character-creation.md` | Chapter 1 | extracted-draft | Six boosted skills, required/recommended handling, expert-skill access, languages, Firearms guidance, and Magic/Sense Vestigia interaction drafted. |
 | Skill list and skill use | `01-character-model.md`, `04-skills.md` | Chapter 2 | extracted-draft | Skill categories, catalog, specialisations, full common/expert/combat skill entries, and difficulty guidance drafted. |
 | Core rolls and difficulty | `02-core-resolution.md` | Chapter 3, Appendix B | extracted-draft | Critical, hard, regular, failure/weak success, and fumble drafted. |
@@ -26,19 +26,19 @@ Use this file to decide where a subject belongs before extracting it. Add rows w
 | Investigator development | `05-advancement.md` | Chapter 3, Appendix B | extracted-draft | Development points, training, backstory, employment, affluence, skill increases, spells, and advantages drafted. |
 | Combat structure | `06-combat.md` | Chapter 3, Appendix B | extracted-draft | Six-step flow, declaration, turns, actions, responses, NPC handling, and movement drafted. |
 | Ranged attacks and modifiers | `06-combat.md` | Chapter 3, Appendix B | extracted-draft | Cover, point blank, aiming, moving targets, size, reload, multiple shots, and ranged/thrown weapon handling drafted. |
-| Firearms malfunctions and automatic fire | `06-combat.md`, `12-advanced-options.md` | Chapters 3 and 9 | extracted-draft | Base malfunction and multiple-shots rules drafted; optional automatic fire remains for `12-advanced-options.md`. |
-| Damage rolls | `07-damage-and-healing.md` | Chapter 3, Chapter 9 | extracted-draft | Standard method drafted; optional alternative method remains for `12-advanced-options.md`. |
+| Firearms malfunctions and automatic fire | `06-combat.md`, `12-advanced-options.md` | Chapters 3 and 9 | extracted-draft | Base malfunction, multiple-shots, full-auto spray-and-pray, concentrated fire, sights/bracing, and complete concealment rules drafted. |
+| Damage rolls | `07-damage-and-healing.md`, `12-advanced-options.md` | Chapter 3, Chapter 9 | extracted-draft | Standard method and optional relative-success alternative drafted. |
 | Wounds, healing, mortal wounds | `07-damage-and-healing.md` | Chapter 3, Appendix B | extracted-draft | Post-fight states, impairment recovery, first aid, medical aid, and mortal-wound consequences drafted. |
-| Other forms of damage and poisons | `07-damage-and-healing.md`, `12-advanced-options.md` | Chapter 3, Chapter 9 | extracted-draft | Environmental damage, drowning/asphyxiation, and poison drafted; optional variants remain for `12-advanced-options.md`. |
+| Other forms of damage and poisons | `07-damage-and-healing.md`, `12-advanced-options.md` | Chapter 3, Chapter 9 | extracted-draft | Environmental damage, drowning/asphyxiation, base poison handling, detailed poison option, and sample poison table drafted. |
 | Chases and vehicle chases | `08-chases.md` | Chapter 3, Appendix B | extracted-draft | Fleeing, pursuing, NPC handling, mid-chase ranged attacks, vehicle chases, vehicle combat, and control rolls drafted. |
 | Vestigia and signare | `01-character-model.md`, `04-skills.md`, `09-magic.md`, `scenario/03-magic-and-demi-monde-context.md` | Chapter 4, Chapter 7 | extracted-draft | Sheet vocabulary, Sense Vestigia skill use, vestigia strengths, environmental retention, signare creation, and detection rules drafted; scenario context pending. |
-| Starting spells and practitioner setup | `03-character-creation.md`, `09-magic.md`, `10-spells.md` | Chapter 1, Chapter 4 | extracted-draft | Character creation package and spellcasting procedure drafted; spell prerequisites and spell catalog pending. |
+| Starting spells and practitioner setup | `03-character-creation.md`, `09-magic.md`, `10-spells.md` | Chapter 1, Chapter 4 | extracted-draft | Character creation package, spellcasting procedure, Chapter 4 prerequisites, and spell catalog drafted. |
 | Spellcasting, magic points, HTD | `09-magic.md` | Chapter 4, Appendix B | extracted-draft | Mastered/unmastered effects, exceptional circumstances, pushing, combat casting, magic points, technology, sensing casting, and HTD drafted. |
-| Spell list and spell prerequisites | `10-spells.md` | Chapter 4, Chapter 9 | unreviewed | Preserve mechanical effects, costs, order, prerequisites, boosts. |
-| Demi-monde powers | `11-demi-monde.md` | Chapter 6, Appendix B | unreviewed | Include glamour, thematic power, Luck, cold iron if mechanical. |
-| Fae investigators and Quiet People | `11-demi-monde.md`, `12-advanced-options.md` | Chapter 9 | unreviewed | Optional PC creation rules. |
-| New skills, spells, enchantments, demon traps, rose jars | `12-advanced-options.md` | Chapter 9 | unreviewed | Include only rules, not long examples. |
-| Surprise, prone, holding actions, interrupting | `12-advanced-options.md` | Chapter 9 | unreviewed | Optional/expanded combat handling. |
+| Spell list and spell prerequisites | `10-spells.md`, `12-advanced-options.md` | Chapter 4, Chapter 9 | extracted-draft | Chapter 4 mechanical effects, costs, order, prerequisites, boosts, and tree dependencies drafted. Chapter 9 higher-order and custom spell guidance drafted in `12-advanced-options.md`. |
+| Demi-monde powers | `11-demi-monde.md` | Chapter 6, Appendix B | extracted-draft | Glamour, thematic power, demi-monde Luck, gifted Luck, cold iron, genii locorum, ghosts, vampires, and creature flags drafted. |
+| Fae investigators and Quiet People | `11-demi-monde.md`, `12-advanced-options.md` | Chapter 9 | extracted-draft | Optional lower-fae and Quiet Person creation exceptions, affinity Luck costs, sample affinities, and Quiet Person sensitivity drafted in `11-demi-monde.md`; `12-advanced-options.md` points there instead of duplicating. |
+| New skills, spells, enchantments, demon traps, rose jars | `12-advanced-options.md` | Chapter 9 | extracted-draft | New-skill procedure, Anthropology sample, combined skill rolls, higher/custom spell guidance, Dissimulo, wizard staff, demon trap, rose jar, and non-Newtonian NPC ability guidance drafted. |
+| Surprise, prone, holding actions, interrupting | `12-advanced-options.md` | Chapter 9 | extracted-draft | Optional surprise attacks, prone adjustments, held actions, interrupts, and related Fight Back exception drafted. |
 | Affluence and living standards | `03-character-creation.md` | Chapter 1 | extracted-draft | Base affluence brackets and purchase cadence drafted; markdown table needs PDF check before completion. |
 | Starting equipment and weapons | `03-character-creation.md`, `06-combat.md`, `07-damage-and-healing.md` | Chapter 1, Chapter 3 | extracted-draft | Starting equipment, base weapon table, firearms range/damage, and combat damage procedures drafted. |
 

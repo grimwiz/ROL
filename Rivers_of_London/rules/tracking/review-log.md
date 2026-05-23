@@ -59,3 +59,14 @@ Additional PDF checks confirmed accurate with no fix needed:
 Net result: codex's drafts reconstructed Chapters 1-4 accurately from the damaged markdown. Only one factual error was found and fixed (Ride scope); `09-magic.md` gained Table 10 plus a sharper signare procedure.
 
 Still pending: full prose pass of `00-system-overview.md`, the remainder of `03-character-creation.md` and `04-skills.md` skill entries, magic spellcasting/HTD detail in `09-magic.md`, and Chapters 5-9 / Appendices (feed not-yet-drafted files).
+
+## 2026-05-23
+
+- Drafted `10-spells.md` from Chapter 4 printed p.178-193.
+- Rendered and checked the visual spell list and spell trees on printed p.179, 181, and 185. Captured order, base cost, prerequisites, mastered prerequisites, boostability, and Society of the Rose tags.
+- Corrected known markdown conversion issues while drafting: Bumblebee's mechanical description was separated from its heading, Grasping Hand had Bumblebee text interleaved in the raw markdown, and Impello Vibrato's collapse timing appeared under Light Bulb in the raw markdown.
+- Updated tracking files to close the Chapter 4 spell catalog/tree gap. Chapter 4 remains only partly PDF-checked overall because `09-magic.md` still needs a final prose pass for vestigia, magic points, casting modifiers, and HTD.
+- Drafted `11-demi-monde.md` from Chapter 6 and Chapter 9 rules material, covering glamour, demi-monde Luck, thematic power, cold iron, genii locorum, ghosts, vampires, playable lower fae, Quiet People, affinities, and non-Newtonian fighting/sword abilities.
+- PDF-checked the mechanically dense demi-monde ranges: printed p.234-235 for Mystic Art of Fighting and Wizard's Sword, p.243-256 for demi-monde powers/cold iron/beings/vampires, and p.318-321 for lower-fae and Quiet Person investigator rules.
+- Drafted `12-advanced-options.md` from Chapter 9 optional rules, covering advanced character creation, disadvantages, troupe play, investigator organisations, new skills, combined skills, higher/custom spells, enchantments, demon traps, rose jars, non-Newtonian NPC abilities, optional combat, alternative damage, Luck to resist incapacitation, and detailed poisons.
+- PDF-checked Chapter 9 rules ranges p.309-317 and p.321-335. Corrected markdown ordering/table damage around age/MOV, organisation prompts, alternative damage, and poison examples. Case-writing guidance on p.336-342 remains pending for `scenario/case-design.md`.
