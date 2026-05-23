@@ -1768,13 +1768,15 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
 
   try {
     const numCtx = await resolveNumCtx();
+    const requestedModel = effectiveOllamaModel();
+    console.info(`[ai.call] requested=${requestedModel} ctx=${numCtx} label=${label ?? "?"}`);
     const response = await fetch(`${effectiveOllamaUrl()}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,
       ...(ollamaDispatcher ? { dispatcher: ollamaDispatcher } : {}),
       body: JSON.stringify({
-        model: effectiveOllamaModel(),
+        model: requestedModel,
         stream: true,
         keep_alive: OLLAMA_KEEP_ALIVE,
         options: {
@@ -1822,6 +1824,7 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
         stats = {
           prompt_eval_count: obj.prompt_eval_count ?? null,
           eval_count: obj.eval_count ?? null,
+          model: obj.model || null,
           prompt_eval_ms: Math.round((obj.prompt_eval_duration || 0) / 1e6),
           eval_ms: evalMs,
           total_ms: Math.round((obj.total_duration || 0) / 1e6),
@@ -1858,7 +1861,7 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
     // mapping, if any, is done outside the app from these log lines).
     if (stats) {
       const lbl = label == null ? '' : String(label);
-      console.info(`[ai.tokens] model=${effectiveOllamaModel()} label=${/\s/.test(lbl) ? JSON.stringify(lbl) : lbl} prompt_tokens=${stats.prompt_eval_count ?? ''} completion_tokens=${stats.eval_count ?? ''} total_ms=${stats.total_ms ?? ''}`);
+      console.info(`[ai.tokens] requested=${effectiveOllamaModel()} actual=${stats.model ?? '?'} label=${/\s/.test(lbl) ? JSON.stringify(lbl) : lbl} prompt_tokens=${stats.prompt_eval_count ?? ''} completion_tokens=${stats.eval_count ?? ''} total_ms=${stats.total_ms ?? ''}`);
     }
     return content;
   } catch (e) {

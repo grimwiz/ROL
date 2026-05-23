@@ -2789,7 +2789,7 @@ function renderScenarioEntry(entry, fallbackTitle = 'Entry', anchorId = '') {
   // chips) — this is what makes GM Info readable rather than a wall of tags.
   const used = new Set([...bodyKeys, 'name', 'title', 'character', 'player', 'priority', 'spotlight',
     'engagement', 'timing', 'role', 'status', 'location', 'owner', 'session', 'id',
-    'known_by', 'visible_to', 'access', 'gm_only', 'gmOnly', 'media', 'sources', 'presentation']);
+    'known_by', 'visible_to', 'access', 'gm_only', 'gmOnly', 'media', 'sources', 'presentation', 'portrait']);
   if (bodyKey) used.add(bodyKey);
   const labelFor = (k) => k.replace(/[_-]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
   const blocks = [];
