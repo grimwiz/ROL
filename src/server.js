@@ -61,10 +61,10 @@ app.listen(PORT, HOST, () => {
 
   // Create default GM account if no users exist
   const db = require('./db');
-  const { seedGlobalNpcs } = require('./npcSeed');
+  const { seedNpcArchives } = require('./npcSeed');
   const { ensureBuiltInCases } = require('./canonicalContent');
-  try { seedGlobalNpcs(db); } catch (e) { console.error(`NPC seeding failed: ${e.message}`); }
   try { ensureBuiltInCases(db); } catch (e) { console.error(`Canonical case seeding failed: ${e.message}`); }
+  try { seedNpcArchives(db); } catch (e) { console.error(`NPC seeding failed: ${e.message}`); }
   const bcrypt = require('bcryptjs');
   const existing = db.prepare('SELECT COUNT(*) as n FROM users').get();
   if (existing.n === 0) {

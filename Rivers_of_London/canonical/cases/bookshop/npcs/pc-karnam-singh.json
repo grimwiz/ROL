@@ -1,6 +1,8 @@
 {
   "name": "PC Karnam Singh",
-  "scope": "global",
+  "scope": [
+    "The Bookshop"
+  ],
   "role": "uniformed Charing Cross officer",
   "status": "",
   "location": "Cappuccino Lounge, New Row",

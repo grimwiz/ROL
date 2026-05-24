@@ -1,6 +1,8 @@
 {
   "name": "Ernie",
-  "scope": "global",
+  "scope": [
+    "The Bookshop"
+  ],
   "role": "ghost-hunting dog-in-training",
   "status": "",
   "location": "",

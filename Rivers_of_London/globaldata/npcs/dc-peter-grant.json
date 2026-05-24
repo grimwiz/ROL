@@ -1,6 +1,8 @@
 {
   "name": "DC Peter Grant",
-  "scope": "global",
+  "scope": [
+    "The Bookshop"
+  ],
   "role": "apprentice practitioner",
   "status": "",
   "location": "",

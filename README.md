@@ -138,12 +138,12 @@ NPCs are full character sheets stored in SQLite. They are created, edited and pr
 
 Named NPCs from the *Rivers of London* rulebook (the Rogues' Gallery and bundled case Cast — Nightingale, Peter Grant, Beverley Brook, Molly, the Domestic cast, etc.) ship as full character sheets. In **Admin → NPCs**, **Edit** opens the **same** character-sheet editor and **Export PDF** mechanism players use, so a GM can read, tweak, and print an NPC sheet exactly like a player one. RoL fields with no native box (Damage Bonus, Languages, Powers/Signare/Demi-monde affinity/Vestigia, Wizard's Staff) are preserved in the sheet's Custom Fields, so the import is lossless.
 
-The data lives as one JSON file per NPC in `Rivers_of_London/globaldata/npcs/`, and is **auto-seeded into the database on server start if missing** — the same gap-filling strategy used for the global Markdown files (it never overwrites a GM's in-app edits). The round-trip is:
+The data lives as one JSON file per NPC in `Rivers_of_London/globaldata/npcs/`, with case-local seed NPCs under `Rivers_of_London/canonical/cases/<case>/npcs/`. Each JSON file can include a `scope` array of case names, e.g. `"scope": ["The Bookshop"]`; startup seeds missing NPC sheets and creates missing case allocations from that field without overwriting GM edits. The round-trip is:
 
 ```bash
 npm run npcs:extract   # parse the rulebook → Rivers_of_London/globaldata/npcs/*.json (best effort)
-npm run npcs:seed      # seed any missing NPCs into the DB without a restart (also runs at startup)
-npm run npcs:export    # write the DB's NPC sheets back to globaldata/npcs/*.json
+npm run npcs:seed      # seed missing NPCs/case allocations into the DB without a restart
+npm run npcs:export    # write the DB's NPC sheets and scope arrays back to their archive JSON files
 ```
 
 So if a parsed sheet has an error, fix it in the web app, run `npm run npcs:export`, and the corrected JSON becomes the canonical seed copy.
@@ -188,7 +188,7 @@ Root markdown and `input/` files support player-facing analysis. `GM/` files sup
 
 ### Built-in Bookshop case
 
-**The Bookshop** is a built-in sandbox case that appears beside GM-created cases and opens in the normal case UI. Its canonical source lives under `Rivers_of_London/canonical/cases/bookshop/`; on server start the app creates or refreshes the normal session row marked with `system_key = bookshop`, copies any missing seeded files into `data/sessions/the-bookshop/`, and allocates the case cast from JSON NPC sheets.
+**The Bookshop** is a built-in sandbox case that appears beside GM-created cases and opens in the normal case UI. Its canonical source lives under `Rivers_of_London/canonical/cases/bookshop/`; on server start the app creates or refreshes the normal session row marked with `system_key = bookshop`, copies any missing seeded files into `data/sessions/the-bookshop/`, and allocates NPCs whose JSON `scope` includes `The Bookshop`.
 
 GMs can edit the live copy, move assets between GM/player visibility, regenerate scenario information, and use GM Chat against the case. The case card exposes **Reset**, which restores the seeded files and ensures the canonical NPC cast is allocated without overwriting central NPC sheets. Built-in cases cannot be renamed or deleted from the case list.
 
@@ -318,8 +318,8 @@ The browser and CLI go through the same `buildPdf()` function, so what you get f
 - `npm run check:domestic` (`scripts/check-domestic-adventure.js`): Parses `Rivers_of_London/The Domestic.md`, verifies exactly 111 steps are present, and confirms all steps are reachable from the start via parsed links.
 - `npm run scenario:regenerate -- --scenario <id-or-name> [--artifact player|gm] [--sections id,id]` (`scripts/regenerate-scenario-info.js`): Runs the single Ollama-backed regeneration path — the same server action the web app's Regenerate / Regenerate Page / Bulk Regenerate buttons trigger — and writes `scenario-info.json` / `gm-analysis.json` in place, rewriting only sections with material changes.
 - `npm run npcs:extract` (`scripts/extract-rulebook-npcs.js`): Parses the bundled rulebook Markdown and writes one NPC character-sheet JSON per named NPC to `Rivers_of_London/globaldata/npcs/`.
-- `npm run npcs:seed` (`scripts/seed-npcs.js`): Inserts any missing global NPC sheets from `globaldata/npcs/` into the DB. The server also does this automatically at startup.
-- `npm run npcs:export` (`scripts/export-rulebook-npcs.js`): Writes the DB's current global NPC sheets back to `globaldata/npcs/*.json` so in-app corrections become the canonical seed copy.
+- `npm run npcs:seed` (`scripts/seed-npcs.js`): Inserts any missing archived NPC sheets and case allocations from JSON `scope` values into the DB. The server also does this automatically at startup.
+- `npm run npcs:export` (`scripts/export-rulebook-npcs.js`): Writes the DB's current NPC sheets and case `scope` values back to their archive JSON files so in-app corrections become the canonical seed copy.
 - `node scripts/export-character-sheet.js …`: Render a character sheet to PDF from the CLI by overlaying it on `Rivers_of_London/RoL_Charsheet.pdf`. Usage:
 
   ```bash

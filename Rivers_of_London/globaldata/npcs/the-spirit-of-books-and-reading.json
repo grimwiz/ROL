@@ -1,6 +1,8 @@
 {
   "name": "The Spirit of Books and Reading",
-  "scope": "global",
+  "scope": [
+    "The Bookshop"
+  ],
   "role": "lonely genius loci",
   "status": "",
   "location": "",

@@ -8,39 +8,5 @@
     "Gallery/": "player",
     "GM/": "gm",
     "GM/Gallery/": "gm"
-  },
-  "npcs": [
-    {
-      "file": "dci-thomas-nightingale.json",
-      "source": "global"
-    },
-    {
-      "file": "dc-peter-grant.json",
-      "source": "global"
-    },
-    {
-      "file": "warwick-anderson.json",
-      "source": "global"
-    },
-    {
-      "file": "saffron-jackson.json",
-      "source": "global"
-    },
-    {
-      "file": "pc-karnam-singh.json",
-      "source": "case"
-    },
-    {
-      "file": "ernie.json",
-      "source": "global"
-    },
-    {
-      "file": "toby.json",
-      "source": "global"
-    },
-    {
-      "file": "the-spirit-of-books-and-reading.json",
-      "source": "global"
-    }
-  ]
+  }
 }

@@ -1,6 +1,8 @@
 {
   "name": "DCI Thomas Nightingale",
-  "scope": "global",
+  "scope": [
+    "The Bookshop"
+  ],
   "role": "master practitioner",
   "status": "",
   "location": "",

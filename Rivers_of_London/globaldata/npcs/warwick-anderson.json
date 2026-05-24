@@ -1,6 +1,8 @@
 {
   "name": "Warwick Anderson",
-  "scope": "global",
+  "scope": [
+    "The Bookshop"
+  ],
   "role": "frightened bookseller",
   "status": "",
   "location": "",

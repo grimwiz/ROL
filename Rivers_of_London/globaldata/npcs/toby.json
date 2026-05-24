@@ -1,6 +1,8 @@
 {
   "name": "Toby",
-  "scope": "global",
+  "scope": [
+    "The Bookshop"
+  ],
   "role": "ghost-hunting dog",
   "status": "",
   "location": "",

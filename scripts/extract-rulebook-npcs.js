@@ -260,6 +260,7 @@ function parseProfile(profile) {
 
   return {
     name,
+    scope: [],
     role: descriptor,
     status: '',
     location: '',

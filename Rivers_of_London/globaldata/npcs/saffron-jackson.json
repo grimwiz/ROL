@@ -1,6 +1,8 @@
 {
   "name": "Saffron Jackson",
-  "scope": "global",
+  "scope": [
+    "The Bookshop"
+  ],
   "role": "bookshop manager",
   "status": "",
   "location": "",

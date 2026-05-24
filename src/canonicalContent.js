@@ -8,7 +8,6 @@ const {
 const REPO_ROOT = path.join(__dirname, '..');
 const CANONICAL_ROOT = path.join(REPO_ROOT, 'Rivers_of_London', 'canonical');
 const CANONICAL_CASES_ROOT = path.join(CANONICAL_ROOT, 'cases');
-const GLOBAL_NPC_ROOT = path.join(REPO_ROOT, 'Rivers_of_London', 'globaldata', 'npcs');
 
 const BUILT_IN_CASES = [
   {
@@ -73,106 +72,6 @@ function walkFiles(root, callback) {
   }
 }
 
-function safeJsonFilename(value) {
-  const name = String(value || '').trim();
-  if (!name || path.basename(name) !== name || path.extname(name).toLowerCase() !== '.json') return null;
-  return name;
-}
-
-function readNpcSeed(sourceRoot, entry) {
-  const file = safeJsonFilename(typeof entry === 'string' ? entry : entry && entry.file);
-  if (!file) return null;
-  const source = typeof entry === 'object' && entry ? String(entry.source || 'case').toLowerCase() : 'auto';
-  const caseNpcRoot = path.join(sourceRoot, 'npcs');
-  const roots = source === 'global'
-    ? [GLOBAL_NPC_ROOT]
-    : source === 'case'
-      ? [caseNpcRoot]
-      : [caseNpcRoot, GLOBAL_NPC_ROOT];
-
-  for (const root of roots) {
-    const fullPath = path.join(root, file);
-    if (!isInside(root, fullPath) || !fs.existsSync(fullPath)) continue;
-    const npc = readJsonFile(fullPath);
-    if (npc && typeof npc === 'object') return { npc, file, path: fullPath };
-  }
-  return null;
-}
-
-function npcSheetJson(npc, fallback = null) {
-  if (npc && npc.sheet && typeof npc.sheet === 'object') return JSON.stringify(npc.sheet);
-  return fallback || null;
-}
-
-function normaliseNpcText(value, maxLength) {
-  const text = String(value || '').trim();
-  return text ? text.slice(0, maxLength) : null;
-}
-
-function syncCanonicalCaseNpcs(db, session, config, manifest) {
-  const entries = Array.isArray(manifest.npcs) ? manifest.npcs : [];
-  if (!entries.length) return { seeded: 0, allocated: 0, missing: 0 };
-
-  const sourceRoot = path.join(CANONICAL_CASES_ROOT, config.canonicalSlug);
-  const findNpc = db.prepare("SELECT * FROM npcs WHERE name = ? COLLATE NOCASE ORDER BY id LIMIT 1");
-  const insertNpc = db.prepare(`
-    INSERT INTO npcs (name, role, status, location, summary, notes, sheet, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
-  `);
-  const findLink = db.prepare('SELECT 1 FROM npc_sessions WHERE npc_id = ? AND session_id = ?');
-  const insertLink = db.prepare('INSERT INTO npc_sessions (npc_id, session_id) VALUES (?, ?)');
-
-  let seeded = 0;
-  let allocated = 0;
-  let missing = 0;
-
-  const tx = db.transaction(() => {
-    for (const entry of entries) {
-      const seed = readNpcSeed(sourceRoot, entry);
-      if (!seed) {
-        missing += 1;
-        continue;
-      }
-      const npc = seed.npc;
-      const name = normaliseNpcText(npc.name, 200);
-      if (!name) {
-        missing += 1;
-        continue;
-      }
-
-      let row = findNpc.get(name);
-      const sheet = npcSheetJson(npc, row && row.sheet);
-      if (!row) {
-        const result = insertNpc.run(
-          name,
-          normaliseNpcText(npc.role, 200),
-          normaliseNpcText(npc.status, 200),
-          normaliseNpcText(npc.location, 300),
-          normaliseNpcText(npc.summary, 3000),
-          normaliseNpcText(npc.notes, 10000),
-          sheet
-        );
-        row = { id: result.lastInsertRowid, sheet };
-        seeded += 1;
-      }
-
-      const link = findLink.get(row.id, session.id);
-      if (!link) {
-        insertLink.run(row.id, session.id);
-        allocated += 1;
-      }
-    }
-  });
-  tx();
-
-  if (seeded || allocated) {
-    const { regenerateNpcSummaries } = require('./scenarioInfo');
-    regenerateNpcSummaries(db, [session.id]);
-  }
-
-  return { seeded, allocated, missing };
-}
-
 function copyCanonicalCaseFiles(session, config, options = {}) {
   const overwrite = !!options.overwrite;
   const sourceRoot = path.join(CANONICAL_CASES_ROOT, config.canonicalSlug);
@@ -227,9 +126,7 @@ function ensureBuiltInCase(db, config) {
     session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(session.id);
   }
 
-  const seed = copyCanonicalCaseFiles(session, config, { overwrite: false });
-  seed.npcs = syncCanonicalCaseNpcs(db, session, config, manifest);
-  return { session, seed };
+  return { session, seed: copyCanonicalCaseFiles(session, config, { overwrite: false }) };
 }
 
 function ensureBuiltInCases(db) {
@@ -257,7 +154,8 @@ function resetCanonicalCase(db, sessionId) {
   }
   const manifest = readManifest(config);
   const seed = copyCanonicalCaseFiles(session, config, { overwrite: true });
-  seed.npcs = syncCanonicalCaseNpcs(db, session, config, manifest);
+  const { seedNpcArchives } = require('./npcSeed');
+  seed.npcs = seedNpcArchives(db, { scopes: [session.name, config.systemKey, config.canonicalSlug, manifest.title] });
   return seed;
 }
 
