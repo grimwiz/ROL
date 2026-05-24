@@ -20,6 +20,17 @@
   where it is useful as source pointers or safe reusable data. Chapter 8 now has
   a paraphrased, resettable built-in case rather than a general rules reference.
 
+- **NPC portrait extraction and restyle pass.** Manually audit rulebook source
+  images against NPC/character names, then run
+  `npm run portrait:restyle -- --session <case> --character <name> --image <path>`
+  for each approved match. The script writes the generated local portrait back
+  into the session character sheet, whether the target is a player character or
+  an allocated NPC, so the browser becomes the review surface. Use
+  `--session Global` or `--session 0` for central NPCs that are not allocated to
+  a case. Keep original
+  rulebook image paths as extraction notes/source mapping only; do not surface
+  them through player-facing sheets.
+
 - **Per-character/private handout visibility.** A basic read-only player
   **Handouts** tab now lists player-visible Markdown, graphics, and PDFs without
   edit/delete controls. The remaining gap is finer-grained artifact visibility:

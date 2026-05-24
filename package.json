@@ -12,6 +12,7 @@
     "npcs:extract": "node scripts/extract-rulebook-npcs.js",
     "npcs:seed": "node scripts/seed-npcs.js",
     "npcs:export": "node scripts/export-rulebook-npcs.js",
+    "portrait:restyle": "node scripts/restyle-character-portrait.js",
     "compare:sheets": "python3 scripts/compare-character-sheet-dbs.py"
   },
   "dependencies": {

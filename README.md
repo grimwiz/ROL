@@ -280,6 +280,18 @@ The sheet portrait controls can upload, capture from webcam, generate a new rand
 
 The original uploaded portrait (if any) is held in browser memory while a generation is in flight, so the player can revert if they don't like the result.
 
+For extraction/admin work, the same image-edit workflow can be run from the command line and written straight back to the app's sheet data:
+
+```bash
+npm run portrait:restyle -- --sessions
+npm run portrait:restyle -- --characters --session Global
+npm run portrait:restyle -- --characters --session "The Bookshop"
+npm run portrait:restyle -- --session Global --character "Molly" --image path/to/source.png
+npm run portrait:restyle -- --session "The Bookshop" --character "Warwick Anderson" --image path/to/source.png
+```
+
+The list commands print the available cases and the character selectors inside a case. `--session Global` (or `--session 0`) targets the central NPC pool instead of a case allocation. The restyle command resolves the named character, restyles the supplied image with the relevant portrait style, and writes the generated portrait into the sheet so it is immediately visible in the web app for review. Use `--output path/to/generated.png` if you also want a loose file copy of the generated image.
+
 ## PDF export
 
 A **Print / Export PDF** button on every sheet sends the in-memory sheet data to `POST /api/sheet/render-pdf`, which overlays it onto the official Chaosium *Rivers of London* blank character sheet (`Rivers_of_London/RoL_Charsheet.pdf`) using `pdf-lib` and streams back a download. The same renderer is exposed as a CLI for batch exports — see *Utility scripts* below.
