@@ -61,22 +61,21 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS npcs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    scope TEXT NOT NULL DEFAULT 'global' CHECK(scope IN ('global','scenario')),
-    session_id INTEGER REFERENCES sessions(id) ON DELETE CASCADE,
     role TEXT,
     status TEXT,
     location TEXT,
     summary TEXT,
     notes TEXT,
+    sheet TEXT,
     created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now')),
-    CHECK(scope = 'global' OR session_id IS NOT NULL)
+    updated_at TEXT DEFAULT (datetime('now'))
   );
 
-  CREATE INDEX IF NOT EXISTS idx_npcs_scope_session ON npcs(scope, session_id);
   CREATE INDEX IF NOT EXISTS idx_npcs_name ON npcs(name COLLATE NOCASE);
 
   -- NPCs are allocated to arbitrary cases (or none), the same way players are.
+  -- The character sheet itself lives only on npcs.sheet; this join table is
+  -- deliberately allocation-only so recurring NPCs do not drift per case.
   CREATE TABLE IF NOT EXISTS npc_sessions (
     npc_id INTEGER NOT NULL REFERENCES npcs(id) ON DELETE CASCADE,
     session_id INTEGER NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
@@ -148,12 +147,6 @@ db.exec(`
   DROP TABLE IF EXISTS domestic_sheets;
 `);
 
-// NPC character-sheet JSON (added after the table may already exist).
-const npcColumns = db.prepare("PRAGMA table_info(npcs)").all();
-if (!npcColumns.some((c) => c.name === 'sheet')) {
-  db.exec('ALTER TABLE npcs ADD COLUMN sheet TEXT');
-}
-
 // Generalise the Luck-adjustment ledger to any current stat (luck/hp/mp).
 const adjColumns = db.prepare("PRAGMA table_info(session_luck_adjustments)").all();
 if (adjColumns.length && !adjColumns.some((c) => c.name === 'stat')) {
@@ -184,12 +177,74 @@ if (sessionColumns.length && !sessionColumns.some((c) => c.name === 'system_key'
 }
 db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_system_key ON sessions(system_key) WHERE system_key IS NOT NULL");
 
-// Per-case NPC working copy. NULL ⇒ not yet initialised ⇒ fall back to the
-// central npcs.sheet. Seeded from the central pool when an NPC is allocated;
-// the GM can edit it per-case and explicitly write it back to central.
+// The app keeps a single NPC sheet per NPC. Any legacy scenario-scoped NPC rows
+// and per-case sheet copies are discarded; npc_sessions is allocation-only.
+const npcColumns = db.prepare("PRAGMA table_info(npcs)").all();
 const nsColumns = db.prepare("PRAGMA table_info(npc_sessions)").all();
-if (nsColumns.length && !nsColumns.some((c) => c.name === 'sheet')) {
-  db.exec('ALTER TABLE npc_sessions ADD COLUMN sheet TEXT');
+const npcNames = new Set(npcColumns.map((c) => c.name));
+const nsNames = new Set(nsColumns.map((c) => c.name));
+const rebuildNpcs = npcColumns.length && (npcNames.has('scope') || npcNames.has('session_id') || !npcNames.has('sheet'));
+const rebuildNpcSessions = nsColumns.length && nsNames.has('sheet');
+if (rebuildNpcs || rebuildNpcSessions) {
+  const sheetSelect = npcNames.has('sheet') ? 'sheet' : 'NULL AS sheet';
+  const npcFilter = npcNames.has('scope') ? "WHERE scope = 'global'" : '';
+  try {
+    db.pragma('foreign_keys = OFF');
+    if (rebuildNpcs) {
+      db.exec(`
+        DROP TABLE IF EXISTS npcs_new;
+        CREATE TABLE npcs_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          role TEXT,
+          status TEXT,
+          location TEXT,
+          summary TEXT,
+          notes TEXT,
+          sheet TEXT,
+          created_at TEXT DEFAULT (datetime('now')),
+          updated_at TEXT DEFAULT (datetime('now'))
+        );
+        INSERT INTO npcs_new (id, name, role, status, location, summary, notes, sheet, created_at, updated_at)
+          SELECT id, name, role, status, location, summary, notes, ${sheetSelect}, created_at, updated_at
+          FROM npcs
+          ${npcFilter};
+        DROP TABLE npcs;
+        ALTER TABLE npcs_new RENAME TO npcs;
+      `);
+    }
+    if (rebuildNpcSessions) {
+      db.exec(`
+        DROP TABLE IF EXISTS npc_sessions_new;
+        CREATE TABLE npc_sessions_new (
+          npc_id INTEGER NOT NULL REFERENCES npcs(id) ON DELETE CASCADE,
+          session_id INTEGER NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+          PRIMARY KEY (npc_id, session_id)
+        );
+        INSERT OR IGNORE INTO npc_sessions_new (npc_id, session_id)
+          SELECT ns.npc_id, ns.session_id
+          FROM npc_sessions ns
+          JOIN npcs n ON n.id = ns.npc_id
+          JOIN sessions s ON s.id = ns.session_id;
+        DROP TABLE npc_sessions;
+        ALTER TABLE npc_sessions_new RENAME TO npc_sessions;
+      `);
+    } else if (rebuildNpcs) {
+      db.exec(`
+        DELETE FROM npc_sessions
+        WHERE npc_id NOT IN (SELECT id FROM npcs)
+           OR session_id NOT IN (SELECT id FROM sessions);
+      `);
+    }
+  } finally {
+    db.pragma('foreign_keys = ON');
+  }
+  const fkProblems = db.prepare('PRAGMA foreign_key_check').all();
+  if (fkProblems.length) {
+    throw new Error(`Database migration left ${fkProblems.length} foreign-key problem(s)`);
+  }
 }
+db.exec("CREATE INDEX IF NOT EXISTS idx_npcs_name ON npcs(name COLLATE NOCASE)");
+db.exec("CREATE INDEX IF NOT EXISTS idx_npc_sessions_session ON npc_sessions(session_id)");
 
 module.exports = db;

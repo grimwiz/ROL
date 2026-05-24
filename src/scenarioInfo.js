@@ -2863,15 +2863,15 @@ function npcSkillLine(sheet) {
     .filter(Boolean).join('; ');
 }
 
-// Writes data/sessions/<slug>/NPC.md summarising the NPCs allocated to a case so
-// the scenario LLM can see who is on the team. Regenerated whenever a case's NPC
-// allocations change or an allocated NPC's sheet is edited.
+// Writes data/sessions/<slug>/NPC.md summarising the central NPC sheets
+// allocated to a case so the scenario LLM can see who is on the team.
+// Regenerated whenever a case's NPC allocations change or an NPC sheet is edited.
 function writeSessionNpcSummary(sessionId, db) {
   const session = getSessionById(db, sessionId);
   if (!session) return false;
   const paths = ensureSessionDataFolders(session);
   const rows = db.prepare(`
-    SELECT n.*, ns.sheet AS case_sheet
+    SELECT n.*
     FROM npcs n
     JOIN npc_sessions ns ON ns.npc_id = n.id
     WHERE ns.session_id = ?
@@ -2889,8 +2889,7 @@ function writeSessionNpcSummary(sessionId, db) {
   } else {
     for (const row of rows) {
       let sheet = null;
-      const sheetJson = row.case_sheet || row.sheet;
-      try { sheet = sheetJson ? JSON.parse(sheetJson) : null; } catch { sheet = null; }
+      try { sheet = row.sheet ? JSON.parse(row.sheet) : null; } catch { sheet = null; }
       const occupation = (sheet && sheet.occupation) || row.role || '';
       lines.push(`## ${row.name}${occupation ? ` — ${occupation}` : ''}`, '');
       const blurb = (sheet && (sheet.reputation || sheet.backstory)) || row.summary || '';

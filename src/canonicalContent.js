@@ -109,23 +109,21 @@ function normaliseNpcText(value, maxLength) {
   return text ? text.slice(0, maxLength) : null;
 }
 
-function syncCanonicalCaseNpcs(db, session, config, manifest, options = {}) {
+function syncCanonicalCaseNpcs(db, session, config, manifest) {
   const entries = Array.isArray(manifest.npcs) ? manifest.npcs : [];
-  if (!entries.length) return { seeded: 0, allocated: 0, restored: 0, missing: 0 };
+  if (!entries.length) return { seeded: 0, allocated: 0, missing: 0 };
 
   const sourceRoot = path.join(CANONICAL_CASES_ROOT, config.canonicalSlug);
-  const findNpc = db.prepare("SELECT * FROM npcs WHERE name = ? COLLATE NOCASE ORDER BY CASE WHEN scope = 'global' THEN 0 ELSE 1 END, id LIMIT 1");
+  const findNpc = db.prepare("SELECT * FROM npcs WHERE name = ? COLLATE NOCASE ORDER BY id LIMIT 1");
   const insertNpc = db.prepare(`
-    INSERT INTO npcs (name, scope, session_id, role, status, location, summary, notes, sheet, updated_at)
-    VALUES (?, 'global', NULL, ?, ?, ?, ?, ?, ?, datetime('now'))
+    INSERT INTO npcs (name, role, status, location, summary, notes, sheet, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
   `);
-  const findLink = db.prepare('SELECT sheet FROM npc_sessions WHERE npc_id = ? AND session_id = ?');
-  const insertLink = db.prepare('INSERT INTO npc_sessions (npc_id, session_id, sheet) VALUES (?, ?, ?)');
-  const updateLink = db.prepare('UPDATE npc_sessions SET sheet = ? WHERE npc_id = ? AND session_id = ?');
+  const findLink = db.prepare('SELECT 1 FROM npc_sessions WHERE npc_id = ? AND session_id = ?');
+  const insertLink = db.prepare('INSERT INTO npc_sessions (npc_id, session_id) VALUES (?, ?)');
 
   let seeded = 0;
   let allocated = 0;
-  let restored = 0;
   let missing = 0;
 
   const tx = db.transaction(() => {
@@ -160,22 +158,19 @@ function syncCanonicalCaseNpcs(db, session, config, manifest, options = {}) {
 
       const link = findLink.get(row.id, session.id);
       if (!link) {
-        insertLink.run(row.id, session.id, sheet || row.sheet || null);
+        insertLink.run(row.id, session.id);
         allocated += 1;
-      } else if (options.overwriteCaseSheets) {
-        updateLink.run(sheet || row.sheet || null, row.id, session.id);
-        restored += 1;
       }
     }
   });
   tx();
 
-  if (seeded || allocated || restored) {
+  if (seeded || allocated) {
     const { regenerateNpcSummaries } = require('./scenarioInfo');
     regenerateNpcSummaries(db, [session.id]);
   }
 
-  return { seeded, allocated, restored, missing };
+  return { seeded, allocated, missing };
 }
 
 function copyCanonicalCaseFiles(session, config, options = {}) {
@@ -233,7 +228,7 @@ function ensureBuiltInCase(db, config) {
   }
 
   const seed = copyCanonicalCaseFiles(session, config, { overwrite: false });
-  seed.npcs = syncCanonicalCaseNpcs(db, session, config, manifest, { overwriteCaseSheets: false });
+  seed.npcs = syncCanonicalCaseNpcs(db, session, config, manifest);
   return { session, seed };
 }
 
@@ -262,7 +257,7 @@ function resetCanonicalCase(db, sessionId) {
   }
   const manifest = readManifest(config);
   const seed = copyCanonicalCaseFiles(session, config, { overwrite: true });
-  seed.npcs = syncCanonicalCaseNpcs(db, session, config, manifest, { overwriteCaseSheets: true });
+  seed.npcs = syncCanonicalCaseNpcs(db, session, config, manifest);
   return seed;
 }
 

@@ -27,10 +27,10 @@ function readNpcFiles() {
 // Insert any global NPC whose name is not already present. Mirrors the global
 // Markdown seeding: only fills gaps, never overwrites GM edits in the DB.
 function seedGlobalNpcs(db) {
-  const find = db.prepare("SELECT id FROM npcs WHERE scope = 'global' AND name = ? COLLATE NOCASE");
+  const find = db.prepare("SELECT id FROM npcs WHERE name = ? COLLATE NOCASE");
   const insert = db.prepare(`
-    INSERT INTO npcs (name, scope, session_id, role, status, location, summary, notes, sheet, updated_at)
-    VALUES (?, 'global', NULL, ?, ?, ?, ?, ?, ?, datetime('now'))
+    INSERT INTO npcs (name, role, status, location, summary, notes, sheet, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
   `);
   let added = 0;
   for (const { npc } of readNpcFiles()) {
@@ -55,14 +55,13 @@ function seedGlobalNpcs(db) {
 // GM can correct a sheet in the web app and persist it as the canonical copy.
 function exportGlobalNpcs(db) {
   fs.mkdirSync(NPC_DIR, { recursive: true });
-  const rows = db.prepare("SELECT * FROM npcs WHERE scope = 'global' ORDER BY name COLLATE NOCASE").all();
+  const rows = db.prepare("SELECT * FROM npcs ORDER BY name COLLATE NOCASE").all();
   let written = 0;
   for (const row of rows) {
     let sheet = null;
     try { sheet = row.sheet ? JSON.parse(row.sheet) : null; } catch { sheet = null; }
     const out = {
       name: row.name,
-      scope: 'global',
       role: row.role || '',
       status: row.status || '',
       location: row.location || '',

@@ -893,7 +893,7 @@ async function resetCanonicalSession(id) {
   try {
     const result = await api.resetCanonicalSession(id);
     await loadSessionsTab({ skipUrlUpdate: true });
-    const npcBits = result.npcs ? ` NPCs: ${result.npcs.allocated || 0} allocated, ${result.npcs.restored || 0} restored.` : '';
+    const npcBits = result.npcs ? ` NPCs: ${result.npcs.allocated || 0} allocated, ${result.npcs.seeded || 0} seeded.` : '';
     showAlert(`Reset complete: ${result.copied || 0} file${result.copied === 1 ? '' : 's'} restored.${npcBits}`, 'success', 'sessions-alert');
   } catch (e) {
     showAlert(e.message, 'danger', 'sessions-alert');
@@ -4235,7 +4235,7 @@ async function renderSessionNpcs(sessionId) {
             ${meta.length ? `<div class="card-sub">${esc(meta.join(' | '))}</div>` : ''}
           </div>
           <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-            <button class="btn btn-sm" onclick="openNpcSheetView(${npc.id})"${npc.sheet ? '' : ' disabled'}>View sheet</button>
+            <button class="btn btn-sm" onclick="openNpcSheetView(${npc.id})"${npc.sheet ? '' : ' disabled'}>Edit sheet</button>
           </div>
         </div>
         ${(npc.sheet && npc.sheet.reputation) ? `<p class="card-sub">${esc(npc.sheet.reputation)}</p>` : ''}
@@ -4247,7 +4247,7 @@ async function renderSessionNpcs(sessionId) {
     <div class="page-header">
       <div>
         <h2>NPCs</h2>
-        <p class="card-sub">NPCs allocated to this case. Create and edit sheets in <strong>Admin → NPCs</strong>.</p>
+        <p class="card-sub">NPCs surfaced in this case. The sheet is shared everywhere this NPC appears.</p>
       </div>
       ${isGM ? `<button class="btn btn-primary" onclick="openSessionNpcAssign(${sessionId})">Assign NPCs…</button>` : ''}
     </div>
@@ -4303,21 +4303,19 @@ async function saveSessionNpcAssign(sessionId, btn) {
 }
 window.saveSessionNpcAssign = saveSessionNpcAssign;
 
-// Read-only sheet view for the per-case NPC detail.
-// Case→NPC: an EDITABLE per-case working copy of the NPC, seeded from the
-// central pool. Portrait Random/Style use this case's style. "Write back to
-// central NPC" promotes the whole sheet to the central pool, and only shows
-// when the per-case copy differs from central.
+// Editable sheet view for an NPC surfaced in this case. The sheet itself is the
+// central NPC sheet; this case only supplies portrait style context and whether
+// the NPC is surfaced here.
 function openNpcSheetView(npcId) {
   const npc = State.npcs.find((entry) => entry.id === npcId);
   if (!npc) return;
   const sessionId = State.currentSession;
   modal(`
-    <h3>${esc(npc.name)} — Character Sheet <span style="color:var(--text2);font-weight:400;font-size:0.8rem">(this case)</span></h3>
-    <div id="npc-sheet-area"><p style="color:var(--text2)">Loading…</p></div>
+    <h3>${esc(npc.name)} — Character Sheet</h3>
+    <p class="card-sub" style="margin:0 0 0.5rem">This is the shared NPC sheet used in every case where the NPC is surfaced.</p>
+    <div id="npc-sheet-area"></div>
     <div class="sheet-actions">
-      <button class="btn btn-primary" id="npc-case-save" onclick="saveCaseNpc(${sessionId}, ${npcId}, this)">Save (this case)</button>
-      <button class="btn" id="npc-case-pushglobal" style="display:none" onclick="pushCaseNpcGlobal(${sessionId}, ${npcId}, this)" title="Promote this whole NPC sheet to the central pool (all cases)">Write back to central NPC</button>
+      <button class="btn btn-primary" id="npc-case-save" onclick="saveCaseNpc(${sessionId}, ${npcId}, this)">Save NPC</button>
       <button class="btn" onclick="exportPdf()">Export PDF</button>
       <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Close</button>
       <span class="save-status" id="npc-case-status"></span>
@@ -4325,34 +4323,39 @@ function openNpcSheetView(npcId) {
     const modalEl = root.querySelector('.modal');
     if (modalEl) { modalEl.style.maxWidth = '1100px'; modalEl.style.maxHeight = '92vh'; modalEl.style.overflowY = 'auto'; }
     const area = root.querySelector('#npc-sheet-area');
-    try {
-      const data = await api.getCaseNpcSheet(sessionId, npcId);
-      area.innerHTML = '';
-      SheetForm.setRuleset('rol');
-      SheetForm.setSessionId(sessionId);
-      SheetForm.setPortraitAi(true);
-      SheetForm.render(area, data.sheet || {}, false);
-      setCaseNpcModified(root, data.modified);
-    } catch (e) {
-      area.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
-    }
+    area.innerHTML = '';
+    SheetForm.setRuleset('rol');
+    SheetForm.setSessionId(sessionId);
+    SheetForm.setPortraitAi(true);
+    SheetForm.render(area, npc.sheet || {}, false);
   });
 }
 window.openNpcSheetView = openNpcSheetView;
 
-function setCaseNpcModified(scope, modified) {
-  const btn = (scope || document).querySelector('#npc-case-pushglobal');
-  if (btn) btn.style.display = modified ? '' : 'none';
-}
-
 async function saveCaseNpc(sessionId, npcId, btn) {
   const status = el('npc-case-status');
+  const npc = State.npcs.find((entry) => entry.id === npcId) || {};
+  const sheet = SheetForm.collect();
+  const name = String(sheet.name || npc.name || '').trim();
+  if (!name) {
+    if (status) { status.textContent = '✕ Enter the NPC name'; status.className = 'save-status error'; }
+    return;
+  }
   btn.disabled = true;
   if (status) { status.textContent = 'Saving…'; status.className = 'save-status'; }
   try {
-    const r = await api.saveCaseNpcSheet(sessionId, npcId, SheetForm.collect());
-    if (status) { status.textContent = '✓ Saved (this case)'; status.className = 'save-status ok'; }
-    setCaseNpcModified(btn.closest('.modal-backdrop'), r.modified);
+    const payload = {
+      name,
+      role: sheet.occupation || npc.role || '',
+      status: npc.status || '',
+      location: npc.location || '',
+      summary: npc.summary || '',
+      notes: npc.notes || '',
+      sheet
+    };
+    await api.updateNpc(npcId, payload);
+    State.npcs = await api.getNpcs(sessionId);
+    if (status) { status.textContent = '✓ Saved NPC'; status.className = 'save-status ok'; }
   } catch (e) {
     if (status) { status.textContent = `✕ ${e.message}`; status.className = 'save-status error'; }
   } finally {
@@ -4360,23 +4363,6 @@ async function saveCaseNpc(sessionId, npcId, btn) {
   }
 }
 window.saveCaseNpc = saveCaseNpc;
-
-async function pushCaseNpcGlobal(sessionId, npcId, btn) {
-  if (!confirm('Write this whole NPC sheet back to the central pool? It becomes the default for every case (existing per-case copies are unaffected).')) return;
-  const status = el('npc-case-status');
-  btn.disabled = true;
-  if (status) { status.textContent = 'Writing back…'; status.className = 'save-status'; }
-  try {
-    const r = await api.pushCaseNpcToGlobal(sessionId, npcId);
-    if (status) { status.textContent = '✓ Written back to central'; status.className = 'save-status ok'; }
-    setCaseNpcModified(btn.closest('.modal-backdrop'), r.modified);
-  } catch (e) {
-    if (status) { status.textContent = `✕ ${e.message}`; status.className = 'save-status error'; }
-  } finally {
-    btn.disabled = false;
-  }
-}
-window.pushCaseNpcGlobal = pushCaseNpcGlobal;
 
 // ── Admin: NPC management + case allocation ──────────────────────────────────
 async function renderAdminNpcs() {

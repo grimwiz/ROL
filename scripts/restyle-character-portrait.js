@@ -3,7 +3,8 @@
 // Restyle one source image through the same ComfyUI image-edit workflow used
 // by the web app and write the result into a character sheet in the database.
 // Player characters and allocated NPCs are resolved through one session-scoped
-// "character" selector and then handled through the same sheet update path.
+// "character" selector. NPC portraits are written to the central NPC sheet;
+// session allocation only controls discoverability.
 //
 //   npm run portrait:restyle -- --session "The Bookshop" --character "Warwick Anderson" --image path/to/source.png
 //   npm run portrait:restyle -- --session 0 --character "Molly" --image path/to/source.png
@@ -120,7 +121,7 @@ function resolveSession(selector) {
 }
 
 function listSessions() {
-  const global = db.prepare("SELECT COUNT(*) AS npc_count FROM npcs WHERE scope = 'global'").get();
+  const global = db.prepare("SELECT COUNT(*) AS npc_count FROM npcs").get();
   const rows = db.prepare(`
     SELECT
       s.id,
@@ -154,7 +155,6 @@ function listCharacters(sessionId) {
     return db.prepare(`
       SELECT id AS npc_id, name, sheet
       FROM npcs
-      WHERE scope = 'global'
       ORDER BY name COLLATE NOCASE
     `).all().map((row) => {
       const sheet = parseSheet(row.sheet, row.name);
@@ -188,13 +188,13 @@ function listCharacters(sessionId) {
   });
 
   const npcs = db.prepare(`
-    SELECT n.id AS npc_id, n.name, n.sheet AS global_sheet, ns.sheet AS case_sheet
+    SELECT n.id AS npc_id, n.name, n.sheet
     FROM npc_sessions ns
     JOIN npcs n ON n.id = ns.npc_id
     WHERE ns.session_id = ?
     ORDER BY n.name COLLATE NOCASE
   `).all(sessionId).map((row) => {
-    const sheet = parseSheet(row.case_sheet == null ? row.global_sheet : row.case_sheet, row.name);
+    const sheet = parseSheet(row.sheet, row.name);
     return {
       type: 'npc',
       id: row.npc_id,
@@ -264,11 +264,10 @@ function saveCharacterSheet(sessionId, target, sheet) {
   if (json.length > 200000) {
     console.warn(`warning: sheet JSON is ${(json.length / 1024).toFixed(0)} KB; the browser can view it, but a later web save may need the portrait compressed first.`);
   }
-  if (Number(sessionId) === 0) {
-    if (target.type !== 'npc') throw new Error('Global portraits can only be written to NPC sheets');
-    const result = db.prepare("UPDATE npcs SET sheet = ?, updated_at = datetime('now') WHERE id = ? AND scope = 'global'")
+  if (target.type === 'npc') {
+    const result = db.prepare("UPDATE npcs SET sheet = ?, updated_at = datetime('now') WHERE id = ?")
       .run(json, target.id);
-    if (!result.changes) throw new Error(`Global NPC not found: ${target.id}`);
+    if (!result.changes) throw new Error(`NPC not found: ${target.id}`);
     const sessionIds = db.prepare('SELECT session_id FROM npc_sessions WHERE npc_id = ?')
       .all(target.id)
       .map((row) => row.session_id);
@@ -276,17 +275,12 @@ function saveCharacterSheet(sessionId, target, sheet) {
     return;
   }
   if (target.type === 'user') {
+    if (Number(sessionId) === 0) throw new Error('Global portraits can only be written to NPC sheets');
     db.prepare(`
       INSERT INTO character_sheets (session_id, user_id, data, updated_at)
       VALUES (?, ?, ?, datetime('now'))
       ON CONFLICT(session_id, user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
     `).run(sessionId, target.id, json);
-    return;
-  }
-  if (target.type === 'npc') {
-    db.prepare('UPDATE npc_sessions SET sheet = ? WHERE session_id = ? AND npc_id = ?')
-      .run(json, sessionId, target.id);
-    regenerateNpcSummaries(db, [sessionId]);
     return;
   }
   throw new Error(`Unsupported character type: ${target.type}`);

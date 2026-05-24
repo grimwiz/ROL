@@ -35,9 +35,6 @@ const api = (() => {
     setNpcSessions: (id, sessionIds) => req('PUT', `/npcs/${id}/sessions`, { session_ids: sessionIds }),
     getAllocatableCases: () => req('GET', '/allocatable-cases'),
     setSessionNpcs: (sessionId, npcIds) => req('PUT', `/sessions/${sessionId}/npcs`, { npc_ids: npcIds }),
-    getCaseNpcSheet: (sessionId, npcId) => req('GET', `/sessions/${sessionId}/npcs/${npcId}/sheet`),
-    saveCaseNpcSheet: (sessionId, npcId, sheet) => req('PUT', `/sessions/${sessionId}/npcs/${npcId}/sheet`, { sheet }),
-    pushCaseNpcToGlobal: (sessionId, npcId) => req('POST', `/sessions/${sessionId}/npcs/${npcId}/sheet/push-global`, {}),
 
     getSessions: () => req('GET', '/sessions'),
     createSession: (data) => req('POST', '/sessions', data),

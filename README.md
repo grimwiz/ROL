@@ -1,6 +1,6 @@
 # The Folly - Investigator Case Files
 
-Rivers of London RPG campaign-support web app. It combines multi-user GM/player access, per-case character sheets, global and per-case NPC sheets, session summaries and entity briefs generated from source Markdown, GM-only brainstorming and handout generation, in-app rolls with Luck handling, embedded rulebook search, *The Domestic* solo adventure, AI portrait tools, and one-click export to the printed character sheet PDF.
+Rivers of London RPG campaign-support web app. It combines multi-user GM/player access, per-case character sheets, global NPC sheets surfaced in cases, session summaries and entity briefs generated from source Markdown, GM-only brainstorming and handout generation, in-app rolls with Luck handling, embedded rulebook search, *The Domestic* solo adventure, AI portrait tools, and one-click export to the printed character sheet PDF.
 
 ## Requirements
 
@@ -132,7 +132,7 @@ NPCs and accounts are both first-class, case-independent records: an NPC or acco
 
 ## NPCs
 
-NPCs are full character sheets stored in SQLite. They are created, edited and printed from **Admin → NPCs** (the sheet's own Name field is authoritative). Allocation to cases works both ways: per-NPC via Admin → NPCs → **Cases…** (this list includes **The Domestic**), or per-case from a case file's **NPCs** subtab via **Assign NPCs…** (tick which NPCs are in this case). Allocating an NPC creates a per-case working copy of that NPC's sheet; the case detail view lets the GM edit that case copy, save it locally, and optionally **Write back to central NPC** when the per-case version should become the global sheet. Whenever a case's NPC set changes, its `NPC.md` is regenerated for GM/LLM context.
+NPCs are full character sheets stored in SQLite. They are created, edited and printed from **Admin → NPCs** (the sheet's own Name field is authoritative). Allocation to cases works both ways: per-NPC via Admin → NPCs → **Cases…** (this list includes **The Domestic**), or per-case from a case file's **NPCs** subtab via **Assign NPCs…** (tick which NPCs are surfaced in this case). There is one sheet per NPC; editing it from a case updates the same central sheet used everywhere that NPC appears. Whenever a case's NPC set changes or an NPC sheet changes, its `NPC.md` is regenerated for GM/LLM context.
 
 ### NPC character sheets (from the rulebook)
 
@@ -158,7 +158,7 @@ Each case file detail view splits scenario knowledge into **Overview**, **Charac
 - **Handouts** — player-only read view of player-visible source Markdown, graphics, and PDFs from the case files. It uses the same visibility filtering as scenario generation and has no edit/delete controls.
 - **Player Info** — per-character story. A player sees only their own character's story. A GM gets a player selector mirroring the Characters tab and can preview exactly what each player sees (filtered server-side via `?as_user=`).
 - **NPC/Places/Things** — player-visible Places, NPCs, and notable Things (objects/artefacts/evidence). These entries are entity-centric: each NPC/place/item is written from the point of view of that subject, not as another per-player report.
-- **NPCs** — allocated NPC sheets for this case, using per-case working copies as described above.
+- **NPCs** — central NPC sheets surfaced in this case, with a case-local allocation toggle/list.
 - **GM Info** — GM-only `gm-analysis.json` categories.
 - **Edit Files** — GM editing of the session source markdown and asset visibility. Files created/uploaded here land GM-only by default; image/PDF assets can be toggled between GM-only and player-visible handouts.
 - **Raw Data** — GM-only inspection of the generated scenario JSON.
@@ -190,7 +190,7 @@ Root markdown and `input/` files support player-facing analysis. `GM/` files sup
 
 **The Bookshop** is a built-in sandbox case that appears beside GM-created cases and opens in the normal case UI. Its canonical source lives under `Rivers_of_London/canonical/cases/bookshop/`; on server start the app creates or refreshes the normal session row marked with `system_key = bookshop`, copies any missing seeded files into `data/sessions/the-bookshop/`, and allocates the case cast from JSON NPC sheets.
 
-GMs can edit the live copy, move assets between GM/player visibility, regenerate scenario information, and use GM Chat against the case. The case card exposes **Reset**, which restores the seeded files and canonical per-case NPC sheets from the archive without changing the canonical source. Built-in cases cannot be renamed or deleted from the case list.
+GMs can edit the live copy, move assets between GM/player visibility, regenerate scenario information, and use GM Chat against the case. The case card exposes **Reset**, which restores the seeded files and ensures the canonical NPC cast is allocated without overwriting central NPC sheets. Built-in cases cannot be renamed or deleted from the case list.
 
 ### One generation path
 
@@ -380,6 +380,6 @@ If more decorations turn up later, adding them is manual — just drop the filen
 
 ## Data
 
-SQLite database stored at `DB_PATH`. Back it up by copying the `.db` file. The schema covers users, sessions, the session ↔ player join table, character sheets (one JSON blob per (session, user) pair), NPCs (including an optional full character-sheet JSON in the central `npcs.sheet` column), NPC↔case allocation and per-case NPC working sheets (`npc_sessions`), per-case settings (`session_settings`), GM-assigned/self-service rolls (`session_rolls`), per-session wound state and temporary stat adjustments, and per-user *Domestic* progress.
+SQLite database stored at `DB_PATH`. Back it up by copying the `.db` file. The schema covers users, sessions, the session ↔ player join table, character sheets (one JSON blob per (session, user) pair), NPCs (including an optional full character-sheet JSON in the central `npcs.sheet` column), NPC↔case allocation (`npc_sessions`), per-case settings (`session_settings`), GM-assigned/self-service rolls (`session_rolls`), per-session wound state and temporary stat adjustments, and per-user *Domestic* progress.
 
 Global app-level AI/service overrides live outside SQLite in `data/app-config.json` (Ollama model/context/base URL, ComfyUI URL, and ComfyUI image/edit model choices). Case source files and generated artifacts live under `data/sessions/<session-name-slug>/`.

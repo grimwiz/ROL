@@ -328,37 +328,15 @@ function npcSessionIds(npcId) {
   return db.prepare('SELECT session_id FROM npc_sessions WHERE npc_id = ?').all(npcId).map((r) => r.session_id);
 }
 
-// The per-case NPC working copy. Lazily initialises npc_sessions.sheet from
-// the central npcs.sheet on first access (covers links created before this
-// column existed). Returns null when the NPC isn't allocated to the session.
-// `modified` ⇒ the per-case sheet differs from central (drives the
-// write-back button's visibility).
-function getCaseNpc(sessionId, npcId) {
-  const link = db.prepare('SELECT sheet FROM npc_sessions WHERE session_id = ? AND npc_id = ?').get(sessionId, npcId);
-  if (!link) return null;
-  const npc = db.prepare('SELECT * FROM npcs WHERE id = ?').get(npcId);
-  if (!npc) return null;
-  let caseSheet = link.sheet;
-  if (caseSheet == null) {
-    caseSheet = npc.sheet || null;
-    db.prepare('UPDATE npc_sessions SET sheet = ? WHERE session_id = ? AND npc_id = ?')
-      .run(caseSheet, sessionId, npcId);
-  }
-  const norm = (s) => JSON.stringify(parseNpcSheet(s) || null);
-  return { npc, caseSheetJson: caseSheet, sheet: parseNpcSheet(caseSheet), modified: norm(caseSheet) !== norm(npc.sheet) };
-}
-
 // Replace an NPC's case allocations. Any real case is allowed, including the
-// built-in The Domestic. Every case that gained or lost this NPC gets its
-// NPC.md refreshed.
+// built-in The Domestic. The NPC sheet remains central; this is allocation-only.
 function setNpcSessions(npcId, sessionIds) {
   if (!Array.isArray(sessionIds)) return;
   const before = npcSessionIds(npcId);
   const valid = db.prepare('SELECT id FROM sessions WHERE id = ?');
   const ids = [...new Set(sessionIds.map((v) => parseInt(v, 10)).filter(Number.isInteger))]
     .filter((id) => valid.get(id));
-  // Diff, don't wipe: removing+re-adding every row would destroy the
-  // per-case NPC sheets (npc_sessions.sheet) of links that simply stayed.
+  // Diff, don't wipe: keep stable allocation rows that simply stayed.
   const beforeSet = new Set(before);
   const targetSet = new Set(ids);
   const toAdd = ids.filter((id) => !beforeSet.has(id));
@@ -366,12 +344,8 @@ function setNpcSessions(npcId, sessionIds) {
   const tx = db.transaction(() => {
     const del = db.prepare('DELETE FROM npc_sessions WHERE npc_id = ? AND session_id = ?');
     for (const id of toRemove) del.run(npcId, id);
-    // Seed the per-case working copy from the central sheet on allocation.
-    const ins = db.prepare(`
-      INSERT OR IGNORE INTO npc_sessions (npc_id, session_id, sheet)
-      SELECT ?, ?, sheet FROM npcs WHERE id = ?
-    `);
-    for (const id of toAdd) ins.run(npcId, id, npcId);
+    const ins = db.prepare('INSERT OR IGNORE INTO npc_sessions (npc_id, session_id) VALUES (?, ?)');
+    for (const id of toAdd) ins.run(npcId, id);
   });
   tx();
   regenerateNpcSummaries(db, [...before, ...ids]);
@@ -548,7 +522,7 @@ router.get('/npcs', requireGM, (req, res) => {
   const sessionId = req.query.session_id ? parseInt(req.query.session_id, 10) : null;
   let rows;
   if (Number.isInteger(sessionId)) {
-    // NPCs allocated to one case (the per-case detail view).
+    // NPCs allocated to one case.
     rows = db.prepare(`
       SELECT n.* FROM npcs n
       JOIN npc_sessions ns ON ns.npc_id = n.id
@@ -566,8 +540,8 @@ router.post('/npcs', requireGM, (req, res) => {
   if (parsed.error) return res.status(400).json({ error: parsed.error });
   const npc = parsed.data;
   const result = db.prepare(`
-    INSERT INTO npcs (name, scope, session_id, role, status, location, summary, notes, sheet, updated_at)
-    VALUES (?, 'global', NULL, ?, ?, ?, ?, ?, ?, datetime('now'))
+    INSERT INTO npcs (name, role, status, location, summary, notes, sheet, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
   `).run(npc.name, npc.role, npc.status, npc.location, npc.summary, npc.notes, npc.sheet);
   if (npc.sessionIds) setNpcSessions(result.lastInsertRowid, npc.sessionIds);
   const row = db.prepare('SELECT * FROM npcs WHERE id = ?').get(result.lastInsertRowid);
@@ -738,14 +712,11 @@ router.put('/sessions/:id/npcs', requireGM, (req, res) => {
   const toAdd = ids.filter((id) => !beforeSet.has(id));
   const toRemove = before.filter((id) => !targetSet.has(id));
   const tx = db.transaction(() => {
-    // Diff, don't wipe — keep per-case NPC sheets of links that stay.
+    // Diff, don't wipe — keep stable allocation rows that stay.
     const del = db.prepare('DELETE FROM npc_sessions WHERE session_id = ? AND npc_id = ?');
     for (const npcId of toRemove) del.run(session.id, npcId);
-    const ins = db.prepare(`
-      INSERT OR IGNORE INTO npc_sessions (npc_id, session_id, sheet)
-      SELECT ?, ?, sheet FROM npcs WHERE id = ?
-    `);
-    for (const npcId of toAdd) ins.run(npcId, session.id, npcId);
+    const ins = db.prepare('INSERT OR IGNORE INTO npc_sessions (npc_id, session_id) VALUES (?, ?)');
+    for (const npcId of toAdd) ins.run(npcId, session.id);
   });
   tx();
   regenerateNpcSummaries(db, [session.id]);
@@ -754,51 +725,6 @@ router.put('/sessions/:id/npcs', requireGM, (req, res) => {
     WHERE ns.session_id = ? ORDER BY n.name COLLATE NOCASE
   `).all(session.id);
   res.json(rows.map(rowToNpc));
-});
-
-// ── Per-case NPC sheets ───────────────────────────────────────────────────────
-// The Case→NPC tab is GM-only; these endpoints back its per-case working copy.
-
-router.get('/sessions/:id/npcs/:npcId/sheet', requireGM, (req, res) => {
-  const cn = getCaseNpc(parseInt(req.params.id, 10), parseInt(req.params.npcId, 10));
-  if (!cn) return res.status(404).json({ error: 'NPC is not allocated to this case' });
-  res.json({ id: cn.npc.id, name: cn.npc.name, sheet: cn.sheet || {}, modified: cn.modified });
-});
-
-// Save the per-case working copy (does NOT touch central until written back).
-router.put('/sessions/:id/npcs/:npcId/sheet', requireGM, (req, res) => {
-  const sessionId = parseInt(req.params.id, 10);
-  const npcId = parseInt(req.params.npcId, 10);
-  const cn = getCaseNpc(sessionId, npcId);
-  if (!cn) return res.status(404).json({ error: 'NPC is not allocated to this case' });
-  const sheet = req.body && req.body.sheet;
-  if (!sheet || typeof sheet !== 'object') return res.status(400).json({ error: 'sheet object required' });
-  const json = JSON.stringify(sheet);
-  if (json.length > 200000) return res.status(400).json({ error: 'sheet too large' });
-  db.prepare('UPDATE npc_sessions SET sheet = ? WHERE session_id = ? AND npc_id = ?').run(json, sessionId, npcId);
-  regenerateNpcSummaries(db, [sessionId]);
-  const after = getCaseNpc(sessionId, npcId);
-  res.json({ ok: true, modified: after.modified });
-});
-
-// Promote the WHOLE per-case NPC sheet back to the central pool. Keeps the
-// NPC's name/role in sync with the sheet (as the Admin editor does) but
-// preserves other central metadata. After this, per-case == central.
-router.post('/sessions/:id/npcs/:npcId/sheet/push-global', requireGM, (req, res) => {
-  const sessionId = parseInt(req.params.id, 10);
-  const npcId = parseInt(req.params.npcId, 10);
-  const cn = getCaseNpc(sessionId, npcId);
-  if (!cn) return res.status(404).json({ error: 'NPC is not allocated to this case' });
-  const s = cn.sheet || {};
-  const name = (typeof s.name === 'string' && s.name.trim()) ? s.name.trim() : cn.npc.name;
-  const role = (typeof s.occupation === 'string' && s.occupation.trim()) ? s.occupation.trim() : cn.npc.role;
-  db.prepare(`
-    UPDATE npcs SET name = ?, role = ?, sheet = ?, updated_at = datetime('now') WHERE id = ?
-  `).run(name, role, cn.caseSheetJson, npcId);
-  // Every case this NPC is in may show a refreshed summary.
-  regenerateNpcSummaries(db, npcSessionIds(npcId));
-  const after = getCaseNpc(sessionId, npcId);
-  res.json({ ok: true, modified: after.modified, name });
 });
 
 // ── Character Sheets ──────────────────────────────────────────────────────────
