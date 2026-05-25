@@ -960,7 +960,6 @@ async function openSession(sessionId, options = {}) {
       <div class="sheet-tab" data-session-panel="entities" onclick="switchSessionPanel(${sessionId}, 'entities')">Places/NPC/Things</div>
       ${isGM ? `<div class="sheet-tab" data-session-panel="gm-info" onclick="switchSessionPanel(${sessionId}, 'gm-info')">GM Info</div>` : ''}
       ${isGM ? `<div class="sheet-tab" data-session-panel="raw-data" onclick="switchSessionPanel(${sessionId}, 'raw-data')">Edit Files</div>` : ''}
-      ${isGM ? `<div class="sheet-tab" data-session-panel="npcs" onclick="switchSessionPanel(${sessionId}, 'npcs')">NPCs</div>` : ''}
       <div class="sheet-tab" data-session-panel="gm-chat" onclick="switchSessionPanel(${sessionId}, 'gm-chat')">AI Support</div>
     </div>
     <div id="session-content"><p style="color:var(--text2)">Loading…</p></div>`;
@@ -987,7 +986,6 @@ async function switchSessionPanel(sessionId, panel) {
     else if (panel === 'entities') await renderSessionEntities(sessionId);
     else if (panel === 'gm-info') await renderSessionScenarioInfo(sessionId, 'gm');
     else if (panel === 'raw-data') await renderSessionScenarioInfo(sessionId, 'raw');
-    else if (panel === 'npcs') await renderSessionNpcs(sessionId);
     else if (panel === 'overview') await renderSessionOverview(sessionId);
     else if (panel === 'gm-chat') await renderSessionAiSupport(sessionId);
     else await renderSessionCharacters(sessionId);
@@ -2131,22 +2129,32 @@ async function exportPrintDoc(sessionId, kind) {
 window.exportPrintDoc = exportPrintDoc;
 
 async function renderGMSessionView(sessionId, preferredUserId = null) {
-  const [players, sheets, settings] = await Promise.all([
+  const [players, sheets, settings, npcs] = await Promise.all([
     api.getSessionPlayers(sessionId),
     api.getSheets(sessionId),
-    api.getSessionSettings(sessionId).catch(() => ({ ruleset: 'rol' }))
+    api.getSessionSettings(sessionId).catch(() => ({ ruleset: 'rol' })),
+    api.getNpcs(sessionId).catch(() => [])
   ]);
   const sessionRuleset = (settings && settings.ruleset) || 'rol';
+  State.npcs = npcs;
 
   const content = el('session-content');
-  if (players.length === 0) {
-    content.innerHTML = `<div class="empty"><div class="empty-icon">👥</div><p>No players assigned to this session yet.</p><button class="btn btn-primary" style="margin-top:1rem" onclick="openAssignPlayer(${sessionId})">+ Assign player</button></div>`;
+  if (players.length === 0 && !npcs.length) {
+    content.innerHTML = `<div class="empty"><div class="empty-icon">👥</div><p>No players or NPCs assigned to this case yet.</p><button class="btn btn-primary" style="margin-top:1rem" onclick="openAssignPlayer(${sessionId})">+ Assign player</button></div>`;
     return;
   }
 
   const sheetMap = {};
-  sheets.forEach(s => { sheetMap[s.user_id] = s; });
+  sheets.forEach(s => { if (s.user_id != null) sheetMap[s.user_id] = s; });
   window.gmSheetMap = sheetMap;
+
+  const npcButtonsHtml = npcs.length ? `
+    <div style="margin-bottom:1rem">
+      <div style="color:var(--text2);font-size:0.85rem;margin-bottom:0.35rem">NPCs in this case</div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        ${npcs.map((n) => `<button class="btn btn-sm" onclick="openNpcSheetView(${n.id})">${esc(n.name)}</button>`).join('')}
+      </div>
+    </div>` : '';
 
   content.innerHTML = `
     <div style="margin-bottom:1rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
@@ -2159,9 +2167,10 @@ async function renderGMSessionView(sessionId, preferredUserId = null) {
       </div>
       <button class="btn btn-sm" onclick="openAssignPlayer(${sessionId})" title="Assign another player to this case">+ Assign player</button>
     </div>
+    ${npcButtonsHtml}
     <div style="margin-bottom:1rem;display:flex;gap:0.75rem;align-items:center">
       <span id="gm-viewing-label" style="color:var(--text2);font-size:0.88rem"></span>
-      <button class="btn btn-sm" onclick="removePlayerFromSession(${sessionId}, gmCurrentPlayerId)">Remove from session</button>
+      ${players.length ? `<button class="btn btn-sm" onclick="removePlayerFromSession(${sessionId}, gmCurrentPlayerId)">Remove from session</button>` : ''}
     </div>
     <div id="gm-sheet-area"></div>`;
 
@@ -4208,100 +4217,6 @@ function npcCaseSummary(entry) {
   if (names.length <= 2) return names.join(', ');
   return `${names.slice(0, 2).join(', ')} +${names.length - 2}`;
 }
-
-// ── Per-case NPC detail view (read-only) ─────────────────────────────────────
-// Shows the NPCs allocated to this case. Management/allocation is in Admin.
-async function renderSessionNpcs(sessionId) {
-  const tab = el('session-content');
-  if (!tab) return;
-  tab.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading NPCs…</p>';
-  let npcs;
-  try {
-    npcs = await api.getNpcs(sessionId);
-    State.npcs = npcs;
-  } catch (e) {
-    tab.innerHTML = `<div class="page-header"><h2>NPCs</h2></div><div class="alert alert-danger">${esc(e.message)}</div>`;
-    return;
-  }
-
-  const card = (npc) => {
-    const occupation = (npc.sheet && npc.sheet.occupation) || npc.role || '';
-    const meta = [occupation, npc.sheet ? null : 'no sheet'].filter(Boolean);
-    return `
-      <div class="card npc-card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">${esc(npc.name)}</div>
-            ${meta.length ? `<div class="card-sub">${esc(meta.join(' | '))}</div>` : ''}
-          </div>
-          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-            <button class="btn btn-sm" onclick="openNpcSheetView(${npc.id})"${npc.sheet ? '' : ' disabled'}>Edit sheet</button>
-          </div>
-        </div>
-        ${(npc.sheet && npc.sheet.reputation) ? `<p class="card-sub">${esc(npc.sheet.reputation)}</p>` : ''}
-      </div>`;
-  };
-
-  const isGM = State.user.role === 'gm';
-  tab.innerHTML = `
-    <div class="page-header">
-      <div>
-        <h2>NPCs</h2>
-        <p class="card-sub">NPCs surfaced in this case. The sheet is shared everywhere this NPC appears.</p>
-      </div>
-      ${isGM ? `<button class="btn btn-primary" onclick="openSessionNpcAssign(${sessionId})">Assign NPCs…</button>` : ''}
-    </div>
-    <div id="npcs-alert"></div>
-    ${npcs.length
-      ? `<div class="npc-grid">${npcs.map(card).join('')}</div>`
-      : `<div class="empty"><div class="empty-icon">👤</div><p>No NPCs allocated to this case yet.</p></div>`}`;
-}
-
-// Pick which NPCs belong to this case, from the case screen.
-async function openSessionNpcAssign(sessionId) {
-  let all;
-  try {
-    all = await api.getNpcs();
-  } catch (e) {
-    return showAlert(e.message, 'danger', 'npcs-alert');
-  }
-  if (!all.length) {
-    return modal(`
-      <h3>Assign NPCs</h3>
-      <p class="card-sub">No NPCs exist yet. Create them in Admin → NPCs.</p>
-      <div class="modal-actions"><button class="btn" onclick="this.closest('.modal-backdrop').remove()">Close</button></div>`);
-  }
-  const selected = new Set(all.filter((n) => (n.session_ids || []).map(Number).includes(Number(sessionId))).map((n) => n.id));
-  modal(`
-    <h3>Assign NPCs to this case</h3>
-    <div id="modal-alert"></div>
-    <p class="card-sub" style="margin-bottom:0.5rem">Tick the NPCs that appear in this case.</p>
-    <div class="case-allocation">${all.map((n) => `
-      <label class="case-allocation-row">
-        <input type="checkbox" value="${n.id}"${selected.has(n.id) ? ' checked' : ''}>
-        <span>${esc(n.name)}${(n.sheet && n.sheet.occupation) ? ` <em style="color:var(--text2)">${esc(n.sheet.occupation)}</em>` : ''}</span>
-      </label>`).join('')}</div>
-    <div class="modal-actions">
-      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveSessionNpcAssign(${sessionId}, this)">Save</button>
-    </div>`);
-}
-window.openSessionNpcAssign = openSessionNpcAssign;
-
-async function saveSessionNpcAssign(sessionId, btn) {
-  const root = btn.closest('.modal-backdrop');
-  const npcIds = [...root.querySelectorAll('.case-allocation input:checked')].map((c) => Number(c.value));
-  btn.disabled = true;
-  try {
-    await api.setSessionNpcs(sessionId, npcIds);
-    root.remove();
-    await renderSessionNpcs(sessionId);
-  } catch (e) {
-    showAlert(e.message, 'danger', 'modal-alert');
-    btn.disabled = false;
-  }
-}
-window.saveSessionNpcAssign = saveSessionNpcAssign;
 
 // Editable sheet view for an NPC surfaced in this case. The sheet itself is the
 // central NPC sheet; this case only supplies portrait style context and whether

@@ -17,11 +17,14 @@ const path = require('path');
 const db = require('../src/db');
 const sessionRolls = require('../src/sessionRolls');
 const { regenerateNpcSummaries } = require('../src/scenarioInfo');
+const { sheetHasCase, sheetScope, addCaseToScope } = require('../src/characterScope');
 const {
   dataUrlToBuffer,
   imageFileToDataUrl,
   restylePortraitImage
 } = require('../src/portraitPipeline');
+
+const NPC_USER_ID = db.NPC_USER_ID;
 
 function usage(exitCode = 0) {
   const out = exitCode ? process.stderr : process.stdout;
@@ -121,23 +124,34 @@ function resolveSession(selector) {
 }
 
 function listSessions() {
-  const global = db.prepare("SELECT COUNT(*) AS npc_count FROM npcs").get();
-  const rows = db.prepare(`
+  const globalNpcs = db.prepare('SELECT COUNT(*) AS c FROM character_sheets WHERE user_id = ?').get(NPC_USER_ID);
+  const baseRows = db.prepare(`
     SELECT
       s.id,
       s.name,
       s.description,
       s.system_key,
-      COUNT(DISTINCT sp.user_id) AS player_count,
-      COUNT(DISTINCT ns.npc_id) AS npc_count
+      COUNT(DISTINCT sp.user_id) AS player_count
     FROM sessions s
     LEFT JOIN session_players sp ON sp.session_id = s.id
-    LEFT JOIN npc_sessions ns ON ns.session_id = s.id
     GROUP BY s.id
     ORDER BY s.name COLLATE NOCASE, s.id
   `).all();
+  const npcRows = db.prepare('SELECT data FROM character_sheets WHERE user_id = ?').all(NPC_USER_ID);
+  const npcCountByCase = new Map();
+  for (const r of npcRows) {
+    let d; try { d = JSON.parse(r.data || '{}'); } catch { d = {}; }
+    for (const name of sheetScope(d)) {
+      const key = String(name).toLowerCase();
+      npcCountByCase.set(key, (npcCountByCase.get(key) || 0) + 1);
+    }
+  }
+  const rows = baseRows.map((row) => ({
+    ...row,
+    npc_count: npcCountByCase.get(String(row.name).toLowerCase()) || 0
+  }));
   return [
-    { id: 0, name: 'Global', system_key: 'global', player_count: 0, npc_count: global ? global.npc_count : 0, global: true },
+    { id: 0, name: 'Global', system_key: 'global', player_count: 0, npc_count: globalNpcs ? globalNpcs.c : 0, global: true },
     ...rows
   ];
 }
@@ -151,33 +165,43 @@ function characterAliases(entry) {
 }
 
 function listCharacters(sessionId) {
-  if (Number(sessionId) === 0) {
-    return db.prepare(`
-      SELECT id AS npc_id, name, sheet
-      FROM npcs
-      ORDER BY name COLLATE NOCASE
-    `).all().map((row) => {
-      const sheet = parseSheet(row.sheet, row.name);
-      return {
-        type: 'npc',
-        id: row.npc_id,
-        displayName: String(sheet.name || '').trim() || row.name,
-        recordName: row.name,
-        sheet,
-        global: true
-      };
+  const allNpcSheets = db.prepare('SELECT id, data FROM character_sheets WHERE user_id = ?').all(NPC_USER_ID)
+    .map((row) => {
+      let parsed; try { parsed = JSON.parse(row.data || '{}'); } catch { parsed = {}; }
+      const name = String(parsed && parsed.name || '').trim() || `npc-${row.id}`;
+      return { id: row.id, recordName: name, sheet: parsed };
     });
+
+  if (Number(sessionId) === 0) {
+    return allNpcSheets
+      .slice()
+      .sort((a, b) => a.recordName.toLowerCase().localeCompare(b.recordName.toLowerCase()))
+      .map((row) => ({
+        type: 'npc',
+        id: row.id,
+        displayName: row.recordName,
+        recordName: row.recordName,
+        sheet: row.sheet,
+        global: true
+      }));
   }
 
+  const session = db.prepare('SELECT id, name FROM sessions WHERE id = ?').get(sessionId);
+  if (!session) return [];
+
   const players = db.prepare(`
-    SELECT sp.user_id, u.username, cs.data
+    SELECT sp.user_id, u.username
     FROM session_players sp
     JOIN users u ON u.id = sp.user_id
-    LEFT JOIN character_sheets cs ON cs.session_id = sp.session_id AND cs.user_id = sp.user_id
     WHERE sp.session_id = ?
     ORDER BY u.username COLLATE NOCASE
   `).all(sessionId).map((row) => {
-    const sheet = parseSheet(row.data, row.username);
+    const sheets = db.prepare('SELECT data FROM character_sheets WHERE user_id = ?').all(row.user_id);
+    const match = sheets.find((s) => {
+      let d; try { d = JSON.parse(s.data || '{}'); } catch { d = null; }
+      return d && sheetHasCase(d, session.name);
+    });
+    const sheet = parseSheet(match && match.data, row.username);
     return {
       type: 'user',
       id: row.user_id,
@@ -187,22 +211,16 @@ function listCharacters(sessionId) {
     };
   });
 
-  const npcs = db.prepare(`
-    SELECT n.id AS npc_id, n.name, n.sheet
-    FROM npc_sessions ns
-    JOIN npcs n ON n.id = ns.npc_id
-    WHERE ns.session_id = ?
-    ORDER BY n.name COLLATE NOCASE
-  `).all(sessionId).map((row) => {
-    const sheet = parseSheet(row.sheet, row.name);
-    return {
+  const npcs = allNpcSheets
+    .filter((row) => sheetHasCase(row.sheet, session.name))
+    .sort((a, b) => a.recordName.toLowerCase().localeCompare(b.recordName.toLowerCase()))
+    .map((row) => ({
       type: 'npc',
-      id: row.npc_id,
-      displayName: String(sheet.name || '').trim() || row.name,
-      recordName: row.name,
-      sheet
-    };
-  });
+      id: row.id,
+      displayName: row.recordName,
+      recordName: row.recordName,
+      sheet: row.sheet
+    }));
 
   return [...players, ...npcs];
 }
@@ -265,22 +283,36 @@ function saveCharacterSheet(sessionId, target, sheet) {
     console.warn(`warning: sheet JSON is ${(json.length / 1024).toFixed(0)} KB; the browser can view it, but a later web save may need the portrait compressed first.`);
   }
   if (target.type === 'npc') {
-    const result = db.prepare("UPDATE npcs SET sheet = ?, updated_at = datetime('now') WHERE id = ?")
-      .run(json, target.id);
+    const result = db.prepare("UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ? AND user_id = ?")
+      .run(json, target.id, NPC_USER_ID);
     if (!result.changes) throw new Error(`NPC not found: ${target.id}`);
-    const sessionIds = db.prepare('SELECT session_id FROM npc_sessions WHERE npc_id = ?')
-      .all(target.id)
-      .map((row) => row.session_id);
+    const scope = sheetScope(sheet);
+    const sessionIds = scope.map((name) => {
+      const row = db.prepare('SELECT id FROM sessions WHERE name = ? COLLATE NOCASE').get(name);
+      return row ? row.id : null;
+    }).filter(Boolean);
     regenerateNpcSummaries(db, sessionIds);
     return;
   }
   if (target.type === 'user') {
     if (Number(sessionId) === 0) throw new Error('Global portraits can only be written to NPC sheets');
-    db.prepare(`
-      INSERT INTO character_sheets (session_id, user_id, data, updated_at)
-      VALUES (?, ?, ?, datetime('now'))
-      ON CONFLICT(session_id, user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
-    `).run(sessionId, target.id, json);
+    const session = db.prepare('SELECT name FROM sessions WHERE id = ?').get(sessionId);
+    if (!session) throw new Error(`Session not found: ${sessionId}`);
+    // Persist scope on save so a brand-new player sheet picks up this case.
+    const scoped = addCaseToScope(sheet, session.name);
+    const scopedJson = JSON.stringify(scoped);
+    const existingSheets = db.prepare('SELECT id, data FROM character_sheets WHERE user_id = ?').all(target.id);
+    const existing = existingSheets.find((s) => {
+      let d; try { d = JSON.parse(s.data || '{}'); } catch { d = null; }
+      return d && sheetHasCase(d, session.name);
+    });
+    if (existing) {
+      db.prepare("UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ?")
+        .run(scopedJson, existing.id);
+    } else {
+      db.prepare("INSERT INTO character_sheets (user_id, data, updated_at) VALUES (?, ?, datetime('now'))")
+        .run(target.id, scopedJson);
+    }
     return;
   }
   throw new Error(`Unsupported character type: ${target.type}`);

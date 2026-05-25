@@ -823,7 +823,17 @@ const SheetForm = (() => {
 
     const magicRow = Array.from(commonGrid.querySelectorAll('.csk-row'))
       .find((row) => String(row.dataset.name || '').toLowerCase() === 'magic');
-    if (magical && !magicRow) {
+    // Magic may already be defined in mandatory_skills or additional_skills
+    // (NPC catalogue sheets often place it there). Don't append a duplicate.
+    const magicElsewhere = [
+      ...document.querySelectorAll('#mandatory-skills .skill-row'),
+      ...document.querySelectorAll('#additional-skills .skill-row')
+    ].some((row) => {
+      const nameEl = row.querySelector('.msk-name, .ask-name') || row.querySelector('input[readonly]');
+      const name = String((nameEl && nameEl.value) || row.dataset.name || '').trim().toLowerCase();
+      return name === 'magic';
+    });
+    if (magical && !magicRow && !magicElsewhere) {
       const index = commonGrid.querySelectorAll('.csk-row').length;
       const row = document.createElement('div');
       row.className = 'skill-row csk-row';

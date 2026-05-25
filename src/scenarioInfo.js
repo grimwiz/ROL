@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { sheetHasCase, sheetScope, scopeNameKey } = require('./characterScope');
 
 const REPO_ROOT = path.join(__dirname, '..');
 const DATA_ROOT = path.join(REPO_ROOT, 'data');
@@ -990,45 +991,52 @@ function parseSheetData(value) {
 }
 
 function listRoster(db, sessionId = null) {
-  const users = db.prepare('SELECT id, username, role, created_at FROM users ORDER BY role, username').all();
-  const params = [DOMESTIC_SYSTEM_DESCRIPTION];
-  let sessionFilter = '';
+  const users = db.prepare("SELECT id, username, role, created_at FROM users WHERE username != 'NPC' ORDER BY role, username").all();
   const parsedSessionId = parseInt(sessionId, 10);
-  if (Number.isInteger(parsedSessionId)) {
-    sessionFilter = ' AND s.id = ?';
-    params.push(parsedSessionId);
-  }
+  const allSessions = db.prepare(
+    "SELECT id, name FROM sessions WHERE COALESCE(description, '') != ? ORDER BY created_at DESC"
+  ).all(DOMESTIC_SYSTEM_DESCRIPTION);
+  const sessionByKey = new Map();
+  for (const s of allSessions) sessionByKey.set(scopeNameKey(s.name), s);
+  const filterSession = Number.isInteger(parsedSessionId)
+    ? db.prepare("SELECT id, name FROM sessions WHERE id = ?").get(parsedSessionId)
+    : null;
 
+  // Each character sheet is now one row whose data.scope lists every case it
+  // appears in. The roster reports one entry per (sheet × case in scope).
   const sheetRows = db.prepare(`
-    SELECT
-      u.id AS user_id,
-      u.username,
-      u.role,
-      s.id AS session_id,
-      s.name AS session_name,
-      cs.data
+    SELECT cs.id, cs.user_id, cs.data, u.username, u.role
     FROM character_sheets cs
     JOIN users u ON u.id = cs.user_id
-    JOIN sessions s ON s.id = cs.session_id
-    WHERE COALESCE(s.description, '') != ?${sessionFilter}
-    ORDER BY s.created_at DESC, u.username
-  `).all(...params);
+    WHERE u.username != 'NPC'
+    ORDER BY u.username
+  `).all();
 
-  const characters = sheetRows
-    .map((row) => {
-      const data = parseSheetData(row.data);
-      const characterName = String(data.name || '').trim();
-      return {
+  const characters = [];
+  for (const row of sheetRows) {
+    const data = parseSheetData(row.data);
+    const characterName = String(data.name || '').trim();
+    if (!characterName) continue;
+    const scope = sheetScope(data);
+    const matched = [];
+    for (const name of scope) {
+      const sess = sessionByKey.get(scopeNameKey(name));
+      if (!sess) continue;
+      if (filterSession && sess.id !== filterSession.id) continue;
+      matched.push(sess);
+    }
+    for (const sess of matched) {
+      characters.push({
         user_id: row.user_id,
         username: row.username,
         role: row.role,
-        session_id: row.session_id,
-        session_name: row.session_name,
-        character_name: characterName || null,
+        session_id: sess.id,
+        session_name: sess.name,
+        character_name: characterName,
         occupation: String(data.occupation || '').trim() || null
-      };
-    })
-    .filter((row) => row.character_name);
+      });
+    }
+  }
 
   if (Number.isInteger(parsedSessionId)) {
     const assignedPlayers = db.prepare(`
@@ -1232,19 +1240,11 @@ function attachEntityPortraits(entities, session, db) {
   const byName = new Map();
   const norm = (s) => String(s || '').toLowerCase().trim();
   try {
-    const rows = db.prepare(
-      'SELECT n.name, n.sheet FROM npcs n JOIN npc_sessions ns ON ns.npc_id = n.id WHERE ns.session_id = ?'
-    ).all(session.id);
-    for (const r of rows) {
-      let s; try { s = r.sheet ? JSON.parse(r.sheet) : null; } catch { s = null; }
-      if (s && typeof s.portrait === 'string' && s.portrait && r.name) byName.set(norm(r.name), s.portrait);
-    }
-  } catch { /* best-effort */ }
-  try {
-    const rows = db.prepare('SELECT data FROM character_sheets WHERE session_id = ?').all(session.id);
+    const rows = db.prepare('SELECT data FROM character_sheets').all();
     for (const r of rows) {
       let d; try { d = r.data ? JSON.parse(r.data) : null; } catch { d = null; }
-      if (d && typeof d.portrait === 'string' && d.portrait && d.name) byName.set(norm(d.name), d.portrait);
+      if (!d || !sheetHasCase(d, session.name)) continue;
+      if (typeof d.portrait === 'string' && d.portrait && d.name) byName.set(norm(d.name), d.portrait);
     }
   } catch { /* best-effort */ }
   if (!byName.size) return;
@@ -2032,14 +2032,23 @@ function loopPrereqError(message) {
 // each). This deliberately does not use listRoster()'s username fallback:
 // regeneration needs a real character-name index before it spends an LLM call.
 function listCharacterItems(session, db) {
-  const rows = db.prepare(`
-    SELECT u.id AS user_id, u.username, u.role, cs.data
+  const players = db.prepare(`
+    SELECT u.id AS user_id, u.username, u.role
     FROM session_players sp
     JOIN users u ON u.id = sp.user_id
-    LEFT JOIN character_sheets cs ON cs.session_id = sp.session_id AND cs.user_id = sp.user_id
     WHERE sp.session_id = ? AND u.role = 'player'
     ORDER BY u.username
   `).all(session.id);
+
+  // For each assigned player, find the character sheet they own that has this
+  // case in scope. Players with no matching sheet appear as `data:null` so the
+  // downstream "missing name" diagnostic still fires correctly.
+  const findSheet = db.prepare('SELECT data FROM character_sheets WHERE user_id = ?');
+  const rows = players.map((p) => {
+    const sheets = findSheet.all(p.user_id);
+    const match = sheets.find((s) => sheetHasCase(parseSheetData(s.data), session.name));
+    return { ...p, data: match ? match.data : null };
+  });
 
   const missing = [];
   const invalidNames = [];
@@ -2870,13 +2879,16 @@ function writeSessionNpcSummary(sessionId, db) {
   const session = getSessionById(db, sessionId);
   if (!session) return false;
   const paths = ensureSessionDataFolders(session);
-  const rows = db.prepare(`
-    SELECT n.*
-    FROM npcs n
-    JOIN npc_sessions ns ON ns.npc_id = n.id
-    WHERE ns.session_id = ?
-    ORDER BY n.name COLLATE NOCASE
-  `).all(session.id);
+  const npcUserRow = db.prepare("SELECT id FROM users WHERE username = 'NPC'").get();
+  const npcUserId = npcUserRow ? npcUserRow.id : null;
+  const allNpcs = npcUserId
+    ? db.prepare('SELECT id, data FROM character_sheets WHERE user_id = ?').all(npcUserId)
+    : [];
+  const rows = allNpcs
+    .map((r) => ({ id: r.id, sheet: parseSheetData(r.data) }))
+    .filter((r) => sheetHasCase(r.sheet, session.name))
+    .sort((a, b) => String(a.sheet.name || '').toLowerCase()
+      .localeCompare(String(b.sheet.name || '').toLowerCase()));
 
   const lines = [
     `# NPCs — ${session.name}`,
@@ -2887,20 +2899,20 @@ function writeSessionNpcSummary(sessionId, db) {
   if (!rows.length) {
     lines.push('No NPCs are currently allocated to this case.');
   } else {
-    for (const row of rows) {
-      let sheet = null;
-      try { sheet = row.sheet ? JSON.parse(row.sheet) : null; } catch { sheet = null; }
-      const occupation = (sheet && sheet.occupation) || row.role || '';
-      lines.push(`## ${row.name}${occupation ? ` — ${occupation}` : ''}`, '');
-      const blurb = (sheet && (sheet.reputation || sheet.backstory)) || row.summary || '';
+    for (const { sheet } of rows) {
+      const name = String(sheet.name || '').trim();
+      if (!name) continue;
+      const occupation = sheet.occupation || sheet.role || '';
+      lines.push(`## ${name}${occupation ? ` — ${occupation}` : ''}`, '');
+      const blurb = sheet.reputation || sheet.backstory || sheet.summary || '';
       if (blurb) lines.push(blurb, '');
       const stats = npcStatLine(sheet);
       if (stats) lines.push(`**Stats:** ${stats}`, '');
-      const traits = sheet ? [sheet.advantages, sheet.disadvantages].filter(Boolean).join('; ') : '';
+      const traits = [sheet.advantages, sheet.disadvantages].filter(Boolean).join('; ');
       if (traits) lines.push(`**Advantages / Flaws:** ${traits}`, '');
-      const skills = sheet ? npcSkillLine(sheet) : '';
+      const skills = npcSkillLine(sheet);
       if (skills) lines.push(`**Skills:** ${skills}`, '');
-      const spells = sheet && Array.isArray(sheet.magic_spells)
+      const spells = Array.isArray(sheet.magic_spells)
         ? sheet.magic_spells.filter((s) => s && s.name).map((s) => (s.order ? `${s.name} (${s.order})` : s.name)).join(', ')
         : '';
       if (spells) lines.push(`**Spells:** ${spells}`, '');

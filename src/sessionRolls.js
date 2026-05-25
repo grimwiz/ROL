@@ -5,6 +5,20 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { getSessionById, ensureSessionDataFolders } = require('./scenarioInfo');
+const { sheetHasCase, sheetScope } = require('./characterScope');
+
+// Resolve "the character sheet this user owns in this case" to a character_sheets.id.
+// Returns null if the user has no character scoped to that case.
+function findCharacterIdInCase(db, sessionId, userId) {
+  const session = db.prepare('SELECT name FROM sessions WHERE id = ?').get(sessionId);
+  if (!session) return null;
+  const rows = db.prepare('SELECT id, data FROM character_sheets WHERE user_id = ?').all(userId);
+  for (const row of rows) {
+    let d; try { d = JSON.parse(row.data || '{}'); } catch { d = null; }
+    if (d && sheetHasCase(d, session.name)) return row.id;
+  }
+  return null;
+}
 
 const REPO_ROOT = path.join(__dirname, '..');
 const repoRel = (p) => path.relative(REPO_ROOT, p).split(path.sep).join('/');
@@ -168,7 +182,10 @@ function masteredSpellCount(sheet) {
 // Base values from the player's sheet for this case (never written back):
 // Luck stat, derived current HP and MP.
 function sheetBaseStats(db, sessionId, userId) {
-  const sheetRow = db.prepare('SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
+  const characterId = findCharacterIdInCase(db, sessionId, userId);
+  const sheetRow = characterId
+    ? db.prepare('SELECT data FROM character_sheets WHERE id = ?').get(characterId)
+    : null;
   const num = (v) => { const n = parseInt(String(v == null ? '' : v).replace(/[^0-9-]/g, ''), 10); return Number.isFinite(n) ? n : 0; };
   let sheet = null;
   try { sheet = sheetRow && sheetRow.data ? JSON.parse(sheetRow.data) : null; } catch { sheet = null; }
@@ -178,7 +195,9 @@ function sheetBaseStats(db, sessionId, userId) {
 }
 
 function statAdjustmentSum(db, sessionId, userId, stat) {
-  const r = db.prepare('SELECT COALESCE(SUM(delta),0) a FROM session_luck_adjustments WHERE session_id = ? AND user_id = ? AND stat = ? AND cleared_at IS NULL').get(sessionId, userId, stat);
+  const characterId = findCharacterIdInCase(db, sessionId, userId);
+  if (!characterId) return 0;
+  const r = db.prepare('SELECT COALESCE(SUM(delta),0) a FROM session_luck_adjustments WHERE session_id = ? AND character_id = ? AND stat = ? AND cleared_at IS NULL').get(sessionId, characterId, stat);
   return r ? r.a : 0;
 }
 
@@ -194,21 +213,25 @@ function luckForUser(db, sessionId, userId) {
 const WOUNDS = ['hurt', 'bloodied', 'down', 'impaired'];
 
 function getWounds(db, sessionId, userId) {
-  const row = db.prepare('SELECT hurt, bloodied, down, impaired FROM session_character_state WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
+  const characterId = findCharacterIdInCase(db, sessionId, userId);
   const out = {};
+  if (!characterId) { for (const w of WOUNDS) out[w] = false; return out; }
+  const row = db.prepare('SELECT hurt, bloodied, down, impaired FROM session_character_state WHERE session_id = ? AND character_id = ?').get(sessionId, characterId);
   for (const w of WOUNDS) out[w] = !!(row && row[w]);
   return out;
 }
 
 function setWounds(db, sessionId, userId, w) {
+  const characterId = findCharacterIdInCase(db, sessionId, userId);
+  if (!characterId) return getWounds(db, sessionId, userId);
   const v = (k) => (w && w[k] ? 1 : 0);
   db.prepare(`
-    INSERT INTO session_character_state (session_id, user_id, hurt, bloodied, down, impaired, updated_at)
+    INSERT INTO session_character_state (session_id, character_id, hurt, bloodied, down, impaired, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
-    ON CONFLICT(session_id, user_id) DO UPDATE SET
+    ON CONFLICT(session_id, character_id) DO UPDATE SET
       hurt = excluded.hurt, bloodied = excluded.bloodied, down = excluded.down,
       impaired = excluded.impaired, updated_at = datetime('now')
-  `).run(sessionId, userId, v('hurt'), v('bloodied'), v('down'), v('impaired'));
+  `).run(sessionId, characterId, v('hurt'), v('bloodied'), v('down'), v('impaired'));
   return getWounds(db, sessionId, userId);
 }
 
@@ -217,7 +240,9 @@ function woundLabels(wounds) {
 }
 
 function listStatAdjustments(db, sessionId, userId, stat) {
-  return db.prepare('SELECT id, user_id, stat, delta, note, created_at, cleared_at FROM session_luck_adjustments WHERE session_id = ? AND user_id = ? AND stat = ? AND cleared_at IS NULL ORDER BY created_at, id').all(sessionId, userId, stat);
+  const characterId = findCharacterIdInCase(db, sessionId, userId);
+  if (!characterId) return [];
+  return db.prepare('SELECT id, character_id, stat, delta, note, created_at, cleared_at FROM session_luck_adjustments WHERE session_id = ? AND character_id = ? AND stat = ? AND cleared_at IS NULL ORDER BY created_at, id').all(sessionId, characterId, stat);
 }
 
 function addStatAdjustment(db, sessionId, userId, stat, delta, note, gmId) {
@@ -226,8 +251,10 @@ function addStatAdjustment(db, sessionId, userId, stat, delta, note, gmId) {
   if (!Number.isFinite(d) || d === 0) return { error: `A non-zero ${s.toUpperCase()} modifier is required` };
   const assigned = db.prepare('SELECT 1 FROM session_players WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
   if (!assigned) return { error: 'That player is not assigned to this case' };
-  db.prepare("INSERT INTO session_luck_adjustments (session_id, user_id, stat, delta, note, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))")
-    .run(sessionId, userId, s, d, note ? String(note).trim().slice(0, 500) : null, gmId);
+  const characterId = findCharacterIdInCase(db, sessionId, userId);
+  if (!characterId) return { error: 'No character sheet for that player in this case' };
+  db.prepare("INSERT INTO session_luck_adjustments (session_id, character_id, stat, delta, note, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))")
+    .run(sessionId, characterId, s, d, note ? String(note).trim().slice(0, 500) : null, gmId);
   return { ok: true };
 }
 
@@ -253,7 +280,10 @@ function luckLedger(db, sessionId) {
   `).all(sessionId);
   return players.map((p) => {
     const uid = p.user_id;
-    const sheetRow = db.prepare('SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?').get(sessionId, uid);
+    const characterId = findCharacterIdInCase(db, sessionId, uid);
+    const sheetRow = characterId
+      ? db.prepare('SELECT data FROM character_sheets WHERE id = ?').get(characterId)
+      : null;
     let name = p.username;
     try { const s = sheetRow && sheetRow.data ? JSON.parse(sheetRow.data) : null; if (s && String(s.name || '').trim()) name = String(s.name).trim(); } catch { /* keep username */ }
     const base = sheetBaseStats(db, sessionId, uid);
@@ -262,6 +292,7 @@ function luckLedger(db, sessionId) {
     const mpAdj = statAdjustmentSum(db, sessionId, uid, 'mp');
     return {
       user_id: uid,
+      character_id: characterId,
       character_name: name,
       ...luck, // base/spent/adjustment/effective (Luck) kept flat for existing UI
       hp: { base: base.hp, adjustment: hpAdj, current: base.hp + hpAdj },
@@ -308,7 +339,10 @@ function createRoll(db, sessionId, gmUserId, payload) {
   const comment = p.comment ? String(p.comment).trim().slice(0, 2000) : null;
 
   const user = db.prepare('SELECT username FROM users WHERE id = ?').get(userId);
-  const sheetRow = db.prepare('SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
+  const characterId = findCharacterIdInCase(db, sessionId, userId);
+  const sheetRow = characterId
+    ? db.prepare('SELECT data FROM character_sheets WHERE id = ?').get(characterId)
+    : null;
   let sheet = null;
   try { sheet = sheetRow && sheetRow.data ? JSON.parse(sheetRow.data) : null; } catch { sheet = null; }
   const characterName = (sheet && String(sheet.name || '').trim()) || (user && user.username) || 'Unknown';

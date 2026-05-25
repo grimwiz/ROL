@@ -53,6 +53,9 @@ const {
 const sessionRolls = require('./sessionRolls');
 const { resetCanonicalCase } = require('./canonicalContent');
 const { buildPdf } = require('../scripts/export-character-sheet');
+const { sheetScope, sheetHasCase, addCaseToScope, removeCaseFromScope, scopeNameKey } = require('./characterScope');
+
+const NPC_USER_ID = db.NPC_USER_ID;
 
 const router = express.Router();
 const DOMESTIC_SYSTEM_DESCRIPTION = '__SYSTEM_DOMESTIC__';
@@ -249,18 +252,40 @@ function ensureDomesticSystemSession() {
 }
 
 function getDomesticSheetRow(userId) {
-  let session = db.prepare(`
-    SELECT s.* FROM sessions s
-    JOIN character_sheets cs ON cs.session_id = s.id
-    WHERE cs.user_id = ? AND s.name = ? COLLATE NOCASE
-    ORDER BY CASE WHEN s.description = ? THEN 0 ELSE 1 END, s.id
-    LIMIT 1
-  `).get(userId, 'The Domestic', DOMESTIC_SYSTEM_DESCRIPTION);
-
-  if (!session) session = ensureDomesticSystemSession();
-
-  const sheet = db.prepare('SELECT * FROM character_sheets WHERE session_id = ? AND user_id = ?').get(session.id, userId);
+  const session = ensureDomesticSystemSession();
+  const sheet = findUserSheetInCase(userId, session.name);
   return { session, sheet };
+}
+
+// Find the character sheet a user owns that is scoped to the given case name.
+// Returns the raw character_sheets row (data still JSON) or null.
+function findUserSheetInCase(userId, caseName) {
+  const rows = db.prepare('SELECT * FROM character_sheets WHERE user_id = ?').all(userId);
+  for (const row of rows) {
+    const data = parseStoredSheetData(row.data);
+    if (sheetHasCase(data, caseName)) return row;
+  }
+  return null;
+}
+
+// Resolve a scope array of case names to {id, name} session rows. Names match
+// case-insensitively; entries that don't resolve to a known session are dropped.
+function sessionsForScope(scope) {
+  if (!Array.isArray(scope) || !scope.length) return [];
+  const all = db.prepare('SELECT id, name FROM sessions').all();
+  const byKey = new Map();
+  for (const s of all) byKey.set(scopeNameKey(s.name), s);
+  const out = [];
+  const seen = new Set();
+  for (const name of scope) {
+    const key = scopeNameKey(name);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    const match = byKey.get(key);
+    if (match) out.push(match);
+  }
+  out.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+  return out;
 }
 
 function getAccessibleSession(req, res, sessionId) {
@@ -284,71 +309,47 @@ function cleanOptionalText(value, maxLen = 10000) {
   return text ? text.slice(0, maxLen) : null;
 }
 
-function parseNpcSheet(value) {
-  if (!value) return null;
-  try {
-    const parsed = JSON.parse(value);
-    return parsed && typeof parsed === 'object' ? parsed : null;
-  } catch {
-    return null;
-  }
-}
-
-// NPCs may be allocated to any case, including the built-in The Domestic.
-function npcSessionInfo(npcId) {
-  const sessions = db.prepare(`
-    SELECT s.id, s.name
-    FROM npc_sessions ns
-    JOIN sessions s ON s.id = ns.session_id
-    WHERE ns.npc_id = ?
-    ORDER BY s.name COLLATE NOCASE
-  `).all(npcId);
-  return { sessions, session_ids: sessions.map((s) => s.id) };
-}
-
+// Convert a character_sheets row into the NPC API shape the frontend expects.
+// The row's `data` blob is the full sheet; we surface biographical fields at
+// top-level for back-compat, and also expose the whole data as `sheet`.
 function rowToNpc(row) {
-  const { sessions, session_ids } = npcSessionInfo(row.id);
+  const data = parseStoredSheetData(row.data);
+  const scope = sheetScope(data);
+  const sessions = sessionsForScope(scope);
   return {
     id: row.id,
-    name: row.name,
-    role: row.role || '',
-    status: row.status || '',
-    location: row.location || '',
-    summary: row.summary || '',
-    notes: row.notes || '',
-    sheet: parseNpcSheet(row.sheet),
+    name: String(data.name || '').trim(),
+    role: data.role || '',
+    status: data.status || '',
+    location: data.location || '',
+    summary: data.summary || '',
+    notes: data.notes || '',
+    sheet: data,
+    scope,
     sessions,
-    session_ids,
-    created_at: row.created_at,
+    session_ids: sessions.map((s) => s.id),
     updated_at: row.updated_at
   };
 }
 
-function npcSessionIds(npcId) {
-  return db.prepare('SELECT session_id FROM npc_sessions WHERE npc_id = ?').all(npcId).map((r) => r.session_id);
-}
-
-// Replace an NPC's case allocations. Any real case is allowed, including the
-// built-in The Domestic. The NPC sheet remains central; this is allocation-only.
+// Replace an NPC's case allocations. session_ids → case names → data.scope.
+// The NPC sheet remains central; only data.scope changes.
 function setNpcSessions(npcId, sessionIds) {
   if (!Array.isArray(sessionIds)) return;
-  const before = npcSessionIds(npcId);
-  const valid = db.prepare('SELECT id FROM sessions WHERE id = ?');
-  const ids = [...new Set(sessionIds.map((v) => parseInt(v, 10)).filter(Number.isInteger))]
-    .filter((id) => valid.get(id));
-  // Diff, don't wipe: keep stable allocation rows that simply stayed.
-  const beforeSet = new Set(before);
-  const targetSet = new Set(ids);
-  const toAdd = ids.filter((id) => !beforeSet.has(id));
-  const toRemove = before.filter((id) => !targetSet.has(id));
-  const tx = db.transaction(() => {
-    const del = db.prepare('DELETE FROM npc_sessions WHERE npc_id = ? AND session_id = ?');
-    for (const id of toRemove) del.run(npcId, id);
-    const ins = db.prepare('INSERT OR IGNORE INTO npc_sessions (npc_id, session_id) VALUES (?, ?)');
-    for (const id of toAdd) ins.run(npcId, id);
-  });
-  tx();
-  regenerateNpcSummaries(db, [...before, ...ids]);
+  const row = db.prepare('SELECT id, data FROM character_sheets WHERE id = ? AND user_id = ?').get(npcId, NPC_USER_ID);
+  if (!row) return;
+  const ids = [...new Set(sessionIds.map((v) => parseInt(v, 10)).filter(Number.isInteger))];
+  const targets = ids
+    .map((id) => db.prepare('SELECT id, name FROM sessions WHERE id = ?').get(id))
+    .filter(Boolean);
+  const data = parseStoredSheetData(row.data);
+  const beforeScope = sheetScope(data);
+  const beforeSessionIds = sessionsForScope(beforeScope).map((s) => s.id);
+  data.scope = targets.map((s) => s.name);
+  db.prepare("UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ?")
+    .run(JSON.stringify(data), npcId);
+  const affected = [...new Set([...beforeSessionIds, ...targets.map((s) => s.id)])];
+  regenerateNpcSummaries(db, affected);
 }
 
 function setUserSessions(userId, sessionIds) {
@@ -364,31 +365,72 @@ function setUserSessions(userId, sessionIds) {
   tx();
 }
 
-function readNpcPayload(body) {
-  const payload = body && typeof body === 'object' ? body : {};
-  const name = cleanOptionalText(payload.name, 200);
-  if (!name) return { error: 'name required' };
-  const sheetProvided = Object.prototype.hasOwnProperty.call(payload, 'sheet');
-  let sheet = null;
-  if (sheetProvided && payload.sheet && typeof payload.sheet === 'object') {
-    const json = JSON.stringify(payload.sheet);
-    if (json.length > 200000) return { error: 'sheet too large' };
-    sheet = json;
-  }
-  const sessionIds = Array.isArray(payload.session_ids) ? payload.session_ids : null;
+// Convert a character_sheets row into the API shape used by the unified
+// Characters tab. owner='NPC' (user_id IS NPC_USER_ID) or 'player'.
+function rowToCharacter(row) {
+  const data = parseStoredSheetData(row.data);
+  const scope = sheetScope(data);
+  const sessions = sessionsForScope(scope);
+  const isNpc = row.user_id === NPC_USER_ID;
   return {
-    data: {
-      name,
-      role: cleanOptionalText(payload.role, 200),
-      status: cleanOptionalText(payload.status, 200),
-      location: cleanOptionalText(payload.location, 300),
-      summary: cleanOptionalText(payload.summary, 3000),
-      notes: cleanOptionalText(payload.notes, 10000),
-      sheetProvided,
-      sheet,
-      sessionIds
-    }
+    id: row.id,
+    user_id: isNpc ? null : row.user_id,
+    owner: isNpc ? 'NPC' : 'player',
+    name: String(data.name || '').trim(),
+    sheet: data,
+    scope,
+    sessions,
+    session_ids: sessions.map((s) => s.id),
+    updated_at: row.updated_at
   };
+}
+
+// Parse a character-sheet create/update body. Accepts either a full `data`
+// object or the legacy NPC shape (top-level name/role/status/etc + nested
+// `sheet`). The result always has a single merged `data` object.
+function readCharacterPayload(body) {
+  const payload = body && typeof body === 'object' ? body : {};
+  let data;
+  if (payload.data && typeof payload.data === 'object') {
+    data = { ...payload.data };
+  } else if (payload.sheet && typeof payload.sheet === 'object') {
+    data = { ...payload.sheet };
+  } else {
+    data = {};
+  }
+  if (payload.name != null) {
+    const name = cleanOptionalText(payload.name, 200);
+    if (name) data.name = name;
+  }
+  for (const k of ['role', 'status', 'location']) {
+    if (payload[k] != null) {
+      const v = cleanOptionalText(payload[k], k === 'location' ? 300 : 200);
+      if (v != null) data[k] = v;
+    }
+  }
+  if (payload.summary != null) {
+    const v = cleanOptionalText(payload.summary, 3000);
+    if (v != null) data.summary = v;
+  }
+  if (payload.notes != null) {
+    const v = cleanOptionalText(payload.notes, 10000);
+    if (v != null) data.notes = v;
+  }
+  if (Array.isArray(payload.scope)) {
+    data.scope = payload.scope.map((s) => String(s || '').trim()).filter(Boolean);
+  } else if (Array.isArray(payload.session_ids)) {
+    const ids = payload.session_ids.map((v) => parseInt(v, 10)).filter(Number.isInteger);
+    data.scope = ids
+      .map((id) => db.prepare('SELECT name FROM sessions WHERE id = ?').get(id))
+      .filter(Boolean)
+      .map((s) => s.name);
+  }
+  const name = String(data.name || '').trim();
+  if (!name) return { error: 'name required' };
+  data.name = name;
+  const json = JSON.stringify(data);
+  if (json.length > 200000) return { error: 'sheet too large' };
+  return { data, json };
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -516,71 +558,129 @@ router.delete('/users/:id', requireGM, (req, res) => {
   res.json({ ok: true });
 });
 
-// ── NPCs (GM only) ────────────────────────────────────────────────────────────
+// ── Character sheets (GM only) ────────────────────────────────────────────────
+// Generic CRUD for player and NPC sheets alike. NPCs are character_sheets rows
+// owned by the 'NPC' sentinel user; players are owned by their own user row.
+// Case membership lives inside data.scope, an array of case names.
 
-router.get('/npcs', requireGM, (req, res) => {
-  const sessionId = req.query.session_id ? parseInt(req.query.session_id, 10) : null;
-  let rows;
-  if (Number.isInteger(sessionId)) {
-    // NPCs allocated to one case.
-    rows = db.prepare(`
-      SELECT n.* FROM npcs n
-      JOIN npc_sessions ns ON ns.npc_id = n.id
-      WHERE ns.session_id = ?
-      ORDER BY n.name COLLATE NOCASE
-    `).all(sessionId);
-  } else {
-    rows = db.prepare('SELECT * FROM npcs ORDER BY name COLLATE NOCASE').all();
+function sessionIdsForScope(scope) {
+  return sessionsForScope(scope).map((s) => s.id);
+}
+
+router.get('/character-sheets', requireGM, (req, res) => {
+  const ownerFilter = String(req.query.owner || '').toLowerCase();
+  let caseName = req.query.case ? String(req.query.case) : null;
+  if (!caseName && req.query.case_id != null) {
+    const id = parseInt(req.query.case_id, 10);
+    if (Number.isInteger(id)) {
+      const s = db.prepare('SELECT name FROM sessions WHERE id = ?').get(id);
+      if (s) caseName = s.name;
+    }
   }
-  res.json(rows.map(rowToNpc));
+  const where = [];
+  const params = [];
+  if (ownerFilter === 'npc') { where.push('user_id = ?'); params.push(NPC_USER_ID); }
+  else if (ownerFilter === 'player') { where.push('user_id != ?'); params.push(NPC_USER_ID); }
+  const sql = `SELECT * FROM character_sheets${where.length ? ' WHERE ' + where.join(' AND ') : ''}`;
+  let rows = db.prepare(sql).all(...params);
+  if (caseName) rows = rows.filter((r) => sheetHasCase(parseStoredSheetData(r.data), caseName));
+  // Stable, name-sorted output. Empty names sort last.
+  rows.sort((a, b) => {
+    const an = String(parseStoredSheetData(a.data).name || '').toLowerCase();
+    const bn = String(parseStoredSheetData(b.data).name || '').toLowerCase();
+    if (!an && bn) return 1;
+    if (an && !bn) return -1;
+    return an.localeCompare(bn);
+  });
+  res.json(rows.map(rowToCharacter));
 });
 
-router.post('/npcs', requireGM, (req, res) => {
-  const parsed = readNpcPayload(req.body);
+router.get('/character-sheets/:id', requireGM, (req, res) => {
+  const row = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Character not found' });
+  res.json(rowToCharacter(row));
+});
+
+router.post('/character-sheets', requireGM, (req, res) => {
+  const parsed = readCharacterPayload(req.body);
   if (parsed.error) return res.status(400).json({ error: parsed.error });
-  const npc = parsed.data;
-  const result = db.prepare(`
-    INSERT INTO npcs (name, role, status, location, summary, notes, sheet, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
-  `).run(npc.name, npc.role, npc.status, npc.location, npc.summary, npc.notes, npc.sheet);
-  if (npc.sessionIds) setNpcSessions(result.lastInsertRowid, npc.sessionIds);
-  const row = db.prepare('SELECT * FROM npcs WHERE id = ?').get(result.lastInsertRowid);
-  res.status(201).json(rowToNpc(row));
+  // owner: 'NPC' (default for backward compatibility with old /npcs POST) or 'player'.
+  // Player rows require an explicit user_id.
+  const ownerHint = String(req.body && req.body.owner || 'NPC').toLowerCase();
+  let ownerId;
+  if (ownerHint === 'player') {
+    const uid = parseInt(req.body && req.body.user_id, 10);
+    if (!Number.isInteger(uid) || uid === NPC_USER_ID) {
+      return res.status(400).json({ error: 'user_id required for player character' });
+    }
+    if (!db.prepare('SELECT 1 FROM users WHERE id = ?').get(uid)) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    ownerId = uid;
+  } else {
+    ownerId = NPC_USER_ID;
+  }
+  const result = db.prepare(
+    "INSERT INTO character_sheets (user_id, data, updated_at) VALUES (?, ?, datetime('now'))"
+  ).run(ownerId, parsed.json);
+  const row = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(result.lastInsertRowid);
+  if (ownerId === NPC_USER_ID) {
+    regenerateNpcSummaries(db, sessionIdsForScope(sheetScope(parsed.data)));
+  }
+  res.status(201).json(rowToCharacter(row));
 });
 
-router.put('/npcs/:id', requireGM, (req, res) => {
-  const parsed = readNpcPayload(req.body);
+router.put('/character-sheets/:id', requireGM, (req, res) => {
+  const row = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Character not found' });
+  const parsed = readCharacterPayload(req.body);
   if (parsed.error) return res.status(400).json({ error: parsed.error });
-  const npc = parsed.data;
-  const existing = db.prepare('SELECT sheet FROM npcs WHERE id = ?').get(req.params.id);
-  if (!existing) return res.status(404).json({ error: 'NPC not found' });
-  // Preserve the stored sheet when a record-only edit omits it.
-  const sheet = npc.sheetProvided ? npc.sheet : existing.sheet;
-  db.prepare(`
-    UPDATE npcs
-    SET name = ?, role = ?, status = ?, location = ?, summary = ?, notes = ?, sheet = ?, updated_at = datetime('now')
-    WHERE id = ?
-  `).run(npc.name, npc.role, npc.status, npc.location, npc.summary, npc.notes, sheet, req.params.id);
-  if (npc.sessionIds) setNpcSessions(parseInt(req.params.id, 10), npc.sessionIds);
-  // The sheet may have changed; refresh NPC.md for every case this NPC is in.
-  regenerateNpcSummaries(db, npcSessionIds(req.params.id));
-  const row = db.prepare('SELECT * FROM npcs WHERE id = ?').get(req.params.id);
-  res.json(rowToNpc(row));
+  const beforeScope = sheetScope(parseStoredSheetData(row.data));
+  db.prepare("UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ?")
+    .run(parsed.json, req.params.id);
+  const updated = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(req.params.id);
+  if (updated.user_id === NPC_USER_ID) {
+    const affected = [...new Set([...sessionIdsForScope(beforeScope), ...sessionIdsForScope(sheetScope(parsed.data))])];
+    regenerateNpcSummaries(db, affected);
+  }
+  res.json(rowToCharacter(updated));
 });
 
-// Allocate an NPC to arbitrary cases.
-router.put('/npcs/:id/sessions', requireGM, (req, res) => {
-  const npc = db.prepare('SELECT * FROM npcs WHERE id = ?').get(req.params.id);
-  if (!npc) return res.status(404).json({ error: 'NPC not found' });
-  setNpcSessions(npc.id, (req.body && req.body.session_ids) || []);
-  res.json(rowToNpc(db.prepare('SELECT * FROM npcs WHERE id = ?').get(npc.id)));
+router.put('/character-sheets/:id/scope', requireGM, (req, res) => {
+  const row = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Character not found' });
+  const body = req.body && typeof req.body === 'object' ? req.body : {};
+  const data = parseStoredSheetData(row.data);
+  const beforeScope = sheetScope(data);
+  if (Array.isArray(body.scope)) {
+    data.scope = body.scope.map((s) => String(s || '').trim()).filter(Boolean);
+  } else if (Array.isArray(body.session_ids)) {
+    const ids = body.session_ids.map((v) => parseInt(v, 10)).filter(Number.isInteger);
+    data.scope = ids
+      .map((id) => db.prepare('SELECT name FROM sessions WHERE id = ?').get(id))
+      .filter(Boolean)
+      .map((s) => s.name);
+  } else {
+    return res.status(400).json({ error: 'scope or session_ids required' });
+  }
+  db.prepare("UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ?")
+    .run(JSON.stringify(data), req.params.id);
+  const updated = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(req.params.id);
+  if (updated.user_id === NPC_USER_ID) {
+    const affected = [...new Set([...sessionIdsForScope(beforeScope), ...sessionIdsForScope(sheetScope(data))])];
+    regenerateNpcSummaries(db, affected);
+  }
+  res.json(rowToCharacter(updated));
 });
 
-router.delete('/npcs/:id', requireGM, (req, res) => {
-  const affected = npcSessionIds(req.params.id);
-  const result = db.prepare('DELETE FROM npcs WHERE id = ?').run(req.params.id);
-  if (!result.changes) return res.status(404).json({ error: 'NPC not found' });
-  regenerateNpcSummaries(db, affected);
+router.delete('/character-sheets/:id', requireGM, (req, res) => {
+  const row = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Character not found' });
+  const affectedSessionIds = row.user_id === NPC_USER_ID
+    ? sessionIdsForScope(sheetScope(parseStoredSheetData(row.data)))
+    : [];
+  db.prepare('DELETE FROM character_sheets WHERE id = ?').run(req.params.id);
+  if (affectedSessionIds.length) regenerateNpcSummaries(db, affectedSessionIds);
   res.json({ ok: true });
 });
 
@@ -699,50 +799,64 @@ router.delete('/sessions/:id/players/:userId', requireGM, (req, res) => {
 
 // Set which NPCs are allocated to this case (assign NPCs from the case screen).
 // Only this case's membership is changed; each NPC's other allocations are kept.
+// Internally: ensure this case's name is in / out of each NPC sheet's data.scope.
 router.put('/sessions/:id/npcs', requireGM, (req, res) => {
-  const session = db.prepare('SELECT id FROM sessions WHERE id = ?').get(req.params.id);
+  const session = db.prepare('SELECT id, name FROM sessions WHERE id = ?').get(req.params.id);
   if (!session) return res.status(404).json({ error: 'Session not found' });
-  const npcExists = db.prepare('SELECT 1 FROM npcs WHERE id = ?');
-  const ids = [...new Set((((req.body && req.body.npc_ids) || []).map((v) => parseInt(v, 10)).filter(Number.isInteger)))]
-    .filter((id) => npcExists.get(id));
-  const before = db.prepare('SELECT npc_id FROM npc_sessions WHERE session_id = ?')
-    .all(session.id).map((r) => r.npc_id);
-  const targetSet = new Set(ids);
-  const beforeSet = new Set(before);
-  const toAdd = ids.filter((id) => !beforeSet.has(id));
-  const toRemove = before.filter((id) => !targetSet.has(id));
+  const wantIds = new Set(
+    [...new Set((((req.body && req.body.npc_ids) || []).map((v) => parseInt(v, 10)).filter(Number.isInteger)))]
+  );
+  const npcRows = db.prepare('SELECT id, data FROM character_sheets WHERE user_id = ?').all(NPC_USER_ID);
+  const update = db.prepare("UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ?");
   const tx = db.transaction(() => {
-    // Diff, don't wipe — keep stable allocation rows that stay.
-    const del = db.prepare('DELETE FROM npc_sessions WHERE session_id = ? AND npc_id = ?');
-    for (const npcId of toRemove) del.run(session.id, npcId);
-    const ins = db.prepare('INSERT OR IGNORE INTO npc_sessions (npc_id, session_id) VALUES (?, ?)');
-    for (const npcId of toAdd) ins.run(npcId, session.id);
+    for (const row of npcRows) {
+      const data = parseStoredSheetData(row.data);
+      const hasCase = sheetHasCase(data, session.name);
+      const shouldHave = wantIds.has(row.id);
+      if (hasCase === shouldHave) continue;
+      const nextData = shouldHave ? addCaseToScope(data, session.name) : removeCaseFromScope(data, session.name);
+      update.run(JSON.stringify(nextData), row.id);
+    }
   });
   tx();
   regenerateNpcSummaries(db, [session.id]);
-  const rows = db.prepare(`
-    SELECT n.* FROM npcs n JOIN npc_sessions ns ON ns.npc_id = n.id
-    WHERE ns.session_id = ? ORDER BY n.name COLLATE NOCASE
-  `).all(session.id);
-  res.json(rows.map(rowToNpc));
+  const updatedRows = db.prepare('SELECT * FROM character_sheets WHERE user_id = ?').all(NPC_USER_ID)
+    .filter((r) => sheetHasCase(parseStoredSheetData(r.data), session.name));
+  updatedRows.sort((a, b) => String(parseStoredSheetData(a.data).name || '').toLowerCase()
+    .localeCompare(String(parseStoredSheetData(b.data).name || '').toLowerCase()));
+  res.json(updatedRows.map(rowToCharacter));
 });
 
 // ── Character Sheets ──────────────────────────────────────────────────────────
 
 router.get('/sessions/:id/sheets', requireAuth, (req, res) => {
   const sessionId = req.params.id;
+  const session = db.prepare('SELECT id, name FROM sessions WHERE id = ?').get(sessionId);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
   if (req.user.role !== 'gm') {
     const assigned = db.prepare('SELECT 1 FROM session_players WHERE session_id = ? AND user_id = ?').get(sessionId, req.user.id);
     if (!assigned) return res.status(403).json({ error: 'Not assigned to this session' });
   }
-  const sheets = db.prepare(`
-    SELECT cs.id, cs.user_id, cs.updated_at, u.username, cs.data
+  // Every character — player or NPC — whose scope includes this case's name.
+  // Players see only player sheets (NPC presence is GM-only).
+  const allowNpc = req.user.role === 'gm';
+  const rows = db.prepare(`
+    SELECT cs.*, u.username
     FROM character_sheets cs
     JOIN users u ON cs.user_id = u.id
-    WHERE cs.session_id = ? ORDER BY u.username
-  `).all(sessionId);
+    ${allowNpc ? '' : 'WHERE cs.user_id != ' + NPC_USER_ID}
+  `).all().filter((r) => sheetHasCase(parseStoredSheetData(r.data), session.name));
+  rows.sort((a, b) => String(a.username || '').localeCompare(String(b.username || '')));
   const ruleset = sessionRolls.getSettings(db, sessionId).ruleset;
-  res.json(sheets.map(s => ({ ...s, data: JSON.parse(s.data), ruleset })));
+  res.json(rows.map((s) => ({
+    id: s.id,
+    user_id: s.user_id === NPC_USER_ID ? null : s.user_id,
+    owner: s.user_id === NPC_USER_ID ? 'NPC' : 'player',
+    username: s.user_id === NPC_USER_ID ? null : s.username,
+    updated_at: s.updated_at,
+    data: parseStoredSheetData(s.data),
+    ruleset
+  })));
 });
 
 router.get('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
@@ -750,10 +864,12 @@ router.get('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
   if (req.user.role !== 'gm' && req.user.id !== parseInt(userId)) {
     return res.status(403).json({ error: 'Access denied' });
   }
+  const session = db.prepare('SELECT id, name FROM sessions WHERE id = ?').get(sessionId);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
   const ruleset = sessionRolls.getSettings(db, sessionId).ruleset;
-  const sheet = db.prepare('SELECT * FROM character_sheets WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
+  const sheet = findUserSheetInCase(userId, session.name);
   if (!sheet) return res.json({ data: {}, ruleset });
-  res.json({ ...sheet, data: JSON.parse(sheet.data), ruleset });
+  res.json({ ...sheet, data: parseStoredSheetData(sheet.data), ruleset });
 });
 
 router.put('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
@@ -761,18 +877,24 @@ router.put('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
   if (req.user.role !== 'gm' && req.user.id !== parseInt(userId)) {
     return res.status(403).json({ error: 'Access denied' });
   }
+  const session = db.prepare('SELECT id, name FROM sessions WHERE id = ?').get(sessionId);
+  if (!session) return res.status(404).json({ error: 'Session not found' });
   const assigned = db.prepare('SELECT 1 FROM session_players WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
   if (!assigned) return res.status(403).json({ error: 'Player not assigned to this session' });
 
-  const previousRow = db.prepare('SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
+  const previousRow = findUserSheetInCase(userId, session.name);
   const previousData = parseStoredSheetData(previousRow && previousRow.data);
   const nextData = (req.body && typeof req.body.data === 'object' && req.body.data) || {};
-  const data = JSON.stringify(nextData);
-  db.prepare(`
-    INSERT INTO character_sheets (session_id, user_id, data, updated_at)
-    VALUES (?, ?, ?, datetime('now'))
-    ON CONFLICT(session_id, user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
-  `).run(sessionId, userId, data);
+  // The session's case name must remain in the sheet's scope after save.
+  nextData.scope = sheetScope(addCaseToScope(nextData, session.name));
+  const dataJson = JSON.stringify(nextData);
+  if (previousRow) {
+    db.prepare("UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ?")
+      .run(dataJson, previousRow.id);
+  } else {
+    db.prepare("INSERT INTO character_sheets (user_id, data, updated_at) VALUES (?, ?, datetime('now'))")
+      .run(userId, dataJson);
+  }
   const changedFields = listChangedSheetFields(previousData, nextData);
   logAudit('sheet.saved', {
     actorUserId: req.user.id,
@@ -782,7 +904,7 @@ router.put('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
     scope: 'session',
     mode: previousRow ? 'update' : 'create',
     sessionId: Number(sessionId),
-    sessionName: getSessionNameById(sessionId),
+    sessionName: session.name,
     sheetUserId: Number(userId),
     sheetUsername: getUsernameById(userId),
     changedFieldCount: changedFields.length,
@@ -836,15 +958,18 @@ router.get('/adventure/domestic/sheet', requireAuth, (req, res) => {
 
 router.put('/adventure/domestic/sheet', requireAuth, (req, res) => {
   const session = ensureDomesticSystemSession();
-  const previousRow = db.prepare('SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?').get(session.id, req.user.id);
+  const previousRow = findUserSheetInCase(req.user.id, session.name);
   const previousData = parseStoredSheetData(previousRow && previousRow.data);
   const nextData = (req.body && typeof req.body.data === 'object' && req.body.data) || {};
+  nextData.scope = sheetScope(addCaseToScope(nextData, session.name));
   const data = JSON.stringify(nextData);
-  db.prepare(`
-    INSERT INTO character_sheets (session_id, user_id, data, updated_at)
-    VALUES (?, ?, ?, datetime('now'))
-    ON CONFLICT(session_id, user_id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at
-  `).run(session.id, req.user.id, data);
+  if (previousRow) {
+    db.prepare("UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ?")
+      .run(data, previousRow.id);
+  } else {
+    db.prepare("INSERT INTO character_sheets (user_id, data, updated_at) VALUES (?, ?, datetime('now'))")
+      .run(req.user.id, data);
+  }
   const changedFields = listChangedSheetFields(previousData, nextData);
   logAudit('sheet.saved', {
     actorUserId: req.user.id,
@@ -866,8 +991,20 @@ router.put('/adventure/domestic/sheet', requireAuth, (req, res) => {
 
 router.delete('/adventure/domestic/sheet', requireAuth, (req, res) => {
   const session = ensureDomesticSystemSession();
-  const previousRow = db.prepare('SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?').get(session.id, req.user.id);
-  db.prepare('DELETE FROM character_sheets WHERE session_id = ? AND user_id = ?').run(session.id, req.user.id);
+  const previousRow = findUserSheetInCase(req.user.id, session.name);
+  if (previousRow) {
+    // Drop the Domestic case from this sheet's scope. If that empties the scope
+    // the sheet effectively becomes a character with no case allocations — keep
+    // it rather than delete; a player may want to reuse it elsewhere.
+    const data = parseStoredSheetData(previousRow.data);
+    const next = removeCaseFromScope(data, session.name);
+    if (sheetScope(next).length) {
+      db.prepare("UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ?")
+        .run(JSON.stringify(next), previousRow.id);
+    } else {
+      db.prepare('DELETE FROM character_sheets WHERE id = ?').run(previousRow.id);
+    }
+  }
   logAudit('sheet.deleted', {
     actorUserId: req.user.id,
     actorUsername: req.user.username,
@@ -1693,79 +1830,67 @@ function sheetForRulesAi(value, ruleset) {
 
 function loadRulesCharacterContext(user, sessionId) {
   const activeSessionId = Number.isFinite(Number(sessionId)) ? Number(sessionId) : null;
-  // Always include the requesting user's own character sheets (useful for
-  // players asking rules-about-my-character questions).
-  const ownParams = [user.id];
-  const ownSessionFilter = activeSessionId ? ' AND cs.session_id = ?' : '';
-  if (activeSessionId) ownParams.push(activeSessionId);
-  const ownRows = db.prepare(`
-    SELECT cs.session_id, cs.user_id, s.name AS session_name, cs.updated_at, cs.data,
-           COALESCE(ss.ruleset, 'rol') AS ruleset
-    FROM character_sheets cs
-    JOIN sessions s ON s.id = cs.session_id
-    LEFT JOIN session_settings ss ON ss.session_id = cs.session_id
-    WHERE cs.user_id = ?${ownSessionFilter}
-    ORDER BY cs.updated_at DESC, cs.session_id DESC
-  `).all(...ownParams);
-  const characters = ownRows.map((row) => {
-    const ruleset = normaliseSheetRuleset(row.ruleset);
-    return {
-      session_id: row.session_id,
+  const activeSession = activeSessionId
+    ? db.prepare('SELECT id, name FROM sessions WHERE id = ?').get(activeSessionId)
+    : null;
+  const activeSessionName = activeSession ? activeSession.name : null;
+  const activeRuleset = activeSessionId
+    ? normaliseSheetRuleset(sessionRolls.getSettings(db, activeSessionId).ruleset)
+    : normaliseSheetRuleset('rol');
+
+  // Always include the requesting user's own character sheets. Filter to the
+  // active session by scope when one is given.
+  const ownRows = db.prepare(
+    'SELECT id, user_id, updated_at, data FROM character_sheets WHERE user_id = ? ORDER BY updated_at DESC'
+  ).all(user.id);
+  const characters = [];
+  for (const row of ownRows) {
+    const data = parseStoredSheetData(row.data);
+    if (activeSessionName && !sheetHasCase(data, activeSessionName)) continue;
+    characters.push({
+      id: row.id,
+      session_id: activeSessionId,
       user_id: row.user_id,
-      session_name: row.session_name,
+      session_name: activeSessionName || (sheetScope(data)[0] || ''),
       updated_at: row.updated_at,
-      ruleset,
-      sheet: sheetForRulesAi(parseStoredSheetData(row.data), ruleset)
-    };
-  });
-  // GM in a specific session: also surface every session character sheet and
-  // every allocated NPC sheet so "tell me about Andrew" works without a paste.
+      ruleset: activeRuleset,
+      sheet: sheetForRulesAi(data, activeRuleset)
+    });
+  }
+
+  // GM in a specific session: surface every other character — player and NPC —
+  // whose scope includes the active case so "tell me about Andrew" works.
   const npcs = [];
   if (activeSessionId && user.role === 'gm') {
-    const sessionRuleset = normaliseSheetRuleset(sessionRolls.getSettings(db, activeSessionId).ruleset);
-    try {
-      const sessionRows = db.prepare(`
-        SELECT cs.session_id, cs.user_id, u.username, s.name AS session_name, cs.updated_at, cs.data,
-               COALESCE(ss.ruleset, 'rol') AS ruleset
-        FROM character_sheets cs
-        JOIN sessions s ON s.id = cs.session_id
-        JOIN users u ON u.id = cs.user_id
-        LEFT JOIN session_settings ss ON ss.session_id = cs.session_id
-        WHERE cs.session_id = ?
-      `).all(activeSessionId);
-      for (const row of sessionRows) {
-        // Skip duplicates already added via ownRows (same session+user combo).
-        if (characters.some((c) => c.session_id === row.session_id && c.user_id === row.user_id)) continue;
-        const ruleset = normaliseSheetRuleset(row.ruleset);
-        characters.push({
-          session_id: row.session_id,
-          user_id: row.user_id,
-          username: row.username,
-          session_name: row.session_name,
-          updated_at: row.updated_at,
-          ruleset,
-          sheet: sheetForRulesAi(parseStoredSheetData(row.data), ruleset)
-        });
-      }
-    } catch (_) { /* best-effort */ }
-    try {
-      const npcRows = db.prepare(`
-        SELECT n.id, n.name, n.sheet FROM npcs n
-        JOIN npc_sessions ns ON ns.npc_id = n.id
-        WHERE ns.session_id = ?
-      `).all(activeSessionId);
-      for (const row of npcRows) {
-        let parsed = null;
-        try { parsed = row.sheet ? JSON.parse(row.sheet) : null; } catch { parsed = null; }
+    const allRows = db.prepare(`
+      SELECT cs.id, cs.user_id, u.username, cs.updated_at, cs.data
+      FROM character_sheets cs JOIN users u ON u.id = cs.user_id
+    `).all();
+    for (const row of allRows) {
+      const data = parseStoredSheetData(row.data);
+      if (!sheetHasCase(data, activeSessionName)) continue;
+      if (row.user_id === NPC_USER_ID) {
         npcs.push({
           id: row.id,
-          name: row.name,
-          ruleset: sessionRuleset,
-          sheet: sheetForRulesAi(parsed || {}, sessionRuleset)
+          name: String(data.name || '').trim(),
+          ruleset: activeRuleset,
+          sheet: sheetForRulesAi(data, activeRuleset)
+        });
+      } else if (!characters.some((c) => c.id === row.id)) {
+        characters.push({
+          id: row.id,
+          session_id: activeSessionId,
+          user_id: row.user_id,
+          username: row.username,
+          session_name: activeSessionName,
+          updated_at: row.updated_at,
+          ruleset: activeRuleset,
+          sheet: sheetForRulesAi(data, activeRuleset)
         });
       }
-    } catch (_) { /* best-effort */ }
+    }
   }
+
   return {
     user: { id: user.id, username: user.username, role: user.role },
     characters,

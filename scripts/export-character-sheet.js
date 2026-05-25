@@ -77,20 +77,24 @@ function openDb(dbPath) {
 }
 
 function listAll(db) {
+  const { sheetHasCase } = require('../src/characterScope');
   const sessions = db.prepare('SELECT id, name FROM sessions ORDER BY id').all();
   if (sessions.length === 0) {
     process.stdout.write('(no sessions)\n');
     return;
   }
+  const allRows = db.prepare(`
+    SELECT cs.user_id, cs.data, u.username
+    FROM character_sheets cs JOIN users u ON u.id = cs.user_id
+  `).all();
   for (const s of sessions) {
     process.stdout.write(`session ${s.id}: ${s.name}\n`);
-    const sheets = db.prepare(`
-      SELECT cs.user_id, u.username
-      FROM character_sheets cs
-      JOIN users u ON u.id = cs.user_id
-      WHERE cs.session_id = ?
-      ORDER BY u.username
-    `).all(s.id);
+    const sheets = allRows
+      .filter((r) => {
+        let d; try { d = JSON.parse(r.data || '{}'); } catch { d = {}; }
+        return sheetHasCase(d, s.name);
+      })
+      .sort((a, b) => String(a.username || '').localeCompare(String(b.username || '')));
     if (sheets.length === 0) {
       process.stdout.write('  (no sheets)\n');
     } else {
@@ -132,14 +136,15 @@ function resolveUser(db, key) {
 }
 
 function fetchSheet(db, sessionId, userId) {
-  const row = db.prepare(
-    'SELECT data FROM character_sheets WHERE session_id = ? AND user_id = ?'
-  ).get(sessionId, userId);
-  if (!row) die(`No sheet found for session ${sessionId}, user ${userId}`);
-  let data;
-  try { data = JSON.parse(row.data); }
-  catch (e) { die(`Sheet data is not valid JSON: ${e.message}`); }
-  return data;
+  const { sheetHasCase } = require('../src/characterScope');
+  const session = db.prepare('SELECT id, name FROM sessions WHERE id = ?').get(sessionId);
+  if (!session) die(`No session with id ${sessionId}`);
+  const rows = db.prepare('SELECT data FROM character_sheets WHERE user_id = ?').all(userId);
+  for (const r of rows) {
+    let d; try { d = JSON.parse(r.data || '{}'); } catch { d = null; }
+    if (d && sheetHasCase(d, session.name)) return d;
+  }
+  die(`No sheet found for session ${sessionId}, user ${userId}`);
 }
 
 // ─── PDF overlay ────────────────────────────────────────────────────────────
