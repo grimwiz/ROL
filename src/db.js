@@ -21,10 +21,11 @@ if (!ALLOWED_JOURNAL_MODES.has(JOURNAL_MODE)) {
 db.pragma(`journal_mode = ${JOURNAL_MODE}`);
 db.pragma('foreign_keys = ON');
 
-// All character sheets — player and NPC — live in character_sheets. NPC rows
-// are owned by the sentinel `users` row whose username is 'NPC' (no functional
-// account, password_hash='!'). Case membership is stored inside the sheet JSON
-// as data.scope = [case_name, ...]. There is no per-session character row.
+// All character sheets — player and NPC — live in character_sheets. An NPC is
+// just a character_sheets row with user_id IS NULL (no owning account).
+// Deleting a player drops their account's character to NPC status via
+// ON DELETE SET NULL. Case membership is stored inside the sheet JSON as
+// data.scope = [case_name, ...]. There is no per-session character row.
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,17 +50,11 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS character_sheets (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     data TEXT NOT NULL DEFAULT '{}',
     updated_at TEXT DEFAULT (datetime('now'))
   );
   CREATE INDEX IF NOT EXISTS idx_character_sheets_user ON character_sheets(user_id);
-
-  CREATE TABLE IF NOT EXISTS domestic_progress (
-    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-    current_step INTEGER NOT NULL,
-    updated_at TEXT DEFAULT (datetime('now'))
-  );
 
   -- Per-case settings (extensible). advantage_mode governs how the GM-assigned
   -- roll handles advantage/disadvantage.
@@ -148,15 +143,15 @@ if (adjColumns.length && !adjColumns.some((c) => c.name === 'stat')) {
   db.exec("ALTER TABLE session_luck_adjustments ADD COLUMN stat TEXT NOT NULL DEFAULT 'luck'");
 }
 
-// Sentinel users row that owns every NPC character sheet. Password is the
-// literal '!' (cannot match any bcrypt hash) so the account can't be logged
-// into. Role is 'gm' because that's what the existing CHECK constraint allows;
-// admin queries that list real users should filter username='NPC' out.
-db.prepare("INSERT OR IGNORE INTO users (username, password_hash, role) VALUES ('NPC', '!', 'gm')").run();
-const NPC_USER_ID = db.prepare("SELECT id FROM users WHERE username = 'NPC'").get().id;
+// Legacy deployments owned NPC character_sheets via a sentinel users row
+// (username='NPC'). The current schema stores NPCs as character_sheets with
+// user_id IS NULL, so we capture the sentinel's id once for the migrations
+// below and delete the row at the end of bootstrap.
+const legacyNpcUserRow = db.prepare("SELECT id FROM users WHERE username = 'NPC'").get();
+const legacyNpcUserId = legacyNpcUserRow ? legacyNpcUserRow.id : null;
 
 // ── Schema migration: drop session_id on character_sheets, fold npcs + npc_sessions
-// into character_sheets (NPC rows owned by NPC_USER_ID), and re-key wound/luck
+// into character_sheets (NPCs land as user_id NULL), and re-key wound/luck
 // tables on character_id. Idempotent — detects state per-table and exits early
 // on a fresh DB.
 const csColumns = db.prepare("PRAGMA table_info(character_sheets)").all();
@@ -206,7 +201,7 @@ if (csHasSessionId || npcsTable || scsHasUserId || slaHasUserId) {
         db.exec(`
           CREATE TABLE character_sheets (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
             data TEXT NOT NULL DEFAULT '{}',
             updated_at TEXT DEFAULT (datetime('now'))
           );
@@ -220,16 +215,14 @@ if (csHasSessionId || npcsTable || scsHasUserId || slaHasUserId) {
           if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) parsed = {};
           const sessionName = sessionNameById.get(row.session_id);
           parsed.scope = mergeScope(parsed.scope, sessionName ? [sessionName] : []);
-          // Older codex schemas stored NPCs with user_id IS NULL; reseat them
-          // on the NPC sentinel user so the new NOT NULL constraint holds.
-          const ownerId = row.user_id != null ? row.user_id : NPC_USER_ID;
-          insertSheet.run(row.id, ownerId, JSON.stringify(parsed), row.updated_at);
+          // user_id IS NULL == NPC in the current schema; pass through.
+          insertSheet.run(row.id, row.user_id, JSON.stringify(parsed), row.updated_at);
           oldCharByKey.set(`${row.session_id}:${row.user_id == null ? 'NPC' : row.user_id}`, row.id);
         }
         db.exec("DROP TABLE character_sheets_old_migrate");
       }
 
-      // 2. npcs + npc_sessions → character_sheets (user_id = NPC_USER_ID). One-to-one
+      // 2. npcs + npc_sessions → character_sheets (user_id IS NULL). One-to-one
       //    copy; legacy duplicates are preserved as-is and cleaned manually.
       if (npcsTable) {
         const npcSessionScopes = new Map(); // npc_id → [session_name,...]
@@ -267,7 +260,7 @@ if (csHasSessionId || npcsTable || scsHasUserId || slaHasUserId) {
           }
           data.scope = mergeScope(sheet.scope, npcSessionScopes.get(row.id));
           const updatedAt = (has('updated_at') && row.updated_at) || new Date().toISOString();
-          insertNpc.run(NPC_USER_ID, JSON.stringify(data), updatedAt);
+          insertNpc.run(null, JSON.stringify(data), updatedAt);
         }
         if (npcSessionsTable) db.exec("DROP TABLE npc_sessions");
         db.exec("DROP TABLE npcs");
@@ -350,5 +343,121 @@ if (csHasSessionId || npcsTable || scsHasUserId || slaHasUserId) {
   }
 }
 
-db.NPC_USER_ID = NPC_USER_ID;
+// ── Repair: an earlier version of the nullable-user_id migration below used
+// ALTER TABLE ... RENAME without legacy_alter_table=ON. Modern SQLite (3.25+)
+// rewrites foreign-key references in *other* tables on rename, so after that
+// migration renamed character_sheets to character_sheets_old_nullable and then
+// dropped the renamed table, session_character_state and session_luck_adjustments
+// were left with FK references to the missing name. Any later prepare that
+// walks the FK chain fails with "no such table: character_sheets_old_nullable".
+// better-sqlite3 refuses UPDATEs on sqlite_master even with writable_schema=ON,
+// so repair instead by saving each affected table's rows + indexes, dropping
+// the broken table, recreating it from the (corrected) original schema, and
+// reinserting the rows.
+{
+  const orphanedTables = db.prepare(
+    "SELECT name, sql FROM sqlite_master WHERE type='table' " +
+    "AND sql LIKE '%character_sheets_old_nullable%' AND name != 'character_sheets_old_nullable'"
+  ).all();
+  if (orphanedTables.length > 0) {
+    db.pragma('foreign_keys = OFF');
+    try {
+      const fix = (s) => String(s).replace(/character_sheets_old_nullable/g, 'character_sheets');
+      const tx = db.transaction(() => {
+        for (const t of orphanedTables) {
+          const fixedTableSql = fix(t.sql);
+          const idxs = db.prepare(
+            "SELECT name, sql FROM sqlite_master WHERE type='index' AND tbl_name = ? AND sql IS NOT NULL"
+          ).all(t.name);
+          const rows = db.prepare(`SELECT * FROM ${t.name}`).all();
+          const cols = rows.length ? Object.keys(rows[0]) : null;
+          db.exec(`DROP TABLE ${t.name}`);
+          db.exec(fixedTableSql);
+          for (const idx of idxs) db.exec(fix(idx.sql));
+          if (rows.length && cols) {
+            const placeholders = cols.map(() => '?').join(',');
+            const ins = db.prepare(
+              `INSERT INTO ${t.name} (${cols.join(',')}) VALUES (${placeholders})`
+            );
+            for (const r of rows) ins.run(...cols.map((c) => r[c]));
+          }
+        }
+      });
+      tx();
+    } finally {
+      db.pragma('foreign_keys = ON');
+    }
+  }
+}
+
+// ── Schema migration: make character_sheets.user_id nullable. Earlier
+// deployments stored NPCs by owning them via a sentinel users row (username
+// 'NPC') because the column was NOT NULL. The current schema represents an
+// NPC as a character_sheets row with user_id IS NULL; ON DELETE SET NULL also
+// means deleting a player account converts their PC into an NPC rather than
+// destroying it. This step swaps the column shape on legacy DBs and folds
+// any rows that still reference the sentinel into NULL.
+{
+  const cols = db.prepare("PRAGMA table_info(character_sheets)").all();
+  const userIdCol = cols.find((c) => c.name === 'user_id');
+  const userIdIsNotNull = !!(userIdCol && userIdCol.notnull);
+  if (userIdIsNotNull) {
+    db.pragma('foreign_keys = OFF');
+    // Pre-3.25 ALTER TABLE behaviour: don't rewrite foreign-key references in
+    // other tables when we rename character_sheets. session_character_state
+    // and session_luck_adjustments point at "character_sheets" by name; after
+    // we drop the renamed staging table and put the new one back under the
+    // original name, those references resolve correctly.
+    db.pragma('legacy_alter_table = 1');
+    try {
+      db.transaction(() => {
+        db.exec("ALTER TABLE character_sheets RENAME TO character_sheets_old_nullable");
+        db.exec(`
+          CREATE TABLE character_sheets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+            data TEXT NOT NULL DEFAULT '{}',
+            updated_at TEXT DEFAULT (datetime('now'))
+          );
+        `);
+        if (legacyNpcUserId != null) {
+          db.prepare(`
+            INSERT INTO character_sheets (id, user_id, data, updated_at)
+            SELECT id, CASE WHEN user_id = ? THEN NULL ELSE user_id END, data, updated_at
+            FROM character_sheets_old_nullable
+          `).run(legacyNpcUserId);
+        } else {
+          db.exec(`
+            INSERT INTO character_sheets (id, user_id, data, updated_at)
+            SELECT id, user_id, data, updated_at FROM character_sheets_old_nullable
+          `);
+        }
+        db.exec("DROP TABLE character_sheets_old_nullable");
+        db.exec("CREATE INDEX IF NOT EXISTS idx_character_sheets_user ON character_sheets(user_id)");
+      })();
+      const fkProblems = db.prepare('PRAGMA foreign_key_check').all();
+      if (fkProblems.length) {
+        throw new Error(`Nullify-NPC migration left ${fkProblems.length} foreign-key problem(s)`);
+      }
+    } finally {
+      db.pragma('legacy_alter_table = 0');
+      db.pragma('foreign_keys = ON');
+    }
+  } else if (legacyNpcUserId != null) {
+    db.prepare("UPDATE character_sheets SET user_id = NULL WHERE user_id = ?").run(legacyNpcUserId);
+  }
+}
+
+// Drop the NPC sentinel users row if it's still around. Nothing should still
+// reference it after the nullify step above.
+if (legacyNpcUserId != null) {
+  db.prepare("DELETE FROM users WHERE id = ?").run(legacyNpcUserId);
+}
+
+// The Domestic solo adventure is now browser-only (sheet and progress live in
+// localStorage). Drop the per-user progress table and the hidden sentinel
+// session row that previously gave Domestic character_sheets a scope target.
+db.exec("DROP TABLE IF EXISTS domestic_progress");
+db.prepare("DELETE FROM sessions WHERE description = '__SYSTEM_DOMESTIC__'").run();
+
 module.exports = db;

@@ -12,6 +12,28 @@ const api = (() => {
     return data;
   }
 
+  // Solo-adventure state is intentionally browser-only and not server-persisted
+  // (one browser, one character; ephemeral by design). Single slot per browser,
+  // no user-id keying.
+  const DOMESTIC_SHEET_KEY = 'rol.domestic.sheet';
+  const DOMESTIC_PROGRESS_KEY = 'rol.domestic.progress';
+
+  function readLocalJson(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+  function writeLocalJson(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      throw new Error(`Browser storage unavailable: ${e.message || e}`);
+    }
+  }
+
   return {
     get: (path) => req('GET', path),
     post: (path, body) => req('POST', path, body),
@@ -28,6 +50,16 @@ const api = (() => {
     deleteUser: (id) => req('DELETE', `/users/${id}`),
     setUserSessions: (id, sessionIds) => req('PUT', `/users/${id}/sessions`, { session_ids: sessionIds }),
 
+    // Character sheets (player characters and NPCs share the same backing table).
+    getCharacters: (filter) => {
+      const params = [];
+      if (filter && filter.owner) params.push(`owner=${encodeURIComponent(filter.owner)}`);
+      if (filter && filter.caseName) params.push(`case=${encodeURIComponent(filter.caseName)}`);
+      if (filter && filter.caseId != null) params.push(`case_id=${encodeURIComponent(filter.caseId)}`);
+      const qs = params.length ? `?${params.join('&')}` : '';
+      return req('GET', `/character-sheets${qs}`);
+    },
+
     // NPCs are character_sheets rows owned by the NPC sentinel user.
     getNpcs: (sessionIdOrCaseName) => {
       if (sessionIdOrCaseName == null) return req('GET', '/character-sheets?owner=NPC');
@@ -41,8 +73,8 @@ const api = (() => {
     updateNpc: (id, data) => req('PUT', `/character-sheets/${id}`, data),
     deleteNpc: (id) => req('DELETE', `/character-sheets/${id}`),
     setNpcSessions: (id, sessionIds) => req('PUT', `/character-sheets/${id}/scope`, { session_ids: sessionIds }),
+    setCharacterOwner: (id, userId) => req('PUT', `/character-sheets/${id}/owner`, { user_id: userId }),
     getAllocatableCases: () => req('GET', '/allocatable-cases'),
-    setSessionNpcs: (sessionId, npcIds) => req('PUT', `/sessions/${sessionId}/npcs`, { npc_ids: npcIds }),
 
     getSessions: () => req('GET', '/sessions'),
     createSession: (data) => req('POST', '/sessions', data),
@@ -79,11 +111,20 @@ const api = (() => {
     getRules: () => req('GET', '/rules'),
     searchRules: (query) => req('GET', `/rules/search?q=${encodeURIComponent(query)}`),
     getDomesticAdventure: () => req('GET', '/adventure/domestic'),
-    getDomesticProgress: () => req('GET', '/adventure/domestic/progress'),
-    saveDomesticProgress: (currentStep) => req('PUT', '/adventure/domestic/progress', { current_step: currentStep }),
-    getDomesticSheet: () => req('GET', '/adventure/domestic/sheet'),
-    saveDomesticSheet: (data) => req('PUT', '/adventure/domestic/sheet', { data }),
-    deleteDomesticSheet: () => req('DELETE', '/adventure/domestic/sheet'),
+    getDomesticProgress: async () => readLocalJson(DOMESTIC_PROGRESS_KEY) || { current_step: null },
+    saveDomesticProgress: async (currentStep) => {
+      writeLocalJson(DOMESTIC_PROGRESS_KEY, { current_step: currentStep, updated_at: new Date().toISOString() });
+      return { ok: true, current_step: currentStep };
+    },
+    getDomesticSheet: async () => ({ data: readLocalJson(DOMESTIC_SHEET_KEY) || {} }),
+    saveDomesticSheet: async (data) => {
+      writeLocalJson(DOMESTIC_SHEET_KEY, data || {});
+      return { ok: true };
+    },
+    deleteDomesticSheet: async () => {
+      try { localStorage.removeItem(DOMESTIC_SHEET_KEY); } catch (e) { throw new Error(`Browser storage unavailable: ${e.message || e}`); }
+      return { ok: true };
+    },
     rollDice: (formula, preset) => req('POST', '/dice/rolls', { formula, preset }),
     getLlmStatus: () => req('GET', '/llm/status'),
     getLlmModels: () => req('GET', '/llm/models'),

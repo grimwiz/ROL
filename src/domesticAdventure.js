@@ -17,7 +17,11 @@ function normalizeActionLabel(label, target) {
 function parseActions(text) {
   const actions = [];
   const seen = new Set();
-  const regex = /([^\n.!?]*?)\bgo to\s+(\d+)\s*\./gi;
+  // Accept "go to N." or "go to N;" — the semicolon variant is how the book
+  // writes split-outcome rolls ("go to 58 ; if you fail, go to 68 ."). The
+  // source PDF extraction occasionally leaves stray double-spaces inside
+  // "go to" (e.g. "go  to 45"), so allow any whitespace between the words.
+  const regex = /([^\n.!?;]*?)\bgo\s+to\s+(\d+)\s*[.;]/gi;
   let match;
 
   while ((match = regex.exec(text)) !== null) {

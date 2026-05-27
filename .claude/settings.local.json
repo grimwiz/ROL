@@ -5,7 +5,8 @@
       "Bash(cd /mnt/c/Users/tim.DRAGON-NET/Documents/GitHub/ROL; node *)",
       "Bash(node -c src/scenarioInfo.js)",
       "Bash(node -e ' *)",
-      "Bash(cd /mnt/c/Users/tim.DRAGON-NET/Documents/GitHub/ROL; node -e *)"
+      "Bash(cd /mnt/c/Users/tim.DRAGON-NET/Documents/GitHub/ROL; node -e *)",
+      "Bash(node *)"
     ]
   }
 }

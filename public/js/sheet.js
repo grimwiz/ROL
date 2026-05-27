@@ -532,6 +532,13 @@ const SheetForm = (() => {
 
   // ── Main render ────────────────────────────────────────────────────────────
   function render(container, data, readonly) {
+    // One sheet at a time. Hidden tabs keep their DOM, so a previously
+    // rendered sheet would leave duplicate ids (sf_portrait, sf_name, etc.)
+    // in the document — every document.getElementById here would then resolve
+    // to the wrong sheet. Remove any other .sheet-container before rendering.
+    document.querySelectorAll('.sheet-container').forEach((node) => {
+      if (!container.contains(node)) node.remove();
+    });
     // Clear any in-memory portrait state from a previous sheet — each render
     // starts fresh. The saved `d.portrait` data URL is what the preview shows
     // until the player uploads something new.

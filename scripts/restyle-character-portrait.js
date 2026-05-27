@@ -24,8 +24,6 @@ const {
   restylePortraitImage
 } = require('../src/portraitPipeline');
 
-const NPC_USER_ID = db.NPC_USER_ID;
-
 function usage(exitCode = 0) {
   const out = exitCode ? process.stderr : process.stdout;
   out.write(`Usage:
@@ -124,7 +122,7 @@ function resolveSession(selector) {
 }
 
 function listSessions() {
-  const globalNpcs = db.prepare('SELECT COUNT(*) AS c FROM character_sheets WHERE user_id = ?').get(NPC_USER_ID);
+  const globalNpcs = db.prepare('SELECT COUNT(*) AS c FROM character_sheets WHERE user_id IS NULL').get();
   const baseRows = db.prepare(`
     SELECT
       s.id,
@@ -137,7 +135,7 @@ function listSessions() {
     GROUP BY s.id
     ORDER BY s.name COLLATE NOCASE, s.id
   `).all();
-  const npcRows = db.prepare('SELECT data FROM character_sheets WHERE user_id = ?').all(NPC_USER_ID);
+  const npcRows = db.prepare('SELECT data FROM character_sheets WHERE user_id IS NULL').all();
   const npcCountByCase = new Map();
   for (const r of npcRows) {
     let d; try { d = JSON.parse(r.data || '{}'); } catch { d = {}; }
@@ -165,7 +163,7 @@ function characterAliases(entry) {
 }
 
 function listCharacters(sessionId) {
-  const allNpcSheets = db.prepare('SELECT id, data FROM character_sheets WHERE user_id = ?').all(NPC_USER_ID)
+  const allNpcSheets = db.prepare('SELECT id, data FROM character_sheets WHERE user_id IS NULL').all()
     .map((row) => {
       let parsed; try { parsed = JSON.parse(row.data || '{}'); } catch { parsed = {}; }
       const name = String(parsed && parsed.name || '').trim() || `npc-${row.id}`;
@@ -283,8 +281,8 @@ function saveCharacterSheet(sessionId, target, sheet) {
     console.warn(`warning: sheet JSON is ${(json.length / 1024).toFixed(0)} KB; the browser can view it, but a later web save may need the portrait compressed first.`);
   }
   if (target.type === 'npc') {
-    const result = db.prepare("UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ? AND user_id = ?")
-      .run(json, target.id, NPC_USER_ID);
+    const result = db.prepare("UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ? AND user_id IS NULL")
+      .run(json, target.id);
     if (!result.changes) throw new Error(`NPC not found: ${target.id}`);
     const scope = sheetScope(sheet);
     const sessionIds = scope.map((name) => {

@@ -991,7 +991,7 @@ function parseSheetData(value) {
 }
 
 function listRoster(db, sessionId = null) {
-  const users = db.prepare("SELECT id, username, role, created_at FROM users WHERE username != 'NPC' ORDER BY role, username").all();
+  const users = db.prepare("SELECT id, username, role, created_at FROM users ORDER BY role, username").all();
   const parsedSessionId = parseInt(sessionId, 10);
   const allSessions = db.prepare(
     "SELECT id, name FROM sessions WHERE COALESCE(description, '') != ? ORDER BY created_at DESC"
@@ -1008,7 +1008,6 @@ function listRoster(db, sessionId = null) {
     SELECT cs.id, cs.user_id, cs.data, u.username, u.role
     FROM character_sheets cs
     JOIN users u ON u.id = cs.user_id
-    WHERE u.username != 'NPC'
     ORDER BY u.username
   `).all();
 
@@ -2879,11 +2878,7 @@ function writeSessionNpcSummary(sessionId, db) {
   const session = getSessionById(db, sessionId);
   if (!session) return false;
   const paths = ensureSessionDataFolders(session);
-  const npcUserRow = db.prepare("SELECT id FROM users WHERE username = 'NPC'").get();
-  const npcUserId = npcUserRow ? npcUserRow.id : null;
-  const allNpcs = npcUserId
-    ? db.prepare('SELECT id, data FROM character_sheets WHERE user_id = ?').all(npcUserId)
-    : [];
+  const allNpcs = db.prepare('SELECT id, data FROM character_sheets WHERE user_id IS NULL').all();
   const rows = allNpcs
     .map((r) => ({ id: r.id, sheet: parseSheetData(r.data) }))
     .filter((r) => sheetHasCase(r.sheet, session.name))

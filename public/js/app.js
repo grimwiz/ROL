@@ -161,16 +161,22 @@ function resetUserScopedState() {
 
 function resetDomesticRuntimeState(options = {}) {
   const { preserveAdventure = false } = options;
+  // If the debounced autosave is still pending, persist it synchronously
+  // before we drop the in-memory sheet — otherwise the user's last edit
+  // disappears when we reload from localStorage on the way back in.
+  if (State.domesticSaveTimer) {
+    clearTimeout(State.domesticSaveTimer);
+    State.domesticSaveTimer = null;
+    if (State.domesticSheet) {
+      try { api.saveDomesticSheet(State.domesticSheet); } catch {}
+    }
+  }
   if (!preserveAdventure) State.domesticAdventure = null;
   State.domesticCurrentStep = null;
   State.domesticSavedStep = null;
   State.domesticProgressLoaded = false;
   State.domesticSheet = null;
   State.domesticSheetLoaded = false;
-  if (State.domesticSaveTimer) {
-    clearTimeout(State.domesticSaveTimer);
-    State.domesticSaveTimer = null;
-  }
   State.domesticSaveInflight = null;
 }
 
@@ -2128,84 +2134,343 @@ async function exportPrintDoc(sessionId, kind) {
 }
 window.exportPrintDoc = exportPrintDoc;
 
-async function renderGMSessionView(sessionId, preferredUserId = null) {
-  const [players, sheets, settings, npcs] = await Promise.all([
-    api.getSessionPlayers(sessionId),
-    api.getSheets(sessionId),
-    api.getSessionSettings(sessionId).catch(() => ({ ruleset: 'rol' })),
-    api.getNpcs(sessionId).catch(() => [])
-  ]);
-  const sessionRuleset = (settings && settings.ruleset) || 'rol';
-  State.npcs = npcs;
+// Shared player + NPC characters panel. Used by both Case Files → Characters
+// (sessionId set ⇒ list is filtered to that case's scope, "+ Assign player"
+// and skill-roll buttons appear) and Admin → Characters (sessionId null ⇒
+// every player/NPC sheet is visible regardless of scope). The same editor,
+// save path (PUT /character-sheets/:id) and owner picker apply to both.
+const CharacterPanel = (() => {
+  const _ctx = {
+    host: null,
+    sessionId: null,
+    sessionName: null,
+    ruleset: 'rol',
+    preferredCharId: null,
+    preferredUserId: null,
+    characters: [],
+    users: [],
+    assignedPlayers: []
+  };
 
-  const content = el('session-content');
-  if (players.length === 0 && !npcs.length) {
-    content.innerHTML = `<div class="empty"><div class="empty-icon">👥</div><p>No players or NPCs assigned to this case yet.</p><button class="btn btn-primary" style="margin-top:1rem" onclick="openAssignPlayer(${sessionId})">+ Assign player</button></div>`;
-    return;
+  async function render(host, opts) {
+    _ctx.host = host;
+    _ctx.sessionId = (opts && opts.sessionId) || null;
+    _ctx.sessionName = (opts && opts.sessionName) || null;
+    _ctx.ruleset = (opts && opts.ruleset) || 'rol';
+    _ctx.preferredCharId = (opts && opts.preferredCharId) || null;
+    _ctx.preferredUserId = (opts && opts.preferredUserId) || null;
+    await refresh();
   }
 
-  const sheetMap = {};
-  sheets.forEach(s => { if (s.user_id != null) sheetMap[s.user_id] = s; });
-  window.gmSheetMap = sheetMap;
-
-  const npcButtonsHtml = npcs.length ? `
-    <div style="margin-bottom:1rem">
-      <div style="color:var(--text2);font-size:0.85rem;margin-bottom:0.35rem">NPCs in this case</div>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-        ${npcs.map((n) => `<button class="btn btn-sm" onclick="openNpcSheetView(${n.id})">${esc(n.name)}</button>`).join('')}
-      </div>
-    </div>` : '';
-
-  content.innerHTML = `
-    <div style="margin-bottom:1rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
-      <div class="sheet-tabs" id="gm-sheet-tabs" style="flex:1 1 auto">
-        ${players.map((p, i) => `
-          <div class="sheet-tab${i===0?' active':''}" onclick="gmSelectSheet(${p.id},'${esc(p.username)}')" id="stab_${p.id}">
-            ${esc(p.username)}
-            ${!sheetMap[p.id] ? ' <span style="opacity:0.5;font-size:0.75rem">(empty)</span>' : ''}
-          </div>`).join('')}
-      </div>
-      <button class="btn btn-sm" onclick="openAssignPlayer(${sessionId})" title="Assign another player to this case">+ Assign player</button>
-    </div>
-    ${npcButtonsHtml}
-    <div style="margin-bottom:1rem;display:flex;gap:0.75rem;align-items:center">
-      <span id="gm-viewing-label" style="color:var(--text2);font-size:0.88rem"></span>
-      ${players.length ? `<button class="btn btn-sm" onclick="removePlayerFromSession(${sessionId}, gmCurrentPlayerId)">Remove from session</button>` : ''}
-    </div>
-    <div id="gm-sheet-area"></div>`;
-
-  // Show first player
-  if (players.length > 0) {
-    const preferredPlayer = players.find((p) => p.id === preferredUserId) || players[0];
-    window.gmCurrentPlayerId = preferredPlayer.id;
-    gmSelectSheet(preferredPlayer.id, preferredPlayer.username);
+  async function refresh() {
+    const { host, sessionId } = _ctx;
+    if (!host) return;
+    host.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading characters…</p>';
+    try {
+      const charFilter = sessionId ? { caseId: sessionId } : {};
+      const [chars, users, players] = await Promise.all([
+        api.getCharacters(charFilter),
+        api.getUsers().catch(() => []),
+        sessionId ? api.getSessionPlayers(sessionId).catch(() => []) : Promise.resolve([])
+      ]);
+      _ctx.characters = chars;
+      _ctx.users = users;
+      _ctx.assignedPlayers = players;
+      // Mirror onto State so other code (case-allocation modal, etc.) keeps
+      // the same lookups it had under the legacy renderAdminCharacters /
+      // renderGMSessionView functions.
+      State.characters = chars;
+      State.npcs = chars.filter((c) => c.owner === 'NPC');
+      State.users = users;
+    } catch (e) {
+      host.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+      return;
+    }
+    paint();
   }
 
-  async function gmSelectSheet(userId, username) {
-    window.gmCurrentPlayerId = userId;
-    State.currentSheetUserId = userId;
-    storeGmPlayerId(sessionId, userId);
-    document.querySelectorAll('.sheet-tab').forEach(t => t.classList.remove('active'));
-    const tab = el(`stab_${userId}`);
+  function paint() {
+    const { host, sessionId, characters, assignedPlayers } = _ctx;
+    const playerChars = characters.filter((c) => c.owner !== 'NPC');
+    const npcs = characters.filter((c) => c.owner === 'NPC');
+
+    // In case mode, weave session-assigned players who don't yet have a sheet
+    // into the player strip as "empty" tabs. Filling and saving one creates a
+    // new character_sheets row scoped to this case.
+    const charByUser = new Map(
+      playerChars.filter((c) => c.user_id != null).map((c) => [Number(c.user_id), c])
+    );
+    let playerTabs;
+    if (sessionId) {
+      const fromAssigned = assignedPlayers.map((p) => {
+        const existing = charByUser.get(Number(p.id));
+        return existing
+          ? { kind: 'char', char: existing }
+          : { kind: 'new', userId: p.id, username: p.username };
+      });
+      // Edge case: a player's character is in this case's scope but the
+      // session_players row was removed. Still surface so the GM can edit.
+      const orphan = playerChars
+        .filter((c) => c.user_id != null && !assignedPlayers.some((p) => Number(p.id) === Number(c.user_id)))
+        .map((c) => ({ kind: 'char', char: c }));
+      playerTabs = fromAssigned.concat(orphan);
+    } else {
+      playerTabs = playerChars.map((c) => ({ kind: 'char', char: c }));
+    }
+
+    const playerStripBody = playerTabs.length
+      ? `<div class="sheet-tabs" id="cp-player-tabs" style="flex:1 1 auto">${playerTabs.map(tabHtml).join('')}</div>`
+      : `<p class="card-sub" style="margin:0">${sessionId ? 'No players assigned to this case.' : 'No player character sheets yet.'}</p>`;
+    const assignBtn = sessionId
+      ? `<button class="btn btn-sm" onclick="openAssignPlayer(${sessionId})">+ Assign player</button>`
+      : '';
+
+    const npcStripBody = npcs.length
+      ? `<div class="sheet-tabs" id="cp-npc-tabs" style="flex:1 1 auto">${npcs.map((n) =>
+          `<div class="sheet-tab" id="cpn_${n.id}" onclick="CharacterPanel.select('char',${n.id})">${esc(n.name || '(no name)')}</div>`
+        ).join('')}</div>`
+      : `<p class="card-sub" style="margin:0">${sessionId ? 'No NPCs allocated to this case.' : 'No NPCs yet.'}</p>`;
+
+    host.innerHTML = `
+      ${sessionId ? '' : '<div class="page-header"><h2>Characters</h2></div>'}
+      <div id="cp-alert"></div>
+      <div style="color:var(--text2);font-size:0.85rem;margin:0 0 0.35rem">Player characters</div>
+      <div style="margin-bottom:1rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+        ${playerStripBody}
+        ${assignBtn}
+      </div>
+      <div style="color:var(--text2);font-size:0.85rem;margin:0 0 0.35rem">NPCs</div>
+      <div style="margin-bottom:1rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+        ${npcStripBody}
+        <button class="btn btn-sm btn-primary" onclick="openNpcSheet()">+ New NPC</button>
+      </div>
+      <div style="margin-bottom:1rem;display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap">
+        <span id="cp-viewing-label" style="color:var(--text2);font-size:0.88rem"></span>
+        <span id="cp-tab-actions"></span>
+      </div>
+      <div id="cp-sheet-area"><p style="color:var(--text2);padding:1rem">Select a character above to view their sheet.</p></div>
+    `;
+
+    // Auto-select: caller's preferredCharId wins; else the GM's remembered
+    // player for this case (preferredUserId); else first available tab.
+    let initial = null;
+    if (_ctx.preferredCharId) {
+      const found = [...playerTabs, ...npcs.map((n) => ({ kind: 'char', char: n }))]
+        .find((t) => t.kind === 'char' && t.char.id === _ctx.preferredCharId);
+      if (found) initial = found;
+    }
+    if (!initial && _ctx.preferredUserId != null) {
+      initial = playerTabs.find((t) =>
+        (t.kind === 'char' && Number(t.char.user_id) === Number(_ctx.preferredUserId))
+        || (t.kind === 'new' && Number(t.userId) === Number(_ctx.preferredUserId))
+      );
+    }
+    if (!initial) initial = playerTabs[0] || (npcs.length ? { kind: 'char', char: npcs[0] } : null);
+    if (initial) {
+      if (initial.kind === 'char') select('char', initial.char.id);
+      else select('new', initial.userId, initial.username);
+    }
+  }
+
+  function tabHtml(t) {
+    if (t.kind === 'new') {
+      return `<div class="sheet-tab" id="cpu_${t.userId}" onclick="CharacterPanel.select('new',${t.userId},'${esc(t.username)}')">
+        ${esc(t.username)} <span style="opacity:0.5;font-size:0.75rem">(empty)</span>
+      </div>`;
+    }
+    const c = t.char;
+    const label = c.name || (c.username ? `(${c.username})` : '(no name)');
+    const sub = c.username && c.name ? ` <span style="opacity:0.6;font-size:0.75rem">(${esc(c.username)})</span>` : '';
+    return `<div class="sheet-tab" id="cpc_${c.id}" onclick="CharacterPanel.select('char',${c.id})">${esc(label)}${sub}</div>`;
+  }
+
+  function clearActiveTabs() {
+    document.querySelectorAll('#cp-player-tabs .sheet-tab, #cp-npc-tabs .sheet-tab')
+      .forEach((t) => t.classList.remove('active'));
+  }
+
+  async function select(kind, id, username) {
+    if (kind === 'new') return selectNew(id, username);
+    return selectChar(id);
+  }
+
+  async function selectChar(charId) {
+    const { sessionId, ruleset, characters, users } = _ctx;
+    const char = characters.find((c) => c.id === charId);
+    if (!char) return;
+    _ctx.preferredCharId = charId;
+    State.currentSheetUserId = char.user_id == null ? null : char.user_id;
+    if (sessionId && char.user_id != null) storeGmPlayerId(sessionId, char.user_id);
+    clearActiveTabs();
+    const tab = el(`cpc_${charId}`) || el(`cpn_${charId}`);
     if (tab) tab.classList.add('active');
-    el('gm-viewing-label').textContent = `Viewing: ${username}`;
-    const area = el('gm-sheet-area');
-    area.innerHTML = '<p style="color:var(--text2)">Loading sheet…</p>';
-    const sheet = sheetMap[userId];
+
+    const ownerTag = char.owner === 'NPC' ? 'NPC' : `Player${char.username ? ` — ${char.username}` : ''}`;
+    el('cp-viewing-label').textContent = `Viewing: ${char.name || '(no name)'} (${ownerTag})`;
+
+    const ownerOptions = [
+      `<option value=""${char.user_id == null ? ' selected' : ''}>NPC (no owner)</option>`,
+      ...(users || []).filter((u) => u && u.username).map((u) =>
+        `<option value="${u.id}"${Number(char.user_id) === Number(u.id) ? ' selected' : ''}>${esc(u.username)}${u.role === 'gm' ? ' (GM)' : ''}</option>`)
+    ].join('');
+    const actions = [
+      `<label style="display:inline-flex;align-items:center;gap:0.35rem;font-size:0.85rem;color:var(--text2)">
+        Owner: <select id="cp-owner-select" onchange="CharacterPanel.changeOwner(${charId}, this.value)">${ownerOptions}</select>
+      </label>`,
+      `<button class="btn btn-sm" onclick="openCharacterCases(${charId})">Cases…</button>`
+    ];
+    if (sessionId && char.owner !== 'NPC' && char.user_id != null) {
+      actions.push(`<button class="btn btn-sm" onclick="removePlayerFromSession(${sessionId}, ${char.user_id})">Remove from session</button>`);
+    }
+    if (char.owner === 'NPC') {
+      actions.push(`<button class="btn btn-sm btn-danger" onclick="CharacterPanel.deleteChar(${charId})">Delete</button>`);
+    }
+    el('cp-tab-actions').innerHTML = actions.join(' ');
+
+    const area = el('cp-sheet-area');
     area.innerHTML = '';
-    SheetForm.setRuleset((sheet && sheet.ruleset) || sessionRuleset);
+    SheetForm.setRuleset((char.sheet && char.sheet.ruleset) || ruleset || 'rol');
     SheetForm.setSessionId(sessionId);
     SheetForm.setPortraitAi(true);
-    SheetForm.render(area, sheet ? sheet.data : {}, false);
+    SheetForm.render(area, char.sheet || {}, false);
     area.insertAdjacentHTML('beforeend', `
       <div class="sheet-actions">
-      <button class="btn btn-primary" onclick="gmSaveSheet(${sessionId},${userId})">Save sheet</button>
-      <button class="btn" onclick="exportPdf()">Export PDF</button>
-      <span class="save-status" id="save-status"></span>
-    </div>`);
-    try { attachSkillRollButtons(area, await buildSkillRollCtx(sessionId, userId, true)); } catch (e) { /* non-fatal */ }
+        <button class="btn btn-primary" onclick="CharacterPanel.saveChar(${charId})">Save</button>
+        <button class="btn" onclick="exportPdf()">Export PDF</button>
+        <span class="save-status" id="save-status"></span>
+      </div>`);
+    if (sessionId) {
+      // Skill-roll buttons are case-scoped; they'll migrate off characters in
+      // a later pass. NPCs (user_id null) get them too but no rolls will
+      // match, so the buttons render inert.
+      try { attachSkillRollButtons(area, await buildSkillRollCtx(sessionId, char.user_id, true)); } catch {}
+    }
   }
-  window.gmSelectSheet = gmSelectSheet;
+
+  async function selectNew(userId, username) {
+    const { sessionId, ruleset } = _ctx;
+    _ctx.preferredCharId = null;
+    _ctx.preferredUserId = userId;
+    State.currentSheetUserId = userId;
+    if (sessionId) storeGmPlayerId(sessionId, userId);
+    clearActiveTabs();
+    const tab = el(`cpu_${userId}`);
+    if (tab) tab.classList.add('active');
+    el('cp-viewing-label').textContent = `Viewing: ${username} (Player — empty)`;
+    el('cp-tab-actions').innerHTML = sessionId
+      ? `<button class="btn btn-sm" onclick="removePlayerFromSession(${sessionId}, ${userId})">Remove from session</button>`
+      : '';
+    const area = el('cp-sheet-area');
+    area.innerHTML = '';
+    SheetForm.setRuleset(ruleset || 'rol');
+    SheetForm.setSessionId(sessionId);
+    SheetForm.setPortraitAi(true);
+    SheetForm.render(area, {}, false);
+    area.insertAdjacentHTML('beforeend', `
+      <div class="sheet-actions">
+        <button class="btn btn-primary" onclick="CharacterPanel.createForUser(${userId})">Save</button>
+        <button class="btn" onclick="exportPdf()">Export PDF</button>
+        <span class="save-status" id="save-status"></span>
+      </div>`);
+    if (sessionId) {
+      try { attachSkillRollButtons(area, await buildSkillRollCtx(sessionId, userId, true)); } catch {}
+    }
+  }
+
+  async function saveChar(charId) {
+    const status = el('save-status');
+    if (status) { status.textContent = 'Saving…'; status.className = 'save-status'; }
+    try {
+      const char = (_ctx.characters || []).find((c) => c.id === charId) || {};
+      const sheet = SheetForm.collect();
+      const name = String(sheet.name || char.name || '').trim();
+      if (!name) {
+        if (status) { status.textContent = '✕ Enter the name (Personal Info → Name).'; status.className = 'save-status error'; }
+        return;
+      }
+      // PUT /character-sheets/:id preserves existing owner and (per the
+      // scope-explicit guard in the route) existing scope. Editing case
+      // allocations is the dedicated job of openCharacterCases().
+      const payload = { name, role: sheet.occupation || char.role || '', sheet };
+      await api.updateNpc(charId, payload);
+      if (status) { status.textContent = '✓ Saved'; status.className = 'save-status saved'; }
+      const filter = _ctx.sessionId ? { caseId: _ctx.sessionId } : {};
+      _ctx.characters = await api.getCharacters(filter);
+      State.characters = _ctx.characters;
+      State.npcs = _ctx.characters.filter((c) => c.owner === 'NPC');
+    } catch (e) {
+      if (status) { status.textContent = `✕ ${e.message}`; status.className = 'save-status error'; }
+    }
+  }
+
+  async function createForUser(userId) {
+    const { sessionName } = _ctx;
+    const status = el('save-status');
+    if (status) { status.textContent = 'Saving…'; status.className = 'save-status'; }
+    try {
+      const sheet = SheetForm.collect();
+      const name = String(sheet.name || '').trim();
+      if (!name) {
+        if (status) { status.textContent = '✕ Enter the name (Personal Info → Name).'; status.className = 'save-status error'; }
+        return;
+      }
+      const scope = sessionName ? [sessionName] : [];
+      const created = await api.createNpc({
+        name, role: sheet.occupation || '', sheet,
+        owner: 'player', user_id: userId, scope
+      });
+      _ctx.preferredCharId = created.id;
+      await refresh();
+    } catch (e) {
+      if (status) { status.textContent = `✕ ${e.message}`; status.className = 'save-status error'; }
+    }
+  }
+
+  async function changeOwner(charId, rawValue) {
+    const select = el('cp-owner-select');
+    const previous = (_ctx.characters || []).find((c) => c.id === charId);
+    const previousOwnerId = previous && previous.user_id != null ? String(previous.user_id) : '';
+    const userId = String(rawValue || '').trim() === '' ? null : parseInt(rawValue, 10);
+    if (rawValue !== '' && !Number.isInteger(userId)) {
+      if (select) select.value = previousOwnerId;
+      return;
+    }
+    if (select) select.disabled = true;
+    try {
+      await api.setCharacterOwner(charId, userId);
+      _ctx.preferredCharId = charId;
+      await refresh();
+    } catch (e) {
+      showAlert(e.message, 'danger', 'cp-alert');
+      if (select) { select.disabled = false; select.value = previousOwnerId; }
+    }
+  }
+
+  async function deleteChar(charId) {
+    if (!confirm('Delete this character?')) return;
+    try {
+      await api.deleteNpc(charId);
+      _ctx.preferredCharId = null;
+      await refresh();
+    } catch (e) {
+      showAlert(e.message, 'danger', 'cp-alert');
+    }
+  }
+
+  return { render, refresh, select, saveChar, createForUser, changeOwner, deleteChar };
+})();
+window.CharacterPanel = CharacterPanel;
+
+async function renderGMSessionView(sessionId, preferredUserId = null) {
+  let settings;
+  try { settings = await api.getSessionSettings(sessionId); } catch { settings = { ruleset: 'rol' }; }
+  const session = (State.sessions || []).find((s) => Number(s.id) === Number(sessionId)) || {};
+  await CharacterPanel.render(el('session-content'), {
+    sessionId,
+    sessionName: session.name || null,
+    ruleset: (settings && settings.ruleset) || 'rol',
+    preferredUserId
+  });
 }
 
 async function renderPlayerSessionView(sessionId) {
@@ -4210,7 +4475,7 @@ function regenerateScenarioPage(btn, sectionsCsv, label) {
 }
 window.regenerateScenarioPage = regenerateScenarioPage;
 
-// ── NPC tab (GM) ─────────────────────────────────────────────────────────────
+// ── Characters (GM) ──────────────────────────────────────────────────────────
 function npcCaseSummary(entry) {
   const names = (entry.sessions || []).map((s) => s.name);
   if (!names.length) return 'Unallocated';
@@ -4218,109 +4483,14 @@ function npcCaseSummary(entry) {
   return `${names.slice(0, 2).join(', ')} +${names.length - 2}`;
 }
 
-// Editable sheet view for an NPC surfaced in this case. The sheet itself is the
-// central NPC sheet; this case only supplies portrait style context and whether
-// the NPC is surfaced here.
-function openNpcSheetView(npcId) {
-  const npc = State.npcs.find((entry) => entry.id === npcId);
-  if (!npc) return;
-  const sessionId = State.currentSession;
-  modal(`
-    <h3>${esc(npc.name)} — Character Sheet</h3>
-    <p class="card-sub" style="margin:0 0 0.5rem">This is the shared NPC sheet used in every case where the NPC is surfaced.</p>
-    <div id="npc-sheet-area"></div>
-    <div class="sheet-actions">
-      <button class="btn btn-primary" id="npc-case-save" onclick="saveCaseNpc(${sessionId}, ${npcId}, this)">Save NPC</button>
-      <button class="btn" onclick="exportPdf()">Export PDF</button>
-      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Close</button>
-      <span class="save-status" id="npc-case-status"></span>
-    </div>`, async (root) => {
-    const modalEl = root.querySelector('.modal');
-    if (modalEl) { modalEl.style.maxWidth = '1100px'; modalEl.style.maxHeight = '92vh'; modalEl.style.overflowY = 'auto'; }
-    const area = root.querySelector('#npc-sheet-area');
-    area.innerHTML = '';
-    SheetForm.setRuleset('rol');
-    SheetForm.setSessionId(sessionId);
-    SheetForm.setPortraitAi(true);
-    SheetForm.render(area, npc.sheet || {}, false);
-  });
-}
-window.openNpcSheetView = openNpcSheetView;
-
-async function saveCaseNpc(sessionId, npcId, btn) {
-  const status = el('npc-case-status');
-  const npc = State.npcs.find((entry) => entry.id === npcId) || {};
-  const sheet = SheetForm.collect();
-  const name = String(sheet.name || npc.name || '').trim();
-  if (!name) {
-    if (status) { status.textContent = '✕ Enter the NPC name'; status.className = 'save-status error'; }
-    return;
-  }
-  btn.disabled = true;
-  if (status) { status.textContent = 'Saving…'; status.className = 'save-status'; }
-  try {
-    const payload = {
-      name,
-      role: sheet.occupation || npc.role || '',
-      status: npc.status || '',
-      location: npc.location || '',
-      summary: npc.summary || '',
-      notes: npc.notes || '',
-      sheet
-    };
-    await api.updateNpc(npcId, payload);
-    State.npcs = await api.getNpcs(sessionId);
-    if (status) { status.textContent = '✓ Saved NPC'; status.className = 'save-status ok'; }
-  } catch (e) {
-    if (status) { status.textContent = `✕ ${e.message}`; status.className = 'save-status error'; }
-  } finally {
-    btn.disabled = false;
-  }
-}
-window.saveCaseNpc = saveCaseNpc;
-
-// ── Admin: NPC management + case allocation ──────────────────────────────────
-async function renderAdminNpcs() {
+// Admin → Characters reuses the shared CharacterPanel with no case filter.
+// In this mode every player and NPC sheet is visible regardless of scope.
+async function renderAdminCharacters() {
   const host = el('admin-content');
   if (!host) return;
-  host.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading NPCs…</p>';
-  try {
-    const [npcs, sessions] = await Promise.all([api.getNpcs(), api.getSessions()]);
-    State.npcs = npcs;
-    State.sessions = sessions;
-  } catch (e) {
-    host.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
-    return;
-  }
-  const card = (npc) => {
-    const occupation = (npc.sheet && npc.sheet.occupation) || npc.role || '';
-    const meta = [occupation, `Cases: ${esc(npcCaseSummary(npc))}`].filter(Boolean);
-    return `
-      <div class="card npc-card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">${esc(npc.name)}</div>
-            <div class="card-sub">${meta.join(' | ')}</div>
-          </div>
-          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-            <button class="btn btn-sm" onclick="openNpcSheet(${npc.id})">Edit</button>
-            <button class="btn btn-sm" onclick="openNpcCases(${npc.id})">Cases…</button>
-            <button class="btn btn-sm btn-danger" onclick="deleteNpcRecord(${npc.id})">Delete</button>
-          </div>
-        </div>
-        ${(npc.sheet && npc.sheet.reputation) ? `<p class="card-sub">${esc(npc.sheet.reputation)}</p>` : ''}
-      </div>`;
-  };
-  host.innerHTML = `
-    <div class="page-header">
-      <h2>NPCs</h2>
-      <button class="btn btn-primary" onclick="openNpcSheet()">+ New NPC</button>
-    </div>
-    <div id="npcs-alert"></div>
-    ${State.npcs.length
-      ? `<div class="npc-grid">${State.npcs.map(card).join('')}</div>`
-      : `<div class="empty"><div class="empty-icon">👤</div><p>No NPCs yet. Create one, or run <code>npm run npcs:seed</code> for the rulebook NPCs.</p></div>`}`;
+  await CharacterPanel.render(host, { sessionId: null, sessionName: null, ruleset: 'rol' });
 }
+window.renderAdminCharacters = renderAdminCharacters;
 
 // Single NPC editor (Admin) — create (no id) or edit. The sheet's own Name
 // field is authoritative; case allocation is done via "Cases…".
@@ -4363,7 +4533,7 @@ async function saveNpcSheetForm(npcId, btn) {
     if (npcId) await api.updateNpc(npcId, payload);
     else await api.createNpc(payload);
     btn.closest('.modal-backdrop').remove();
-    await renderAdminNpcs();
+    await renderAdminCharacters();
   } catch (e) {
     if (status) { status.textContent = `✕ ${e.message}`; status.className = 'save-status error'; }
     showAlert(e.message, 'danger', 'modal-alert');
@@ -4376,9 +4546,9 @@ async function deleteNpcRecord(npcId) {
   if (!confirm('Delete this NPC?')) return;
   try {
     await api.deleteNpc(npcId);
-    await renderAdminNpcs();
+    await renderAdminCharacters();
   } catch (e) {
-    showAlert(e.message, 'danger', 'npcs-alert');
+    showAlert(e.message, 'danger', 'characters-alert');
   }
 }
 window.deleteNpcRecord = deleteNpcRecord;
@@ -4399,43 +4569,52 @@ function selectedCaseIds(root) {
   return [...root.querySelectorAll('.case-allocation input:checked')].map((c) => Number(c.value));
 }
 
-// NPCs can be allocated to any case including The Domestic, so use the
-// dedicated allocatable-cases list rather than the visible Case Files list.
-async function openNpcCases(npcId) {
-  const npc = State.npcs.find((entry) => entry.id === npcId);
-  if (!npc) return;
+// Any character (player or NPC) can be allocated to any case, including The
+// Domestic, so use the dedicated allocatable-cases list rather than the
+// visible Case Files list. Lookup goes via State.characters (Admin) and falls
+// back to State.npcs (case view's NPC tab).
+async function openCharacterCases(charId) {
+  const char = ((State.characters || []).find((entry) => entry.id === charId))
+    || ((State.npcs || []).find((entry) => entry.id === charId));
+  if (!char) return;
   let cases;
   try {
     cases = await api.getAllocatableCases();
     State.allocatableCases = cases;
   } catch (e) {
-    return showAlert(e.message, 'danger', 'npcs-alert');
+    return showAlert(e.message, 'danger', 'characters-alert');
   }
+  const ownerLabel = char.owner === 'NPC' ? 'NPC' : 'player character';
   modal(`
-    <h3>${esc(npc.name)} — Cases</h3>
+    <h3>${esc(char.name || '(no name)')} — Cases</h3>
     <div id="modal-alert"></div>
-    <p class="card-sub" style="margin-bottom:0.5rem">Allocate this NPC to any cases (or none).</p>
-    ${caseCheckboxes(npc.session_ids, cases)}
+    <p class="card-sub" style="margin-bottom:0.5rem">Allocate this ${ownerLabel} to any cases (or none).</p>
+    ${caseCheckboxes(char.session_ids, cases)}
     <div class="modal-actions">
       <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveNpcCases(${npc.id}, this)">Save</button>
+      <button class="btn btn-primary" onclick="saveCharacterCases(${char.id}, this)">Save</button>
     </div>`);
 }
-window.openNpcCases = openNpcCases;
+window.openCharacterCases = openCharacterCases;
+// Back-compat alias — still referenced by the GM case view NPC tab.
+window.openNpcCases = openCharacterCases;
 
-async function saveNpcCases(npcId, btn) {
+async function saveCharacterCases(charId, btn) {
   const root = btn.closest('.modal-backdrop');
   btn.disabled = true;
   try {
-    await api.setNpcSessions(npcId, selectedCaseIds(root));
+    await api.setNpcSessions(charId, selectedCaseIds(root));
     root.remove();
-    await renderAdminNpcs();
+    if (typeof renderAdminCharacters === 'function' && el('admin-content')) {
+      await renderAdminCharacters();
+    }
   } catch (e) {
     showAlert(e.message, 'danger', 'modal-alert');
     btn.disabled = false;
   }
 }
-window.saveNpcCases = saveNpcCases;
+window.saveCharacterCases = saveCharacterCases;
+window.saveNpcCases = saveCharacterCases;
 
 function openUserCases(userId) {
   const user = State.users.find((entry) => entry.id === userId);
@@ -4474,7 +4653,7 @@ async function loadAdminTab() {
     <div class="page-header"><h2>Admin</h2></div>
     <div class="sheet-tabs">
       <div class="sheet-tab active" data-admin="accounts" onclick="adminShow('accounts')">Accounts</div>
-      <div class="sheet-tab" data-admin="npcs" onclick="adminShow('npcs')">NPCs</div>
+      <div class="sheet-tab" data-admin="characters" onclick="adminShow('characters')">Characters</div>
       <div class="sheet-tab" data-admin="cases" onclick="adminShow('cases')">Case Settings</div>
       <div class="sheet-tab" data-admin="llm" onclick="adminShow('llm')">LLM</div>
     </div>
@@ -4485,7 +4664,7 @@ window.loadAdminTab = loadAdminTab;
 
 async function adminShow(section) {
   document.querySelectorAll('[data-admin]').forEach((t) => t.classList.toggle('active', t.dataset.admin === section));
-  if (section === 'npcs') await renderAdminNpcs();
+  if (section === 'characters') await renderAdminCharacters();
   else if (section === 'cases') await renderAdminCases();
   else if (section === 'llm') await renderAdminLlm();
   else await renderAdminAccounts();
@@ -5189,10 +5368,16 @@ function attachDomesticSheetPersistence(host) {
       setDomesticSheetStatus('Unable to save adventure sheet', 'error');
     }
   };
-  host.querySelectorAll('input, textarea, select').forEach((field) => {
-    field.addEventListener('change', onChange);
-    field.addEventListener('input', onChange);
-  });
+  // Delegated input/change covers all current and future fields under the
+  // sheet host without needing to re-bind after the form's +Add buttons
+  // insert new rows.
+  host.addEventListener('input', onChange);
+  host.addEventListener('change', onChange);
+  // The form's +Add and ✕ remove buttons mutate the DOM directly and never
+  // fire input/change. Watch the subtree for structural changes so collect()
+  // reflects them before the next persist.
+  const observer = new MutationObserver(onChange);
+  observer.observe(host, { childList: true, subtree: true });
 }
 
 async function saveDomesticSheet() {
@@ -5326,24 +5511,6 @@ async function changePassword(userId, btn) {
   }
 }
 window.changePassword = changePassword;
-
-async function gmSaveSheet(sessionId, userId) {
-  const status = el('save-status');
-  status.textContent = 'Saving…';
-  status.className = 'save-status';
-  try {
-    const data = SheetForm.collect();
-    await api.saveSheet(sessionId, userId, data);
-    // Keep the in-memory sheetMap current so switching between players doesn't revert to stale data
-    if (window.gmSheetMap) window.gmSheetMap[userId] = { data };
-    status.textContent = '✓ Saved';
-    status.className = 'save-status saved';
-  } catch (e) {
-    status.textContent = '✕ ' + e.message;
-    status.className = 'save-status error';
-  }
-}
-window.gmSaveSheet = gmSaveSheet;
 
 async function deleteUser(id) {
   if (!confirm('Delete this account? This will also remove their character sheets.')) return;

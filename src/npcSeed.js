@@ -70,15 +70,9 @@ function buildSheetData(npc) {
   return data;
 }
 
-function npcUserId(db) {
-  if (db.NPC_USER_ID) return db.NPC_USER_ID;
-  const row = db.prepare("SELECT id FROM users WHERE username = 'NPC'").get();
-  return row ? row.id : null;
-}
-
-function existingNpcsByNameKey(db, npcUid) {
+function existingNpcsByNameKey(db) {
   const out = new Map();
-  for (const row of db.prepare("SELECT id, data FROM character_sheets WHERE user_id = ?").all(npcUid)) {
+  for (const row of db.prepare("SELECT id, data FROM character_sheets WHERE user_id IS NULL").all()) {
     let parsed;
     try { parsed = JSON.parse(row.data || '{}'); } catch { parsed = {}; }
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) parsed = {};
@@ -106,21 +100,20 @@ function mergeScopeNames(...lists) {
 }
 
 // Insert any archived NPC whose name is not already present in character_sheets
-// as a row owned by the NPC sentinel user. If a matching name is present, the
-// existing row's data.scope is extended to include any cases the archive
-// declares — sheet data is left untouched so GM edits are never overwritten.
-// `options.scopes`, if provided, restricts seeding to archive NPCs whose own
-// scope intersects with the given case-name keys; an empty filter seeds all.
+// as a row with user_id IS NULL (NPCs are owner-less). If a matching name is
+// present, the existing row's data.scope is extended to include any cases the
+// archive declares — sheet data is left untouched so GM edits are never
+// overwritten. `options.scopes`, if provided, restricts seeding to archive
+// NPCs whose own scope intersects with the given case-name keys; an empty
+// filter seeds all.
 function seedNpcArchives(db, options = {}) {
-  const npcUid = npcUserId(db);
-  if (!npcUid) throw new Error("NPC sentinel user not found; db.js bootstrap did not run");
   const scopeFilter = new Set(
     (options.scopes || [])
       .map((v) => scopeNameKey(v))
       .filter((k) => k && k !== 'global')
   );
   const insert = db.prepare(
-    "INSERT INTO character_sheets (user_id, data, updated_at) VALUES (?, ?, datetime('now'))"
+    "INSERT INTO character_sheets (user_id, data, updated_at) VALUES (NULL, ?, datetime('now'))"
   );
   const updateScope = db.prepare(
     "UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ?"
@@ -130,7 +123,7 @@ function seedNpcArchives(db, options = {}) {
   let unresolved = 0;
 
   const tx = db.transaction(() => {
-    const existing = existingNpcsByNameKey(db, npcUid);
+    const existing = existingNpcsByNameKey(db);
     for (const { npc } of readNpcFiles()) {
       const name = String(npc && npc.name || '').trim();
       if (!name) continue;
@@ -152,7 +145,7 @@ function seedNpcArchives(db, options = {}) {
         extended += 1;
         continue;
       }
-      insert.run(npcUid, JSON.stringify(data));
+      insert.run(JSON.stringify(data));
       existing.set(nameKey(name), { id: null, data });
       seeded += 1;
     }
@@ -177,15 +170,13 @@ function seedGlobalNpcs(db) {
 // The archive shape preserves top-level biographical fields plus the full sheet
 // under `sheet`, matching what readNpcFiles() expects on the next seed pass.
 function exportGlobalNpcs(db) {
-  const npcUid = npcUserId(db);
-  if (!npcUid) throw new Error("NPC sentinel user not found; db.js bootstrap did not run");
   fs.mkdirSync(NPC_DIR, { recursive: true });
   const archivePaths = new Map();
   for (const { npc, path: archivePath } of readNpcFiles()) {
     const key = nameKey(npc && npc.name);
     if (key && !archivePaths.has(key)) archivePaths.set(key, archivePath);
   }
-  const rows = db.prepare("SELECT data FROM character_sheets WHERE user_id = ?").all(npcUid);
+  const rows = db.prepare("SELECT data FROM character_sheets WHERE user_id IS NULL").all();
   let written = 0;
   for (const row of rows) {
     let data;
