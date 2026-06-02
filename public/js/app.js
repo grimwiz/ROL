@@ -11,7 +11,9 @@ const State = {
   scenarioSources: null,
   scenarioSelectedSourceIndex: null,
   rulesChat: { messages: [], streaming: false, controller: null },
-  aiSupportMode: {},  // per-session GM AI Support mode: 'gm' (default) | 'rules'
+  npcChat: { sessionId: null, slug: null, name: '', messages: [], streaming: false, controller: null },
+  npcPersonasCache: {},  // sessionId -> [{slug,name}]
+  aiSupportMode: {},  // per-session AI Support mode: 'gm' | 'rules' | 'npc'
   domesticAdventure: null,
   domesticCurrentStep: null,
   domesticSavedStep: null,
@@ -962,7 +964,7 @@ async function openSession(sessionId, options = {}) {
       <div class="sheet-tab${isGM ? '' : ' active'}" data-session-panel="characters" onclick="switchSessionPanel(${sessionId}, 'characters')">Characters</div>
       <div class="sheet-tab" data-session-panel="case-info" onclick="switchSessionPanel(${sessionId}, 'case-info')">Case Info</div>
       ${!isGM ? `<div class="sheet-tab" data-session-panel="handouts" onclick="switchSessionPanel(${sessionId}, 'handouts')">Handouts</div>` : ''}
-      <div class="sheet-tab" data-session-panel="player-info" onclick="switchSessionPanel(${sessionId}, 'player-info')">Player Stories</div>
+      <div class="sheet-tab" data-session-panel="player-info" onclick="switchSessionPanel(${sessionId}, 'player-info')">Character Stories</div>
       <div class="sheet-tab" data-session-panel="entities" onclick="switchSessionPanel(${sessionId}, 'entities')">Places/NPC/Things</div>
       ${isGM ? `<div class="sheet-tab" data-session-panel="gm-info" onclick="switchSessionPanel(${sessionId}, 'gm-info')">GM Info</div>` : ''}
       ${isGM ? `<div class="sheet-tab" data-session-panel="raw-data" onclick="switchSessionPanel(${sessionId}, 'raw-data')">Edit Files</div>` : ''}
@@ -1146,14 +1148,20 @@ function setGmChatStreaming(on) {
 // GM, mode='rules': rules-chat surface, with a toggle back to GM Chat.
 // The toggle is rendered in both GM views so the GM can always switch modes.
 function aiSupportToggleHtml(sessionId, mode) {
+  const isGM = State.user.role === 'gm';
+  const b = (m, label) => `<button type="button" class="btn btn-sm${mode === m ? ' active' : ''}" onclick="setAiSupportMode(${sessionId}, '${m}')">${label}</button>`;
   return `<div class="gmchat-mode" role="group" aria-label="AI Support mode">
-    <button type="button" class="btn btn-sm${mode === 'gm' ? ' active' : ''}" onclick="setAiSupportMode(${sessionId}, 'gm')">💬 GM Chat</button>
-    <button type="button" class="btn btn-sm${mode === 'rules' ? ' active' : ''}" onclick="setAiSupportMode(${sessionId}, 'rules')">📖 Rules</button>
+    ${isGM ? b('gm', '💬 GM Chat') : ''}
+    ${b('rules', '📖 Rules')}
+    ${b('npc', '🎭 NPCs')}
   </div>`;
 }
 
 function setAiSupportMode(sessionId, mode) {
-  State.aiSupportMode[sessionId] = mode === 'rules' ? 'rules' : 'gm';
+  const next = ['gm', 'rules', 'npc'].includes(mode) ? mode : 'gm';
+  // Leaving the NPC sub-tab ends the carried-over conversation.
+  if (next !== 'npc' && State.aiSupportMode[sessionId] === 'npc') resetNpcChat();
+  State.aiSupportMode[sessionId] = next;
   renderSessionAiSupport(sessionId);
 }
 window.setAiSupportMode = setAiSupportMode;
@@ -1161,6 +1169,9 @@ window.setAiSupportMode = setAiSupportMode;
 async function renderSessionAiSupport(sessionId) {
   const isGM = State.user.role === 'gm';
   const mode = State.aiSupportMode[sessionId] || 'gm';
+  if (mode === 'npc') {
+    return renderSessionNpcChat(sessionId);
+  }
   if (isGM && mode === 'gm') {
     return renderSessionGmChat(sessionId);
   }
@@ -1177,7 +1188,7 @@ async function renderSessionAiSupport(sessionId) {
         <p class="card-sub">${subText}</p>
       </div>
       <div style="display:flex;gap:0.5rem;align-items:center">
-        ${isGM ? aiSupportToggleHtml(sessionId, 'rules') : ''}
+        ${aiSupportToggleHtml(sessionId, 'rules')}
         <button class="btn btn-sm" onclick="clearRulesChat()">Clear</button>
       </div>
     </div>
@@ -2121,6 +2132,7 @@ async function exportPrintDoc(sessionId, kind) {
       if (!host || typeof SheetForm === 'undefined') continue;
       try {
         SheetForm.setRuleset(job.ruleset || 'rol');
+        SheetForm.setRulesTier('advanced');
         SheetForm.setSessionId(sessionId);
         SheetForm.setPortraitAi(false);
         SheetForm.render(host, job.data, true);
@@ -2145,6 +2157,7 @@ const CharacterPanel = (() => {
     sessionId: null,
     sessionName: null,
     ruleset: 'rol',
+    rulesTier: 'basic',
     preferredCharId: null,
     preferredUserId: null,
     characters: [],
@@ -2157,6 +2170,7 @@ const CharacterPanel = (() => {
     _ctx.sessionId = (opts && opts.sessionId) || null;
     _ctx.sessionName = (opts && opts.sessionName) || null;
     _ctx.ruleset = (opts && opts.ruleset) || 'rol';
+    _ctx.rulesTier = (opts && opts.rulesTier) === 'advanced' ? 'advanced' : 'basic';
     _ctx.preferredCharId = (opts && opts.preferredCharId) || null;
     _ctx.preferredUserId = (opts && opts.preferredUserId) || null;
     await refresh();
@@ -2242,6 +2256,7 @@ const CharacterPanel = (() => {
       <div style="color:var(--text2);font-size:0.85rem;margin:0 0 0.35rem">NPCs</div>
       <div style="margin-bottom:1rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
         ${npcStripBody}
+        ${sessionId ? `<button class="btn btn-sm" onclick="openAddNpcToCase(${sessionId})">+ Add existing NPC</button>` : ''}
         <button class="btn btn-sm btn-primary" onclick="openNpcSheet()">+ New NPC</button>
       </div>
       <div style="margin-bottom:1rem;display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap">
@@ -2295,7 +2310,7 @@ const CharacterPanel = (() => {
   }
 
   async function selectChar(charId) {
-    const { sessionId, ruleset, characters, users } = _ctx;
+    const { sessionId, ruleset, rulesTier, characters, users } = _ctx;
     const char = characters.find((c) => c.id === charId);
     if (!char) return;
     _ctx.preferredCharId = charId;
@@ -2330,6 +2345,8 @@ const CharacterPanel = (() => {
     const area = el('cp-sheet-area');
     area.innerHTML = '';
     SheetForm.setRuleset((char.sheet && char.sheet.ruleset) || ruleset || 'rol');
+    SheetForm.setRulesTier(char.owner === 'NPC' ? 'advanced' : (rulesTier || 'basic'));
+    SheetForm.setGmEditor(!!(State.user && State.user.role === 'gm'));
     SheetForm.setSessionId(sessionId);
     SheetForm.setPortraitAi(true);
     SheetForm.render(area, char.sheet || {}, false);
@@ -2345,10 +2362,11 @@ const CharacterPanel = (() => {
       // match, so the buttons render inert.
       try { attachSkillRollButtons(area, await buildSkillRollCtx(sessionId, char.user_id, true)); } catch {}
     }
+    if (sessionId && char.name) { try { await appendCharacterFiles('cp-sheet-area', sessionId, char.name); } catch {} }
   }
 
   async function selectNew(userId, username) {
-    const { sessionId, ruleset } = _ctx;
+    const { sessionId, ruleset, rulesTier } = _ctx;
     _ctx.preferredCharId = null;
     _ctx.preferredUserId = userId;
     State.currentSheetUserId = userId;
@@ -2363,6 +2381,8 @@ const CharacterPanel = (() => {
     const area = el('cp-sheet-area');
     area.innerHTML = '';
     SheetForm.setRuleset(ruleset || 'rol');
+    SheetForm.setRulesTier(rulesTier || 'basic');
+    SheetForm.setGmEditor(!!(State.user && State.user.role === 'gm'));
     SheetForm.setSessionId(sessionId);
     SheetForm.setPortraitAi(true);
     SheetForm.render(area, {}, false);
@@ -2463,12 +2483,13 @@ window.CharacterPanel = CharacterPanel;
 
 async function renderGMSessionView(sessionId, preferredUserId = null) {
   let settings;
-  try { settings = await api.getSessionSettings(sessionId); } catch { settings = { ruleset: 'rol' }; }
+  try { settings = await api.getSessionSettings(sessionId); } catch { settings = { ruleset: 'rol', rules_tier: 'basic' }; }
   const session = (State.sessions || []).find((s) => Number(s.id) === Number(sessionId)) || {};
   await CharacterPanel.render(el('session-content'), {
     sessionId,
     sessionName: session.name || null,
     ruleset: (settings && settings.ruleset) || 'rol',
+    rulesTier: (settings && settings.rules_tier) === 'advanced' ? 'advanced' : 'basic',
     preferredUserId
   });
 }
@@ -2490,11 +2511,41 @@ async function renderPlayerSessionView(sessionId) {
     </div>`;
 
   SheetForm.setRuleset((sheet && sheet.ruleset) || 'rol');
+  SheetForm.setRulesTier((sheet && sheet.rules_tier) === 'advanced' ? 'advanced' : 'basic');
+  SheetForm.setGmEditor(!!(State.user && State.user.role === 'gm'));
   SheetForm.setSessionId(sessionId);
   SheetForm.setPortraitAi(true);
   SheetForm.render(el('sheet-form-area'), hasSheet ? sheet.data : {}, false);
   try { attachSkillRollButtons(el('sheet-form-area'), await buildSkillRollCtx(sessionId, State.user.id, false)); } catch (e) { /* non-fatal */ }
+  try { await appendCharacterFiles('sheet-form-area', sessionId, (sheet && sheet.data && sheet.data.name) || ''); } catch { /* non-fatal */ }
 }
+
+// Surface the character-specific Markdown files (persona, etc.) at the foot of
+// a sheet — matched by filename root = character name, same association the rest
+// of the app uses. Player view only sees player-visible files.
+async function appendCharacterFiles(hostId, sessionId, charName) {
+  const host = el(hostId);
+  const want = String(charName || '').trim().toLowerCase();
+  if (!host || !sessionId || !want) return;
+  let sources;
+  try { sources = await api.getSessionScenarioSources(sessionId); } catch { return; }
+  const files = scenarioArray(sources && sources.markdown_sources).filter((f) => {
+    const base = String(f.relative_path || f.path || '').split('/').pop().replace(/\.md$/i, '').toLowerCase();
+    return base === want || base.startsWith(`${want} `) || base.startsWith(`${want}-`);
+  });
+  if (!files.length) return;
+  const rows = files.map((f) => {
+    const fname = String(f.relative_path || f.path || '').split('/').pop();
+    const vis = f.visibility === 'gm' ? 'GM only' : 'Player';
+    return `<li style="display:flex;justify-content:space-between;gap:0.5rem;align-items:center;padding:0.15rem 0"><span>${esc(fname)}</span><span style="font-size:0.7rem;color:var(--text2)">${vis}</span></li>`;
+  }).join('');
+  host.insertAdjacentHTML('beforeend', `
+    <div class="card" style="margin-top:1rem">
+      <div class="card-header"><div><div class="card-title">Character files</div><div class="card-sub">Markdown linked to ${esc(charName)} by filename.${State.user.role === 'gm' ? ' Edit them in the Edit Files tab.' : ''}</div></div></div>
+      <ul style="list-style:none;margin:0;padding:0">${rows}</ul>
+    </div>`);
+}
+window.appendCharacterFiles = appendCharacterFiles;
 
 async function saveSheet(sessionId) {
   const status = el('save-status');
@@ -2593,6 +2644,53 @@ async function assignPlayer(sessionId, btn) {
   }
 }
 window.assignPlayer = assignPlayer;
+
+// Add an *existing* central-pool NPC to this case by unioning this case into
+// the NPC's scope (preserving its other allocations). Mirrors "+ Assign player".
+async function openAddNpcToCase(sessionId) {
+  let all;
+  try { all = await api.getNpcs(); } catch (e) { return showAlert(e.message, 'danger', 'cp-alert'); }
+  const available = (all || []).filter((n) => !(n.session_ids || []).map(Number).includes(Number(sessionId)));
+  if (!available.length) {
+    alert('No other NPCs are available to add. Every existing NPC is already in this case — use "+ New NPC" to create one.');
+    return;
+  }
+  State._addNpcList = available;
+  modal(`
+    <h3>Add an existing NPC to this case</h3>
+    <div id="modal-alert"></div>
+    <div class="form-group">
+      <label>NPC</label>
+      <select id="m-npc-sel">
+        ${available.map((n) => `<option value="${n.id}">${esc(n.name || '(no name)')}</option>`).join('')}
+      </select>
+      <div class="card-sub" style="margin-top:0.35rem">Adds this case to the NPC's allocations; their other cases are unaffected.</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="this.closest('.modal-backdrop').remove()">Cancel</button>
+      <button class="btn btn-primary" onclick="addNpcToCase(${sessionId},this)">Add to case</button>
+    </div>`);
+}
+window.openAddNpcToCase = openAddNpcToCase;
+
+async function addNpcToCase(sessionId, btn) {
+  const id = Number(el('m-npc-sel').value);
+  const npc = (State._addNpcList || []).find((n) => Number(n.id) === id);
+  if (!npc) return;
+  btn.disabled = true;
+  try {
+    const ids = Array.from(new Set([...(npc.session_ids || []).map(Number), Number(sessionId)]));
+    await api.setNpcSessions(id, ids);
+    btn.closest('.modal-backdrop').remove();
+    State._addNpcList = null;
+    if (window.CharacterPanel && CharacterPanel.refresh) await CharacterPanel.refresh();
+    else await openSession(sessionId);
+  } catch (e) {
+    showAlert(e.message, 'danger', 'modal-alert');
+    btn.disabled = false;
+  }
+}
+window.addNpcToCase = addNpcToCase;
 
 // ── Scenario information tab ─────────────────────────────────────────────────
 function scenarioArray(value) {
@@ -4045,7 +4143,7 @@ async function renderSessionPlayerInfo(sessionId) {
       .filter((c) => matchesCharacter(c, viewerNames));
     tab.innerHTML = `
       <div class="page-header">
-        <div><h2>Player Stories</h2><p class="card-sub">Come up to speed: what you did, why, what's in flight, and what's planned${viewerNames.length ? ` — ${esc(viewerNames.join(', '))}` : ''}.</p></div>
+        <div><h2>Character Stories</h2><p class="card-sub">Come up to speed: what you did, why, what's in flight, and what's planned${viewerNames.length ? ` — ${esc(viewerNames.join(', '))}` : ''}.</p></div>
       </div>
       <div id="scenario-alert"></div>
       ${renderScenarioSection('Your Story', mine, 'No story for your character has been generated yet.', '')}`;
@@ -4060,30 +4158,33 @@ async function renderSessionPlayerInfo(sessionId) {
     return;
   }
 
-  const pageButton = scenarioPageActions('player.entities.characters', 'Regenerate Page');
-  if (!players.length) {
-    tab.innerHTML = `
-      <div class="page-header"><div><h2>Player Stories</h2></div>${pageButton}</div>
-      <div id="scenario-alert"></div>
-      <div class="empty"><div class="empty-icon">👥</div><p>No players assigned to this session yet.</p></div>`;
-    return;
-  }
+  // GM-only NPC case-knowledge lives in the GM analysis artifact.
+  let info = {};
+  try { info = await loadScenarioInfo(sessionId); } catch { /* NPC section shows empty */ }
+  const npcKnow = scenarioArray(info.gm_analysis && info.gm_analysis.npc_knowledge);
+  // The page regenerate covers both player-character stories and NPC knowledge.
+  const pageButton = scenarioPageActions('player.entities.characters,gm.npc_knowledge', 'Regenerate Page');
 
   tab.innerHTML = `
     <div class="page-header">
-      <div><h2>Player Stories</h2><p class="card-sub">Select a player to see exactly what they see — what they did, why, what's in flight, what's planned.</p></div>
+      <div><h2>Character Stories</h2><p class="card-sub">Player and non-player characters — what they did, know, want, and are hiding. NPC knowledge is GM-only; players reach it through in-character AI chat.</p></div>
       ${pageButton}
     </div>
     <div id="scenario-alert"></div>
-    <div style="margin-bottom:1rem">
-      <div class="sheet-tabs" id="scenario-player-tabs">
-        ${players.map((p, i) => `<div class="sheet-tab${i === 0 ? ' active' : ''}" id="sptab_${p.id}" onclick="scenarioSelectPlayer(${sessionId}, ${p.id}, '${esc(p.username)}')">${esc(p.username)}</div>`).join('')}
-      </div>
-    </div>
-    <div id="scenario-player-area"><p style="color:var(--text2)">Loading…</p></div>`;
+    ${players.length
+      ? `<div style="margin-bottom:1rem">
+           <div class="sheet-tabs" id="scenario-player-tabs">
+             ${players.map((p, i) => `<div class="sheet-tab${i === 0 ? ' active' : ''}" id="sptab_${p.id}" onclick="scenarioSelectPlayer(${sessionId}, ${p.id}, '${esc(p.username)}')">${esc(p.username)}</div>`).join('')}
+           </div>
+         </div>
+         <div id="scenario-player-area"><p style="color:var(--text2)">Loading…</p></div>`
+      : '<div class="empty"><div class="empty-icon">👥</div><p>No players assigned to this session yet.</p></div>'}
+    ${renderScenarioSection('NPC Knowledge', npcKnow, 'No NPC knowledge generated yet — press “Regenerate Page” (or Bulk Regenerate) to build it from the case files, one entry per allocated NPC.', 'gm.npc_knowledge')}`;
 
-  const preferred = players.find((p) => p.id === readStoredGmPlayerId(sessionId)) || players[0];
-  await scenarioSelectPlayer(sessionId, preferred.id, preferred.username);
+  if (players.length) {
+    const preferred = players.find((p) => p.id === readStoredGmPlayerId(sessionId)) || players[0];
+    await scenarioSelectPlayer(sessionId, preferred.id, preferred.username);
+  }
 }
 
 async function scenarioSelectPlayer(sessionId, userId, username) {
@@ -4488,7 +4589,7 @@ function npcCaseSummary(entry) {
 async function renderAdminCharacters() {
   const host = el('admin-content');
   if (!host) return;
-  await CharacterPanel.render(host, { sessionId: null, sessionName: null, ruleset: 'rol' });
+  await CharacterPanel.render(host, { sessionId: null, sessionName: null, ruleset: 'rol', rulesTier: 'advanced' });
 }
 window.renderAdminCharacters = renderAdminCharacters;
 
@@ -4512,6 +4613,8 @@ function openNpcSheet(npcId) {
     const area = root.querySelector('#npc-sheet-area');
     area.innerHTML = '';
     SheetForm.setRuleset('rol');
+    SheetForm.setRulesTier('advanced');
+    SheetForm.setGmEditor(!!(State.user && State.user.role === 'gm'));
     SheetForm.setSessionId(null);
     // Central pool: no case ⇒ no style context, so hide the AI portrait
     // buttons here (manual upload/camera/clear stay).
@@ -4678,10 +4781,11 @@ async function renderAdminCases() {
   let sessions;
   try {
     sessions = await api.getSessions();
-    const settings = await Promise.all(sessions.map((s) => api.getSessionSettings(s.id).catch(() => ({ advantage_mode: 'rol', ruleset: 'rol', portrait_style: '' }))));
+    const settings = await Promise.all(sessions.map((s) => api.getSessionSettings(s.id).catch(() => ({ advantage_mode: 'rol', ruleset: 'rol', rules_tier: 'basic', portrait_style: '' }))));
     sessions.forEach((s, i) => {
       s._adv = (settings[i] && settings[i].advantage_mode) || 'rol';
       s._ruleset = (settings[i] && settings[i].ruleset) || 'rol';
+      s._tier = (settings[i] && settings[i].rules_tier) === 'advanced' ? 'advanced' : 'basic';
       s._style = (settings[i] && settings[i].portrait_style) || '';
     });
   } catch (e) {
@@ -4692,7 +4796,7 @@ async function renderAdminCases() {
     <div class="page-header"><h2>Case Settings</h2></div>
     <div id="cases-alert"></div>
     ${sessions.length ? `<div class="card"><div class="table-wrap"><table>
-      <thead><tr><th>Case</th><th>Advantage / disadvantage handling</th><th>Ruleset</th></tr></thead>
+      <thead><tr><th>Case</th><th>Advantage / disadvantage handling</th><th>Ruleset</th><th>Rules set (Rules tab &amp; AI Support)</th></tr></thead>
       <tbody>${sessions.map((s) => `<tr>
         <td><strong>${esc(s.name)}</strong></td>
         <td><select onchange="saveCaseAdvantage(${s.id}, this.value, this)">
@@ -4702,6 +4806,10 @@ async function renderAdminCases() {
         <td><select onchange="saveCaseRuleset(${s.id}, this.value, this)">
           <option value="rol"${s._ruleset !== 'coc' ? ' selected' : ''}>Rivers of London (no SIZ; no HP/Build)</option>
           <option value="coc"${s._ruleset === 'coc' ? ' selected' : ''}>CoC-style (SIZ, plus SIZ-derived HP &amp; Build)</option>
+        </select></td>
+        <td><select onchange="saveCaseRulesTier(${s.id}, this.value, this)">
+          <option value="basic"${s._tier !== 'advanced' ? ' selected' : ''}>Basic rules</option>
+          <option value="advanced"${s._tier === 'advanced' ? ' selected' : ''}>Advanced rules (integrated)</option>
         </select></td>
       </tr>`).join('')}</tbody>
     </table></div></div>
@@ -4763,6 +4871,21 @@ async function saveCaseRuleset(sessionId, ruleset, sel) {
   }
 }
 window.saveCaseRuleset = saveCaseRuleset;
+
+async function saveCaseRulesTier(sessionId, tier, sel) {
+  sel.disabled = true;
+  try {
+    await api.setSessionSettings(sessionId, { rules_tier: tier });
+    showAlert(tier === 'advanced'
+      ? 'Saved. Rules-grounded AI Support for this case now uses the advanced (integrated) rules.'
+      : 'Saved. Rules-grounded AI Support for this case now uses the basic rules.', 'success', 'cases-alert');
+  } catch (e) {
+    showAlert(e.message, 'danger', 'cases-alert');
+  } finally {
+    sel.disabled = false;
+  }
+}
+window.saveCaseRulesTier = saveCaseRulesTier;
 
 async function renderAdminLlm() {
   const host = el('admin-content');
@@ -5023,30 +5146,109 @@ function loadAboutTab() {
 
 // ── Rules tab ────────────────────────────────────────────────────────────────
 async function loadRulesTab() {
+  if (!State.rulesView) State.rulesView = 'core';
+  State.rulesCache = State.rulesCache || {};
+  await renderRulesTab();
+}
+
+// Lazy-load and cache each Rules view: 'core'/'advanced' return a rendered
+// rules index; 'changes' returns the advanced changelog.
+async function ensureRulesData(view) {
+  State.rulesCache = State.rulesCache || {};
+  if (view === 'changes') {
+    if (!State.rulesCache.changes) State.rulesCache.changes = await api.getRulesChanges();
+    return State.rulesCache.changes;
+  }
+  if (!State.rulesCache[view]) {
+    State.rulesCache[view] = await api.getRules(view === 'advanced' ? 'advanced' : undefined);
+  }
+  return State.rulesCache[view];
+}
+
+window.setRulesView = async function setRulesView(view) {
+  State.rulesView = view;
+  await renderRulesTab();
+};
+
+function rulesViewTabsHtml(view, advancedAvailable) {
+  if (!advancedAvailable) return '';
+  const tabs = [['core', 'Core'], ['advanced', 'Advanced'], ['changes', "What's New"]];
+  return `<div class="rules-views" role="tablist">${tabs.map(([id, label]) =>
+    `<button type="button" role="tab" aria-selected="${view === id}" class="rules-view-btn${view === id ? ' active' : ''}" onclick="setRulesView('${id}')">${esc(label)}</button>`
+  ).join('')}</div>`;
+}
+
+const RULES_CHANGE_BADGES = {
+  add: { label: 'New', cls: 'rules-badge-add' },
+  supersede: { label: 'Changed', cls: 'rules-badge-supersede' },
+  supplement: { label: 'Extended', cls: 'rules-badge-supplement' }
+};
+
+function rulesChangesHtml(data) {
+  if (!data || !data.groups || !data.groups.length) {
+    return '<div class="empty" style="padding:1.5rem"><p>No advanced changes found.</p></div>';
+  }
+  const intro = `<p class="rules-changes-intro">How the Advanced rules differ from Core, chapter by chapter. <span class="rules-badge rules-badge-add">New</span> adds a topic, <span class="rules-badge rules-badge-supersede">Changed</span> replaces a base rule, and <span class="rules-badge rules-badge-supplement">Extended</span> adds an option to an existing rule.</p>`;
+  const groups = data.groups.map((g) => {
+    const entries = g.entries.map((e) => {
+      const b = RULES_CHANGE_BADGES[e.class] || { label: e.class, cls: '' };
+      return `<div class="rules-change-entry">
+        <h4 class="rules-change-title"><span class="rules-badge ${b.cls}">${esc(b.label)}</span> ${esc(e.title)}</h4>
+        <div class="rules-change-body">${e.html}</div>
+      </div>`;
+    }).join('');
+    return `<section class="rules-change-group"><h3 class="rules-change-chapter">${esc(g.chapter)}</h3>${entries}</section>`;
+  }).join('');
+  return intro + groups;
+}
+
+async function renderRulesTab() {
   const tab = el('tab-rules');
   if (!tab) return;
+  const view = State.rulesView || 'core';
 
-  if (!State.rulesIndex) {
-    try {
-      State.rulesIndex = await api.getRules();
-    } catch (e) {
-      tab.innerHTML = `
-        <div class="page-header"><h2>Rules Library</h2></div>
-        <div class="alert alert-danger">${esc(e.message)}</div>`;
-      return;
-    }
+  // Loading Core also tells us whether the advanced corpus is on the server.
+  let core;
+  try {
+    core = await ensureRulesData('core');
+  } catch (e) {
+    tab.innerHTML = `
+      <div class="page-header"><h2>Rules Library</h2></div>
+      <div class="alert alert-danger">${esc(e.message)}</div>`;
+    return;
   }
-  const idx = State.rulesIndex;
+  const advancedAvailable = !!(core && core.advancedAvailable);
+  const effectiveView = (!advancedAvailable && view !== 'core') ? 'core' : view;
+  State.rulesView = effectiveView;
+
+  let title = core.title || 'Rules Library';
+  let showPrint = true;
+  let bodyHtml = '';
+  try {
+    if (effectiveView === 'changes') {
+      const data = await ensureRulesData('changes');
+      title = data.title || "What's New in Advanced";
+      showPrint = false;
+      bodyHtml = `<article class="rules-document"><div class="print-section">${rulesChangesHtml(data)}</div></article>`;
+    } else {
+      const idx = await ensureRulesData(effectiveView);
+      title = idx.title || title;
+      bodyHtml = `<article class="rules-document">
+        <div class="print-cover"><h1>${esc(idx.title || 'Rivers of London Compact Rules Reference')}</h1></div>
+        <div class="print-section">${idx.html || '<p>(no rule files found)</p>'}</div>
+      </article>`;
+    }
+  } catch (e) {
+    bodyHtml = `<div class="alert alert-danger">${esc(e.message)}</div>`;
+  }
 
   tab.innerHTML = `
     <div class="page-header rules-print-actions">
-      <h2>${esc(idx.title || 'Rules Library')}</h2>
-      <button class="btn btn-primary" type="button" onclick="printRulesTab()">Print rules</button>
+      <h2>${esc(title)}</h2>
+      ${showPrint ? '<button class="btn btn-primary" type="button" onclick="printRulesTab()">Print rules</button>' : ''}
     </div>
-    <article class="rules-document">
-      <div class="print-cover"><h1>${esc(idx.title || 'Rivers of London Compact Rules Reference')}</h1></div>
-      <div class="print-section">${idx.html || '<p>(no rule files found)</p>'}</div>
-    </article>`;
+    ${rulesViewTabsHtml(effectiveView, advancedAvailable)}
+    <div id="rules-view-body">${bodyHtml}</div>`;
 }
 
 function printRulesTab() {
@@ -5191,6 +5393,210 @@ function clearRulesChat() {
 }
 window.clearRulesChat = clearRulesChat;
 
+// ── NPC persona chat ────────────────────────────────────────────────────────
+async function renderSessionNpcChat(sessionId) {
+  const tab = el('session-content');
+  if (!tab) return;
+  let personas = State.npcPersonasCache[sessionId];
+  if (!personas) {
+    try { const r = await api.getNpcPersonas(sessionId); personas = (r && r.npcs) || []; }
+    catch { personas = []; }
+    State.npcPersonasCache[sessionId] = personas;
+  }
+  const st = State.npcChat;
+  if (st.sessionId !== sessionId) {
+    if (st.streaming && st.controller) st.controller.abort();
+    Object.assign(st, { sessionId, slug: null, name: '', messages: [], streaming: false, controller: null });
+  }
+  if ((!st.slug || !personas.some((p) => p.slug === st.slug)) && personas.length) {
+    st.slug = personas[0].slug; st.name = personas[0].name;
+  }
+  const selected = personas.find((p) => p.slug === st.slug);
+  st.portrait = selected ? (selected.portrait || '') : '';
+  const options = personas.map((p) => `<option value="${esc(p.slug)}"${p.slug === st.slug ? ' selected' : ''}>${esc(p.name)}</option>`).join('');
+  tab.innerHTML = `
+    <div class="page-header">
+      <div>
+        <h2>AI Support</h2>
+        <p class="card-sub">Chat in character with an NPC. <em>In character — not rules advice.</em></p>
+      </div>
+      <div style="display:flex;gap:0.5rem;align-items:center">
+        ${aiSupportToggleHtml(sessionId, 'npc')}
+        <button class="btn btn-sm" onclick="clearNpcChat()">Clear</button>
+      </div>
+    </div>
+    <div id="npc-chat-alert"></div>
+    ${personas.length ? `
+    <div class="form-group" style="max-width:420px;margin-bottom:0.75rem">
+      <label>Speaking with</label>
+      <select id="npc-select" onchange="setNpcChatTarget(this.value)">${options}</select>
+    </div>
+    <div class="gmchat-wrap">
+      <div class="gmchat-log" id="npc-chat-log"></div>
+      <div class="gmchat-compose gmchat-compose-inline">
+        <textarea id="npc-chat-text" rows="3" placeholder="Say something to ${esc(st.name)}…" onkeydown="npcChatKey(event)"></textarea>
+        <div class="gmchat-actions gmchat-actions-side">
+          <button class="btn btn-primary" id="npc-chat-send" onclick="sendNpcChat()">Send</button>
+          <button class="btn" id="npc-chat-stop" onclick="stopNpcChat()" style="display:none">Stop</button>
+        </div>
+      </div>
+    </div>` : '<div class="empty" style="padding:1.5rem"><p>No NPC personalities are available yet. Add a “&lt;Name&gt; - personality.md” handout in Edit Files, or seed a canonical persona.</p></div>'}`;
+  if (personas.length) { renderNpcChatLog(); setNpcChatStreaming(st.streaming); }
+}
+
+function npcChatLogHtml() {
+  const st = State.npcChat;
+  if (!st.messages.length) {
+    return `<div class="empty" style="padding:1.5rem"><p>You're speaking with <strong>${esc(st.name || 'an NPC')}</strong>, in character. They won't answer game-rules questions or reveal your case's secrets.</p></div>`;
+  }
+  return st.messages.map((m, i) => {
+    const isNpc = m.role === 'assistant';
+    // Each NPC turn carries its own identity, so a carried-over conversation can
+    // show more than one speaker correctly (fall back to the active NPC).
+    const speakerName = m.speakerName || st.name;
+    const portrait = m.portrait != null ? m.portrait : st.portrait;
+    const who = m.role === 'user' ? 'You' : esc(speakerName || 'NPC');
+    const prev = st.messages[i - 1];
+    const handoff = isNpc && prev && prev.role === 'assistant' && prev.speakerSlug !== m.speakerSlug;
+    const avatarHtml = (isNpc && portrait) ? `<img src="${esc(portrait)}" alt="" class="npc-chat-portrait">` : '';
+    const markdownBody = isNpc;
+    let body = markdownBody ? renderAiMarkdown(m.content || '') : esc(m.content || '');
+    if (m.streaming) body += '<span class="gmchat-caret">▍</span>';
+    if (m.error) body += `<div class="gmchat-error">Error: ${esc(m.error)}</div>`;
+    return `<div class="gmchat-msg gmchat-${m.role}${handoff ? ' npc-handoff' : ''}"><div class="gmchat-who">${avatarHtml}${who}</div><div class="gmchat-body${markdownBody ? ' gmchat-markdown-body' : ''}">${body || '<em style="color:var(--text2)">...</em>'}</div></div>`;
+  }).join('');
+}
+
+function renderNpcChatLog() {
+  const log = el('npc-chat-log');
+  if (!log) return;
+  log.innerHTML = npcChatLogHtml();
+  log.scrollTop = log.scrollHeight;
+}
+
+function setNpcChatStreaming(on) {
+  const send = el('npc-chat-send'); const stop = el('npc-chat-stop'); const text = el('npc-chat-text');
+  if (send) send.style.display = on ? 'none' : '';
+  if (stop) stop.style.display = on ? '' : 'none';
+  if (text) text.disabled = on;
+}
+
+function npcChatKey(ev) {
+  if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); sendNpcChat(); }
+}
+window.npcChatKey = npcChatKey;
+
+function setNpcChatTarget(slug) {
+  const st = State.npcChat;
+  if (st.streaming) return;
+  const personas = State.npcPersonasCache[st.sessionId] || [];
+  const p = personas.find((x) => x.slug === slug);
+  if (!p) return;
+  // Carry the conversation over: switching speaker changes who replies next, it
+  // does not clear history (reset happens on leaving the tab / Clear).
+  st.slug = p.slug; st.name = p.name; st.portrait = p.portrait || '';
+  const t = el('npc-chat-text'); if (t) t.placeholder = `Say something to ${p.name}…`;
+  renderNpcChatLog();
+}
+window.setNpcChatTarget = setNpcChatTarget;
+
+async function sendNpcChat() {
+  const st = State.npcChat;
+  if (st.streaming || !st.slug) return;
+  const textEl = el('npc-chat-text');
+  const content = ((textEl && textEl.value) || '').trim();
+  if (!content) return;
+  st.messages.push({ role: 'user', content });
+  if (textEl) textEl.value = '';
+  // Stamp the speaker so the log and the server can attribute this turn to the
+  // NPC that produced it, even after the dropdown switches to another NPC.
+  const reply = { role: 'assistant', content: '', streaming: true,
+                  speakerSlug: st.slug, speakerName: st.name, portrait: st.portrait };
+  st.messages.push(reply);
+  await runNpcStream(reply);
+}
+window.sendNpcChat = sendNpcChat;
+
+async function runNpcStream(reply) {
+  const st = State.npcChat;
+  const cut = st.messages.indexOf(reply);
+  const payload = st.messages.slice(0, cut < 0 ? st.messages.length : cut)
+    .map((m) => ({ role: m.role, content: m.content,
+                   speaker: m.role === 'assistant' ? (m.speakerName || null) : null }));
+  reply.content = ''; reply.error = null; reply.streaming = true;
+  st.controller = new AbortController();
+  st.streaming = true;
+  setNpcChatStreaming(true);
+  llmPendingBegin('NPC Chat');
+  renderNpcChatLog();
+  try {
+    const res = await fetch(`/api/sessions/${st.sessionId}/npc-chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ slug: st.slug, messages: payload }),
+      signal: st.controller.signal
+    });
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try { const j = await res.json(); if (j && j.error) msg = j.error; } catch (_) {}
+      throw new Error(msg);
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    const handle = (line) => {
+      const t = line.trim();
+      if (!t) return;
+      let obj;
+      try { obj = JSON.parse(t); } catch { return; }
+      if (obj.delta) { reply.content += obj.delta; renderNpcChatLog(); }
+      else if (obj.error) { reply.error = obj.error; }
+    };
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let nl;
+      while ((nl = buffer.indexOf('\n')) >= 0) {
+        handle(buffer.slice(0, nl));
+        buffer = buffer.slice(nl + 1);
+      }
+    }
+    handle(buffer);
+  } catch (e) {
+    if (e.name === 'AbortError') reply.error = reply.content ? null : 'Stopped.';
+    else reply.error = e.message || 'NPC chat failed';
+  } finally {
+    reply.streaming = false;
+    if (!reply.content && !reply.error) st.messages = st.messages.filter((m) => m !== reply);
+    st.streaming = false;
+    st.controller = null;
+    setNpcChatStreaming(false);
+    llmPendingEnd();
+    renderNpcChatLog();
+  }
+}
+
+function stopNpcChat() {
+  const st = State.npcChat;
+  if (st.controller) st.controller.abort();
+}
+window.stopNpcChat = stopNpcChat;
+
+// Abort any in-flight stream and drop the conversation. Used both by the Clear
+// button and when the user leaves the NPC sub-tab.
+function resetNpcChat() {
+  const st = State.npcChat;
+  if (st.streaming && st.controller) st.controller.abort();
+  st.streaming = false; st.controller = null; st.messages = [];
+}
+function clearNpcChat() {
+  resetNpcChat();
+  renderNpcChatLog();
+}
+window.clearNpcChat = clearNpcChat;
+
 // The Domestic opens inside the Case File page, like any other case file.
 async function openDomestic(options = {}) {
   const { replaceUrl = false } = options;
@@ -5289,6 +5695,8 @@ async function openDomesticAdventure(stepFromUrl = null, replaceUrl = false) {
 
   const sheetHost = el('domestic-sheet');
   SheetForm.setRuleset('rol');
+  SheetForm.setRulesTier('basic');
+  SheetForm.setGmEditor(!!(State.user && State.user.role === 'gm'));
   SheetForm.setSessionId(State.currentSession);
   SheetForm.setPortraitAi(true);
   SheetForm.render(sheetHost, State.domesticSheet || {}, false);

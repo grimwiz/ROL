@@ -82,3 +82,75 @@ Still pending: full prose pass of `00-system-overview.md`, the remainder of `03-
 - Added startup/reset plumbing for the Bookshop as a normal session marked by `system_key = bookshop`; the live copy is seeded into `data/sessions/the-bookshop/` and can be reset from the canonical archive.
 - Added canonical Bookshop NPC allocation: Warwick Anderson, Saffron Jackson, PC Karnam Singh, Ernie, and the Spirit of Books and Reading are imported from JSON-backed NPC sheets whose `scope` includes The Bookshop. Reset ensures the cast is allocated without creating per-case sheet copies.
 - Linked existing global NPC sheets referenced by the Bookshop case: DCI Thomas Nightingale, DC Peter Grant, and Toby carry the same Bookshop `scope` and are allocated alongside the local case cast.
+
+## 2026-06-02
+
+- Built the integrated advanced rules corpus at `../../rules-advanced/` by applying
+  every section of `../../rules-advanced-source/12-advanced-options.md`
+  (PDF-checked, printed p.309-335) onto the base corpus. Approach chosen with the
+  user: hand-authored, file-by-file. Provenance recorded in
+  `../../rules-advanced/mutation-map.md` and `../../rules-advanced/README.md`.
+- Copied `00`, `05`, and `08` verbatim (no advanced option applies). Mutated
+  `01` (Age/MOV; free-allocation cross-ref), `02` (combined skill rolls), `03`
+  (free characteristic allocation, experience packages, disadvantages, custom
+  occupations), `04` (custom skills, Anthropology, social skill difficulty),
+  `06` (surprise, prone revisited, holding/interrupting, automatic fire with
+  spray-and-pray and concentrated fire, firearms extras, armour revisited),
+  `07` (optional hit locations, alternative damage method, spending Luck to
+  resist incapacitation, detailed/sample poisons), `09` (higher-order framing,
+  creating spells, enchantments: wizard's staff/demon trap/rose jars,
+  non-Newtonian NPC abilities), `10` (Dissimulo eighth-order entry,
+  higher-order framing), and `11` (lower fae and Quiet Person player
+  investigators, fae affinity costs and sample affinities). Added new file
+  `12-advanced-campaign.md` for troupe play and investigator organisations
+  (no base equivalent).
+- Marking convention: each mutation carries a visible `(Advanced option)` label
+  and a stripped `<!-- Advanced: ... | add|supersede|supplement -->` provenance
+  comment. `supersede` edits the base procedure in place so the corpus never
+  self-contradicts (e.g. Down now carries the Luck-resist option; the base
+  rifle-only sights/bracing note is generalised under Firearms Extras).
+- Locked tables transcribed verbatim from the already-PDF-checked advanced
+  source: disadvantages, experience packages, spray-and-pray hit counts,
+  concentrated fire, optional hit locations, alternative damage margins, demon
+  trap effects/locate/disarm/escape tables, detailed and sample poisons, fae
+  affinity costs and sample affinities, and Quiet Person emulated-spell Luck
+  costs. Spot-checked all against the source values.
+- Verification run on the corpus: `git diff --check` clean, no trailing
+  whitespace, single H1 per numbered file, every numbered file matches the app
+  rule-file regex `^\d{2}-.*\.md$`, and non-ASCII limited to the inherited base
+  Table 10 content and the expected `Sīphōnem` macron. No app code changed; the
+  loader still points at `rules/` only, so the corpus is inert until the
+  Extended Rules wiring (handoff Steps 1-3) is implemented.
+- Drafted Chapter 7 (Welcome to London, printed p.259-284) from the
+  `folly-and-london` source section into two scenario-facing files.
+  `scenario/folly-and-london.md` covers the Folly's history and the Society of the
+  Wise, practitioners outside the Folly (County Practitioners, hedge witches),
+  allied institutions (Special Collection, Casterbrook, Sons of Weyland,
+  Ettersberg), the other magical organisations (Little Crocodiles/Faceless Man,
+  Societe de la Rose, Paternoster Society), the Folly building tour, police
+  stations and facilities, the London Falcon gazetteer, the rivers and genii
+  locorum, and demi-monde pubs/nazareths. `scenario/case-seeds.md` holds the 12
+  chapter case hooks as one-paragraph GM seeds. Both paraphrased; novel footnote
+  citations and plot-outcome detail trimmed; GM-facing reference, not app rules.
+  Source-map status moved `unreviewed` -> `extracted-draft`; final PDF gate against
+  printed p.259-284 still pending before `reviewed-complete`. (Chapter 6
+  rogues/demi-monde NPC summaries are being handled separately by another pass.)
+
+## 2026-06-02 (Chapter 6 Rogues' Gallery — NPC/being index)
+
+- Drafted `scenario/npcs-and-beings.md` from Chapter 6 (A Rogues' Gallery, p.231-258)
+  as a paraphrased, GM-facing **index** — the named human cast and the
+  demi-monde/example beings, each a one-line role plus pointers. No profile prose
+  is reproduced (per the tracking note "avoid reproducing long character prose"),
+  and no stat blocks are re-listed: the full stat blocks are already imported as
+  `globaldata/npcs/*.json`, and being mechanics live in `11-demi-monde.md`.
+- Checked Chapter 6 for rule mechanics missing from the corpus. The general
+  being-type rules (chimeras, High Fae, lower fae, talking foxes, trolls) plus
+  genii locorum, ghosts, vampires, unicorns, Quiet People, codes of conduct,
+  cold iron, and the Mystic Art of Fighting / Wizard's Sword are all already in
+  `11-demi-monde.md` (basic) and mirrored in `../../rules-advanced/11-demi-monde.md`
+  (advanced superset). The per-being Powers / Demi-monde affinity / Vestigia are
+  NPC-specific stat-block content held in the sheets. **No new mechanics needed
+  in either rulebook.**
+- Updated `pdf-review.md`: the Chapter 6 scenario-NPC-summaries row is now
+  `drafted` (index-only).

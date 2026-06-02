@@ -14,6 +14,7 @@ Newtonian magic is the system of spellcasting developed by Sir Isaac Newton. It'
 - A character's **magic point total** equals one-fifth of their Power (POW) characteristic plus 1 for each spell they have mastered.
 - Each spell has a **base cost** equal to its **order** (first order = 1 point, second order = 2 points, etc.).
 - Once a practitioner runs out of magic points, they may continue casting but risk harm through **Hyperthaumaturgical Degradation (HTD)**.
+- **Formae** are the building blocks of a spell: a mental "shape" paired with a Latin word — e.g. *lux* (light), the basis of the first spell most wizards learn, **Werelight**. A spell built from a single forma is **first order**; stringing several formae together makes higher-order spells, so roughly the number of formae sets a spell's order.
 
 ### Spellcasting Basics
 
@@ -50,6 +51,10 @@ Spells are organised into orders:
 - Higher orders exist and are progressively more dangerous
 
 Some spells have **prerequisites** — you must master prerequisite spells first.
+
+### Becoming a Practitioner
+
+In a UK game, becoming a full Newtonian **apprentice** (like Peter Grant) means being taken into the **Society of the Wise**, with DCI Nightingale as the Master who trains them; apprentices begin play already knowing **Werelight**. Formal training was once done at **Casterbrook**, the practitioners' school — now defunct. Anyone working magic outside that tradition — self-taught, or taught by a rogue practitioner or a different school entirely — is loosely called a **hedge wizard** (or hedge witch).
 
 ---
 

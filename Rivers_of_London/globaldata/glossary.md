@@ -26,8 +26,8 @@ A quick-reference guide to key terms used in the Rivers of London game.
 | **Demi-monde** | Non-human magical beings (fae, spirits, etc.) |
 | **Glamour** | The power to sway someone's mind (a demi-monde ability) |
 | **Thematic Power** | A demi-monde's sphere of influence granting them magical abilities |
-| **Genius Loci** | Spirit of a place (e.g., river spirit) |
-| **Genii Loci** | Plural of genius loci |
+| **Genius Loci** | Spirit of a place (e.g., a river spirit) |
+| **Genii Locorum** | Plural of genius loci |
 | **Wizard's Staff** | A physical conduit for magic, storing magic points |
 | **Formae** | The building blocks of Newtonian spells |
 | **Order (of a spell)** | The base cost in magic points to cast a spell |
@@ -47,13 +47,13 @@ A quick-reference guide to key terms used in the Rivers of London game.
 | **Revenants** | Spirits out for revenge; can feed on other ghosts |
 | **Poltergeist** | A genuinely dangerous supernatural entity; requires 100+ years to develop |
 | **Quiet People** | Non-human entities living underground beneath London |
-| **River Spirits** | Powerful genii locori associated with London's rivers |
+| **River Spirits** | Powerful genii locorum associated with London's rivers (Father Thames upriver, Mama Thames in tidal London) |
 
 ## Locations
 
 | Term | Definition |
 |------|------------|
-| **Caxton Street** | The Folly's address in Chelsea |
+| **Russell Square / Bedford Place** | The Folly's location — a Georgian terrace in Bloomsbury, central London |
 | **Black Library** | Secure vault beneath the Folly containing captured Nazi magical research |
 | **Ettersberg Camp** | German facility where British forces captured Nazi magical research during WWII |
 | **Stonewaters** | Bookshop in Covent Garden, site of supernatural incidents |

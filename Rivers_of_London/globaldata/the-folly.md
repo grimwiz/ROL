@@ -2,11 +2,11 @@
 
 ## What Is the Folly?
 
-The Folly is the operational headquarters of the **Special Assessment Unit**, a secret branch of the Metropolitan Police Service that investigates supernatural crime in London. Its official designation is **Newtonian Magic Assessment Unit** — but no one calls it that.
+The Folly is the home of the **Special Assessment Unit** — the Metropolitan Police Service's "magic branch", which investigates supernatural crime in London. It is staffed by sworn police officers attached to it and by civilian consultants.
 
-The name "Folly" comes from its location on **Caxton Street, Chelsea, London, SW1**. It's a former **academy for young wizards** built in the early 20th century, named after Sir Isaac Newton, whose coat of arms and motto ("Scientia Potestas Est" — "Knowledge is Power") appear above the front door.
+It is also the long-standing London headquarters of the **Society of the Wise**, the body of English (Newtonian) wizards. The building is a **Georgian terrace house on the south side of Russell Square, on the corner of Bedford Place, in Bloomsbury, central London** — just along from the British Museum, and sharing the square with bodies such as the London Mathematical Society. The Society took the south-terrace club house when the fifth Duke of Bedford laid out Russell Square at the end of the 18th century, and kept the old nickname, "the Folly".
 
-The building was originally a magical academy founded by Newtonian practitioners. After the academy closed, it was converted into a section house, then later repurposed specifically for the Folly's magical investigative work.
+The practitioners' **school** was a separate institution — **Casterbrook**, now defunct, out in the country — where wizards such as DCI Nightingale were trained. It was never the Folly itself.
 
 ## The Folly's Purpose
 
@@ -18,7 +18,7 @@ The building was originally a magical academy founded by Newtonian practitioners
 
 ## The Building
 
-The Folly is a large, listed Victorian building with multiple floors, each serving different purposes. Because of its age and magical nature, it resists technology — **magic sands the chips** of microprocessors, so there are **no computers inside the main building** (except in the custody suite, most of the time). The library index system is card-based.
+The Folly is a large **Georgian terrace house** with multiple floors, each serving different purposes. Because magic damages microprocessors — **magic "sands the chips"** — there are effectively **no working computers in the main building** (the custody suite is the usual exception). The library index is card-based. The one spot where technology works is the **coach-house attic at the back**, which sits outside the no-tech zone — DC Grant calls it "the tech cave".
 
 The building has **wards** to protect it from external magic, renewed after major incidents.
 
@@ -48,7 +48,7 @@ The building has **wards** to protect it from external magic, renewed after majo
 
 ### Key Spaces Players May Know About
 
-- **The Coach House** — Where investigators park; also a secondary entrance
+- **The Coach House (mews)** — Round the back through the courtyard, reached via the **Bedford Place** gate. The garage holds the pool car; DCI Nightingale's vintage Jaguar (and another, "most haunted", vintage car) are off-limits. Its attic is "the tech cave" — outside the no-tech zone
 - **The Portakabin** — Temporary office space
 - **Courtyard Gates** — Main vehicle access
 - **The Atrium** — Often the centre of social interaction at the Folly

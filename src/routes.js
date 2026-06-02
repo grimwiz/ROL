@@ -23,6 +23,10 @@ const {
   regenerateNpcSummaries,
   streamGmChat,
   streamRulesChat,
+  listNpcPersonas,
+  resolveNpcPersona,
+  seedNpcPersonaIntoCase,
+  streamNpcChat,
   writeGmChatExport,
   ollamaStatus,
   cancelOllama,
@@ -606,6 +610,19 @@ router.put('/character-sheets/:id/scope', requireGM, (req, res) => {
     .run(JSON.stringify(data), req.params.id);
   const updated = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(req.params.id);
   if (updated.user_id == null) {
+    // For each newly-added case, copy this NPC's canonical personality file into
+    // the case's player area if it isn't there yet.
+    const beforeKeys = new Set(beforeScope.map((s) => String(s).toLowerCase()));
+    const npcName = String(parseStoredSheetData(updated.data).name || '').trim();
+    if (npcName) {
+      for (const caseName of sheetScope(data)) {
+        if (beforeKeys.has(String(caseName).toLowerCase())) continue;
+        const caseRow = db.prepare('SELECT * FROM sessions WHERE name = ?').get(caseName);
+        if (caseRow) {
+          try { seedNpcPersonaIntoCase(caseRow, npcName); } catch { /* non-fatal */ }
+        }
+      }
+    }
     const affected = [...new Set([...sessionIdsForScope(beforeScope), ...sessionIdsForScope(sheetScope(data))])];
     regenerateNpcSummaries(db, affected);
   }
@@ -780,7 +797,9 @@ router.get('/sessions/:id/sheets', requireAuth, (req, res) => {
     ${allowNpc ? '' : 'WHERE cs.user_id IS NOT NULL'}
   `).all().filter((r) => sheetHasCase(parseStoredSheetData(r.data), session.name));
   rows.sort((a, b) => String(a.username || '').localeCompare(String(b.username || '')));
-  const ruleset = sessionRolls.getSettings(db, sessionId).ruleset;
+  const caseSettings = sessionRolls.getSettings(db, sessionId);
+  const ruleset = caseSettings.ruleset;
+  const rules_tier = caseSettings.rules_tier;
   res.json(rows.map((s) => ({
     id: s.id,
     user_id: s.user_id == null ? null : s.user_id,
@@ -788,7 +807,8 @@ router.get('/sessions/:id/sheets', requireAuth, (req, res) => {
     username: s.user_id == null ? null : s.username,
     updated_at: s.updated_at,
     data: parseStoredSheetData(s.data),
-    ruleset
+    ruleset,
+    rules_tier
   })));
 });
 
@@ -799,10 +819,12 @@ router.get('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
   }
   const session = db.prepare('SELECT id, name FROM sessions WHERE id = ?').get(sessionId);
   if (!session) return res.status(404).json({ error: 'Session not found' });
-  const ruleset = sessionRolls.getSettings(db, sessionId).ruleset;
+  const caseSettings = sessionRolls.getSettings(db, sessionId);
+  const ruleset = caseSettings.ruleset;
+  const rules_tier = caseSettings.rules_tier;
   const sheet = findUserSheetInCase(userId, session.name);
-  if (!sheet) return res.json({ data: {}, ruleset });
-  res.json({ ...sheet, data: parseStoredSheetData(sheet.data), ruleset });
+  if (!sheet) return res.json({ data: {}, ruleset, rules_tier });
+  res.json({ ...sheet, data: parseStoredSheetData(sheet.data), ruleset, rules_tier });
 });
 
 router.put('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
@@ -1377,6 +1399,11 @@ router.post('/sessions/:id/stat-adjustments/:adjId/clear', requireGM, (req, res)
 // ── Rules library ────────────────────────────────────────────────────────────
 
 const rulesRoot = path.join(__dirname, '..', 'Rivers_of_London', 'rules');
+const rulesAdvancedRoot = path.join(__dirname, '..', 'Rivers_of_London', 'rules-advanced');
+
+function rulesRootForVariant(variant) {
+  return variant === 'advanced' ? rulesAdvancedRoot : rulesRoot;
+}
 
 function htmlEscape(value) {
   return String(value == null ? '' : value)
@@ -1402,13 +1429,13 @@ function firstMarkdownHeading(markdown, fallback) {
   return match ? match[1].trim() : fallback;
 }
 
-function listRuleDocuments() {
-  if (!fs.existsSync(rulesRoot)) return [];
-  return fs.readdirSync(rulesRoot)
+function listRuleDocuments(root = rulesRoot) {
+  if (!fs.existsSync(root)) return [];
+  return fs.readdirSync(root)
     .filter((name) => /^\d{2}-.*\.md$/i.test(name))
     .sort((a, b) => a.localeCompare(b))
     .map((filename) => {
-      const filePath = path.join(rulesRoot, filename);
+      const filePath = path.join(root, filename);
       const markdown = stripPublicRulesComments(fs.readFileSync(filePath, 'utf8'));
       return {
         filename,
@@ -1418,22 +1445,99 @@ function listRuleDocuments() {
     });
 }
 
-function loadRulesIndex() {
-  const documents = listRuleDocuments();
+function rulesIndexTitle(variant) {
+  const base = 'Rivers of London Compact Rules Reference';
+  return variant === 'advanced' ? `${base} (Advanced)` : base;
+}
+
+function loadRulesIndex(variant = 'core') {
+  const documents = listRuleDocuments(rulesRootForVariant(variant));
   if (!documents.length) return null;
+  const title = rulesIndexTitle(variant);
   const markdown = [
-    '# Rivers of London Compact Rules Reference',
+    `# ${title}`,
     '',
     ...documents.flatMap((doc) => [doc.markdown, ''])
   ].join('\n').trim();
   const lines = markdown.split(/\r?\n/);
+  const suffix = variant === 'advanced' ? '?variant=advanced' : '';
   return {
+    variant,
+    title,
     documents,
     markdown,
     lines,
-    htmlPath: '/api/rules/print',
-    markdownPath: '/api/rules/markdown'
+    htmlPath: `/api/rules/print${suffix}`,
+    markdownPath: `/api/rules/markdown${suffix}`
   };
+}
+
+// Build the "What's New in Advanced" changelog by reading the per-mutation
+// provenance markers in the advanced corpus. Each advanced change is preceded
+// by `<!-- Advanced: <label> | add|supersede|supplement -->`; we capture the
+// block that follows so a player migrating from Core can see exactly what each
+// advanced rule adds, replaces, or extends.
+const ADVANCED_MARKER = /^<!--\s*Advanced:\s*(.+?)\s*\|\s*(add|supersede|supplement)\s*-->$/;
+
+function buildAdvancedChanges() {
+  if (!fs.existsSync(rulesAdvancedRoot)) return null;
+  const files = fs.readdirSync(rulesAdvancedRoot)
+    .filter((name) => /^\d{2}-.*\.md$/i.test(name))
+    .sort((a, b) => a.localeCompare(b));
+  const groups = [];
+  for (const filename of files) {
+    const raw = fs.readFileSync(path.join(rulesAdvancedRoot, filename), 'utf8').replace(/\r\n?/g, '\n');
+    const lines = raw.split('\n');
+    const numMatch = filename.match(/^(\d{2})-/);
+    const chapterTitle = firstMarkdownHeading(stripPublicRulesComments(raw), filename.replace(/\.md$/i, ''));
+    const chapter = numMatch ? `${numMatch[1]} ${chapterTitle}` : chapterTitle;
+    const entries = [];
+
+    for (let i = 0; i < lines.length; i += 1) {
+      const marker = lines[i].trim().match(ADVANCED_MARKER);
+      if (!marker) continue;
+      const klass = marker[2];
+      const commentLabel = marker[1];
+
+      let j = i + 1;
+      while (j < lines.length && !lines[j].trim()) j += 1;
+      if (j >= lines.length) continue;
+
+      const headingMatch = lines[j].trim().match(/^(#{2,6})\s+(.+?)\s*#*$/);
+      let title;
+      let bodyStart;
+      let end = lines.length;
+
+      if (headingMatch) {
+        const level = headingMatch[1].length;
+        title = headingMatch[2].replace(/\s*\(Advanced option\)\s*$/i, '').trim();
+        bodyStart = j + 1;
+        for (let k = j + 1; k < lines.length; k += 1) {
+          const t = lines[k].trim();
+          const hm = t.match(/^(#{1,6})\s+/);
+          if (hm && hm[1].length <= level) { end = k; break; }
+          if (ADVANCED_MARKER.test(t)) { end = k; break; }
+        }
+      } else {
+        title = commentLabel.replace(/\s*\(.*?\)\s*$/, '').trim();
+        bodyStart = j;
+        for (let k = j; k < lines.length; k += 1) {
+          const t = lines[k].trim();
+          if (/^#{1,6}\s+/.test(t)) { end = k; break; }
+          if (k > j && ADVANCED_MARKER.test(t)) { end = k; break; }
+        }
+      }
+
+      const bodyMd = lines.slice(bodyStart, end)
+        .join('\n')
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .trim();
+      entries.push({ class: klass, title, html: renderRulesMarkdownHtml(bodyMd) });
+    }
+
+    if (entries.length) groups.push({ filename, chapter, entries });
+  }
+  return { title: "What's New in Advanced", groups };
 }
 
 function isMarkdownTableSeparator(line) {
@@ -1553,7 +1657,7 @@ function renderRulesPrintableHtml(rulesIndex) {
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Rivers of London Compact Rules Reference</title>
+  <title>${htmlEscape(rulesIndex.title || 'Rivers of London Compact Rules Reference')}</title>
   <style>
     :root { color-scheme: light; }
     body { margin: 0; background: #f4f2ed; color: #1f2428; font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
@@ -1738,22 +1842,48 @@ function loadRulesCharacterContext(user, sessionId) {
   };
 }
 
+function rulesVariantFromReq(req) {
+  return (req.query && req.query.variant === 'advanced') ? 'advanced' : 'core';
+}
+
+// The rules-grounded AI chat uses the corpus chosen for the active case in
+// Admin → Case Settings (rules_tier). No case (global rules chat) ⇒ core.
+function rulesVariantForSession(sessionId) {
+  if (!sessionId) return 'core';
+  try {
+    return sessionRolls.getSettings(db, sessionId).rules_tier === 'advanced' ? 'advanced' : 'core';
+  } catch {
+    return 'core';
+  }
+}
+
 router.get('/rules', requireAuth, (req, res) => {
-  const rulesIndex = loadRulesIndex();
+  const variant = rulesVariantFromReq(req);
+  const rulesIndex = loadRulesIndex(variant);
   if (!rulesIndex) {
     return res.status(404).json({ error: 'Rules files are not available on the server.' });
   }
   // Pre-rendered HTML lets the client embed the rules inline (no iframe) and
   // hand the same HTML to the print-doc overlay used by Case Files → Overview.
   res.json({
-    title: 'Rivers of London Compact Rules Reference',
+    variant,
+    title: rulesIndex.title,
+    advancedAvailable: !!loadRulesIndex('advanced'),
     sections: rulesIndex.documents.map((doc) => ({ filename: doc.filename, title: doc.title })),
     html: renderRulesMarkdownHtml(rulesIndex.markdown)
   });
 });
 
+router.get('/rules/changes', requireAuth, (req, res) => {
+  const changes = buildAdvancedChanges();
+  if (!changes || !changes.groups.length) {
+    return res.status(404).json({ error: 'Advanced rules are not available on the server.' });
+  }
+  res.json(changes);
+});
+
 router.get('/rules/markdown', requireAuth, (req, res) => {
-  const rulesIndex = loadRulesIndex();
+  const rulesIndex = loadRulesIndex(rulesVariantFromReq(req));
   if (!rulesIndex) {
     return res.status(404).json({ error: 'Rules files are not available on the server.' });
   }
@@ -1761,7 +1891,7 @@ router.get('/rules/markdown', requireAuth, (req, res) => {
 });
 
 router.get('/rules/print', requireAuth, (req, res) => {
-  const rulesIndex = loadRulesIndex();
+  const rulesIndex = loadRulesIndex(rulesVariantFromReq(req));
   if (!rulesIndex) {
     return res.status(404).send('Rules files are not available on the server.');
   }
@@ -1814,7 +1944,9 @@ router.get('/rules/search', requireAuth, (req, res) => {
 });
 
 router.post('/rules/chat', requireAuth, async (req, res) => {
-  const rulesIndex = loadRulesIndex();
+  const sessionId = req.body && Number.isFinite(Number(req.body.sessionId)) ? Number(req.body.sessionId) : null;
+  const variant = rulesVariantForSession(sessionId);
+  const rulesIndex = loadRulesIndex(variant) || loadRulesIndex('core');
   if (!rulesIndex) {
     return res.status(404).json({ error: 'Rules files are not available on the server.' });
   }
@@ -1828,8 +1960,7 @@ router.post('/rules/chat', requireAuth, async (req, res) => {
   res.flushHeaders();
   const t0 = Date.now();
   try {
-    logLine('ruleschat.start', { userId: req.user.id });
-    const sessionId = req.body && Number.isFinite(Number(req.body.sessionId)) ? Number(req.body.sessionId) : null;
+    logLine('ruleschat.start', { userId: req.user.id, sessionId, rulesVariant: rulesIndex.variant });
     await streamRulesChat(rulesIndex.markdown, loadRulesCharacterContext(req.user, sessionId), req.body && req.body.messages, {
       signal: controller.signal,
       onToken: (delta) => res.write(`${JSON.stringify({ delta })}\n`)
@@ -1840,6 +1971,59 @@ router.post('/rules/chat', requireAuth, async (req, res) => {
     const cancelled = controller.signal.aborted || e.cancelled;
     logLine(cancelled ? 'ruleschat.cancelled' : 'ruleschat.error', { userId: req.user.id, ms: Date.now() - t0, error: e.message });
     res.write(`${JSON.stringify(cancelled ? { cancelled: true, error: e.message || 'Rules chat cancelled' } : { error: e.message || 'Rules chat failed' })}\n`);
+  }
+  res.end();
+});
+
+// ── NPC persona chat ──────────────────────────────────────────────────────────
+// Chat in-character with an NPC. Personas are Markdown (canonical seed in
+// globaldata, overridable by a "<Name> - personality.md" case handout). Any
+// authenticated user may chat with any NPC (POC: no state/visibility gating).
+router.get('/sessions/:id/npc-personas', requireAuth, (req, res) => {
+  const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(req.params.id) || null;
+  // Attach each NPC's portrait (from its character sheet, matched by name) so
+  // the chat can show a small avatar on that character's messages.
+  const portraitByName = new Map();
+  for (const row of db.prepare('SELECT data FROM character_sheets WHERE user_id IS NULL').all()) {
+    const data = parseStoredSheetData(row.data);
+    const name = String(data.name || '').trim().toLowerCase();
+    if (name && data.portrait) portraitByName.set(name, data.portrait);
+  }
+  const npcs = listNpcPersonas(session).map((n) => ({
+    ...n,
+    portrait: portraitByName.get(String(n.name).toLowerCase()) || ''
+  }));
+  res.json({ npcs });
+});
+
+router.post('/sessions/:id/npc-chat', requireAuth, async (req, res) => {
+  const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(req.params.id) || null;
+  const slug = req.body && typeof req.body.slug === 'string' ? req.body.slug : '';
+  const persona = resolveNpcPersona(session, slug);
+  if (!persona) {
+    return res.status(404).json({ error: 'That character has no personality file yet.' });
+  }
+  if (await rejectIfAiBusy(res)) return;
+  await prepareGpuForLlm();
+  const controller = new AbortController();
+  res.on('close', () => { if (!res.writableEnded) controller.abort(new Error('client disconnected')); });
+  res.setHeader('Content-Type', 'application/x-ndjson');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+  const t0 = Date.now();
+  try {
+    logLine('npcchat.start', { userId: req.user.id, slug: persona.slug, source: persona.source });
+    await streamNpcChat(persona, req.body && req.body.messages, {
+      signal: controller.signal,
+      onToken: (delta) => res.write(`${JSON.stringify({ delta })}\n`)
+    });
+    logLine('npcchat.done', { userId: req.user.id, ms: Date.now() - t0 });
+    res.write(`${JSON.stringify({ done: true })}\n`);
+  } catch (e) {
+    const cancelled = controller.signal.aborted || e.cancelled;
+    logLine(cancelled ? 'npcchat.cancelled' : 'npcchat.error', { userId: req.user.id, ms: Date.now() - t0, error: e.message });
+    res.write(`${JSON.stringify(cancelled ? { cancelled: true, error: e.message || 'NPC chat cancelled' } : { error: e.message || 'NPC chat failed' })}\n`);
   }
   res.end();
 });

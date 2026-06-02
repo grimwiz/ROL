@@ -18,9 +18,9 @@ He's always well-dressed in a suit, carrying a silver-topped cane that doubles a
 
 ## Peter Grant
 
-**DCI and Nightingale's apprentice, Newtonian practitioner.**
+**DC at the Folly, Nightingale's apprentice, Newtonian practitioner.**
 
-A PC who was promoted to DCI — unusual for someone his age and class. Born on the Peckwater Estate, working class, with a London accent. His mother is a cleaner and his father a jazz musician. He lacks a university degree.
+A detective constable (DC) and Nightingale's first apprentice. Born on the Peckwater Estate in Kentish Town; working class, with a London accent; his mother a cleaner and his father a jazz musician. He has no university degree.
 
 **Background:** Recruited by Nightingale in January 2012 after encountering a ghost. He became Nightingale's first apprentice and helped the Folly expand beyond a one-person operation.
 
@@ -45,7 +45,7 @@ A small, slim woman dressed like an Edwardian maid in a black skirt, white bib, 
 
 ---
 
-## Foxglove Summer
+## Foxglove
 
 **High Fae artist.**
 
@@ -89,9 +89,9 @@ Also handles special cases involving magic and the supernatural.
 
 ## Abigail Kamara
 
-**DC and DC Grant's half-cousin.**
+**Peter Grant's teenage half-cousin; a Folly apprentice.**
 
-A contact who has had significant experience with magical phenomena. She is more informed than she initially appears and has prior connections to the Folly context.
+A sharp London teenager and Peter's half-cousin who talked her way into learning magic and is now an apprentice at the Folly. She knows more about the supernatural than she first lets on, and has a connection to the talking foxes that have turned up around the city.
 
 ---
 
@@ -111,6 +111,6 @@ A group that has been "born different" and lives in a strange subterranean commu
 
 ---
 
-## River Spirits (Genii Loci)
+## River Spirits (Genii Locorum)
 
-London's rivers each have a spirit. Nightingale has known **Father Thames** (the spirit of the River Thames) for a long time. River spirits are powerful demi-monde beings with deep connections to their waterways.
+The Thames is shared between **Father Thames** (the "Old Man", upriver) and **Mama Thames** (the tidal river through London), each with a family of tributary river-spirits — their sons and daughters. They are powerful demi-monde beings, strongest on their own water, dealt with through courtesy and standing agreements rather than force. See `rivers-and-genii-locorum.md`.

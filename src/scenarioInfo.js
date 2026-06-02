@@ -740,6 +740,23 @@ const SCENARIO_SECTIONS = {
       '- Default `known_by` to just that character\'s own name (their personal story is theirs); use ["all"] only for parts the whole table plainly shares. Never invent actions the sources do not show (but shared presence at a group scene is the default, not an invention).'
     ].join('\n')
   },
+  'gm.npc_knowledge': {
+    id: 'gm.npc_knowledge',
+    title: 'NPC Knowledge',
+    artifact: 'gm',
+    path: ['npc_knowledge'],
+    type: 'array',
+    goal: 'For each NPC allocated to this case, write a brief of what THAT NPC plausibly knows about this case from their own perspective — used so the character can answer questions in their own voice. Cover: who they are in this case, what they have personally witnessed or been told, what they believe (rightly or wrongly), their relationships and loyalties, what they want, and what they are hiding or unsure of. Ground every statement in the case material; only include what this character could plausibly know (never omniscient); never invent major facts; it is fine to note what they do NOT know.',
+    schemaHint: [
+      'Return a JSON array, one element per NPC. Each element:',
+      '```json',
+      '{ "id": "npc-slug", "name": "NPC name", "content": "Markdown", "sources": [ { "path": "..." } ] }',
+      '```',
+      '- `content` is GitHub-flavoured Markdown written from THIS NPC\'s optic, using these `###` sub-headings in order: `### Who they are in this case`, `### What they know`, `### Relationships & loyalties`, `### What they want`, `### What they are hiding or unsure of`. Use `**bold**` and `-` bullets within.',
+      '- Only what this character could plausibly know — never make them omniscient. Ground every statement in the case sources; never invent major facts.',
+      '- GM-only reference: it may contain secrets the players have not yet learned.'
+    ].join('\n')
+  },
   'gm.scenario_progress': {
     id: 'gm.scenario_progress',
     title: 'Scenario Progress',
@@ -2092,9 +2109,31 @@ function listCharacterItems(session, db) {
 // Sections regenerated as a code-driven per-item loop (one small focused
 // Ollama call per item, array assembled in code) instead of one call that
 // must emit the whole array.
+// NPCs allocated to this case, as loop items for per-NPC knowledge generation.
+function listNpcItems(session, db) {
+  const rows = db.prepare('SELECT data FROM character_sheets WHERE user_id IS NULL').all();
+  const seen = new Set();
+  const items = [];
+  for (const r of rows) {
+    const data = parseSheetData(r.data);
+    if (!sheetHasCase(data, session.name)) continue;
+    const nm = String(data.name || '').trim();
+    if (!nm) continue;
+    const slug = scenarioSlug(nm);
+    if (!slug) continue;
+    const key = `npc-${slug}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    items.push({ key, name: nm });
+  }
+  items.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+  return items;
+}
+
 const LOOPED_SECTIONS = {
   'player.summary.session_summaries': (session, db, paths) => detectSessionItems(session, db, paths),
-  'player.entities.characters': (session, db) => listCharacterItems(session, db)
+  'player.entities.characters': (session, db) => listCharacterItems(session, db),
+  'gm.npc_knowledge': (session, db) => listNpcItems(session, db)
 };
 
 function emptyLoopMessage(config) {
@@ -2103,6 +2142,9 @@ function emptyLoopMessage(config) {
   }
   if (config.id === 'player.entities.characters') {
     return 'Cannot regenerate player character summaries: no assigned player character sheet names were found.';
+  }
+  if (config.id === 'gm.npc_knowledge') {
+    return 'Cannot regenerate NPC knowledge: no NPCs are allocated to this case.';
   }
   return `Cannot regenerate ${config.title}: no loop items were found.`;
 }
@@ -2127,6 +2169,12 @@ function itemFocusPrompt(config, item) {
       `- id: "${item.key}" (use exactly this id)`,
       `- name: "${item.name}"`,
       `The fullest account of THIS player character across the whole case, grounded in the case sources.`
+    );
+  } else if (config.id === 'gm.npc_knowledge') {
+    head.push(
+      `- id: "${item.key}" (use exactly this id)`,
+      `- name: "${item.name}"`,
+      `Write what the NPC "${item.name}" knows about this case, from their own perspective, grounded in the case sources. Include only what this character could plausibly know — never make them omniscient — and note what they do not know where relevant.`
     );
   }
   head.push('', 'Return exactly one JSON object now.');
@@ -2400,6 +2448,12 @@ function buildGmChatSystemPrompt(session, db) {
     '- Do not claim the investigators met, went, found, or were told something unless the case sources show it. Proposing that they *could* is fine — label it as a suggestion.',
     '- Be concise and useful. This is prep, not prose for players.',
     '',
+    // Caching: put the largest, most-stable blocks first (case source files incl.
+    // seeded world lore, then roster/speakers) and the volatile, frequently
+    // regenerated artifacts (scenario info / GM analysis) LAST — so regenerating
+    // those doesn't invalidate the cached prompt prefix above.
+    renderPromptFileBundle(sourceFiles),
+    '',
     renderCommonPromptContext(session, db, sourceFiles),
     '',
     '## Current Player-Facing Scenario Info (what players can currently see)',
@@ -2408,9 +2462,7 @@ function buildGmChatSystemPrompt(session, db) {
     '',
     '## Current GM-Only Analysis',
     '',
-    renderJsonBlock(gmAnalysis),
-    '',
-    renderPromptFileBundle(sourceFiles)
+    renderJsonBlock(gmAnalysis)
   ].join('\n');
 }
 
@@ -2506,6 +2558,265 @@ async function streamRulesChat(rulesMarkdown, characterContext, clientMessages, 
   return callOllama(null, {
     messages,
     label: 'rules-chat',
+    signal: opts.signal,
+    onToken: opts.onToken
+  });
+}
+
+// ── NPC personas (chat-with-an-NPC) ─────────────────────────────────────────
+// Personality data lives in Markdown, never in the character sheet. Canonical
+// personas are bundled under globaldata/npcs/personas/ as a seed source; a case
+// may override one with a "<Entity Name> - personality.md" handout (Edit Files),
+// matched by the same filename-root association used for artifacts. The whole
+// file is fed to the model (256k context — no truncation).
+const NPC_PERSONA_ROOT = path.join(GLOBAL_ROOT, 'npcs', 'personas');
+
+function parsePersonaFile(raw) {
+  const meta = {};
+  let body = String(raw || '');
+  const fm = body.match(/^---\n([\s\S]*?)\n---\n?/);
+  if (fm) {
+    body = body.slice(fm[0].length);
+    for (const line of fm[1].split('\n')) {
+      const kv = line.match(/^([A-Za-z0-9_]+)\s*:\s*(.*)$/);
+      if (!kv) continue;
+      let val = kv[2].trim();
+      if (/^\[.*\]$/.test(val)) {
+        val = val.slice(1, -1).split(',').map((s) => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+      } else {
+        val = val.replace(/^["']|["']$/g, '');
+      }
+      meta[kv[1]] = val;
+    }
+  }
+  return { meta, body: body.trim() };
+}
+
+function asLoreList(v) {
+  if (Array.isArray(v)) return v.map((x) => String(x).trim()).filter(Boolean);
+  return v ? [String(v).trim()].filter(Boolean) : [];
+}
+
+// Concatenate the shared world-reference docs a persona is tagged to know
+// (frontmatter `lore: [the-folly, magic-overview, ...]`). Each tag is a stem of
+// a Markdown file in globaldata/. This is the per-NPC "knowledge matrix": which
+// setting docs get pulled into that character's chat, scoped to their remit.
+function loadLoreFiles(loreList) {
+  const out = [];
+  for (const raw of asLoreList(loreList)) {
+    const stem = String(raw).toLowerCase().replace(/\.md$/, '');
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(stem)) continue; // simple stem only — no path traversal
+    const fp = path.join(GLOBAL_ROOT, `${stem}.md`);
+    if (!fs.existsSync(fp)) continue;
+    const text = fs.readFileSync(fp, 'utf8').replace(/<!--[\s\S]*?-->/g, '').trim();
+    if (text) out.push(text);
+  }
+  return out.join('\n\n---\n\n');
+}
+
+function listCanonicalPersonas() {
+  if (!fs.existsSync(NPC_PERSONA_ROOT)) return [];
+  return fs.readdirSync(NPC_PERSONA_ROOT)
+    .filter((n) => /\.md$/i.test(n))
+    .sort()
+    .map((filename) => {
+      const slug = filename.replace(/\.md$/i, '');
+      const { meta, body } = parsePersonaFile(fs.readFileSync(path.join(NPC_PERSONA_ROOT, filename), 'utf8'));
+      return { slug, name: meta.name || slug, body, lore: asLoreList(meta.lore) };
+    });
+}
+
+function nameToSlug(name) {
+  return String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+// Per-case personality handouts: "<Entity Name> - personality.md" anywhere in
+// the session's files. Returns { name, body } for the best match, or null.
+function findSessionPersonaByName(session, name) {
+  if (!session) return null;
+  try {
+    const want = String(name || '').toLowerCase();
+    for (const f of listSessionSourceFiles(session, { includePrivate: true })) {
+      if (f.kind !== 'markdown') continue;
+      const base = path.basename(f.path).replace(/\.md$/i, '');
+      if (!/personality/i.test(base)) continue;
+      const entity = base.replace(/\s*[-–—]\s*personality\s*$/i, '').trim();
+      if (entity.toLowerCase() === want) {
+        // Parse so a copied seed (which keeps its frontmatter) still feeds the
+        // model a clean body, exactly like the canonical path.
+        const parsed = parsePersonaFile(fs.readFileSync(path.join(REPO_ROOT, f.path), 'utf8'));
+        return { name: entity, body: parsed.body, lore: asLoreList(parsed.meta.lore) };
+      }
+    }
+  } catch { /* fall back to canonical */ }
+  return null;
+}
+
+// On assigning an NPC to a case, copy its canonical personality file into the
+// case's player area ("<Name> - personality.md") if no personality file for
+// that NPC exists there yet. From then on the case copy is the editable canon
+// and overrides the seed. Returns true if a file was written.
+function seedNpcPersonaIntoCase(session, npcName) {
+  const name = String(npcName || '').trim();
+  if (!session || !name) return false;
+  if (findSessionPersonaByName(session, name)) return false; // already present
+  const persona = listCanonicalPersonas().find((p) => p.name.toLowerCase() === name.toLowerCase());
+  if (!persona) return false;
+  const src = path.join(NPC_PERSONA_ROOT, `${persona.slug}.md`);
+  if (!fs.existsSync(src)) return false;
+  const paths = ensureSessionDataFolders(session);
+  const safeName = name.replace(/[\/\\]/g, '-');
+  const dest = path.join(paths.input, `${safeName} - personality.md`);
+  try {
+    fs.copyFileSync(src, dest);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// The NPCs offered in this session: every canonical persona, plus any custom
+// "<Name> - personality.md" handouts present in the case.
+function listNpcPersonas(session) {
+  const out = [];
+  const seen = new Set();
+  for (const p of listCanonicalPersonas()) {
+    out.push({ slug: p.slug, name: p.name });
+    seen.add(p.name.toLowerCase());
+  }
+  if (session) {
+    try {
+      for (const f of listSessionSourceFiles(session, { includePrivate: true })) {
+        if (f.kind !== 'markdown') continue;
+        const base = path.basename(f.path).replace(/\.md$/i, '');
+        if (!/personality/i.test(base)) continue;
+        const name = base.replace(/\s*[-–—]\s*personality\s*$/i, '').trim();
+        if (name && !seen.has(name.toLowerCase())) {
+          out.push({ slug: nameToSlug(name), name });
+          seen.add(name.toLowerCase());
+        }
+      }
+    } catch { /* canonical only */ }
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+// What this NPC knows about the current case, from the generated GM artifact
+// (gm.npc_knowledge). Empty until that section has been generated for the case.
+function getNpcCaseKnowledge(session, npcName) {
+  if (!session || !npcName) return '';
+  try {
+    const paths = ensureSessionDataFolders(session);
+    const gm = readExistingJsonForPrompt(paths.gmAnalysis) || {};
+    const list = Array.isArray(gm.npc_knowledge) ? gm.npc_knowledge : [];
+    const want = String(npcName).toLowerCase();
+    const wantId = `npc-${scenarioSlug(npcName)}`;
+    const entry = list.find((e) => e && String(e.name || '').toLowerCase() === want)
+      || list.find((e) => e && String(e.id || '') === wantId);
+    return entry && entry.content ? String(entry.content).trim() : '';
+  } catch {
+    return '';
+  }
+}
+
+// Resolve a persona for chat: a case handout overrides the canonical seed. The
+// NPC's generated case knowledge (if any) is attached separately.
+function resolveNpcPersona(session, slug) {
+  const canonical = listCanonicalPersonas();
+  const entry = canonical.find((p) => p.slug === slug)
+    || listNpcPersonas(session).find((p) => p.slug === slug);
+  if (!entry) return null;
+  const override = findSessionPersonaByName(session, entry.name);
+  const body = override ? override.body : (entry.body || '');
+  if (!body) return null;
+  // Lore tags come from whichever persona file is in effect (case override wins,
+  // else canonical); a session-only persona with no canonical entry has none.
+  const loreList = (override && override.lore && override.lore.length) ? override.lore : (entry.lore || []);
+  return {
+    slug,
+    name: entry.name,
+    body,
+    world: loadLoreFiles(loreList),
+    knowledge: getNpcCaseKnowledge(session, entry.name),
+    source: override ? 'case' : 'canonical'
+  };
+}
+
+// Like sanitiseChatMessages, but preserves a per-turn `speaker` (the NPC name
+// that produced an assistant turn) so a multi-NPC carry-over conversation can be
+// re-attributed from the active NPC's point of view.
+function sanitiseNpcChatMessages(raw) {
+  if (!Array.isArray(raw)) return [];
+  const cleaned = [];
+  for (const m of raw) {
+    if (!m || typeof m !== 'object') continue;
+    const role = m.role === 'assistant' ? 'assistant' : (m.role === 'user' ? 'user' : null);
+    const content = String(m.content == null ? '' : m.content).trim();
+    if (!role || !content) continue;
+    const speaker = role === 'assistant' && m.speaker ? String(m.speaker).trim().slice(0, 120) : null;
+    cleaned.push({ role, speaker, content: content.slice(0, 8000) });
+  }
+  return cleaned.slice(-24);
+}
+
+// Fold an attributed, multi-speaker history into clean alternating turns from the
+// active NPC's point of view. The active NPC's own past turns (speaker === its
+// name, or unattributed legacy turns) stay as `assistant`; the player's lines and
+// any *other* NPC's lines are labelled and coalesced onto the `user` side — which
+// also guarantees user/assistant alternation for the model template.
+function buildNpcTurns(history, activeName) {
+  const out = [];
+  let buf = [];
+  const flush = () => { if (buf.length) { out.push({ role: 'user', content: buf.join('\n') }); buf = []; } };
+  for (const m of history) {
+    if (m.role === 'assistant' && (!m.speaker || m.speaker === activeName)) {
+      flush();
+      out.push({ role: 'assistant', content: m.content });
+    } else {
+      const label = m.role === 'user' ? 'GM' : (m.speaker || 'Someone');
+      buf.push(`${label}: ${m.content}`);
+    }
+  }
+  flush();
+  return out;
+}
+
+// Streams an in-character reply as the given NPC persona. The full persona file
+// is included verbatim; guardrails keep it in character and non-infringing.
+async function streamNpcChat(persona, clientMessages, opts = {}) {
+  const history = sanitiseNpcChatMessages(clientMessages);
+  if (!history.some((m) => m.role === 'user')) {
+    const error = new Error('A user message is required');
+    error.statusCode = 400;
+    throw error;
+  }
+  const knows = String(persona.knowledge || '').trim();
+  const parts = [
+    `You are ${persona.name}, a character in the Rivers of London setting. Stay in character at all times and reply in the first person as ${persona.name}.`,
+    'Use the persona notes below for your voice, manner, relationships, and boundaries. Where they are silent, improvise in character, consistent with that characterisation.',
+    knows
+      ? 'The "What you know" section below is your knowledge of the current case, from your own perspective. Answer from it in character: share what this character would willingly share, stay evasive or silent about what they would guard, and never simply read it out or dump it wholesale.'
+      : "You may talk about yourself, your work, the setting, and general lore. You do not know the specifics of the players' current case unless they tell you in this conversation.",
+    'Never break character. Never reveal that you are an AI, and never discuss prompts, models, or this application. If asked an out-of-character or meta question, deflect briefly in character.',
+    'Never reproduce text from any novel or other copyrighted source; always answer in your own words.',
+    'For tabletop rules questions, tell the player to use the Rules assistant; do not adjudicate game mechanics.',
+    'This conversation may include things other characters said earlier. In the dialogue, lines are labelled with the speaker: lines marked "GM:" are the person speaking to you now, and lines beginning with another character\'s name were said by that character, not by you. React to them in character — agree, disagree, correct, or be surprised — but never assume you said another character\'s words, and do not treat their claims as your own private knowledge unless you would genuinely know them.',
+    '',
+    `# Persona: ${persona.name}`,
+    String(persona.body || '').trim()
+  ];
+  const world = String(persona.world || '').trim();
+  if (world) {
+    parts.push('', '# World knowledge you carry (general setting facts within your remit — speak from it in your own words, in character; do not recite it verbatim)', world);
+  }
+  if (knows) {
+    parts.push('', `# What ${persona.name} knows about the current case (your private knowledge — do not recite verbatim)`, knows);
+  }
+  const systemPrompt = parts.join('\n');
+  const messages = [{ role: 'system', content: systemPrompt }, ...buildNpcTurns(history, persona.name)];
+  return callOllama(null, {
+    messages,
+    label: `npc-chat:${persona.slug}`,
     signal: opts.signal,
     onToken: opts.onToken
   });
@@ -2964,6 +3275,10 @@ module.exports = {
   cancelOllama,
   streamGmChat,
   streamRulesChat,
+  listNpcPersonas,
+  resolveNpcPersona,
+  seedNpcPersonaIntoCase,
+  streamNpcChat,
   writeGmChatExport,
   saveSessionHandout,
   setSessionAssetVisibility,

@@ -12,7 +12,7 @@ The world of Rivers of London is firmly rooted in the **British class system**. 
 
 The class system has three main levels:
 
-1. **Working Class** — Growing up in council estates, no university degree, often with a strong accent. Example: Peter Grant, who grew up on the Peckwater Estate in Peckworth with his mother as a cleaner and father as a jazz musician.
+1. **Working Class** — Growing up in council estates, no university degree, often with a strong accent. Example: Peter Grant, who grew up on the Peckwater Estate in Kentish Town, with his mother a cleaner and his father a jazz musician.
 2. **Middle Class** — University education, professional career, Received Pronunciation. Example: DCI Nightingale, who comes from an affluent family and was privately educated.
 3. **Upper Class** — Old money, elite education (Eton, Harrow), deep social networks.
 
@@ -66,9 +66,9 @@ An East Walworth tower block investigated during cases involving drug dealing an
 
 A site in Germany where British forces attempted to capture Nazi magical research during WWII. The research — known as "The Black Library" — was brought back to London and is now stashed in a secure vault beneath the Folly.
 
-## The Thames and River Spirits
+## The Thames and the River Spirits
 
-The River Thames has a spirit known as **Father Thames** — a powerful genii locorum (spirit of a place). The Thames and its tributaries are central to the lore, with each river having its own spirit. Rivers store vast amounts of magic and vestigia.
+London's river is shared between two powers, not one. **Father Thames** — the "Old Man" — is the ancient power of the non-tidal river upstream; **Mama Thames** holds the tidal river through London. Each has a family of lesser **genii locorum** (a *genius loci* is the spirit of a place) tied to the Thames's tributaries — their sons and daughters. The rivers store great reserves of magic and vestigia, and the two sides keep an uneasy peace, brokered with the Folly's help. See `rivers-and-genii-locorum.md` for detail.
 
 ## The London Underground
 

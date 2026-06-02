@@ -50,6 +50,33 @@ const SheetForm = (() => {
   function setPortraitAi(on) { _portraitAi = on !== false; }
   function sizEnabled() { return _ruleset === 'coc'; }
 
+  // Per-case rules tier. 'basic' (default) = core RoL character creation.
+  // 'advanced' = the integrated advanced rules: Age→MOV, selectable
+  // disadvantages, experience packages, and free characteristic allocation
+  // (wider stat range). Set from the case's rules_tier setting before render.
+  let _rulesTier = 'basic';
+  function setRulesTier(t) { _rulesTier = t === 'advanced' ? 'advanced' : 'basic'; }
+  function advancedEnabled() { return _rulesTier === 'advanced'; }
+
+  // The basic/advanced characteristic range only constrains players. A GM
+  // editing any sheet gets the full grid (NPCs, exceptional/demi-monde stats).
+  let _gmEditor = false;
+  function setGmEditor(on) { _gmEditor = !!on; }
+
+  // Advanced-rules disadvantages (printed pp. 311-313). Selectable like
+  // advantages when advanced rules are on; hidden under basic rules.
+  const DISADVANTAGES = [
+    'Blunt', 'Crossed the Wrong People', 'Easily Distracted', 'Damaged',
+    'Disorganised', 'Fingers and Thumbs', 'Frail', 'Hot-Headed', 'Iron-Blooded',
+    'Magic is Exhausting', 'Not a Magical Bone', 'Slow-Footed', 'Slow Healer', 'Weak'
+  ];
+  const DISADVANTAGE_PRESET_NAMES = DISADVANTAGES.slice();
+  // Advanced-rules experience packages (printed pp. 309-311).
+  const EXPERIENCE_PACKAGES = [
+    'Academic', 'Criminal', 'Ex-Military', 'Paranormal', 'Police',
+    'Experienced Investigator', 'Spellcaster'
+  ];
+
   const RANGE_0_TO_95_BY_5 = Array.from({ length: 20 }, (_, i) => i * 5);
   const STAT_OPTIONS = RANGE_0_TO_95_BY_5;
   const SKILL_PERCENT_OPTIONS = RANGE_0_TO_95_BY_5;
@@ -161,6 +188,28 @@ const SheetForm = (() => {
     return pow ? Math.round(pow / 5) + masteredSpellCount : '';
   }
 
+  // Advanced rules: MOV drops by decade from the 40s (printed p.309).
+  function ageMovAdjustment(age) {
+    const a = parseInt(age, 10);
+    if (!Number.isFinite(a) || a < 40) return 0;
+    if (a >= 80) return -5;
+    if (a >= 70) return -4;
+    if (a >= 60) return -3;
+    if (a >= 50) return -2;
+    return -1; // 40s
+  }
+
+  // Base MOV 8; Speedy → 9. Advanced rules also apply Slow-Footed (5, before
+  // age) and the age adjustment. Returns a number (>= 1).
+  function computeMove(advantages, disadvantages, age) {
+    const advs = (advantages || []).map((x) => String(x).toLowerCase());
+    const diss = (disadvantages || []).map((x) => String(x).toLowerCase());
+    let base = advs.some((a) => a.startsWith('speedy')) ? 9 : 8;
+    if (advancedEnabled() && diss.some((d) => d.startsWith('slow-footed'))) base = 5;
+    let mov = base + (advancedEnabled() ? ageMovAdjustment(age) : 0);
+    return mov < 1 ? 1 : mov;
+  }
+
   function calcDerived() {
     const con = getStatValue('con');
     const siz = getStatValue('siz');
@@ -180,12 +229,14 @@ const SheetForm = (() => {
       else if (buildRaw <= 204) build = '+2';
       else                       build = '+3';
     }
-    return { hp, san, mp, build };
+    const advText = (document.getElementById('sf_advantages_text') || {}).value || '';
+    const move = String(computeMove(parseAdvantages(advText), selectedDisadvantagesFromDom(), (document.getElementById('sf_age') || {}).value));
+    return { hp, san, mp, build, move };
   }
 
   function updateDerivedDisplay() {
     const d = calcDerived();
-    const fields = ['hp','san','mp','build'];
+    const fields = ['hp','san','mp','build','move'];
     fields.forEach((f) => {
       const el = document.getElementById(`sf_derived_${f}`);
       if (el && el.dataset.auto === 'true') el.value = d[f] !== undefined ? d[f] : '';
@@ -217,6 +268,15 @@ const SheetForm = (() => {
       .split(/,|;|\n|\band\b/gi)
       .map((entry) => entry.trim())
       .filter(Boolean);
+  }
+
+  // Selected disadvantages from the picker if present, else parsed from the
+  // (possibly hidden) text field. Used by the MOV calc (Slow-Footed).
+  function selectedDisadvantagesFromDom() {
+    const picker = document.getElementById('sf_disadvantages_picker');
+    if (picker) return Array.from(picker.selectedOptions).map((o) => o.value.trim()).filter(Boolean);
+    const textEl = document.getElementById('sf_disadvantages');
+    return textEl ? parseAdvantages(textEl.value) : [];
   }
 
   // ── Common skills ──────────────────────────────────────────────────────────
@@ -392,8 +452,28 @@ const SheetForm = (() => {
   }
 
   // ── Render helpers ─────────────────────────────────────────────────────────
+  // Characteristic options depend on the rules tier. Basic = blocks of 10,
+  // 30-80 (the standard 280-point buy). Advanced (free allocation) = any value
+  // in 20-90. SIZ (CoC ruleset) keeps the full grid. A saved out-of-range value
+  // is always preserved so editing never silently drops existing data.
+  function statOptionsForTier(statKey, value) {
+    if (statKey === 'siz') return STAT_OPTIONS;
+    let opts;
+    if (_gmEditor) {
+      opts = STAT_OPTIONS.slice(); // GM: unconstrained full grid
+    } else if (advancedEnabled()) {
+      opts = [];
+      for (let v = 20; v <= 90; v += 5) opts.push(v);
+    } else {
+      opts = [30, 40, 50, 60, 70, 80];
+    }
+    const n = parseInt(value, 10);
+    if (Number.isFinite(n) && !opts.includes(n)) opts = opts.concat(n).sort((a, b) => a - b);
+    return opts;
+  }
+
   function renderStatSelect(statKey, value, readonly) {
-    return renderNumericSelect(`sf_${statKey}`, value, readonly, STAT_OPTIONS);
+    return renderNumericSelect(`sf_${statKey}`, value, readonly, statOptionsForTier(statKey, value));
   }
 
   function renderSkillValueSelect(id, value, readonly) {
@@ -446,6 +526,49 @@ const SheetForm = (() => {
         <select id="sf_advantages" multiple size="8"${rdAttr}>${options}</select>
         <div class="card-sub" style="margin-top:0.35rem">Hold Ctrl/Cmd to select multiple. Custom entries in the text box are preserved.</div>
       </details>`}`;
+  }
+
+  // Disadvantages. Advanced rules: a multi-select picker plus free-text, exactly
+  // like advantages. Basic rules: no visible field, but the value is kept in a
+  // hidden input so a legacy value is never wiped on save. Readonly: shows the
+  // text only if present.
+  function renderDisadvantagesField(value, readonly) {
+    const selected = parseAdvantages(value);
+    if (readonly) {
+      return selected.length ? fg('Flaws (Disadvantages)', `<input type="text" value="${esc(selected.join(', '))}" readonly>`) : '';
+    }
+    if (!advancedEnabled()) {
+      return `<input type="hidden" id="sf_disadvantages" value="${esc(selected.join(', '))}">`;
+    }
+    const options = DISADVANTAGES.map((name) => {
+      const sel = selected.includes(name) ? ' selected' : '';
+      return `<option value="${esc(name)}"${sel}>${esc(name)}</option>`;
+    }).join('');
+    return fg('Flaws (Disadvantages)', `
+      <input type="text" id="sf_disadvantages" placeholder="Selected disadvantages" value="${esc(selected.join(', '))}">
+      <details class="sheet-inline-expand" style="margin-top:0.45rem">
+        <summary>Edit selected disadvantages</summary>
+        <select id="sf_disadvantages_picker" multiple size="8">${options}</select>
+        <div class="card-sub" style="margin-top:0.35rem">Hold Ctrl/Cmd to select multiple. Custom entries in the text box are preserved. Slow-Footed lowers MOV; the GM applies the rest in play.</div>
+      </details>`);
+  }
+
+  // Advanced-rules experience package. Visible select under advanced rules; a
+  // hidden input otherwise so the value survives a save under basic rules.
+  function renderExperiencePackageField(value, readonly) {
+    const v = value || '';
+    if (readonly) {
+      return v ? fg('Experience package', `<input type="text" value="${esc(v)}" readonly>`) : '';
+    }
+    if (!advancedEnabled()) {
+      return `<input type="hidden" id="sf_experience_package" value="${esc(v)}">`;
+    }
+    const options = ['<option value="">— none —</option>']
+      .concat(EXPERIENCE_PACKAGES.map((p) => `<option value="${esc(p)}"${v === p ? ' selected' : ''}>${esc(p)}</option>`))
+      .join('');
+    return fg('Experience package', `
+      <select id="sf_experience_package">${options}</select>
+      <div class="card-sub" style="margin-top:0.35rem">Advanced creation: grants +60 skill points (max 80% per skill) and requires one disadvantage.</div>`);
   }
 
   function renderPortraitPreview(value) {
@@ -622,10 +745,10 @@ const SheetForm = (() => {
         ${renderDerivedField('san',   'SAN',     derived.san   || '', autoD.san,   readonly)}
         ${renderDerivedField('mp',    'MP',      derived.mp    || '', autoD.mp,    readonly, [legacyMpAuto])}
         ${sizEnabled() ? renderDerivedField('build', 'Build', derived.build || '', autoD.build, readonly) : ''}
-        ${fg('Move', `<input type="text" id="sf_derived_move" value="${esc(derived.move || d.mov || '')}" placeholder="e.g. 8"${rdAttr}>`)}
+        ${renderDerivedField('move', 'Move', derived.move || d.mov || '', autoD.move, readonly)}
         ${renderDerivedField('luck', 'Luck', d.luck || '', (d.luck && String(d.luck).trim()) ? d.luck : rollStartingLuck(), readonly)}
       </div>
-      ${!readonly ? `<p class="card-sub" style="margin-top:0.35rem">${sizEnabled() ? 'HP, SAN and Build are auto-calculated from base stats; MP is POW/5 plus mastered spells' : 'SAN is auto-calculated from POW; MP is POW/5 plus mastered spells'}; Luck "Auto" rolls 2D10+50. Click "Manual" to override.</p>` : ''}
+      ${!readonly ? `<p class="card-sub" style="margin-top:0.35rem">${sizEnabled() ? 'HP, SAN and Build are auto-calculated from base stats; MP is POW/5 plus mastered spells' : 'SAN is auto-calculated from POW; MP is POW/5 plus mastered spells'}; Move is 8 (Speedy 9)${advancedEnabled() ? ', adjusted for Slow-Footed (5) and age (40s −1 … 80s −5)' : ''}; Luck "Auto" rolls 2D10+50. Click "Manual" to override.</p>` : ''}
     </div>
   </div>
 
@@ -633,7 +756,8 @@ const SheetForm = (() => {
     <div class="sheet-section-header">3 · Edges &amp; Flaws</div>
     <div class="sheet-section-body">
       ${fg('Advantages', renderAdvantagesSelect(d.advantages, readonly))}
-      ${fg('Flaws', `<input type="text" id="sf_disadvantages" value="${esc(d.disadvantages)}" placeholder="e.g. Weak – physically fragile; fails most heavy lifting/grappling tests"${rdAttr}>`)}
+      ${renderDisadvantagesField(d.disadvantages, readonly)}
+      ${renderExperiencePackageField(d.experience_package, readonly)}
     </div>
   </div>
 
@@ -774,7 +898,8 @@ const SheetForm = (() => {
       else if (buildRaw <= 204) build = '+2';
       else                       build = '+3';
     }
-    return { hp, san, mp, build };
+    const move = String(computeMove(parseAdvantages(d.advantages), parseAdvantages(d.disadvantages), d.age));
+    return { hp, san, mp, build, move };
   }
 
   // ── Dynamic field wiring ───────────────────────────────────────────────────
@@ -806,6 +931,17 @@ const SheetForm = (() => {
     textEl.value = [...presetSelections, ...customEntries].join(', ');
     syncCommonSkillsForAdvantages();
     updateMagicSectionVisibility();
+    updateDerivedDisplay(); // Speedy changes MOV
+  }
+
+  function syncDisadvantagesTextFromPicker() {
+    const picker = document.getElementById('sf_disadvantages_picker');
+    const textEl = document.getElementById('sf_disadvantages');
+    if (!textEl || !picker) return;
+    const presetSelections = Array.from(picker.selectedOptions).map((opt) => opt.value.trim()).filter(Boolean);
+    const customEntries = parseAdvantages(textEl.value).filter((entry) => !DISADVANTAGE_PRESET_NAMES.includes(entry));
+    textEl.value = [...presetSelections, ...customEntries].join(', ');
+    updateDerivedDisplay(); // Slow-Footed changes MOV
   }
 
   function isMagicalAdvantageChosen() {
@@ -920,7 +1056,13 @@ const SheetForm = (() => {
     const advantagesPicker = document.getElementById('sf_advantages');
     if (advantagesPicker) advantagesPicker.addEventListener('change', syncAdvantagesTextFromPicker);
     const advantagesText = document.getElementById('sf_advantages_text');
-    if (advantagesText) advantagesText.addEventListener('input', updateMagicSectionVisibility);
+    if (advantagesText) advantagesText.addEventListener('input', () => { updateMagicSectionVisibility(); updateDerivedDisplay(); });
+    const disadvantagesPicker = document.getElementById('sf_disadvantages_picker');
+    if (disadvantagesPicker) disadvantagesPicker.addEventListener('change', syncDisadvantagesTextFromPicker);
+    const disadvantagesText = document.getElementById('sf_disadvantages');
+    if (disadvantagesText) disadvantagesText.addEventListener('input', updateDerivedDisplay);
+    const ageInput = document.getElementById('sf_age');
+    if (ageInput) ageInput.addEventListener('input', updateDerivedDisplay);
     document.querySelectorAll('.combat-skill-full').forEach((el) => {
       el.addEventListener('input', updateCombatSkillHalves);
       el.addEventListener('change', updateCombatSkillHalves);
@@ -1542,6 +1684,7 @@ const SheetForm = (() => {
       str: g('str'), con: g('con'), dex: g('dex'), int: g('int'), pow: g('pow'), siz: g('siz'),
       advantages: g('advantages_text'),
       disadvantages: g('disadvantages'),
+      experience_package: (document.getElementById('sf_experience_package') || {}).value || '',
       combat_skills, common_skills, mandatory_skills: _extra.mandatory, additional_skills: _extra.additional,
       luck: luckVal, damage, weapons, carry: g('carry'),
       magic_tradition: g('magic_tradition'), magic_notes: g('magic_notes'), magic_spells,
@@ -1552,7 +1695,7 @@ const SheetForm = (() => {
   }
 
   return {
-    render, collect, setRuleset, setSessionId, setPortraitAi,
+    render, collect, setRuleset, setRulesTier, setGmEditor, setSessionId, setPortraitAi,
     addMandatory, removeMandatory,
     addAdditional, removeAdditional,
     addLanguage, removeLanguage,

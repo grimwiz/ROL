@@ -99,17 +99,19 @@ function skillValueFromSheet(sheet, label) {
 
 // ── Settings ─────────────────────────────────────────────────────────────────
 function getSettings(db, sessionId) {
-  const row = db.prepare('SELECT advantage_mode, ruleset, portrait_style FROM session_settings WHERE session_id = ?').get(sessionId);
+  const row = db.prepare('SELECT advantage_mode, ruleset, rules_tier, portrait_style FROM session_settings WHERE session_id = ?').get(sessionId);
   return {
     advantage_mode: (row && row.advantage_mode) || 'rol',
     ruleset: (row && row.ruleset) || 'rol',
+    // basic ⇒ core rules corpus; advanced ⇒ integrated advanced corpus.
+    rules_tier: (row && row.rules_tier) === 'advanced' ? 'advanced' : 'basic',
     // Empty string ⇒ caller uses the built-in default portrait style.
     portrait_style: (row && row.portrait_style) || ''
   };
 }
 
-// `patch` may carry advantage_mode, ruleset and/or portrait_style; unspecified
-// keys keep their current value (defaults applied for a brand-new row).
+// `patch` may carry advantage_mode, ruleset, rules_tier and/or portrait_style;
+// unspecified keys keep their current value (defaults applied for a brand-new row).
 function setSettings(db, sessionId, patch) {
   patch = patch || {};
   const cur = getSettings(db, sessionId);
@@ -117,18 +119,21 @@ function setSettings(db, sessionId, patch) {
     ? 'simple' : 'rol';
   const ruleset = (patch.ruleset !== undefined ? patch.ruleset : cur.ruleset) === 'coc'
     ? 'coc' : 'rol';
+  const rulesTier = (patch.rules_tier !== undefined ? patch.rules_tier : cur.rules_tier) === 'advanced'
+    ? 'advanced' : 'basic';
   const portraitStyle = (patch.portrait_style !== undefined
     ? String(patch.portrait_style == null ? '' : patch.portrait_style)
     : cur.portrait_style).trim();
   db.prepare(`
-    INSERT INTO session_settings (session_id, advantage_mode, ruleset, portrait_style, updated_at)
-    VALUES (?, ?, ?, ?, datetime('now'))
+    INSERT INTO session_settings (session_id, advantage_mode, ruleset, rules_tier, portrait_style, updated_at)
+    VALUES (?, ?, ?, ?, ?, datetime('now'))
     ON CONFLICT(session_id) DO UPDATE SET
       advantage_mode = excluded.advantage_mode,
       ruleset = excluded.ruleset,
+      rules_tier = excluded.rules_tier,
       portrait_style = excluded.portrait_style,
       updated_at = datetime('now')
-  `).run(sessionId, mode, ruleset, portraitStyle);
+  `).run(sessionId, mode, ruleset, rulesTier, portraitStyle);
   return getSettings(db, sessionId);
 }
 

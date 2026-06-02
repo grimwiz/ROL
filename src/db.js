@@ -62,6 +62,7 @@ db.exec(`
     session_id INTEGER PRIMARY KEY REFERENCES sessions(id) ON DELETE CASCADE,
     advantage_mode TEXT NOT NULL DEFAULT 'rol' CHECK(advantage_mode IN ('simple','rol')),
     ruleset TEXT NOT NULL DEFAULT 'rol' CHECK(ruleset IN ('rol','coc')),
+    rules_tier TEXT NOT NULL DEFAULT 'basic' CHECK(rules_tier IN ('basic','advanced')),
     updated_at TEXT DEFAULT (datetime('now'))
   );
 
@@ -131,6 +132,12 @@ if (setColumns.length && !setColumns.some((c) => c.name === 'ruleset')) {
 const setColumns2 = db.prepare("PRAGMA table_info(session_settings)").all();
 if (setColumns2.length && !setColumns2.some((c) => c.name === 'portrait_style')) {
   db.exec("ALTER TABLE session_settings ADD COLUMN portrait_style TEXT");
+}
+// rules_tier selects the basic vs advanced (integrated) rules corpus per case,
+// used by the rules-grounded AI chat. Existing cases default to 'basic'.
+const setColumns3 = db.prepare("PRAGMA table_info(session_settings)").all();
+if (setColumns3.length && !setColumns3.some((c) => c.name === 'rules_tier')) {
+  db.exec("ALTER TABLE session_settings ADD COLUMN rules_tier TEXT NOT NULL DEFAULT 'basic'");
 }
 const sessionColumns = db.prepare("PRAGMA table_info(sessions)").all();
 if (sessionColumns.length && !sessionColumns.some((c) => c.name === 'system_key')) {

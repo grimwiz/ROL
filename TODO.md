@@ -1,17 +1,53 @@
 # TODO
 
-- **Rulebook extraction first; broad app-content plan parked.** The app-facing
-  basic rules corpus (`Rivers_of_London/rules/00` through `11`) is now
-  extracted, PDF-checked, and marked `reviewed-complete`. The Bookshop has been
-  handled as a narrow built-in sandbox case seeded from
-  `Rivers_of_London/canonical/cases/bookshop/`, but the broader ruleset-toggle,
-  lore/settings seeding, and visibility redesign remain parked for review in
-  `Rivers_of_London/rules/tracking/app-content-handoff.md`. Before implementing
-  those, reassess whether advanced options should produce a mutated
-  `rules-advanced/` corpus rather than being appended as a separate "extended
-  rules" section. The extracted advanced-rule source summary now lives in
-  `Rivers_of_London/rules-advanced-source/` so wildcard loading of app-facing
-  rules cannot include it accidentally.
+- **Base and advanced rule corpora are both built; app wiring is the next step.**
+  The app-facing basic rules corpus (`Rivers_of_London/rules/00` through `11`)
+  is extracted, PDF-checked, and marked `reviewed-complete`. The
+  advanced/extended corpus is now built at `Rivers_of_London/rules-advanced/`
+  (2026-06-02): the base rules with every optional rule from
+  `Rivers_of_London/rules-advanced-source/12-advanced-options.md` applied in
+  place, hand-authored and verified, so the site can surface a complete Core OR
+  Advanced rule set without players cross-referencing. Derivation ledger:
+  `Rivers_of_London/rules-advanced/mutation-map.md`. The earlier design question
+  (append-as-section vs. mutated corpus) is resolved in favour of the mutated
+  corpus.
+  - **Done (2026-06-02): Rules tab now surfaces both corpora plus a changelog.**
+    The Rules tab has a Core | Advanced | What's New switcher.
+    `GET /api/rules?variant=advanced` serves the advanced corpus;
+    `GET /api/rules/changes` builds a "What's New in Advanced" changelog from the
+    `<!-- Advanced: <label> | add|supersede|supplement -->` provenance markers
+    (badged New / Changed / Extended, grouped by chapter) so a player migrating
+    from Core sees exactly what each advanced rule adds, replaces, or extends.
+    `src/routes.js:loadRulesIndex(variant)` / `buildAdvancedChanges()`;
+    `public/js/app.js:renderRulesTab()`. Verified end-to-end (all endpoints 200;
+    advanced = 13 sections; 27 changelog entries).
+  - **Done (2026-06-02): per-case Basic/Advanced rules setting drives AI Support.**
+    Added a `rules_tier` (`basic`|`advanced`, default `basic`) column to
+    `session_settings` (`src/db.js` CREATE + ALTER migration;
+    `src/sessionRolls.js` get/setSettings). Admin -> Case Settings has a
+    "Rules set" selector per case (`public/js/app.js:renderAdminCases`,
+    `saveCaseRulesTier`). `/api/rules/chat` now resolves the corpus from the
+    active case's `rules_tier` via `rulesVariantForSession()` in `src/routes.js`,
+    so rules-grounded chat uses the advanced corpus when the case is set to
+    Advanced (no case / global chat = basic). Verified: migration applies,
+    settings round-trip, settings endpoint GET/PUT. NOTE: a running server must
+    be restarted to apply the migration and code.
+  - Rules-tab search (`/api/rules/search`) still uses Core only; wire it to the
+    same per-case tier if search-during-play should follow the setting.
+  - **Done (2026-06-02): character sheets branch on `rules_tier`.** Sheet
+    endpoints return `rules_tier`; `public/js/sheet.js` gains `setRulesTier()` /
+    `advancedEnabled()` and, when Advanced: Move is auto-derived (base 8,
+    Speedy 9, Slow-Footed 5, age 40s−1…80s−5), the Flaws/Disadvantages field
+    becomes a multi-select like Advantages (hidden under Basic, value preserved),
+    an Experience-package picker appears, and characteristic dropdowns widen to
+    20–90 (Basic stays 30–80 in 10s); saved out-of-range values are preserved.
+    The characteristic range constrains players only — a GM editing any sheet
+    (`SheetForm.setGmEditor`, role-based) gets the full unconstrained grid, so
+    NPC and exceptional/demi-monde stats aren't clamped.
+    Verified: MOV/stat-range math, endpoints carry rules_tier. Restart the
+    server to load the routes change.
+  - The Bookshop sandbox, broader lore/settings seeding, and visibility redesign
+    remain parked in the same handoff file.
 
 - **Remaining rulebook extraction targets.** Use the tracking files under
   `Rivers_of_London/rules/tracking/` as the source of truth. The basic rules
