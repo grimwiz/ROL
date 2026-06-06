@@ -2,9 +2,9 @@
 
 Table 1: Glossary of Terms
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000026_463321ed4247cbd1340beba1c01452c462471eb938a7aba2c56d127d140d11cf.png)
+![Image](the-domestic-art/image_000026_463321ed4247cbd1340beba1c01452c462471eb938a7aba2c56d127d140d11cf.png)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000027_6bdf21f9ef4453a3373bf0632e4e9fe9d9971f5de620765f8c679a073a1cf0fe.png)
+![Image](the-domestic-art/image_000027_6bdf21f9ef4453a3373bf0632e4e9fe9d9971f5de620765f8c679a073a1cf0fe.png)
 
 ## Start Here
 
@@ -14,15 +14,14 @@ One important note  before  you  dive  in:  don't  read  the  text from start to
 
 Gather the following: a blank character sheet (copy the one in this book or download one from chaosium.com), a pencil and eraser, and two ten-sided percentile dice ( Roleplaying Dice , page 13), or you can also use a dice-rolling app, if you have one. You are now ready to play Rivers of London: the Roleplaying Game ( RoL:RPG ). Go to entry 1 .
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000028_096de3eddd0e436a95421c14a8694026585b21ab0e5efa327f0307e71e0d9de5.png)
+![Image](the-domestic-art/image_000028_096de3eddd0e436a95421c14a8694026585b21ab0e5efa327f0307e71e0d9de5.png)
 
 Adapted from the short story by Ben Aaronovitch.
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000029_36461c3d1bf5e4ccc614ca23dc3ac737706cf4be5c10a9282cd67606efcda5df.png)
+![Image](the-domestic-art/image_000029_36461c3d1bf5e4ccc614ca23dc3ac737706cf4be5c10a9282cd67606efcda5df.png)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000030_9cf35a35eff3fad926b0caaafc5f301e8cbe49ed2d6aa70fea45a70122c733d9.png)
+![Image](the-domestic-art/image_000030_9cf35a35eff3fad926b0caaafc5f301e8cbe49ed2d6aa70fea45a70122c733d9.png)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000031_6066d80173a811fcec86f1e977a5616b4fd030b6b9898d919d3dafde14544fca.png)
 
 1
 
@@ -38,7 +37,7 @@ Now, decide what your job is: If you are a Police Officer, go to 9 . If you are 
 
 (Start)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000032_10947e11b1fceab1535f3cd1f8acc6654b2eb964c8800bbba9531920d5828d73.png)
+![Image](the-domestic-art/image_000032_10947e11b1fceab1535f3cd1f8acc6654b2eb964c8800bbba9531920d5828d73.png)
 
 2
 
@@ -72,7 +71,6 @@ Wild-eyed, Knuckles grits his teeth as he swings the heavy masonry hammer at you
 
 Knuckles is initiating an attack against you. His 'action' is to try to hit you with his hammer. His Fighting skill is 40/20 (which means Regular 40/Hard 20).
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000033_51bb6fb04534088001af0255f9818cd8023d208d2c9a70b5741cf22d0a69e47a.png)
 
 As the target  of  his  attack,  you  get  to  'respond.'  You  may  use  a combat  manoeuvre-a  special  type  of  attack-to  break  his grip  on  the  hammer.  Decide  whether  you  want  to  disarm  your opponent or flee.
 
@@ -126,7 +124,6 @@ To slip around the back, go to 33 .
 
 To  draw  Mrs  Fellaman  out  by  tapping  on  the  window  and hiding, go to 70 .
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000034_1a0e1543c2ed70b4453550020788e6e12bd43147c7b0093ef4e77c1aa77ae933.png)
 
 8
 
@@ -192,7 +189,6 @@ Spells  in RoL:RPG are  cast  by  forming  shapes  in  the  mind ( forma ). Firs
 
 If you are a Police Officer, go to 18 .
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000035_31fa96d26cb24cf0e10cbef2d675dc3a724d226556cd09ef06644cbb081e0b40.png)
 
 If not, make a Power (POW) roll. If you succeed, go to 22 .
 
@@ -228,7 +224,6 @@ If  you  do  spend  Luck,  don't  forget  to  update  your  current  Luck value 
 
 If you succeed at the Stealth roll, go to 29 . If you fail at the Stealth roll, go to 40 .
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000036_608d4d976e7a3d142f6550310ab38cc3885e58cf5754def06a64c939bd68806c.png)
 
 ## 16
 
@@ -284,9 +279,8 @@ Go to 4 .
 
 (6)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000037_d3fcaada60ebf88dde8d41f5f86e7a02320fa5416ac86fe402c2d6704c2d9aa0.png)
+![Image](the-domestic-art/image_000037_d3fcaada60ebf88dde8d41f5f86e7a02320fa5416ac86fe402c2d6704c2d9aa0.png)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000038_9388d45a00103a2368e5f3be652193e6d25f167fedce130ccbfc8df25cc25efd.png)
 
 ## 20
 
@@ -374,7 +368,6 @@ If you succeed, go to 32 . If you fail, go to 56 .
 
 (6)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000039_ef814a7c6370866dbdd771a1cd3b841963c7e1959693a43270e182d87af76b7c.png)
 
 ## 27
 
@@ -442,7 +435,6 @@ In the second space beside the characteristic name, write down half of that valu
 
 To ask about the bruise on Mrs Fellaman's cheek, go to 50 . To wait patiently for her to invite you in, go to 61 . To ask about the 'two boys,' go to 76 . To insist on looking inside the house, go to 82 .
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000040_ba29b37e44c4c7f509e3bab64f539d21cf2f89f47a51decab6598eea01fec890.png)
 
 ## 32
 
@@ -516,7 +508,6 @@ Your successful POW roll increased the spell's effect. Go to 99 .
 
 (32)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000041_e509881a9b367a1e7867d24c0b92d72a9adc9a867685bd81d696069987798193.png)
 
 ## 38
 
@@ -552,7 +543,7 @@ If you lose the opposed roll, go to 48 .
 
 A hairy  missile  with  teeth  launches  from  behind  the  bins. You throw yourself out of its path.
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000045_26c1901337626b30c6d81047fd4516e0a717fd3375870c782458ff2074c8c9be.png)
+![Image](the-domestic-art/image_000045_26c1901337626b30c6d81047fd4516e0a717fd3375870c782458ff2074c8c9be.png)
 
 Make a Dexterity (DEX) roll. As usual, you may spend Luck to improve your roll.
 
@@ -594,7 +585,6 @@ Make a Dexterity (DEX) roll.  As  usual,  you  may  spend  Luck to improve your 
 
 You are also good at Languages. Decide on three specialisations and assign those as expert skills at 60%, 30%, and 30%. So, for instance, you might have Languages (Gujerati) 60%, Languages (Arabic) 30%, and Languages (Cantonese) 30%. Write these on your character sheet, too. Your starting skills are ready.
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000042_a363ed3eb0ec20a3efbd5e319cc673eaa11d230422a9861566a9bdf64060708b.png)
 
 Finally, roll your ten-sided 'units' die twice (usually written as 2D10) and add the result to 50. This is your starting Luck. So, if you rolled 1 and 8, your result would be 1+8+50 = 59. Note down your starting  and  current  Luck  in  the  spaces  provided.  For  the moment, these numbers are both the same, but that may change as this adventure continues.
 
@@ -648,9 +638,8 @@ To ask about the bruise on Mrs Fellaman's cheek, go to 50 . To wait patiently fo
 
 (3)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000043_13ea54c63eddf9539062864d647e1c80739a2376559d4537b0db6bd953c2722c.png)
+![Image](the-domestic-art/image_000043_13ea54c63eddf9539062864d647e1c80739a2376559d4537b0db6bd953c2722c.png)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000044_307489725925afe60774db0653784844bd4a8bb56d6590657f65186b83d7ebed.png)
 
 47
 
@@ -694,7 +683,6 @@ Mrs Fellaman turns her head away as you ask about the bruise. She very deliberat
 
 You find a gentle way to say that neither of you believes that. She does not relent. But she doesn't argue with you either.
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000046_1afb39fb88c3ece99e48f3699375945eb0e151c3431f3479869376760e43148e.png)
 
 You have Strength (STR) 60. Write that, and its half value of 30, beside the characteristic name.
 
@@ -768,7 +756,6 @@ If you rolled equal to your current Luck value or less, you succeeded at the Luc
 
 (44)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000047_73771e4457c8936bba33993201d1e34ca7644f9e06795dd2f7b70e24f3e1418c.png)
 
 ## 56
 
@@ -842,7 +829,6 @@ Go to 88 .
 
 (14, 31, 35, 46)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000048_b73ac25e75c68b769f1eb7dce13006d480506250b8f5c723ce957ebaf375ea81.png)
 
 ## 62
 
@@ -920,7 +906,6 @@ If you lose the opposed roll go to 89 .
 
 (48, 54, 59)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000049_9121d797343f0168e8b1a47c7ef792a0aeed356377371cd094a3ff50f4036fef.png)
 
 ## 68
 
@@ -980,7 +965,6 @@ Go to 81 .
 
 (1)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000050_228aef7786901e3295b0679267c545dd0177f759d4806471178ca3230f0965bd.png)
 
 ## 73
 
@@ -1006,9 +990,8 @@ Otherwise,  make  a Social skill  roll.  Remember,  you  achieve  a Regular succ
 
 (70)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000051_3036cda3cb765bd7a069cba5e4eaffaac62ea5c3d1953650fd563317099d212d.png)
+![Image](the-domestic-art/image_000051_3036cda3cb765bd7a069cba5e4eaffaac62ea5c3d1953650fd563317099d212d.png)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000052_800aeb4fdc596402a1ec105bd3260369e7a8f550db1bfd9ee5ed6678a3599672.png)
 
 ## 75
 
@@ -1084,7 +1067,6 @@ The Ford Escort you are using on this occasion does not have the stock of blank 
 
 The  warden  watches  you  search.  ' It  needs  to  display  the address or it's not valid, ' she comments unnecessarily.
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000053_c9e88f9a0de82ecdbc0fce650ac791fb74811255d329e38d9dc7abb0dba923e5.png)
 
 You are going to make a Luck roll. Roll two ten-sided dice again. This time, use both your 'tens' and your 'units' dice. This will give you a number between 01 and 100. So, if the tens die comes up 00, and the units die comes up 4, you have rolled 4-this is known as rolling 1D100 and is the most common roll in RoL:RPG play. A triple zero means 100.
 
@@ -1148,9 +1130,8 @@ Knuckles hauls at the hammer, unable to comprehend the force holding it frozen i
 
 You have successfully disarmed your opponent. Go to 39 .
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000054_5bd818860dd11d2311be8dc11259e9790253a5f04f1e42d38b242953d671466d.png)
+![Image](the-domestic-art/image_000054_5bd818860dd11d2311be8dc11259e9790253a5f04f1e42d38b242953d671466d.png)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000055_174dfffaa5405fd3428ae9465be14a452d394ea25c0daae0ba46679bd4783f04.png)
 
 ## 87
 
@@ -1228,7 +1209,6 @@ Go to 106 .
 
 (85)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000056_75c4ce7e4b77b9320570ac5aba2b38ffa972a8b5bc9ae02dbd5273c3dc3e9af3.png)
 
 ## 93
 
@@ -1302,7 +1282,6 @@ You will recover (erasing the mark for Hurt) when you leave the Folly and move t
 
 (77, 85)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000057_f2669e5c3a54b10f859b316f6753986153d8e7edc1039223d2d19e5245a14b09.png)
 
 99
 
@@ -1346,9 +1325,8 @@ Go to 6 .
 
 (51, 63, 93)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000058_04bb87c564b9c1730eb29932a601f1f7ee7595b62718c1b1212d6058dd5b9635.png)
+![Image](the-domestic-art/image_000058_04bb87c564b9c1730eb29932a601f1f7ee7595b62718c1b1212d6058dd5b9635.png)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000059_0cc1b2356fabb5a0877d51dad3416b74bb9c297bd2f080ba8d93bb1a401ba806.png)
 
 ## 102
 
@@ -1406,9 +1384,8 @@ Go to 99 .
 
 (43)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000060_449dd76bb525800e1777638f711798289c58f82c9fde9f1383dd131c7381b49f.png)
+![Image](the-domestic-art/image_000060_449dd76bb525800e1777638f711798289c58f82c9fde9f1383dd131c7381b49f.png)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000061_d2076f150234bfb3a947506fa2584c2a46e73bfefe29eda39d9383ddf517912c.png)
 
 ## 106
 
@@ -1476,7 +1453,6 @@ Go to 111 .
 
 (78, 84, 95, 99, 103)
 
-![Image](cha3200_-_rivers_of_london_1.4_artifacts/image_000062_1fec8c0c8febddf65c348796a40db3ad93c30dc698d9b3a109c3d39faf426cb1.png)
 
 ## 111
 
