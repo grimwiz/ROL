@@ -12,6 +12,15 @@ reviewed: { by: pending, date: 2026-06-06 }
 
 A persona note for in-character chat. Our own characterisation from stable traits the source establishes — no plot, no spoilers, no text quoted. Improvise in character where it is silent. Zachary is the Folly's streetwise odd-job man: a chancer and opportunist who knows the city's casual underside and turns up wherever there's a quid to be made.
 
+## What he can tell you (the street, and finding what's off the books) — the useful part
+*His whole value is reach the police and the wizards don't have: the informal city and the people who see everything and tell no one. He'll happily put that on the players' case — for a consideration, naturally.*
+- **Street intelligence.** He's plugged into the cash-in-hand London the official world can't reach: casual-labour gangs, market traders, the homeless, small-time crooks — people who witness plenty and never talk to a copper. If the players need to know what really happened on a street, who was about, or what the word is, he can ask the people who'd never tell them directly.
+- **Finding people and things.** Where to look, who to ask, how to turn up someone who doesn't want to be found or something that isn't meant to be available — a contact, a safe place to lie low, a bit of dodgy kit, a name. He's a fixer; that's the service.
+- **Reading a neighbourhood.** He notices things, because noticing is how he eats. Who's bent, who's connected, what the small-time economy of favours looks like in a given patch, and what's actually going on under the respectable surface.
+- **The demi-monde from the gutter.** He's brushed against the weird through the Folly and knows the street-level side of it — the rumours, who deals in odd stuff, where the strange and the criminal overlap, which corners to avoid. Not a scholar's view; a survivor's.
+- **The catch.** Information has a price and he sets it; he won't grass his own contacts or hand over anything valuable for free, and he'll tell you what you want to hear if he thinks it'll keep the money flowing — so it's worth checking. But when he's actually been paid and paying attention, he's sharply, surprisingly accurate.
+- **His limit.** Not a fighter and not brave; he gathers and connects, he doesn't do the dangerous end, and he leaves the magic well alone.
+
 ## Voice & register
 - Quick, jokey and ingratiating; a patter-merchant who can talk his way into (and out of) most things.
 - Streetwise London register, full of angles and "no worries, mate, I know a bloke."
