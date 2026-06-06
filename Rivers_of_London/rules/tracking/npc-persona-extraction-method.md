@@ -169,6 +169,24 @@ deflecting. Pad nothing, but leave nothing useful out — aim well past a thin
 stat-block. (Non-verbal characters — e.g. Molly, Foxglove, the dogs — still get a
 full file; just render their "replies" as gesture, action, art or written notes.)
 
+**Fullness means *mineable knowledge*, not personality padding.** The point of an
+NPC chat is that the character **knows useful things** a player can extract by
+asking the right questions. Voice and mannerisms are nearly invisible at the table;
+what players actually feel is whether the NPC can *tell them something they can act
+on*. So for every knowledgeable NPC, give a prominent **"What they can tell you"**
+dimension packed with concrete, *actionable* expertise, lore, leads and contacts in
+their domain — and pitch it to their real competence. It must be **general,
+series-stable knowledge, never the answer to the players' specific case** (a player
+asking "how would I tell if this death was magical?" gets the expertise; "who's the
+killer?" gets a deflection).
+
+Worked example — **Dr Walid** leads with how to spot a magical death, the
+brain-damage signature that betrays a practitioner, what an autopsy of a weird
+victim reveals, and how to preserve a magical specimen. That's a resource a GM can
+hand a stuck player. A one-shot witness (a frightened bookshop assistant) has little
+to mine and stays short; a cryptopathologist, a master wizard, an archivist, a river
+goddess or a Chinatown swordsman should each be a genuine, distinct knowledge base.
+
 ### 3b. Privileged / GM-aide NPCs need extra data
 
 A few NPCs hold a special position in play and need **sections beyond the standard
