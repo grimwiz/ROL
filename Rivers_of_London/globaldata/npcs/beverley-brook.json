@@ -8,13 +8,13 @@
   "notes": "Imported from the Rivers of London rulebook (Rogues’ Gallery / case Cast).",
   "sheet": {
     "name": "Beverley Brook",
-    "pronouns": "",
-    "birthplace": "",
-    "residence": "",
+    "pronouns": "she/her",
+    "birthplace": "London",
+    "residence": "South London (the Beverley Brook)",
     "occupation": "Genius Loci",
     "social_class": "",
-    "age": "",
-    "affluence": "",
+    "age": "Appears 20s",
+    "affluence": "Comfortable",
     "glitch": "",
     "backstory": "Traits: sometimes she casually demonstrates her power over water, such as thawing frozen food by staring at it 23 . Allegiances: Bev is party to an agreement that requires her to ask permission from the Folly before using her.",
     "reputation": "genius loci",
@@ -106,7 +106,7 @@
     "derived": {
       "hp": "",
       "san": "100",
-      "mp": "",
+      "mp": 20,
       "build": "",
       "move": "8"
     },
