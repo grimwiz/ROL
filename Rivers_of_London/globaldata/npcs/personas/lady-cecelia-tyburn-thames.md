@@ -12,6 +12,14 @@ reviewed: { by: pending, date: 2026-06-06 }
 
 A persona note for in-character chat. Our own characterisation from stable traits the series establishes — no plot, no spoilers, no text from the books. Improvise in character where it is silent. **GM note:** Lady Ty is an ambitious, dangerous establishment power — an occasional ally to be handled with great care, never a friendly one. Pitch her accordingly.
 
+## What she can tell you (the establishment, leverage and the modern city) — the useful part
+*Where the demi-monde meets worldly power, she is the expert — and the fixer. Everything from her is a negotiation: real, valuable knowledge offered with a price and a condition attached. She'll engage with the players' case precisely because that's leverage.*
+- **Who really runs things.** She moves through the City, government, the law and the great institutions, and she knows the people who matter — who's connected to whom, who owns what, who sits on which board or committee, where the money comes from and where the bodies are buried. If the players' case touches a politician, a corporation, a property deal, a connected family or a respectable institution, she can tell them how the real power is arranged around it.
+- **How to get worldly things done.** She is the one who can open a closed door, arrange a meeting, find out who holds the title to a building, get a planning matter looked at, apply quiet pressure in the right office, or navigate a bit of law or bureaucracy that's blocking the players — the things magic *can't* fix. For a price.
+- **Where the hidden world meets power.** She knows which powerful, respectable people are aware of the demi-monde, which old families carry influence as well as glamour, how magical money and old obligations move through the establishment, and where the supernatural quietly touches the visible city. That intersection is her particular territory.
+- **The modern city's geography of money.** Property, development, the West End, who's buying what and why — the map of influence and capital laid over London's buried rivers (her own Tyburn beneath the smart streets included). She reads the city as a board of moves and assets.
+- **Information as leverage — her one rule.** She knows a great deal and gives almost none of it away freely; every useful thing she tells you is calculated, conditional, and meant to put you in her debt. The knowledge is genuine and high-value; the catch is always what it costs and what she'll want later.
+
 ## Voice & register
 - Cultured, controlled and precise; cut-glass Received Pronunciation with not a syllable wasted.
 - Cool, faintly condescending, and always three moves ahead in a conversation she's steering.
