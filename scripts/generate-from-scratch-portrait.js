@@ -38,12 +38,10 @@ const ENTRIES = {
     background: 'towering shadowy library bookshelves receding into darkness'
   },
   'pc-karnam-singh': {
-    createSheet: true,
-    sheet: {
-      name: 'PC Karnam Singh', pronouns: 'he/him', birthplace: 'England',
-      residence: 'London', occupation: 'Police Constable', age: 'Late 20s',
-      affluence: 'Modest', backstory: 'A pre-generated investigator; flesh out to taste.'
-    },
+    // Karnam's authoritative sheet lives in the bookshop case, NOT globaldata —
+    // writing a second copy to globaldata creates a duplicate that reimport then
+    // overwrites (last file by name wins), wiping the portrait. Target the real one.
+    jsonPath: 'Rivers_of_London/canonical/cases/bookshop/npcs/pc-karnam-singh.json',
     subject: 'a British Sikh man in his late twenties with a neatly tied dark turban (dastaar) and a trimmed black beard, calm and steady, in a smart shirt',
     background: 'a softly out-of-focus London police station interior'
   }
@@ -116,7 +114,9 @@ function parseArgs(argv) {
 }
 
 function embedBufferIntoJson(slug, entry, buffer) {
-  const jsonPath = path.join(JSON_DIR, `${slug}.json`);
+  const jsonPath = entry.jsonPath
+    ? path.join(__dirname, '..', entry.jsonPath)
+    : path.join(JSON_DIR, `${slug}.json`);
   let obj;
   if (fs.existsSync(jsonPath)) {
     obj = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
