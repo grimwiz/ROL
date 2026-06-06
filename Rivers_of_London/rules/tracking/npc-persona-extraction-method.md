@@ -156,6 +156,47 @@ silent. Richer worldview sections = the NPC can field "where do you live / who
 do you know / what's it like / what do you know about magic" instead of
 deflecting. The sheet JSON still supplies public hard facts separately.
 
+### 3a. Be full, not thin
+
+Because the whole body is injected into the chat prompt and the local model's
+context window is large (256K), the real constraint is **focus and voice, not
+length**. Write *full, rich* personas: pack concrete, grounded detail into every
+section — specific places the character would name, opinions they actually hold,
+named relationships they can reference, the texture of their daily life, and the
+real extent of what they know. A fuller file lets the NPC *answer* ("what's your
+local? what did your dad play? what do you make of the rivers?") instead of
+deflecting. Pad nothing, but leave nothing useful out — aim well past a thin
+stat-block. (Non-verbal characters — e.g. Molly, Foxglove, the dogs — still get a
+full file; just render their "replies" as gesture, action, art or written notes.)
+
+### 3b. Privileged / GM-aide NPCs need extra data
+
+A few NPCs hold a special position in play and need **sections beyond the standard
+schema** so they can do their in-game job, plus deliberate, documented variation
+from the books where the game needs it.
+
+**DCI Nightingale is the prime example.** He is the players' *governor and mentor*,
+so his persona is intentionally **fuller than his more reserved page-self** and is
+primed with extra knowledge so he can answer what the team will actually ask of
+their boss. Give him (and any NPC with a comparable role) dedicated sections such as:
+
+- **As your governor — guidance & clues:** a safe in-character source of *generic*
+  steer (point at the next line of enquiry, suggest who to ask, ask the nudging
+  question) **without** handing over the solution or inventing case facts.
+- **The Glitch:** he discusses how each investigator first came into the strange,
+  takes it seriously, and uses it to understand and mentor them.
+- **Teaching magic safely:** the safety-first sequence, the real dangers
+  (overreach, cumulative harm), and a firm refusal to let a beginner go past their
+  competence.
+- **Police procedure:** prime him with genuine UK policing knowledge — PACE,
+  lawful entry and warrants, the caution, evidence continuity/chain of custody,
+  disclosure, surveillance authorisations, risk assessment — so he can insist the
+  team do everything by the book.
+
+Apply the same principle to any other NPC whose function requires it (a fixer's
+contacts, a quartermaster's kit, a scholar's references). Note such variation in
+the file's framing so it's clear it's a deliberate game choice, not an error.
+
 ---
 
 ## 4. Step 3 — Review & save
@@ -217,3 +258,11 @@ the test bed when iterating on §3/§5.
   Background & heritage, People they know, Their London / the demi-monde, What
   they know about magic) on top of the plan's §2 schema. Built Abigail Kamara as
   the first worldview-aware persona.
+- 2026-06-06 — Drafted personas for the full NPC roster (24 new + Abigail &
+  Nightingale). Added §3a **fullness** guidance (go rich; the constraint is focus,
+  not length) and §3b **privileged / GM-aide NPC** guidance. Re-grounded and
+  enriched DCI Nightingale as the flagship — the players' governor/mentor, primed
+  with generic-clue steer, the Glitch, safe-magic teaching and full UK police
+  procedure. Noted non-verbal NPCs (Molly, Foxglove, the dogs) and that
+  case-solution entities (the Spirit of Books) are `player_safe: false`. All new
+  files are GM-review-pending.
