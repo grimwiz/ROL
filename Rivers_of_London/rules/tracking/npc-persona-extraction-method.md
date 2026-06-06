@@ -187,6 +187,23 @@ hand a stuck player. A one-shot witness (a frightened bookshop assistant) has li
 to mine and stays short; a cryptopathologist, a master wizard, an archivist, a river
 goddess or a Chinatown swordsman should each be a genuine, distinct knowledge base.
 
+**Represent the mining.** If a character has been worked through the twelve novels,
+that depth must *show* in the file — specific, recallable lore, not vague gestures
+at it. These NPCs have spent years working with the Folly, or have simply lived
+their whole lives in this London; they know a great deal of genuinely useful stuff,
+and the persona should carry it. A persona so shallow it isn't worth talking to is a
+failure of the whole feature.
+
+**Don't block the live case.** The NPC chat *also* injects the current case's
+analysis (from the case markdown) into the model's context. So NPCs **should answer
+scenario-specific questions from that material, in character** — do **not** write
+boundaries that refuse to discuss the case or say "I don't know your case." The real
+boundary is narrower: don't *invent* facts that aren't established (in the case data
+or the persona), don't break character or discuss the application, don't hand out
+dangerous magic recipes, and don't recite the books. Let the NPC be a resource on
+the live case and off it. (The one exception is an NPC who *is* the case's solution —
+e.g. the Spirit of Books — which stays `player_safe: false`.)
+
 ### 3b. Privileged / GM-aide NPCs need extra data
 
 A few NPCs hold a special position in play and need **sections beyond the standard
