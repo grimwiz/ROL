@@ -49,6 +49,13 @@ function effectiveOllamaModel() {
   const m = readAppConfig().ollama_model;
   return (typeof m === 'string' && m.trim()) ? m.trim() : OLLAMA_MODEL;
 }
+
+// Ollama cloud models (tag suffix `-cloud` or `:cloud`) run off-box, so they
+// neither contend for the local GPU nor need the server-side single-flight lock;
+// in that mode each browser owns its own AI busy/cancel state.
+function isCloudLlm() {
+  return /[-:]cloud\b/i.test(effectiveOllamaModel());
+}
 function setOllamaModel(model) {
   const m = String(model == null ? '' : model).trim();
   if (!m) { const e = new Error('A model name is required'); e.statusCode = 400; throw e; }
@@ -152,6 +159,10 @@ async function resolveNumCtx() {
 // override and falls back to the env default. Persisted in app-config.json so
 // the GM can repoint either service from the Admin page without a redeploy.
 const COMFYUI_URL_DEFAULT = process.env.COMFYUI_URL || 'http://192.168.37.51:8188';
+// STT service (now Parakeet on stt201). NOTE: stt201 currently has no DNS and a
+// volatile IP — set WHISPERX_URL env or the Admin-page URL to its real address; the
+// fix is a DHCP reservation/DNS for stt201, then this default should become a hostname.
+const WHISPERX_URL_DEFAULT = process.env.WHISPERX_URL || 'http://192.168.1.94:9000';
 function effectiveOllamaUrl() {
   const u = readAppConfig().ollama_url;
   return ((typeof u === 'string' && u.trim()) ? u.trim() : OLLAMA_URL).replace(/\/+$/, '');
@@ -160,8 +171,34 @@ function effectiveComfyuiUrl() {
   const u = readAppConfig().comfyui_url;
   return ((typeof u === 'string' && u.trim()) ? u.trim() : COMFYUI_URL_DEFAULT).replace(/\/+$/, '');
 }
+function effectiveWhisperxUrl() {
+  const u = readAppConfig().whisperx_url;
+  return ((typeof u === 'string' && u.trim()) ? u.trim() : WHISPERX_URL_DEFAULT).replace(/\/+$/, '');
+}
+// Glossary-boost strength ROL sends to the speech service. GM-tunable from the
+// Admin page (persisted in app-config.json) — the speech box is general-purpose and
+// must not own this. Lower = gentler (won't force a glossary name onto a similar
+// ordinary word, e.g. "dandelions"); 0 disables boosting.
+const BOOST_ALPHA_DEFAULT = Number(process.env.ROL_BOOST_ALPHA || 0.5);
+function effectiveBoostAlpha() {
+  const v = Number(readAppConfig().stt_boost_alpha);
+  return (Number.isFinite(v) && v >= 0) ? v : BOOST_ALPHA_DEFAULT;
+}
+function setBoostAlpha(v) {
+  const cfg = readAppConfig();
+  if (v === '' || v == null) { delete cfg.stt_boost_alpha; }
+  else {
+    const n = Number(v);
+    if (!Number.isFinite(n) || n < 0 || n > 5) {
+      const e = new Error('Glossary boost must be a number between 0 and 5.'); e.statusCode = 400; throw e;
+    }
+    cfg.stt_boost_alpha = n;
+  }
+  writeAppConfig(cfg);
+  return servicesConfig();
+}
 function setServiceUrl(key, url) {
-  const cfgKey = key === 'comfyui' ? 'comfyui_url' : 'ollama_url';
+  const cfgKey = key === 'comfyui' ? 'comfyui_url' : key === 'whisperx' ? 'whisperx_url' : 'ollama_url';
   const u = String(url == null ? '' : url).trim();
   if (u && !/^https?:\/\//i.test(u)) {
     const e = new Error('Service URL must start with http:// or https://');
@@ -175,7 +212,9 @@ function setServiceUrl(key, url) {
 function servicesConfig() {
   return {
     ollama: { url: effectiveOllamaUrl(), default: OLLAMA_URL.replace(/\/+$/, '') },
-    comfyui: { url: effectiveComfyuiUrl(), default: COMFYUI_URL_DEFAULT.replace(/\/+$/, '') }
+    comfyui: { url: effectiveComfyuiUrl(), default: COMFYUI_URL_DEFAULT.replace(/\/+$/, '') },
+    whisperx: { url: effectiveWhisperxUrl(), default: WHISPERX_URL_DEFAULT.replace(/\/+$/, ''),
+                boost_alpha: effectiveBoostAlpha(), boost_default: BOOST_ALPHA_DEFAULT }
   };
 }
 
@@ -288,6 +327,7 @@ async function listOllamaModelsDetailed() {
 
 function ollamaStatus() {
   return {
+    cloud: isCloudLlm(),
     busy: ollamaActivity.active > 0,
     active: ollamaActivity.active,
     can_cancel: ollamaControllers.size > 0,
@@ -1173,11 +1213,27 @@ function listEditableMarkdownSources(paths, includePrivate = true) {
     if (!MARKDOWN_EXTENSIONS.has(ext)) return;
     const visibility = classifySessionFileVisibility(fullPath, paths);
     if (!includePrivate && visibility === 'gm') return;
+    const content = fs.readFileSync(fullPath, 'utf8');
+    const rel = path.relative(paths.root, fullPath);
+    // A file is globaldata-seeded if globaldata holds one at the same relative
+    // path; such files are re-seeded when missing (so "deleting" only restores
+    // them). Flag whether the case copy still matches the seed.
+    const seedPath = path.join(GLOBAL_ROOT, rel);
+    let seeded = false, seedIdentical = false;
+    try {
+      if (fs.existsSync(seedPath) && fs.statSync(seedPath).isFile()) {
+        seeded = true;
+        const norm = (s) => String(s || '').replace(/\r\n?/g, '\n');
+        seedIdentical = norm(fs.readFileSync(seedPath, 'utf8')) === norm(content);
+      }
+    } catch { /* ignore */ }
     sources.push({
       path: repoRelative(fullPath),
-      relative_path: normaliseSlash(path.relative(paths.root, fullPath)),
+      relative_path: normaliseSlash(rel),
       visibility,
-      content: fs.readFileSync(fullPath, 'utf8')
+      content,
+      seeded,
+      seed_identical: seedIdentical
     });
   }
 
@@ -2675,6 +2731,271 @@ function seedNpcPersonaIntoCase(session, npcName) {
   }
 }
 
+// A character's personality handout ("<Name> - personality.md" in the player
+// input area), keyed by character name. Backs the in-tab dictation editor and is
+// the same file the talk-to-character AI reads. Works for player characters and
+// GM-owned NPCs alike — the caller enforces who may write which character.
+function characterPersonalityPath(session, charName) {
+  const safe = String(charName || '').trim().replace(/[\/\\]/g, '-');
+  if (!safe) return null;
+  const paths = ensureSessionDataFolders(session);
+  return path.join(paths.input, `${safe} - personality.md`);
+}
+function readCharacterPersonality(session, charName) {
+  const dest = characterPersonalityPath(session, charName);
+  if (dest && fs.existsSync(dest)) return fs.readFileSync(dest, 'utf8');
+  const existing = findSessionPersonaByName(session, charName);
+  return existing ? existing.body : '';
+}
+function writeCharacterPersonality(session, charName, content) {
+  const dest = characterPersonalityPath(session, charName);
+  if (!dest) { const e = new Error('Character has no name.'); e.statusCode = 400; throw e; }
+  ensureParentDir(dest);
+  fs.writeFileSync(dest, String(content == null ? '' : content), 'utf8');
+  return repoRelative(dest);
+}
+
+// Terms from the case's glossary.md (the player-facing quick reference) for STT
+// biasing. globaldata/glossary.md is copied per case and may diverge, so prefer
+// the case copy; fall back to globaldata. Extracts the bolded table terms plus
+// single-word spell/forma names enumerated parenthetically in definitions
+// (e.g. "Basic spells (Aqua, Impello, etc.)").
+function readCaseGlossaryTerms(session) {
+  let text = '';
+  try {
+    const caseFile = path.join(ensureSessionDataFolders(session).root, 'glossary.md');
+    const globalFile = path.join(GLOBAL_ROOT, 'glossary.md');
+    const file = fs.existsSync(caseFile) ? caseFile : globalFile;
+    if (fs.existsSync(file)) text = fs.readFileSync(file, 'utf8');
+  } catch { return []; }
+  const out = [];
+  const seen = new Set();
+  const add = (raw) => {
+    const cleaned = String(raw || '').replace(/\([^)]*\)/g, '').trim(); // drop "(of a spell)" etc.
+    for (const part of cleaned.split('/')) {
+      const w = part.trim();
+      const k = w.toLowerCase();
+      if (w && !seen.has(k)) { seen.add(k); out.push(w); }
+    }
+  };
+  for (const line of text.split('\n')) {
+    const m = line.match(/^\|\s*\*\*(.+?)\*\*\s*\|/); // bolded term in first table column
+    if (m) add(m[1]);
+    for (const grp of (line.match(/\(([^)]*)\)/g) || [])) {
+      for (const tok of grp.slice(1, -1).split(/[,;]/)) {
+        const t = tok.trim();
+        if (/^[A-Z][A-Za-z'’-]{2,}$/.test(t)) add(t); // single Capitalized word ⇒ spell/forma name
+      }
+    }
+  }
+  return out;
+}
+
+// Key NPC names from the case's key-npcs.md (each NPC is a "## <Name>" heading).
+// Same case-copy-then-globaldata fallback as the glossary.
+function readCaseKeyNpcs(session) {
+  let text = '';
+  try {
+    const caseFile = path.join(ensureSessionDataFolders(session).root, 'key-npcs.md');
+    const globalFile = path.join(GLOBAL_ROOT, 'key-npcs.md');
+    const file = fs.existsSync(caseFile) ? caseFile : globalFile;
+    if (fs.existsSync(file)) text = fs.readFileSync(file, 'utf8');
+  } catch { return []; }
+  const out = [];
+  for (const line of text.split('\n')) {
+    const m = line.match(/^##\s+(.+?)\s*$/); // level-2 heading = an NPC name
+    if (m) out.push(m[1].trim());
+  }
+  return out;
+}
+
+// Revert a globaldata-seeded case file to the globaldata version (overwrite).
+// Only files that exist in globaldata at the same relative path may be reverted.
+// Returns the repo-relative path written.
+function revertSeededFile(session, relativePath) {
+  const rel = String(relativePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
+  if (!rel || rel.split('/').includes('..')) { const e = new Error('Bad path.'); e.statusCode = 400; throw e; }
+  const seedPath = path.join(GLOBAL_ROOT, rel);
+  if (!fs.existsSync(seedPath) || !fs.statSync(seedPath).isFile()) {
+    const e = new Error('That file is not seeded from globaldata.'); e.statusCode = 404; throw e;
+  }
+  const paths = ensureSessionDataFolders(session);
+  const dest = path.join(paths.root, rel);
+  ensureParentDir(dest);
+  fs.copyFileSync(seedPath, dest);
+  return repoRelative(dest);
+}
+
+// ── Per-session voiceprint registry (Part B: session-audio diarization) ───────
+// Canonical "voices" tracked across diarization chunks (and future sessions).
+// Each speaker voiceprint from a chunk is matched to an existing canonical voice
+// by cosine similarity or seeds a new one; the GM maps a voice → character once
+// and it persists, so returning speakers auto-name. Voiceprints are biometric
+// (GDPR Art.9) — kept only in the git-ignored case data folder, never surfaced
+// or copied into handouts.
+function voiceRegistryPath(session) {
+  return path.join(ensureSessionDataFolders(session).root, 'voiceprints.json');
+}
+function loadVoiceRegistry(session) {
+  try {
+    const p = voiceRegistryPath(session);
+    if (fs.existsSync(p)) {
+      const r = JSON.parse(fs.readFileSync(p, 'utf8'));
+      if (r && Array.isArray(r.voices)) return r;
+    }
+  } catch { /* fall through to fresh */ }
+  return { voices: [] };
+}
+function saveVoiceRegistry(session, reg) {
+  const p = voiceRegistryPath(session);
+  ensureParentDir(p);
+  fs.writeFileSync(p, JSON.stringify(reg), 'utf8');
+}
+function _cosine(a, b) {
+  let d = 0, na = 0, nb = 0;
+  for (let i = 0; i < a.length; i++) { d += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i]; }
+  return d / (Math.sqrt(na) * Math.sqrt(nb) + 1e-9);
+}
+// Match an embedding to the registry, mutating it (updates the matched voice's
+// running-mean centroid, or appends a new voice). Returns { voice, sim, isNew }.
+function matchVoice(reg, embedding, threshold = 0.5) {
+  const emb = Array.from(embedding, Number);
+  let best = null, bestSim = -1;
+  for (const v of reg.voices) {
+    const s = _cosine(emb, v.centroid);
+    if (s > bestSim) { bestSim = s; best = v; }
+  }
+  if (best && bestSim >= threshold) {
+    for (let i = 0; i < emb.length; i++) {
+      best.centroid[i] = (best.centroid[i] * best.count + emb[i]) / (best.count + 1);
+    }
+    best.count += 1;
+    return { voice: best, sim: bestSim, isNew: false };
+  }
+  // Next id = max existing + 1 (not length+1, which would collide after pruning).
+  const used = reg.voices.map((x) => parseInt(String(x.id).slice(1), 10) || 0);
+  const nextId = (used.length ? Math.max(...used) : 0) + 1;
+  const v = { id: 'v' + nextId, centroid: emb.slice(), count: 1, character: null, sample: '' };
+  reg.voices.push(v);
+  return { voice: v, sim: bestSim, isNew: true };
+}
+function setVoiceCharacter(session, voiceId, character) {
+  const reg = loadVoiceRegistry(session);
+  const v = reg.voices.find((x) => x.id === voiceId);
+  if (!v) { const e = new Error('No such voice.'); e.statusCode = 404; throw e; }
+  v.character = character ? String(character).trim() : null;
+  saveVoiceRegistry(session, reg);
+  return v;
+}
+// Merge a falsely-split voice into another: fold `fromId`'s voiceprint into `toId`
+// (count-weighted so the centroid stays representative), inherit name/sample if the
+// target lacks them, and drop `fromId`. Future audio for that speaker then matches
+// the combined voice. Returns the updated voice list.
+function mergeVoice(session, fromId, toId) {
+  if (fromId === toId) { const e = new Error('Cannot merge a voice into itself.'); e.statusCode = 400; throw e; }
+  const reg = loadVoiceRegistry(session);
+  const from = reg.voices.find((x) => x.id === fromId);
+  const to = reg.voices.find((x) => x.id === toId);
+  if (!from || !to) { const e = new Error('No such voice.'); e.statusCode = 404; throw e; }
+  const tc = to.count || 1, fc = from.count || 1;
+  if (Array.isArray(to.centroid) && Array.isArray(from.centroid)) {
+    for (let i = 0; i < to.centroid.length; i++) {
+      to.centroid[i] = (to.centroid[i] * tc + (from.centroid[i] || 0) * fc) / (tc + fc);
+    }
+  }
+  to.count = tc + fc;
+  if (!to.character && from.character) to.character = from.character;
+  if (!to.sample && from.sample) to.sample = from.sample;
+  reg.voices = reg.voices.filter((x) => x.id !== fromId);
+  saveVoiceRegistry(session, reg);
+  return listVoices(session);
+}
+// Remove a voice outright (a genuinely spurious/noise cluster). Prefer mergeVoice
+// when it's really the same person split in two — delete fragments identity.
+function deleteVoice(session, voiceId) {
+  const reg = loadVoiceRegistry(session);
+  const before = reg.voices.length;
+  reg.voices = reg.voices.filter((x) => x.id !== voiceId);
+  if (reg.voices.length === before) { const e = new Error('No such voice.'); e.statusCode = 404; throw e; }
+  saveVoiceRegistry(session, reg);
+  return listVoices(session);
+}
+// Registry summary for the GM mapping UI (no raw centroids).
+function listVoices(session) {
+  return loadVoiceRegistry(session).voices
+    .filter((v) => (v.sample && v.sample.trim()) || v.character)  // no words, no voice
+    .map((v) => ({
+      id: v.id, character: v.character || null, count: v.count, sample: v.sample || ''
+    }));
+}
+
+// ── Live session-audio buffer (Part B: streaming capture) ─────────────────────
+// The browser streams audio slice-by-slice as it is captured (rather than
+// buffering big lumps before sending). Slices are appended here as raw 16-bit
+// mono PCM and diarized in a sliding window. Same git-ignored case data folder
+// as the voiceprints (biometric-adjacent; never surfaced or copied).
+function liveBufferPaths(session) {
+  const root = ensureSessionDataFolders(session).root;
+  return { pcm: path.join(root, 'live-audio.pcm'), state: path.join(root, 'live-state.json') };
+}
+function liveBufferState(session) {
+  try {
+    const { state } = liveBufferPaths(session);
+    if (fs.existsSync(state)) {
+      const s = JSON.parse(fs.readFileSync(state, 'utf8'));
+      if (s && typeof s.rate === 'number') return { rate: s.rate, total: s.total || 0, cursor: s.cursor || 0 };
+    }
+  } catch { /* fresh */ }
+  return { rate: 16000, total: 0, cursor: 0 };
+}
+function _saveLiveState(session, s) {
+  const { state } = liveBufferPaths(session);
+  ensureParentDir(state);
+  fs.writeFileSync(state, JSON.stringify(s), 'utf8');
+}
+function liveBufferReset(session, rate) {
+  const { pcm } = liveBufferPaths(session);
+  ensureParentDir(pcm);
+  try { fs.writeFileSync(pcm, Buffer.alloc(0)); } catch { /* ignore */ }
+  const s = { rate: Number(rate) || 16000, total: 0, cursor: 0 };
+  _saveLiveState(session, s);
+  return s;
+}
+function liveBufferAppend(session, int16Buffer) {
+  const { pcm } = liveBufferPaths(session);
+  ensureParentDir(pcm);
+  fs.appendFileSync(pcm, int16Buffer);                 // synchronous → atomic per request
+  const s = liveBufferState(session);
+  s.total += Math.floor(int16Buffer.length / 2);       // 2 bytes per mono sample
+  _saveLiveState(session, s);
+  return s;
+}
+function liveBufferAdvanceCursor(session, cursor) {
+  const s = liveBufferState(session);
+  s.cursor = Math.max(s.cursor, Math.min(Math.floor(cursor), s.total));
+  _saveLiveState(session, s);
+  return s;
+}
+// Read [startSample, endSample) from the buffer and wrap it in a WAV header at
+// the buffer's sample rate (mono, 16-bit) for the speech service.
+function liveBufferWindowWav(session, startSample, endSample) {
+  const { pcm } = liveBufferPaths(session);
+  const s = liveBufferState(session);
+  const a = Math.max(0, Math.floor(startSample)), b = Math.min(s.total, Math.floor(endSample));
+  const n = Math.max(0, b - a);
+  const data = Buffer.alloc(n * 2);
+  if (n > 0 && fs.existsSync(pcm)) {
+    const fd = fs.openSync(pcm, 'r');
+    try { fs.readSync(fd, data, 0, n * 2, a * 2); } finally { fs.closeSync(fd); }
+  }
+  const h = Buffer.alloc(44);
+  h.write('RIFF', 0); h.writeUInt32LE(36 + n * 2, 4); h.write('WAVE', 8);
+  h.write('fmt ', 12); h.writeUInt32LE(16, 16); h.writeUInt16LE(1, 20); h.writeUInt16LE(1, 22);
+  h.writeUInt32LE(s.rate, 24); h.writeUInt32LE(s.rate * 2, 28); h.writeUInt16LE(2, 32); h.writeUInt16LE(16, 34);
+  h.write('data', 36); h.writeUInt32LE(n * 2, 40);
+  return Buffer.concat([h, data]);
+}
+
 // The NPCs offered in this session: every canonical persona, plus any custom
 // "<Name> - personality.md" handouts present in the case.
 function listNpcPersonas(session) {
@@ -3289,6 +3610,7 @@ module.exports = {
   saveSessionFilePrompt,
   generateEntityImagePrompt,
   effectiveOllamaModel,
+  isCloudLlm,
   setOllamaModel,
   ollamaContextConfig,
   setOllamaNumCtx,
@@ -3298,8 +3620,28 @@ module.exports = {
   freeOllama,
   effectiveOllamaUrl,
   effectiveComfyuiUrl,
+  effectiveWhisperxUrl,
+  readCharacterPersonality,
+  writeCharacterPersonality,
+  readCaseGlossaryTerms,
+  readCaseKeyNpcs,
+  revertSeededFile,
+  loadVoiceRegistry,
+  saveVoiceRegistry,
+  matchVoice,
+  setVoiceCharacter,
+  mergeVoice,
+  deleteVoice,
+  listVoices,
+  liveBufferState,
+  liveBufferReset,
+  liveBufferAppend,
+  liveBufferAdvanceCursor,
+  liveBufferWindowWav,
   setServiceUrl,
   servicesConfig,
+  effectiveBoostAlpha,
+  setBoostAlpha,
   effectiveComfyuiImageModel,
   effectiveComfyuiEditModel,
   setComfyuiModel,

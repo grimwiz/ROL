@@ -25,6 +25,7 @@ const State = {
   llmBusy: false,
   llmPollTimer: null,
   llmLocalPending: 0,
+  llmCloud: false,        // cloud model → AI busy/cancel state is browser-local
   llmStatusTitle: 'An AI task is running (only one runs at a time on the shared GPU)',
   llmCanCancel: false,
   llmLastSection: null,
@@ -473,6 +474,9 @@ async function renderMain() {
           <span class="llm-dot"></span><span class="llm-text">AI working…</span>
           ${isGM ? '<button type="button" class="llm-stop" onclick="stopActiveRegen()" hidden>Stop</button>' : ''}
         </span>
+        <span id="nav-capture-status" class="llm-status" hidden title="Live session capture is recording">
+          <span class="llm-dot" style="background:#e33"></span><span class="cap-text">Recording…</span>
+        </span>
         <div class="dice-roller" title="Quick dice roller">
           <select id="nav-dice-select" class="dice-select" aria-label="Dice preset">
             ${DICE_PRESETS.map((preset) => `<option value="${preset.value}"${preset.value === '1d100' ? ' selected' : ''}>${preset.label}</option>`).join('')}
@@ -506,10 +510,13 @@ function applyLlmBusyUI(status) {
   // Locally-initiated work counts as busy immediately, before the server has
   // even entered the Ollama call — so the indicator never lags or flickers
   // off mid-operation when an early poll races ahead of the request.
-  const serverBusy = !!(status && status.busy);
+  if (status && typeof status.cloud === 'boolean') State.llmCloud = status.cloud;
+  // With a cloud model there is no shared GPU, so a busy server says nothing about
+  // *this* browser: ignore the server-global busy/cancel and track only local work.
+  const serverBusy = State.llmCloud ? false : !!(status && status.busy);
   const busy = serverBusy || State.llmLocalPending > 0;
   State.llmBusy = busy;
-  const serverCanCancel = !!(status && status.can_cancel && status.kind !== 'image');
+  const serverCanCancel = State.llmCloud ? false : !!(status && status.can_cancel && status.kind !== 'image');
   State.llmCanCancel = !!State.activeRegen || serverCanCancel;
   if (status && status.last_section) State.llmLastSection = status.last_section;
   else if (!busy) State.llmLastSection = null;
@@ -565,14 +572,16 @@ async function stopActiveRegen() {
   if (active) active.status = `Stopping · ${label}`;
   applyLlmBusyUI({ busy: true, kind: 'llm', can_cancel: true, last_section: label });
   try {
-    await api.cancelLlm();
+    // Cloud: aborting this browser's stream (below) is the whole cancel — the
+    // global /llm/cancel would stop every other user's generation too.
+    if (!State.llmCloud) await api.cancelLlm();
   } catch (e) {
     showAlert(e.message || 'Could not stop the language model', 'danger', 'scenario-alert');
   } finally {
     if (active && active.controller) {
       try { active.controller.abort(); } catch (_) {}
     }
-    pollLlmStatusOnce();
+    if (!State.llmCloud) pollLlmStatusOnce();
   }
 }
 window.stopActiveRegen = stopActiveRegen;
@@ -592,6 +601,9 @@ function startLlmStatusPolling() {
   pollLlmStatusOnce(); // one-shot at login; no interval while idle
 }
 function ensureLlmPolling() {
+  // Cloud mode owns busy state in the browser, so there is nothing to poll the
+  // server for — the local pending count drives the indicator directly.
+  if (State.llmCloud) return;
   if (State.llmPollTimer) return;
   State.llmPollTimer = setInterval(pollLlmStatusOnce, 3000);
 }
@@ -1198,6 +1210,7 @@ async function renderSessionAiSupport(sessionId) {
       <div class="gmchat-compose gmchat-compose-inline">
         <textarea id="rules-chat-text" rows="3" placeholder="Ask how a rule works, or how it applies${isGM ? ' to a character' : ' to your character'}…" onkeydown="rulesChatKey(event)"></textarea>
         <div class="gmchat-actions gmchat-actions-side">
+          ${chatMicBtnHtml('rules-chat-mic')}
           <button class="btn btn-primary" id="rules-chat-send" onclick="sendRulesChat()">Send</button>
           <button class="btn" id="rules-chat-stop" onclick="stopRulesChat()" style="display:none">Stop</button>
         </div>
@@ -1205,6 +1218,7 @@ async function renderSessionAiSupport(sessionId) {
     </div>`;
   renderRulesChatLog();
   setRulesChatStreaming(State.rulesChat.streaming);
+  wireChatMic('rules-chat-mic', 'rules-chat-text', sessionId);
 }
 
 async function renderSessionGmChat(sessionId) {
@@ -1241,6 +1255,7 @@ async function renderSessionGmChat(sessionId) {
             <option value="intricate">Intricate (hi-res, maps)</option>
           </select>
           <span style="flex:1"></span>
+          ${chatMicBtnHtml('gmchat-mic')}
           <button class="btn btn-primary" id="gmchat-send" onclick="sendGmChat(${sessionId})">Send</button>
           <button class="btn" id="gmchat-stop" onclick="stopGmChat(${sessionId})" style="display:none">Stop</button>
         </div>
@@ -1248,6 +1263,7 @@ async function renderSessionGmChat(sessionId) {
     </div>`;
   renderGmChatLog(sessionId);
   setGmChatStreaming(st.streaming);
+  wireChatMic('gmchat-mic', 'gmchat-text', sessionId);
   applyGmChatMode(sessionId);
 }
 
@@ -2363,6 +2379,7 @@ const CharacterPanel = (() => {
       try { attachSkillRollButtons(area, await buildSkillRollCtx(sessionId, char.user_id, true)); } catch {}
     }
     if (sessionId && char.name) { try { await appendCharacterFiles('cp-sheet-area', sessionId, char.name); } catch {} }
+    if (sessionId && char.id) { try { await mountPersonalityEditor('cp-sheet-area', sessionId, char.id, char.name || '', true); } catch {} }
   }
 
   async function selectNew(userId, username) {
@@ -2518,6 +2535,7 @@ async function renderPlayerSessionView(sessionId) {
   SheetForm.render(el('sheet-form-area'), hasSheet ? sheet.data : {}, false);
   try { attachSkillRollButtons(el('sheet-form-area'), await buildSkillRollCtx(sessionId, State.user.id, false)); } catch (e) { /* non-fatal */ }
   try { await appendCharacterFiles('sheet-form-area', sessionId, (sheet && sheet.data && sheet.data.name) || ''); } catch { /* non-fatal */ }
+  try { await mountPersonalityEditor('sheet-form-area', sessionId, sheet && sheet.id, (sheet && sheet.data && sheet.data.name) || '', true); } catch { /* non-fatal */ }
 }
 
 // Surface the character-specific Markdown files (persona, etc.) at the foot of
@@ -2546,6 +2564,588 @@ async function appendCharacterFiles(hostId, sessionId, charName) {
     </div>`);
 }
 window.appendCharacterFiles = appendCharacterFiles;
+
+// Personality / background editor with toggle-to-dictate, generic over whichever
+// character is in focus (a player's own sheet, or a GM's NPC). `canEdit` gates
+// writing. The text is the same "<Name> - personality.md" handout the
+// talk-to-character AI loads. Dictation uses VAD endpointing (the Home Assistant
+// model): record continuously, transcribe each utterance at a speech pause, and
+// insert it at the textarea cursor.
+async function mountPersonalityEditor(hostId, sessionId, characterId, charName, canEdit) {
+  const host = el(hostId);
+  if (!host || !sessionId || !characterId) return;
+  let initial = '';
+  try { const r = await api.getCharacterPersonality(sessionId, characterId); initial = (r && r.content) || ''; }
+  catch { return; }
+  const secure = !!(window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.style.marginTop = '1rem';
+  card.innerHTML = `
+    <div class="card-header">
+      <div>
+        <div class="card-title">Personality &amp; background${charName ? ` — ${esc(charName)}` : ''}</div>
+        <div class="card-sub">Free text the AI loads when you talk to this character.</div>
+      </div>
+      ${canEdit ? `<button class="btn" id="pers-mic"${secure ? '' : ' disabled title="Microphone needs an HTTPS (secure) connection"'}>🎤 Dictate</button>` : ''}
+    </div>
+    <textarea id="pers-text" rows="8" spellcheck="true" style="width:100%;box-sizing:border-box;font:inherit;padding:0.6rem;border:1px solid var(--border,#ccc);border-radius:6px;resize:vertical"${canEdit ? '' : ' readonly'}></textarea>
+    ${canEdit ? `<div style="display:flex;gap:0.6rem;align-items:center;margin-top:0.5rem">
+      <button class="btn btn-primary" id="pers-save">Save</button>
+      <span class="save-status" id="pers-status"></span>
+    </div>` : ''}`;
+  host.appendChild(card);
+  const ta = card.querySelector('#pers-text');
+  ta.value = initial;
+  if (!canEdit) return;
+  const status = card.querySelector('#pers-status');
+  const saveBtn = card.querySelector('#pers-save');
+  const norm = (s) => String(s || '').replace(/\r\n?/g, '\n');
+  let saved = initial;
+  const updateSave = () => { saveBtn.disabled = norm(ta.value) === norm(saved); };
+  updateSave();
+  ta.addEventListener('input', updateSave);
+  saveBtn.addEventListener('click', async () => {
+    status.textContent = 'Saving…'; status.className = 'save-status'; saveBtn.disabled = true;
+    try {
+      await api.saveCharacterPersonality(sessionId, characterId, ta.value);
+      saved = ta.value;
+      status.textContent = '✓ Saved'; status.className = 'save-status saved';
+    } catch (e) { status.textContent = '✕ ' + e.message; status.className = 'save-status error'; }
+    updateSave();
+  });
+  const mic = card.querySelector('#pers-mic');
+  // Dictating into a character's personality also enrols the speaker's voice as
+  // that character (label kept, audio discarded), so session capture auto-names them.
+  if (mic && secure) wireDictation(mic, ta, sessionId, status, charName ? { enrollCharacter: charName } : undefined);
+}
+window.mountPersonalityEditor = mountPersonalityEditor;
+
+// Toggle-to-dictate with browser-side VAD endpointing. While active we record a
+// segment, and on each speech→silence transition we cut it, transcribe that
+// utterance via the proxy, and insert the text at the cursor — then immediately
+// record the next one. Click again to stop.
+function wireDictation(btn, ta, sessionId, status, opts) {
+  opts = opts || {};
+  const speakerMode = !!opts.speakers; // session capture: identify + label speakers
+  status = status || { textContent: '', className: '' }; // tolerate no status element
+  let active = false, stream = null, ctx = null, analyser = null, buf = null;
+  let recorder = null, chunks = [], speaking = false, silenceStart = 0, raf = 0;
+  // Speaker-mode state: online voice clustering + auto block formatting.
+  const speakers = []; // { label, centroid:[], count }
+  let multi = false, lastSpeaker = null, firstSpeaker = null, firstTs = '', blockStart = null;
+
+  function insertAtCursor(text) {
+    const t = String(text || '').trim();
+    if (!t) return;
+    const pos = (ta.selectionStart != null) ? ta.selectionStart : ta.value.length;
+    const before = ta.value.slice(0, pos), after = ta.value.slice(pos);
+    const ins = (before && !/\s$/.test(before) ? ' ' : '') + t + (after && !/^\s/.test(after) ? ' ' : '');
+    ta.value = before + ins + after;
+    ta.selectionStart = ta.selectionEnd = pos + ins.length;
+    ta.dispatchEvent(new Event('input', { bubbles: true })); // so Save-state listeners react to dictation
+    ta.focus();
+  }
+
+  async function flush(blob) {
+    if (!blob || blob.size < 1000) return;
+    try {
+      const b64 = await blobToBase64(blob);
+      const payload = { audio_base64: b64, mime: blob.type || 'audio/webm' };
+      if (opts.enrollCharacter) payload.enroll_character = opts.enrollCharacter;  // dictation doubles as voiceprint enrolment
+      const r = await api.transcribeAudio(sessionId, payload);
+      insertAtCursor(r && r.text);
+    } catch (e) { status.textContent = '✕ ' + e.message; status.className = 'save-status error'; }
+  }
+
+  function startSegment() {
+    chunks = [];
+    recorder = new MediaRecorder(stream);
+    recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+    recorder.onstop = () => {
+      flush(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }));
+      if (active) startSegment();
+    };
+    recorder.start();
+  }
+
+  function monitor() {
+    analyser.getByteTimeDomainData(buf);
+    let sum = 0;
+    for (let i = 0; i < buf.length; i++) { const v = (buf[i] - 128) / 128; sum += v * v; }
+    const rms = Math.sqrt(sum / buf.length), now = performance.now();
+    if (rms > 0.025) { speaking = true; silenceStart = 0; }
+    else if (speaking) {
+      if (!silenceStart) silenceStart = now;
+      else if (now - silenceStart > 450) {
+        speaking = false; silenceStart = 0;
+        if (recorder && recorder.state === 'recording') recorder.stop(); // cut → transcribe + restart
+      }
+    }
+    if (active) raf = requestAnimationFrame(monitor);
+  }
+
+  async function start() {
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch (e) { status.textContent = '✕ Mic blocked: ' + e.message; status.className = 'save-status error'; return; }
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = ctx.createAnalyser(); analyser.fftSize = 1024;
+    buf = new Uint8Array(analyser.fftSize);
+    ctx.createMediaStreamSource(stream).connect(analyser);
+    active = true; speaking = false; silenceStart = 0;
+    btn.classList.add('btn-danger'); btn.textContent = '⏹ Stop';
+    status.textContent = '● Listening…'; status.className = 'save-status';
+    startSegment();
+    raf = requestAnimationFrame(monitor);
+  }
+
+  function stop() {
+    active = false;
+    cancelAnimationFrame(raf);
+    if (recorder && recorder.state === 'recording') recorder.stop();
+    if (stream) stream.getTracks().forEach((t) => t.stop());
+    if (ctx) ctx.close().catch(() => {});
+    stream = null; ctx = null; analyser = null;
+    btn.classList.remove('btn-danger'); btn.textContent = '🎤 Dictate';
+    if (status.textContent === '● Listening…') status.textContent = '';
+  }
+
+  btn.addEventListener('click', () => { active ? stop() : start(); });
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(String(fr.result).split(',')[1] || '');
+    fr.onerror = reject;
+    fr.readAsDataURL(blob);
+  });
+}
+
+// A compact 🎤 dictate button for a chat compose row, + post-render wiring that
+// hooks the same VAD dictation engine to that chat's textarea. Disabled (with a
+// reason) when the page isn't a secure context, since getUserMedia needs HTTPS.
+function micSupported() {
+  return !!(window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+}
+function chatMicBtnHtml(id) {
+  const ok = micSupported();
+  return `<button class="btn" id="${id}" title="${ok ? 'Dictate' : 'Microphone needs an HTTPS (secure) connection'}"${ok ? '' : ' disabled'}>🎤</button>`;
+}
+function wireChatMic(micId, textId, sessionId) {
+  const m = el(micId), t = el(textId);
+  if (m && t && micSupported()) wireDictation(m, t, sessionId, null);
+}
+
+// ── Session capture (Part B) ────────────────────────────────────────────────
+// Continuous recording sliced into ~5-min overlapping lumps → /diarize-chunk →
+// canonical-voice-attributed segments, stitched by absolute-time dedup into
+// "## Voice/Character  HH:MM" blocks. The voices panel lets the GM name each
+// voice; renaming re-labels the whole transcript live and persists.
+let _sessionCapture = null;
+
+function renderEfVoicesPanel(voices, sessionId) {
+  const host = el('ef-voices');
+  if (!host) return;
+  if (!voices || !voices.length) { host.innerHTML = ''; return; }   // no card until a capture finds voices
+  const rows = (voices || []).map((v) => {
+    const others = (voices || []).filter((o) => o.id !== v.id);
+    const mergeCtl = others.length
+      ? `<select title="This voice is really the same person as another — merge it in (combines the voiceprints, keeps one identity)" onchange="efMergeVoice(${sessionId}, '${esc(v.id)}', this)" style="padding:0.3rem;width:140px;flex:none">
+           <option value="">merge into…</option>
+           ${others.map((o) => `<option value="${esc(o.id)}">${esc(o.character || o.id)}</option>`).join('')}
+         </select>`
+      : '';
+    return `
+    <div style="display:flex;gap:0.5rem;align-items:center;padding:0.25rem 0">
+      <strong style="min-width:2.2rem;flex:none">${esc(v.id)}</strong>
+      <input value="${esc(v.character || '')}" placeholder="character name…" data-voice="${esc(v.id)}" data-prev="${esc(v.character || v.id)}" onchange="efNameVoice(${sessionId}, this)" style="width:150px;flex:none;padding:0.3rem 0.5rem">
+      <button class="btn btn-sm" style="flex:none" title="Forget who this is: keeps the voiceprint (so it stays one voice) but clears the name and marks it unidentified" onclick="efUnidentifyVoice(${sessionId}, '${esc(v.id)}')">unidentify</button>
+      ${mergeCtl}
+      <button class="btn btn-sm" style="flex:none" title="Delete this voice — only for a genuinely spurious/noise voice. If it's really the same person as another, use ‘merge into’ instead." onclick="efDeleteVoice(${sessionId}, '${esc(v.id)}')">delete</button>
+      <span style="font-size:0.78rem;color:var(--text2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">×${v.count} — ${esc(v.sample || '')}</span>
+    </div>`;
+  }).join('');
+  host.innerHTML = `
+    <div class="card" style="margin-top:1rem">
+      <div class="card-header"><div>
+        <div class="card-title">Session voices${voices && voices.length ? ` (${voices.length})` : ''}</div>
+        <div class="card-sub">Each distinct voice the capture hears appears here — type a character name to label it everywhere (persists for future sessions). If one person was split into two, use <strong>merge into</strong>; <strong>delete</strong> only a spurious voice.</div>
+      </div></div>
+      ${rows || '<div class="card-sub" style="padding:0.4rem 0">No voices yet — start a capture and they appear as speakers are heard.</div>'}
+    </div>`;
+}
+
+async function efNameVoice(sessionId, input) {
+  const id = input.dataset.voice, name = input.value.trim();
+  const prev = input.dataset.prev || id, next = name || id;
+  try { await api.setVoiceCharacter(sessionId, id, name); }
+  catch (e) { showAlert(e.message, 'danger', 'scenario-alert'); return; }
+  input.dataset.prev = next;
+  // Relabel the transcript headers directly in the editor text, so it works
+  // whether a capture is running, stopped, or reloaded. Headers carry either the
+  // stable voice id ("## v1") or a previously-applied name ("## Tim"); match both.
+  const ta = el('scenario-source-editor');
+  if (ta) relabelHeaders(ta, [id, prev], next);
+  // Keep a running capture's in-memory labels in sync so its next auto-render agrees.
+  if (_sessionCapture && _sessionCapture.sessionId === sessionId) {
+    if (name) _sessionCapture.voiceName[id] = name; else delete _sessionCapture.voiceName[id];
+    if (_sessionCapture.relabelBase) _sessionCapture.relabelBase([id, prev], next);  // keep the preserved prefix in sync
+  }
+}
+window.efNameVoice = efNameVoice;
+
+// GM remedy for a mis-enrolled/mislabelled voice: clear the name but KEEP the
+// voiceprint, so the speaker stays a single voice (deleting would re-enrol them
+// under a new number). Relabels the transcript headers back to the voice id.
+function efUnidentifyVoice(sessionId, voiceId) {
+  const host = el('ef-voices');
+  const sel = 'input[data-voice="' + (window.CSS && CSS.escape ? CSS.escape(voiceId) : voiceId) + '"]';
+  const input = host && host.querySelector(sel);
+  if (!input) return;
+  input.value = '';
+  efNameVoice(sessionId, input);
+}
+window.efUnidentifyVoice = efUnidentifyVoice;
+
+// Merge a falsely-split voice into another (same person heard as two). Combines the
+// voiceprints server-side, then relabels this voice's transcript headers to the target.
+async function efMergeVoice(sessionId, fromId, sel) {
+  const into = sel && sel.value;
+  if (!into) return;
+  let voices = [];
+  try { const r = await api.mergeVoice(sessionId, fromId, into); voices = (r && r.voices) || []; }
+  catch (e) { showAlert(e.message, 'danger', 'scenario-alert'); if (sel) sel.value = ''; return; }
+  const target = voices.find((x) => x.id === into);
+  const next = (target && target.character) || into;
+  const ta = el('scenario-source-editor');
+  if (ta) relabelHeaders(ta, [fromId], next);
+  if (_sessionCapture && _sessionCapture.sessionId === sessionId) {
+    delete _sessionCapture.voiceName[fromId];
+    if (_sessionCapture.relabelBase) _sessionCapture.relabelBase([fromId], next);
+    if (_sessionCapture.remapVoice) _sessionCapture.remapVoice(fromId, into);
+  }
+  renderEfVoicesPanel(voices, sessionId);
+  applyVoiceNamesToEditor(voices);
+}
+window.efMergeVoice = efMergeVoice;
+
+// Delete a genuinely spurious voice. Its transcript headers fall back to the
+// "speaker pending" marker (…). Prefer merge for a real-but-split speaker.
+async function efDeleteVoice(sessionId, voiceId) {
+  if (!confirm('Delete voice ' + voiceId + '?\n\nUse “merge into” instead if this is really the same person as another voice.')) return;
+  let voices = [];
+  try { const r = await api.deleteVoice(sessionId, voiceId); voices = (r && r.voices) || []; }
+  catch (e) { showAlert(e.message, 'danger', 'scenario-alert'); return; }
+  const ta = el('scenario-source-editor');
+  if (ta) relabelHeaders(ta, [voiceId], '…');
+  if (_sessionCapture && _sessionCapture.sessionId === sessionId) {
+    delete _sessionCapture.voiceName[voiceId];
+    if (_sessionCapture.remapVoice) _sessionCapture.remapVoice(voiceId, null);
+  }
+  renderEfVoicesPanel(voices, sessionId);
+}
+window.efDeleteVoice = efDeleteVoice;
+
+// Replace transcript headers "## <oldLabel>  …" with "## <next>  …" for any of
+// the given old labels (voice id and/or prior name). Marks the editor dirty.
+function relabelHeadersStr(text, oldLabels, next) {
+  let v = text;
+  for (const o of [...new Set(oldLabels.filter((x) => x && x !== next))]) {
+    const e = o.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    v = v.replace(new RegExp('(^|\\n)## ' + e + '(?=\\s)', 'g'), '$1## ' + next);
+  }
+  return v;
+}
+function relabelHeaders(ta, oldLabels, next) {
+  const v = relabelHeadersStr(ta.value, oldLabels, next);
+  if (v !== ta.value) { ta.value = v; ta.dispatchEvent(new Event('input', { bubbles: true })); }
+}
+
+// When a captured file opens, apply any names already mapped in the registry so
+// the displayed transcript matches (e.g. saved "## v1" → "## Tim").
+function applyVoiceNamesToEditor(voices) {
+  const ta = el('scenario-source-editor');
+  if (!ta || !voices) return;
+  for (const v of voices) if (v.character) relabelHeaders(ta, [v.id], v.character);
+}
+
+function wireSessionCapture(initialBtn, ta, sessionId) {
+  // Two independent layers:
+  //  (1) LIVE transcription — VAD-segmented utterances are transcribed and printed
+  //      the instant you speak, and KEPT verbatim. These words ARE the transcript;
+  //      nothing ever re-writes or removes them (that visual feedback matters).
+  //  (2) DIARIZATION — a separate labelling pass over a BIG window (≥ DIAR_MIN, cut
+  //      at a sentence-ending full stop). It only attaches the `## speaker` heading
+  //      to words layer (1) already wrote; a big window keeps each voice one identity.
+  // Audio is streamed to a server buffer (SLICE_SEC) for the diarization pass.
+  const SLICE_SEC = 5;          // stream this much audio per upload
+  const LIVE_MAX_SEC = 7;       // emit a live chunk after this much unbroken speech (keeps subtitles flowing)
+  const DIAR_MIN_SEC = 30;      // diarize incrementally: first labels ~30s in, then
+  const DIAR_MAX_SEC = 75;      // every ~30-75s — small windows = no timeout/GPU stall,
+                                //   yet enough audio to keep each voice one identity.
+  const DIAR_WINDOW_MAX_SEC = 90; // hard cap per call (matches server); but we prefer
+                                //   to end the window EARLIER on a real pause so no
+                                //   speaker straddles the cut (which fragments voices).
+  let btn = initialBtn;   // re-bindable: the editor DOM is recreated on tab navigation,
+                          // so a running capture re-attaches to the fresh button (attach()).
+  let active = false, stream = null, ctx = null, proc = null, srcNode = null, sink = null;
+  let rate = 16000, total = 0, recStartMs = 0;
+  let basePrefix = '';    // existing file content captured at start — new transcript is appended below it
+  let slice = [], sliceLen = 0, ingestChain = Promise.resolve(), uploading = 0;
+  let liveSpk = false, liveSil = 0, liveBuf = [], liveLen = 0, liveStartAbs = 0;
+  let diarBusy = false, diarFlushing = false, lastDiarEndSec = 0, statusTimer = null;
+  const liveSegs = [];    // {abs,end,text,voice?} live utterances — the kept transcript
+  const voiceName = {};   // voiceId -> character
+
+  const pad = (n) => String(n).padStart(2, '0');
+  const clockOf = (absSec) => { const d = new Date(recStartMs + absSec * 1000); return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); };
+
+  function concatF32(chunks, len) {
+    const out = new Float32Array(len); let o = 0;
+    for (const c of chunks) { out.set(c, o); o += c.length; }
+    return out;
+  }
+  function encodeWav(f32, sr) {
+    const n = f32.length, ab = new ArrayBuffer(44 + n * 2), v = new DataView(ab);
+    const wr = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+    wr(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); wr(8, 'WAVE'); wr(12, 'fmt ');
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true);
+    v.setUint16(34, 16, true); wr(36, 'data'); v.setUint32(40, n * 2, true);
+    let o = 44;
+    for (let i = 0; i < n; i++) { let s = Math.max(-1, Math.min(1, f32[i])); v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7fff, true); o += 2; }
+    return new Blob([ab], { type: 'audio/wav' });
+  }
+  function f32ToInt16Blob(f32) {     // raw little-endian PCM (no WAV header) for streaming
+    const n = f32.length, ab = new ArrayBuffer(n * 2), v = new DataView(ab);
+    for (let i = 0, o = 0; i < n; i++, o += 2) { let s = Math.max(-1, Math.min(1, f32[i])); v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7fff, true); }
+    return new Blob([ab]);
+  }
+  function rerender() {
+    const ta = el('scenario-source-editor');   // look up live: the editor node is recreated on tab nav
+    if (!ta) return;                            // editor not mounted now — liveSegs still holds the transcript
+    let out = '', last = null, lastEnd = 0;
+    const PARA_GAP = 1.5;   // same-speaker pause (s) → paragraph break
+    for (const u of liveSegs) {
+      const t = (u.text || '').trim();
+      if (!t) continue;
+      const label = u.voice ? (voiceName[u.voice] || u.voice) : '…';   // '…' = speaker not diarized yet
+      if (label !== last) { out += (out ? '\n\n' : '') + `## ${label}  ${clockOf(u.abs)}\n${t}`; last = label; }
+      else out += ((u.abs - lastEnd) > PARA_GAP ? '\n\n' : ' ') + t;
+      lastEnd = u.end || u.abs;
+    }
+    // Append this capture's transcript to whatever was already in the file, so a
+    // session can be built up across multiple captures (breaks, etc.) without wiping it.
+    const pre = basePrefix.replace(/\s+$/, '');
+    const followBottom = ta.scrollHeight - ta.scrollTop - ta.clientHeight < 80;  // only autoscroll if already following
+    ta.value = pre + (pre && out ? '\n\n' : '') + out;
+    if (followBottom) ta.scrollTop = ta.scrollHeight;   // keep incoming speech in view
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  // Recording status lives in the top nav pill (next to "AI working…"), not on the
+  // button — so the button keeps a fixed label and the toolbar never jumps.
+  let finishing = false;
+  function status() {
+    const pill = el('nav-capture-status');
+    if (!pill) return;
+    if (!active && !finishing) { pill.hidden = true; return; }
+    const txt = pill.querySelector('.cap-text');
+    if (txt) {
+      const mmss = (s) => Math.floor(s / 60) + ':' + String(Math.max(0, Math.floor(s % 60))).padStart(2, '0');
+      txt.textContent = finishing ? 'finishing…'
+        : `Recording ${mmss(total / rate)} — click to stop` + (diarBusy ? ' · transcribing…' : '') + (uploading ? ' · uploading' : '');
+    }
+    pill.hidden = false;
+    pill.style.cursor = 'pointer';                       // the pill is also the stop control, from any tab
+    pill.title = 'Click to stop the live session capture';
+    pill.onclick = () => { if (active && !finishing) stop(); };
+  }
+  let errAt = 0;
+  function noteError(msg) {     // surface speech-service failures at the top of the screen (throttled)
+    if (Date.now() - errAt > 20000) { errAt = Date.now(); showAlert(msg, 'danger', 'scenario-alert'); }
+  }
+
+  // Stream the pending slice to the server, serialised in capture order.
+  function flushSlice() {
+    if (!sliceLen) return ingestChain;
+    const f32 = concatF32(slice, sliceLen); slice = []; sliceLen = 0;
+    ingestChain = ingestChain.then(async () => {
+      uploading++; status();
+      try { await api.ingestAudio(sessionId, await blobToBase64(f32ToInt16Blob(f32))); }
+      catch (e) { /* a dropped slice is non-fatal to the running stream */ }
+      finally { uploading--; status(); }
+    });
+    return ingestChain;
+  }
+
+  // Diarization result = speaker turns. We use only their times+voice to LABEL the
+  // live words we already wrote (the diarized text itself is discarded). Each word's
+  // speaker is cached once, so rerender stays cheap and labels never disturb words.
+  function mergeResult(r) {
+    const newTurns = (r.segments || []).map((s) => ({ start: s.start, end: s.end, voice: s.voice }));
+    const upto = (typeof r.cursor_sec === 'number') ? r.cursor_sec
+      : (newTurns.length ? newTurns[newTurns.length - 1].end : lastDiarEndSec);
+    for (const u of liveSegs) {
+      if (u.voice) continue;                       // already labelled
+      const mid = (u.abs + (u.end || u.abs)) / 2;
+      if (mid > upto + 0.5) continue;              // not yet inside a diarized window
+      let pick = null, bg = 1e9;
+      for (const tn of newTurns) {
+        const g = mid < tn.start ? tn.start - mid : (mid > tn.end ? mid - tn.end : 0);
+        if (g < bg) { bg = g; pick = tn.voice; }
+      }
+      if (pick) u.voice = pick;
+    }
+    if (typeof r.cursor_sec === 'number') lastDiarEndSec = r.cursor_sec;
+    for (const v of (r.voices || [])) if (v.character) voiceName[v.id] = v.character;
+    renderEfVoicesPanel(r.voices || [], sessionId);
+    rerender();
+  }
+  // Diarize ONE bounded window, ending at `untilSec` (a real pause) if given.
+  // Returns whether the server still has a backlog.
+  async function runDiar(final, untilSec) {
+    if (diarBusy) return false;
+    diarBusy = true; status();
+    let more = false;
+    try { const r = await api.diarizeWindow(sessionId, final, untilSec); if (r && !r.pending) { mergeResult(r); more = !!r.more; } }
+    catch (e) { noteError('Diarization failed — is the speech service up? ' + (e && e.message || e)); }
+    finally { diarBusy = false; status(); }
+    return more;
+  }
+  // Preferred window end: the LATEST real pause within the hard cap, so no speaker
+  // straddles the cut (a mid-turn cut is what fragments one voice into many). 0 = let
+  // the server fall back to total/cap (only if there's no pause at all in range).
+  function diarCutSec() {
+    const from = lastDiarEndSec, cap = from + DIAR_WINDOW_MAX_SEC;
+    let best = 0;
+    for (const u of liveSegs) { const e = u.end || u.abs; if (u.gap && e > from + 1 && e <= cap) best = e; }
+    return best;
+  }
+  // Ship pending audio, then drain the diarization backlog in bounded windows (one
+  // session may be hours long — never a single block), each cut on a pause. Mid-session
+  // we stop once the un-diarized tail drops below the minimum, so a few seconds aren't
+  // diarized as their own fragment; `final` (stop) flushes the tail so nothing is lost.
+  async function runDiarFlush(final) {
+    if (diarFlushing) return;
+    diarFlushing = true;
+    try {
+      await flushSlice();
+      for (let i = 0; i < 1000; i++) {
+        if (!(await runDiar(true, diarCutSec()))) break;             // caught up
+        if (!final && (total / rate - lastDiarEndSec) < DIAR_MIN_SEC) break;  // leave a sub-minimum tail
+      }
+    } finally { diarFlushing = false; }
+  }
+
+  async function liveTranscribe(f32, absStart, absEnd, gap) {
+    if (f32.length < rate * 0.3) return;            // <0.3s, skip
+    try {
+      const r = await api.transcribeAudio(sessionId, { audio_base64: await blobToBase64(encodeWav(f32, rate)), mime: 'audio/wav' });
+      const t = (r && r.text || '').trim();
+      if (t) { liveSegs.push({ abs: absStart, end: absEnd, text: t, gap: !!gap }); rerender(); maybeDiarize(t, gap); }
+    } catch (e) { noteError('Live transcription failed — is the speech service up? ' + (e && e.message || e)); }
+  }
+  // Kick off the diarization drain once enough speech has built up — preferring a
+  // real pause that ends a sentence; or unconditionally once we hit the soft max.
+  function maybeDiarize(lastText, gap) {
+    if (diarFlushing || diarBusy) return;
+    const undiarized = total / rate - lastDiarEndSec;
+    const cleanEnd = gap && /[.!?]["'”’)\]]?\s*$/.test(lastText);
+    if ((undiarized >= DIAR_MIN_SEC && cleanEnd) || undiarized >= DIAR_MAX_SEC) runDiarFlush(false);
+  }
+
+  function onaudio(e) {
+    const d = new Float32Array(e.inputBuffer.getChannelData(0));
+    const startAbs = total; total += d.length;
+    // stream tier: accumulate a slice and ship it as soon as it fills (for diarization)
+    slice.push(d); sliceLen += d.length;
+    if (sliceLen >= SLICE_SEC * rate) flushSlice();
+    // live tier: VAD-segment each utterance and transcribe it the instant it ends —
+    // those words are the transcript and are kept; diarization later only labels them.
+    let sum = 0; for (let i = 0; i < d.length; i++) sum += d[i] * d[i];
+    const rms = Math.sqrt(sum / d.length);
+    if (rms > 0.02) {
+      if (!liveSpk) { liveSpk = true; liveStartAbs = startAbs; liveBuf = []; liveLen = 0; }
+      liveSil = 0; liveBuf.push(d); liveLen += d.length;
+      if (liveLen >= LIVE_MAX_SEC * rate) {       // unbroken speech too long — emit so subtitles keep up
+        const u = concatF32(liveBuf, liveLen); const a0 = liveStartAbs;
+        liveBuf = []; liveLen = 0; liveStartAbs = total;   // continue a fresh run from here
+        liveTranscribe(u, a0 / rate, total / rate, false);  // forced cut, NOT a real pause
+      }
+    } else if (liveSpk) {
+      liveBuf.push(d); liveLen += d.length; liveSil += d.length / rate;
+      if (liveSil > 0.4) {                          // shorter pause → words appear sooner
+        liveSpk = false; liveSil = 0;
+        const u = concatF32(liveBuf, liveLen); const a0 = liveStartAbs, a1 = liveStartAbs + liveLen;
+        liveBuf = []; liveLen = 0;
+        liveTranscribe(u, a0 / rate, a1 / rate, true);      // ended on a real pause
+      }
+    }
+  }
+  async function start() {
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch (e) { showAlert('Mic blocked: ' + e.message, 'danger', 'scenario-alert'); return; }
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    try { await ctx.resume(); } catch (e) { /* may already be running */ }
+    rate = ctx.sampleRate; recStartMs = Date.now();
+    basePrefix = ((el('scenario-source-editor') || {}).value) || '';  // preserve existing content; append below it
+    total = 0; lastDiarEndSec = 0; liveSegs.length = 0;
+    slice = []; sliceLen = 0; ingestChain = Promise.resolve();
+    liveSpk = false; liveSil = 0; liveBuf = []; liveLen = 0; diarFlushing = false;
+    try { await api.liveStart(sessionId, rate); }
+    catch (e) {
+      showAlert('Capture start failed: ' + e.message, 'danger', 'scenario-alert');
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+      if (ctx) ctx.close().catch(() => {});
+      return;
+    }
+    srcNode = ctx.createMediaStreamSource(stream);
+    proc = ctx.createScriptProcessor(4096, 1, 1);
+    proc.onaudioprocess = onaudio;
+    sink = ctx.createGain(); sink.gain.value = 0;     // silent sink (no mic playback)
+    srcNode.connect(proc); proc.connect(sink); sink.connect(ctx.destination);
+    active = true; finishing = false; bindBtn(btn); status();
+    statusTimer = setInterval(status, 500);
+    _sessionCapture = { sessionId, voiceName, rerender, stop, active: true, pendingRestore: false,
+      attach: (b) => { bindBtn(b); rerender(); status(); },   // re-connect to a freshly-rendered editor/button
+      relabelBase: (oldLabels, next) => { basePrefix = relabelHeadersStr(basePrefix, oldLabels, next); },
+      remapVoice: (from, into) => { for (const u of liveSegs) if (u.voice === from) u.voice = into; rerender(); } };
+  }
+  async function stop() {
+    active = false;
+    if (_sessionCapture) _sessionCapture.active = false;
+    if (statusTimer) { clearInterval(statusTimer); statusTimer = null; }
+    if (proc) proc.disconnect();
+    if (srcNode) srcNode.disconnect();
+    if (sink) sink.disconnect();
+    if (stream) stream.getTracks().forEach((t) => t.stop());
+    if (ctx) ctx.close().catch(() => {});
+    bindBtn(btn);                                        // back to idle label
+    finishing = true; status();                          // pill shows "finishing…"; button stays put
+    // Bound every wait so a dead/restarting server can never wedge finishing/the tab.
+    const cap = (p, ms) => Promise.race([Promise.resolve(p).catch(() => {}), new Promise((r) => setTimeout(r, ms))]);
+    try {
+      await cap(flushSlice(), 8000);                     // ship the final slice (give up after 8s)
+      for (let i = 0; i < 30 && (diarBusy || diarFlushing); i++) await new Promise((r) => setTimeout(r, 200));  // let an in-flight drain settle
+      await cap(runDiarFlush(true), 120000);             // stop: drain everything, incl. a short tail
+    } catch { /* never let cleanup hang the UI */ }
+    finishing = false; status();                         // always hide the pill
+    // If we stopped from the nav pill while the editor wasn't on screen, the transcript
+    // hasn't been painted anywhere — flag it so re-opening Edit Files restores it once.
+    if (_sessionCapture) _sessionCapture.pendingRestore = !el('scenario-source-editor');
+  }
+  // (Re)bind the capture button — the editor (and its button) is recreated on tab nav,
+  // so a running capture points itself at whatever button is currently on screen.
+  function bindBtn(b) {
+    if (!b) return;
+    btn = b;
+    btn.classList.toggle('btn-danger', active);
+    btn.textContent = active ? '⏹ Stop' : '🎙 Capture session';
+    btn.onclick = () => active ? stop() : start();
+  }
+  bindBtn(initialBtn);
+}
 
 async function saveSheet(sessionId) {
   const status = el('save-status');
@@ -3927,15 +4527,18 @@ function renderScenarioSourceEditor(sources) {
             </div>
             <textarea id="scenario-source-editor" data-source-index="${preferredIndex.index}" rows="18">${esc(preferredIndex.content || '')}</textarea>
             <div class="scenario-source-actions">
-              <button class="btn btn-primary" onclick="saveSessionScenarioSources(${State.currentSession}, this)">Save file</button>
+              <button class="btn" id="ef-mic"${(window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? '' : ' disabled title="Microphone needs an HTTPS (secure) connection"'}>🎤 Dictate</button>
+              <button class="btn" id="ef-capture"${(window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? '' : ' disabled title="Microphone needs an HTTPS (secure) connection"'} title="Record a live session; speakers are identified and labelled">🎙 Capture session</button>
+              <button class="btn btn-primary" id="ef-save" onclick="saveSessionScenarioSources(${State.currentSession}, this)">Save file</button>
               <button class="btn" onclick="revertScenarioSourceEditor()">Revert</button>
               <button class="btn" onclick="toggleSelectedSourceVisibility(${State.currentSession})" title="Move this file between the GM-only and player folders">GM Only ⇄ Player Handout</button>
               <button class="btn" onclick="efDownloadSelected(${State.currentSession})">Download</button>
               <button class="btn" onclick="efReplaceSelected(${State.currentSession})" title="Overwrite this file with one you upload">Replace</button>
               <button class="btn" onclick="efRenameSelected(${State.currentSession})" title="Rename this file (extension kept)">Rename</button>
-              <button class="btn btn-danger" onclick="efDeleteSelected(${State.currentSession})" title="Delete this file permanently">Delete</button>
+              <span id="ef-seed-action"></span>
               <span class="save-status" id="scenario-source-status"></span>
             </div>
+            <div id="ef-voices"></div>
           ` : '<div class="empty scenario-empty"><p>No editable markdown files are available.</p></div>'}
         </div>
       </div>
@@ -3982,12 +4585,23 @@ function assetFilesPanelHtml(sources, editable = true) {
     </div>`;
 }
 
+// Grey out the Save button unless the open file has unsaved edits.
+function updateEfSaveButton() {
+  const b = el('ef-save');
+  if (b) b.disabled = !scenarioSourceEditorDirty();
+}
+window.updateEfSaveButton = updateEfSaveButton;
+
 function scenarioSourceEditorDirty() {
   const area = el('scenario-source-editor');
   if (!area) return false;
   const index = Number(area.dataset.sourceIndex);
   const source = scenarioArray(State.scenarioSources && State.scenarioSources.markdown_sources)[index];
-  return !!source && area.value !== (source.content || '');
+  if (!source) return false;
+  // A <textarea> always reports \n line endings, but file content read off disk
+  // may be \r\n — normalise both so an untouched CRLF file isn't seen as edited.
+  const norm = (s) => String(s || '').replace(/\r\n?/g, '\n');
+  return norm(area.value) !== norm(source.content);
 }
 
 function selectScenarioSource(sourceIndex) {
@@ -4007,6 +4621,8 @@ function selectScenarioSource(sourceIndex) {
   document.querySelectorAll('.scenario-file-list button').forEach((button) => button.classList.remove('active'));
   const selectedButton = document.querySelector(`.scenario-file-list button[data-source-index="${Number(sourceIndex)}"]`);
   if (selectedButton) selectedButton.classList.add('active');
+  updateSeedActionButton();
+  updateEfSaveButton();
 }
 window.selectScenarioSource = selectScenarioSource;
 
@@ -4068,6 +4684,26 @@ async function renderSessionScenarioInfo(sessionId, mode = 'gm') {
       </div>
       <div id="scenario-alert"></div>
       ${renderScenarioSourceEditor(sources || {})}`;
+    // Reuse the personality-editor dictation engine to capture a live session
+    // (e.g. session-03.md) straight into the open source file at the cursor.
+    const efMic = el('ef-mic'), efTa = el('scenario-source-editor');
+    if (efMic && efTa && window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      wireDictation(efMic, efTa, sessionId, el('scenario-source-status'));
+    }
+    if (efTa) efTa.addEventListener('input', updateEfSaveButton);
+    const efCap = el('ef-capture');
+    const sc = _sessionCapture;
+    if (efCap && sc && sc.sessionId === sessionId && sc.attach && (sc.active || sc.pendingRestore)) {
+      // A capture for this session is still running (or just stopped while we were on
+      // another tab) — reconnect it to this freshly-rendered button + editor.
+      sc.pendingRestore = false;
+      sc.attach(efCap);
+    } else if (efCap && efTa && window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      wireSessionCapture(efCap, efTa, sessionId);
+    }
+    try { api.getVoices(sessionId).then((r) => { const vs = (r && r.voices) || []; renderEfVoicesPanel(vs, sessionId); applyVoiceNamesToEditor(vs); }).catch(() => {}); } catch {}
+    updateSeedActionButton();
+    updateEfSaveButton();
     return;
   }
 
@@ -4157,42 +4793,56 @@ async function renderSessionPlayerInfo(sessionId) {
     tab.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
     return;
   }
+  // NPCs allocated to this case get their own selectable strip — the same
+  // treatment player characters get (consistent with the Characters tab).
+  let npcs = [];
+  try { const r = await api.getNpcs(sessionId); npcs = Array.isArray(r) ? r : []; } catch { npcs = []; }
+  State.charStoriesNpcs = npcs;
+  // Caches the GM scenario info (incl. gm_analysis.npc_knowledge) for selection.
+  try { await loadScenarioInfo(sessionId); } catch { /* selection handles empties */ }
 
-  // GM-only NPC case-knowledge lives in the GM analysis artifact.
-  let info = {};
-  try { info = await loadScenarioInfo(sessionId); } catch { /* NPC section shows empty */ }
-  const npcKnow = scenarioArray(info.gm_analysis && info.gm_analysis.npc_knowledge);
-  // The page regenerate covers both player-character stories and NPC knowledge.
+  // Page regenerate covers both player-character stories and NPC knowledge.
   const pageButton = scenarioPageActions('player.entities.characters,gm.npc_knowledge', 'Regenerate Page');
 
   tab.innerHTML = `
     <div class="page-header">
-      <div><h2>Character Stories</h2><p class="card-sub">Player and non-player characters — what they did, know, want, and are hiding. NPC knowledge is GM-only; players reach it through in-character AI chat.</p></div>
+      <div><h2>Character Stories</h2><p class="card-sub">Select a character — player or NPC — to see their story. Player stories show what that player sees; NPC entries are their GM-only case knowledge (players reach it through in-character AI chat).</p></div>
       ${pageButton}
     </div>
     <div id="scenario-alert"></div>
-    ${players.length
-      ? `<div style="margin-bottom:1rem">
-           <div class="sheet-tabs" id="scenario-player-tabs">
-             ${players.map((p, i) => `<div class="sheet-tab${i === 0 ? ' active' : ''}" id="sptab_${p.id}" onclick="scenarioSelectPlayer(${sessionId}, ${p.id}, '${esc(p.username)}')">${esc(p.username)}</div>`).join('')}
-           </div>
-         </div>
-         <div id="scenario-player-area"><p style="color:var(--text2)">Loading…</p></div>`
-      : '<div class="empty"><div class="empty-icon">👥</div><p>No players assigned to this session yet.</p></div>'}
-    ${renderScenarioSection('NPC Knowledge', npcKnow, 'No NPC knowledge generated yet — press “Regenerate Page” (or Bulk Regenerate) to build it from the case files, one entry per allocated NPC.', 'gm.npc_knowledge')}`;
+    <div style="color:var(--text2);font-size:0.85rem;margin:0 0 0.35rem">Player characters</div>
+    <div style="margin-bottom:1rem">
+      ${players.length
+        ? `<div class="sheet-tabs" id="scenario-player-tabs">${players.map((p) => `<div class="sheet-tab" id="sptab_${p.id}" onclick="scenarioSelectPlayer(${sessionId}, ${p.id}, '${esc(p.username)}')">${esc(p.username)}</div>`).join('')}</div>`
+        : '<p class="card-sub" style="margin:0">No players assigned to this case.</p>'}
+    </div>
+    <div style="color:var(--text2);font-size:0.85rem;margin:0 0 0.35rem">NPCs</div>
+    <div style="margin-bottom:1rem">
+      ${npcs.length
+        ? `<div class="sheet-tabs" id="scenario-npc-tabs">${npcs.map((n) => `<div class="sheet-tab" id="sntab_${n.id}" onclick="scenarioSelectNpcStory(${sessionId}, ${n.id})">${esc(n.name || '(no name)')}</div>`).join('')}</div>`
+        : '<p class="card-sub" style="margin:0">No NPCs allocated to this case.</p>'}
+    </div>
+    <div id="scenario-char-area"><p style="color:var(--text2);padding:0.5rem">Select a character above.</p></div>`;
 
   if (players.length) {
     const preferred = players.find((p) => p.id === readStoredGmPlayerId(sessionId)) || players[0];
     await scenarioSelectPlayer(sessionId, preferred.id, preferred.username);
+  } else if (npcs.length) {
+    await scenarioSelectNpcStory(sessionId, npcs[0].id);
   }
+}
+
+function clearCharStoryTabs() {
+  document.querySelectorAll('#scenario-player-tabs .sheet-tab, #scenario-npc-tabs .sheet-tab')
+    .forEach((t) => t.classList.remove('active'));
 }
 
 async function scenarioSelectPlayer(sessionId, userId, username) {
   storeGmPlayerId(sessionId, userId);
-  document.querySelectorAll('#scenario-player-tabs .sheet-tab').forEach((t) => t.classList.remove('active'));
+  clearCharStoryTabs();
   const tabBtn = el(`sptab_${userId}`);
   if (tabBtn) tabBtn.classList.add('active');
-  const area = el('scenario-player-area');
+  const area = el('scenario-char-area');
   if (!area) return;
   area.innerHTML = '<p style="color:var(--text2)">Loading…</p>';
   let info;
@@ -4209,9 +4859,28 @@ async function scenarioSelectPlayer(sessionId, userId, username) {
     .filter((c) => matchesCharacter(c, viewerNames));
   area.innerHTML = `
     <div class="scenario-viewer">Viewing as ${esc(username)}${viewerNames.length ? ` — ${esc(viewerNames.join(', '))}` : ''}</div>
-    ${renderScenarioSection('Player Story', mine, 'No story for this player has been generated yet.', '')}`;
+    ${renderScenarioSection('Player Story', mine, 'No story for this player has been generated yet.', 'player.entities.characters')}`;
 }
 window.scenarioSelectPlayer = scenarioSelectPlayer;
+
+// NPCs are selected the same way as players: their tab fills the shared bottom
+// area with that NPC's GM-only case knowledge (gm.npc_knowledge entry).
+async function scenarioSelectNpcStory(sessionId, npcId) {
+  clearCharStoryTabs();
+  const tabBtn = el(`sntab_${npcId}`);
+  if (tabBtn) tabBtn.classList.add('active');
+  const area = el('scenario-char-area');
+  if (!area) return;
+  const npc = (State.charStoriesNpcs || []).find((n) => Number(n.id) === Number(npcId));
+  const name = npc ? (npc.name || '(no name)') : '';
+  const know = scenarioArray(State.scenarioInfo && State.scenarioInfo.gm_analysis && State.scenarioInfo.gm_analysis.npc_knowledge);
+  const want = String(name).toLowerCase();
+  const mine = know.filter((e) => String((e && e.name) || '').toLowerCase() === want);
+  area.innerHTML = `
+    <div class="scenario-viewer">${esc(name)} — GM-only case knowledge (players reach it through in-character AI chat)</div>
+    ${renderScenarioSection('NPC Knowledge', mine, 'No case knowledge generated for this NPC yet — use Regenerate (or Regenerate Page).', 'gm.npc_knowledge')}`;
+}
+window.scenarioSelectNpcStory = scenarioSelectNpcStory;
 
 async function renderSessionEntities(sessionId) {
   const tab = el('session-content');
@@ -4393,6 +5062,36 @@ function efDeleteSelected(sessionId) {
 }
 window.efDeleteSelected = efDeleteSelected;
 
+// Globaldata-seeded files are undeletable (re-seeded when missing), so their
+// per-file action is Revert (not Delete): hidden when the case copy still matches
+// the seed, "Revert" once it has diverged. Non-seeded files keep Delete.
+function updateSeedActionButton() {
+  const host = el('ef-seed-action');
+  if (!host) return;
+  const src = efSelectedSource();
+  const sid = State.currentSession;
+  if (!src) { host.innerHTML = ''; return; }
+  if (!src.seeded) {
+    host.innerHTML = `<button class="btn btn-danger" onclick="efDeleteSelected(${sid})" title="Delete this file permanently">Delete</button>`;
+  } else if (src.seed_identical) {
+    host.innerHTML = ''; // pristine globaldata copy — nothing to delete or revert
+  } else {
+    host.innerHTML = `<button class="btn" onclick="efRevertSelected(${sid})" title="Restore the globaldata version (discards your edits to this file)">Revert</button>`;
+  }
+}
+window.updateSeedActionButton = updateSeedActionButton;
+
+async function efRevertSelected(sessionId) {
+  const src = efSelectedSource();
+  if (!src) { showAlert('Select a file first.', 'danger', 'scenario-alert'); return; }
+  if (!confirm(`Revert ${src.relative_path || src.path} to the globaldata version? Your edits to this file will be lost.`)) return;
+  try {
+    await api.revertSessionFile(sessionId, src.relative_path);
+    await reloadCurrentSessionPanel();
+  } catch (e) { showAlert(e.message, 'danger', 'scenario-alert'); }
+}
+window.efRevertSelected = efRevertSelected;
+
 async function reloadCurrentSessionPanel() {
   if (!State.currentSession) return;
   await switchSessionPanel(State.currentSession, State.currentSessionPanel || 'case-info');
@@ -4557,7 +5256,7 @@ async function saveSessionScenarioSources(sessionId, btn) {
       status.className = 'save-status error';
     }
   } finally {
-    btn.disabled = false;
+    updateEfSaveButton();
   }
 }
 window.saveSessionScenarioSources = saveSessionScenarioSources;
@@ -4902,7 +5601,7 @@ async function renderAdminLlm() {
   try {
     svc = await api.getLlmServices();
   } catch {
-    svc = { ollama: { url: '', default: '' }, comfyui: { url: '', default: '' } };
+    svc = { ollama: { url: '', default: '' }, comfyui: { url: '', default: '' }, whisperx: { url: '', default: '', boost_alpha: '', boost_default: 0.5 } };
   }
   let cm;
   try {
@@ -4983,7 +5682,7 @@ async function renderAdminLlm() {
     <div class="card">
       <div class="card-header"><div>
         <div class="card-title">Service endpoints</div>
-        <div class="card-sub">Base URLs for the Ollama (language) and ComfyUI (image) hosts. Persists in <code>data/app-config.json</code>; leave blank to use the deploy default. Changes take effect immediately — no redeploy.</div>
+        <div class="card-sub">Base URLs for the Ollama (language), ComfyUI (image) and speech hosts. Persists in <code>data/app-config.json</code>; leave blank to use the deploy default. Changes take effect immediately — no redeploy.</div>
       </div></div>
       <div id="svc-alert"></div>
       <div class="form-group" style="max-width:560px">
@@ -4994,9 +5693,18 @@ async function renderAdminLlm() {
         <label>ComfyUI URL</label>
         <input type="text" id="svc-comfyui" value="${esc(svc.comfyui.url || '')}" placeholder="default: ${esc(svc.comfyui.default || '')}" spellcheck="false" autocapitalize="none" autocomplete="off">
       </div>
+      <div class="form-group" style="max-width:560px">
+        <label>Speech (Parakeet/WhisperX) URL</label>
+        <input type="text" id="svc-whisperx" value="${esc((svc.whisperx && svc.whisperx.url) || '')}" placeholder="default: ${esc((svc.whisperx && svc.whisperx.default) || '')}" spellcheck="false" autocapitalize="none" autocomplete="off">
+      </div>
+      <div class="form-group" style="max-width:560px">
+        <label>Glossary boost strength</label>
+        <input type="number" id="svc-boost" min="0" max="5" step="0.1" value="${esc(String((svc.whisperx && svc.whisperx.boost_alpha != null && svc.whisperx.boost_alpha !== '') ? svc.whisperx.boost_alpha : ''))}" placeholder="default: ${esc(String((svc.whisperx && svc.whisperx.boost_default != null) ? svc.whisperx.boost_default : '0.5'))}">
+        <div class="card-sub">How hard speech recognition is biased toward the case glossary. Higher recovers rare names but can force a glossary name onto a similar ordinary word; lower is safer. <strong>0</strong> disables it.</div>
+      </div>
       <div style="display:flex;gap:0.5rem;align-items:center">
         <button class="btn btn-primary" onclick="saveAdminLlmServices(this)">Save</button>
-        <button class="btn" onclick="saveAdminLlmServices(this, true)">Reset both to default</button>
+        <button class="btn" onclick="saveAdminLlmServices(this, true)">Reset to defaults</button>
         <span class="save-status" id="svc-status"></span>
       </div>
     </div>
@@ -5043,9 +5751,11 @@ window.saveAdminComfyModels = saveAdminComfyModels;
 async function saveAdminLlmServices(btn, reset) {
   const ollama = reset ? '' : ((el('svc-ollama') && el('svc-ollama').value) || '').trim();
   const comfyui = reset ? '' : ((el('svc-comfyui') && el('svc-comfyui').value) || '').trim();
+  const whisperx = reset ? '' : ((el('svc-whisperx') && el('svc-whisperx').value) || '').trim();
+  const boost = reset ? '' : ((el('svc-boost') && el('svc-boost').value) || '').trim();
   btn.disabled = true;
   try {
-    await api.setLlmServices({ ollama_url: ollama, comfyui_url: comfyui });
+    await api.setLlmServices({ ollama_url: ollama, comfyui_url: comfyui, whisperx_url: whisperx, boost_alpha: boost });
     showAlert(reset ? 'Both service URLs reset to default.' : 'Service URLs saved.', 'success', 'svc-alert');
     await renderAdminLlm();
   } catch (e) {
@@ -5436,12 +6146,13 @@ async function renderSessionNpcChat(sessionId) {
       <div class="gmchat-compose gmchat-compose-inline">
         <textarea id="npc-chat-text" rows="3" placeholder="Say something to ${esc(st.name)}…" onkeydown="npcChatKey(event)"></textarea>
         <div class="gmchat-actions gmchat-actions-side">
+          ${chatMicBtnHtml('npc-chat-mic')}
           <button class="btn btn-primary" id="npc-chat-send" onclick="sendNpcChat()">Send</button>
           <button class="btn" id="npc-chat-stop" onclick="stopNpcChat()" style="display:none">Stop</button>
         </div>
       </div>
     </div>` : '<div class="empty" style="padding:1.5rem"><p>No NPC personalities are available yet. Add a “&lt;Name&gt; - personality.md” handout in Edit Files, or seed a canonical persona.</p></div>'}`;
-  if (personas.length) { renderNpcChatLog(); setNpcChatStreaming(st.streaming); }
+  if (personas.length) { renderNpcChatLog(); setNpcChatStreaming(st.streaming); wireChatMic('npc-chat-mic', 'npc-chat-text', sessionId); }
 }
 
 function npcChatLogHtml() {

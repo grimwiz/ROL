@@ -30,6 +30,7 @@ const {
   writeGmChatExport,
   ollamaStatus,
   cancelOllama,
+  isCloudLlm,
   saveSessionHandout,
   setSessionAssetVisibility,
   createSessionFile,
@@ -47,8 +48,28 @@ const {
   ollamaPs,
   freeOllama,
   effectiveComfyuiUrl,
+  effectiveWhisperxUrl,
+  readCharacterPersonality,
+  writeCharacterPersonality,
+  readCaseGlossaryTerms,
+  readCaseKeyNpcs,
+  revertSeededFile,
+  loadVoiceRegistry,
+  saveVoiceRegistry,
+  matchVoice,
+  setVoiceCharacter,
+  mergeVoice,
+  deleteVoice,
+  listVoices,
+  liveBufferState,
+  liveBufferReset,
+  liveBufferAppend,
+  liveBufferAdvanceCursor,
+  liveBufferWindowWav,
   setServiceUrl,
   servicesConfig,
+  effectiveBoostAlpha,
+  setBoostAlpha,
   effectiveComfyuiImageModel,
   effectiveComfyuiEditModel,
   setComfyuiModel,
@@ -940,14 +961,331 @@ router.put('/sessions/:id/scenario-sources', requireGM, (req, res) => {
   res.json(writeSessionSources(session, req.body));
 });
 
+// ── Character personality (in-tab dictation editor) ─────────────────────────
+// Personality handout for any character in the case, keyed by sheet id. The
+// focused character owns the text: a GM may edit any character (incl. NPCs); a
+// player only their own. Same file the talk-to-character AI reads.
+function personalityCharacter(req, res, session) {
+  const row = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(req.params.cid);
+  if (!row) { res.status(404).json({ error: 'No such character.' }); return null; }
+  const data = parseStoredSheetData(row.data);
+  if (!sheetHasCase(data, session.name)) { res.status(404).json({ error: 'Character is not in this case.' }); return null; }
+  if (req.user.role !== 'gm' && row.user_id !== req.user.id) { res.status(403).json({ error: 'Not your character.' }); return null; }
+  return { row, name: String(data.name || '').trim() };
+}
+
+router.get('/sessions/:id/characters/:cid/personality', requireAuth, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const c = personalityCharacter(req, res, session);
+  if (!c) return;
+  res.json({ name: c.name, content: c.name ? readCharacterPersonality(session, c.name) : '' });
+});
+
+router.put('/sessions/:id/characters/:cid/personality', requireAuth, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const c = personalityCharacter(req, res, session);
+    if (!c) return;
+    if (!c.name) return res.status(400).json({ error: 'Give the character a name on the sheet first.' });
+    const saved = writeCharacterPersonality(session, c.name, req.body && req.body.content);
+    res.json({ ok: true, name: c.name, path: saved });
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// Build case-scoped speech biasing from the case's own canon files, so the
+// case glossary.md / key-npcs.md stay the single source of truth (no hardcoded
+// vocab here). Priority order matters — we cap to stay within Whisper's prompt
+// budget: the case's PC names first (most likely spoken), then key NPCs
+// (key-npcs.md), then glossary terms (glossary.md), then other NPC personas.
+function buildCaseBias(session) {
+  const ordered = [];
+  const seen = new Set();
+  const add = (n) => { const v = String(n || '').trim(); const k = v.toLowerCase(); if (v && !seen.has(k)) { seen.add(k); ordered.push(v); } };
+  try {
+    for (const row of db.prepare('SELECT data FROM character_sheets WHERE user_id IS NOT NULL').all()) {
+      const data = parseStoredSheetData(row.data);
+      if (data && sheetHasCase(data, session.name) && data.name) add(data.name);
+    }
+  } catch { /* ignore */ }
+  try { for (const n of readCaseKeyNpcs(session)) add(n); } catch { /* ignore */ }
+  try { for (const t of readCaseGlossaryTerms(session)) add(t); } catch { /* ignore */ }
+  try { for (const p of listNpcPersonas(session)) { if (p && p.name) add(p.name); } } catch { /* ignore */ }
+  // Newline-delimited so each term (incl. multi-word names like "Beverley Brook")
+  // stays a discrete recognition-time boost phrase for the Parakeet STT service.
+  const hotwords = ordered.slice(0, 150).join('\n');
+  return { hotwords, initial_prompt: 'A Rivers of London tabletop session set in London.' };
+}
+
+// Glossary-boost strength is a GM dial in ROL (Admin page → effectiveBoostAlpha),
+// sent to the general-purpose speech box per request — the box does not own it.
+
+// Proxy a short audio clip to the WhisperX STT service and return the transcript.
+// Body: { audio_base64, mime?, hotwords?, initial_prompt? }. The server seeds
+// RoL-vocabulary biasing from the case; client hotwords (if any) are appended.
+// Stateless: the audio is forwarded to the speech box and not stored here.
+router.post('/sessions/:id/transcribe', requireAuth, async (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const b64 = req.body && req.body.audio_base64;
+    if (!b64) return res.status(400).json({ error: 'audio_base64 required.' });
+    const buf = Buffer.from(String(b64), 'base64');
+    if (!buf.length) return res.status(400).json({ error: 'Empty audio.' });
+    const bias = buildCaseBias(session);
+    const hotwords = [bias.hotwords, req.body && req.body.hotwords].filter(Boolean).join('\n').trim();
+    const initial_prompt = (req.body && req.body.initial_prompt) || bias.initial_prompt;
+    const form = new FormData();
+    form.append('file', new Blob([buf], { type: (req.body && req.body.mime) || 'audio/webm' }), 'clip.webm');
+    if (hotwords) form.append('hotwords', hotwords);
+    form.append('boost_alpha', String(effectiveBoostAlpha()));
+    if (initial_prompt) form.append('initial_prompt', initial_prompt);
+    let upstream;
+    try {
+      upstream = await fetch(`${effectiveWhisperxUrl()}/v1/transcribe`, {
+        method: 'POST', body: form, signal: AbortSignal.timeout(120000)
+      });
+    } catch (e) {
+      return res.status(502).json({ error: 'Speech service unreachable.' });
+    }
+    if (!upstream.ok) return res.status(502).json({ error: `Speech service error ${upstream.status}.` });
+    const j = await upstream.json().catch(() => ({}));
+    const out = { text: (j && j.text) || '' };
+    // Voiceprint embedding: needed for explicit embed requests (legacy client
+    // clustering) and for personality-editor dictation that ENROLLS the speaker's
+    // voice as a character. Enrollment keeps only the derived label in the
+    // registry — never the audio — which is the GDPR-minimising path. Optional and
+    // non-fatal — falls back to text-only if the embed service isn't available.
+    if (req.body && (req.body.embed || req.body.enroll_character)) {
+      try {
+        const ef = new FormData();
+        ef.append('file', new Blob([buf], { type: (req.body && req.body.mime) || 'audio/webm' }), 'clip.webm');
+        const er = await fetch(`${effectiveWhisperxUrl()}/v1/embed`, { method: 'POST', body: ef, signal: AbortSignal.timeout(120000) });
+        if (er.ok) {
+          const ej = await er.json().catch(() => ({}));
+          if (Array.isArray(ej.embedding)) {
+            if (req.body.enroll_character) {
+              const reg = loadVoiceRegistry(session);
+              const { voice } = matchVoice(reg, ej.embedding);
+              const ch = String(req.body.enroll_character).trim();
+              if (ch) voice.character = ch;
+              if (!voice.sample && out.text) voice.sample = out.text.trim().slice(0, 60);
+              saveVoiceRegistry(session, reg);
+              out.voice = voice.id;   // label only; raw embedding is not returned
+            }
+            if (req.body.embed) out.embedding = ej.embedding;
+          }
+        }
+      } catch { /* embedding/enrollment optional */ }
+    }
+    res.json(out);
+  } catch (e) { next(e); }
+});
+
+// ── Session-audio diarization (Part B) ──────────────────────────────────────
+// Diarize one audio chunk, fold its speakers into the case's voiceprint registry,
+// and return segments labelled with canonical voice ids + character names. The
+// registry keeps SPEAKER identity consistent across chunks and sessions.
+// Diarize one audio buffer via WhisperX and fold its speakers into the case's
+// canonical voiceprint registry. Returns segments labelled with voice ids +
+// character names. Throws Error with .statusCode on upstream failure.
+async function diarizeAudioBuffer(session, buf, mime) {
+  const bias = buildCaseBias(session);
+  const form = new FormData();
+  form.append('file', new Blob([buf], { type: mime || 'audio/wav' }), 'chunk.wav');
+  form.append('diarize', 'true');
+  if (bias.hotwords) form.append('hotwords', bias.hotwords);
+  form.append('boost_alpha', String(effectiveBoostAlpha()));
+  if (bias.initial_prompt) form.append('initial_prompt', bias.initial_prompt);
+  let upstream;
+  try {
+    upstream = await fetch(`${effectiveWhisperxUrl()}/v1/transcribe`, {
+      method: 'POST', body: form, signal: AbortSignal.timeout(1800000)  // diarization is slow
+    });
+  } catch (e) { const err = new Error('Speech service unreachable.'); err.statusCode = 502; throw err; }
+  if (!upstream.ok) { const err = new Error(`Speech service error ${upstream.status}.`); err.statusCode = 502; throw err; }
+  const j = await upstream.json().catch(() => ({}));
+  const segments = (j && j.segments) || [];
+  const speakers = (j && j.speakers) || {};
+
+  // Fold each raw speaker into the persistent canonical voice registry.
+  const reg = loadVoiceRegistry(session);
+  const rawToVoice = {};
+  for (const [raw, emb] of Object.entries(speakers)) {
+    if (!(Array.isArray(emb) && emb.length)) continue;
+    // No words, no voice: skip pyannote speakers that carry no actual speech
+    // (it over-segments noise/silence in short windows, spawning empty v3/v4).
+    const said = segments.filter((s) => s.speaker === raw && (s.text || '').trim());
+    if (!said.length) continue;
+    const { voice } = matchVoice(reg, emb);
+    rawToVoice[raw] = voice;
+    if (!voice.sample) {
+      const best = said.reduce((a, b) => (b.text.trim().length > a.text.trim().length ? b : a));
+      voice.sample = best.text.trim().slice(0, 60);
+    }
+  }
+  // Delete any voice that has no words and no assigned character — a voice can't
+  // exist without speech. (Current-fold voices always have a sample, so this only
+  // removes pre-existing ghosts.)
+  reg.voices = reg.voices.filter((v) => (v.sample && v.sample.trim()) || v.character);
+  saveVoiceRegistry(session, reg);
+
+  const out = segments.map((s) => {
+    const v = rawToVoice[s.speaker];
+    return { start: s.start, end: s.end, text: s.text,
+             voice: v ? v.id : null, character: v ? (v.character || null) : null };
+  });
+  return { segments: out, voices: listVoices(session), text: (j && j.text) || '' };
+}
+
+router.post('/sessions/:id/diarize-chunk', requireGM, async (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const b64 = req.body && req.body.audio_base64;
+    if (!b64) return res.status(400).json({ error: 'audio_base64 required.' });
+    const buf = Buffer.from(String(b64), 'base64');
+    if (!buf.length) return res.status(400).json({ error: 'Empty audio.' });
+    const r = await diarizeAudioBuffer(session, buf, (req.body && req.body.mime) || 'audio/webm');
+    res.json(r);
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// ── Streaming session capture (Part B) ──────────────────────────────────────
+// Audio is streamed from the browser as it is captured: /live/start resets the
+// per-session buffer, /ingest appends raw PCM slices, and /diarize-window
+// diarizes the next un-processed sliding window over the accumulated buffer.
+// Short window → low latency: the GPU diarizes a window in ~seconds, so the lag is the
+// window-wait, not compute. 20s keeps current speech becoming a diarized paragraph fast.
+// Paragraph-bounded: the browser flushes complete, pause-delimited chunks (always
+// final=true), so there is no sliding window and no overlap to re-transcribe — each
+// chunk is diarized exactly once and appended. OVERLAP=0 = clean, append-only edges.
+const LIVE_WINDOW_SEC = 20, LIVE_OVERLAP_SEC = 0;
+// Hard cap on how much audio ANY single diarize call processes. A session may run
+// for hours — a call must never read "cursor → total" unbounded. We diarize at most
+// this many seconds per call, advance the cursor by exactly that, and tell the client
+// (`more`) to come back for the next slice until it has caught up.
+const DIAR_WINDOW_MAX_SEC = 90;
+
+router.post('/sessions/:id/live/start', requireGM, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  const s = liveBufferReset(session, req.body && req.body.rate);
+  res.json({ ok: true, rate: s.rate });
+});
+
+router.post('/sessions/:id/ingest', requireGM, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const b64 = req.body && req.body.pcm_base64;
+    if (!b64) return res.status(400).json({ error: 'pcm_base64 required.' });
+    const buf = Buffer.from(String(b64), 'base64');
+    const s = liveBufferAppend(session, buf);
+    res.json({ total: s.total, rate: s.rate });
+  } catch (e) { next(e); }
+});
+
+router.post('/sessions/:id/diarize-window', requireGM, async (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const st = liveBufferState(session);
+    const final = !!(req.body && req.body.final);
+    const ready = st.total - st.cursor;
+    // Wait until a full window has accumulated (unless flushing the tail on stop).
+    if (!final && ready < LIVE_WINDOW_SEC * st.rate) {
+      return res.json({ pending: true, have_sec: ready / st.rate, voices: listVoices(session) });
+    }
+    // Diarize AT MOST one bounded window per call — never "cursor → total", which on
+    // a multi-hour session would be an enormous block. `more` = backlog remains.
+    // Prefer to END on the real pause the client found (`until`), so no speaker
+    // straddles the cut (a mid-turn cut fragments one voice into several).
+    const startSample = st.cursor;
+    let endSample = Math.min(st.total, startSample + DIAR_WINDOW_MAX_SEC * st.rate);
+    const untilSample = Math.round((Number(req.body && req.body.until) || 0) * st.rate);
+    if (untilSample > startSample && untilSample < endSample) endSample = untilSample;
+    if (endSample - startSample < st.rate * 0.4) {   // <0.4s of new audio — nothing worth diarizing
+      return res.json({ pending: false, segments: [], voices: listVoices(session), cursor_sec: st.cursor / st.rate, more: false });
+    }
+    const wav = liveBufferWindowWav(session, startSample, endSample);
+    let r;
+    try { r = await diarizeAudioBuffer(session, wav, 'audio/wav'); }
+    catch (e) { return res.status(e.statusCode || 502).json({ error: e.message }); }
+    const offsetSec = startSample / st.rate;
+    liveBufferAdvanceCursor(session, endSample);
+    res.json({
+      pending: false,
+      segments: r.segments.map((s) => ({ ...s, start: s.start + offsetSec, end: s.end + offsetSec })),
+      voices: r.voices,
+      cursor_sec: endSample / st.rate,
+      more: endSample < st.total
+    });
+  } catch (e) { next(e); }
+});
+
+// The case's canonical voices (for the GM voice→character mapping UI).
+router.get('/sessions/:id/voices', requireGM, (req, res) => {
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
+  res.json({ voices: listVoices(session) });
+});
+
+// Map a canonical voice to a character (persists; '' clears it).
+router.put('/sessions/:id/voices/:voiceId', requireGM, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const v = setVoiceCharacter(session, req.params.voiceId, req.body && req.body.character);
+    res.json({ ok: true, voice: { id: v.id, character: v.character, count: v.count } });
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// Merge a falsely-split voice into another (combines the voiceprints, drops the
+// source). Body: { into: '<voiceId>' }.
+router.post('/sessions/:id/voices/:voiceId/merge', requireGM, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const voices = mergeVoice(session, req.params.voiceId, req.body && req.body.into);
+    res.json({ ok: true, voices });
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// Delete a spurious voice outright.
+router.delete('/sessions/:id/voices/:voiceId', requireGM, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const voices = deleteVoice(session, req.params.voiceId);
+    res.json({ ok: true, voices });
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
 // Single generation path. Body may carry { sections: [...] } for a page-level
 // regenerate or { artifact: 'player' | 'gm' }; an empty body regenerates every
 // section (bulk). The CLI script calls the same scenarioInfo function.
 router.post('/sessions/:id/scenario-info/regenerate', requireGM, async (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
-  if (await rejectIfAiBusy(res)) return; // normal 409 BEFORE streaming starts
-  await prepareGpuForLlm();
+  if (await gateLlmStart(res)) return; // local: 409 before streaming; cloud: no gate
+
   const t0 = Date.now();
   const stepAt = new Map();
   // Stream NDJSON progress so the client sees live per-section timing/metrics
@@ -1030,7 +1368,9 @@ async function comfyBusy() {
 
 async function aiBusyState() {
   const o = ollamaStatus();
-  if (o.busy) return { busy: true, kind: 'llm', label: o.last_section || 'language model' };
+  // A cloud LLM runs off-box, so it never contends for the local GPU and is not
+  // a reason to block other AI work; only local-model generation gates here.
+  if (!o.cloud && o.busy) return { busy: true, kind: 'llm', label: o.last_section || 'language model' };
   if (await comfyBusy()) return { busy: true, kind: 'image', label: 'image generation' };
   return { busy: false, kind: null, label: null };
 }
@@ -1042,6 +1382,18 @@ async function rejectIfAiBusy(res) {
   const what = s.kind === 'llm' ? 'the language model' : 'image generation';
   res.status(409).json({ error: `AI is busy with ${what}${s.label && s.kind === 'llm' ? ` (${s.label})` : ''}. Only one AI task runs at a time on the shared GPU — try again in a moment.` });
   return true;
+}
+
+// Gate the start of an LLM-initiating endpoint. With a local model the LLM shares
+// the GPU, so enforce the single-flight lock and hand the GPU off from ComfyUI.
+// With a cloud model there is no local contention: skip the gate entirely and let
+// each browser self-limit (it owns its own busy/cancel state). Returns true when
+// the caller should stop (a 409 was sent).
+async function gateLlmStart(res) {
+  if (isCloudLlm()) return false;
+  if (await rejectIfAiBusy(res)) return true;
+  await prepareGpuForLlm();
+  return false;
 }
 
 // Logged once per model load (the split/ctx don't change for a resident
@@ -1130,6 +1482,8 @@ router.put('/llm/services', requireGM, (req, res) => {
     const body = req.body || {};
     if (body.ollama_url !== undefined) setServiceUrl('ollama', body.ollama_url);
     if (body.comfyui_url !== undefined) setServiceUrl('comfyui', body.comfyui_url);
+    if (body.whisperx_url !== undefined) setServiceUrl('whisperx', body.whisperx_url);
+    if (body.boost_alpha !== undefined) setBoostAlpha(body.boost_alpha);
     res.json(servicesConfig());
   } catch (e) {
     res.status(e.statusCode || 500).json({ error: e.message || 'Could not set the service URL' });
@@ -1164,8 +1518,8 @@ router.put('/comfy/models', requireGM, (req, res) => {
 router.post('/sessions/:id/scenario-info/sections/:sectionId/regenerate', requireGM, async (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
-  if (await rejectIfAiBusy(res)) return; // normal 409 BEFORE streaming starts
-  await prepareGpuForLlm();
+  if (await gateLlmStart(res)) return; // local: 409 before streaming; cloud: no gate
+
   const t0 = Date.now();
   const sectionId = req.params.sectionId;
   const controller = new AbortController();
@@ -1249,8 +1603,7 @@ router.get('/sessions/:id/scenario-info/assets/*', requireAuth, (req, res) => {
 router.post('/sessions/:id/chat', requireGM, async (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
-  if (await rejectIfAiBusy(res)) return;
-  await prepareGpuForLlm();
+  if (await gateLlmStart(res)) return;
   const controller = new AbortController();
   // Detect a real client disconnect via the RESPONSE close (guarded by
   // writableEnded). req 'close' fires as soon as the request body is read,
@@ -1950,8 +2303,7 @@ router.post('/rules/chat', requireAuth, async (req, res) => {
   if (!rulesIndex) {
     return res.status(404).json({ error: 'Rules files are not available on the server.' });
   }
-  if (await rejectIfAiBusy(res)) return;
-  await prepareGpuForLlm();
+  if (await gateLlmStart(res)) return;
   const controller = new AbortController();
   res.on('close', () => { if (!res.writableEnded) controller.abort(new Error('client disconnected')); });
   res.setHeader('Content-Type', 'application/x-ndjson');
@@ -2003,8 +2355,7 @@ router.post('/sessions/:id/npc-chat', requireAuth, async (req, res) => {
   if (!persona) {
     return res.status(404).json({ error: 'That character has no personality file yet.' });
   }
-  if (await rejectIfAiBusy(res)) return;
-  await prepareGpuForLlm();
+  if (await gateLlmStart(res)) return;
   const controller = new AbortController();
   res.on('close', () => { if (!res.writableEnded) controller.abort(new Error('client disconnected')); });
   res.setHeader('Content-Type', 'application/x-ndjson');
@@ -2773,6 +3124,21 @@ router.post('/sessions/:id/files/replace', requireGM, (req, res, next) => {
 
 // Delete a file (Edit Files). Structural sources/artifacts are refused
 // server-side; a graphic's .prompt.txt sidecar is removed alongside it.
+// Restore a globaldata-seeded file to its globaldata version. Body:
+// { relative_path }. These files are re-seeded when missing, so the Edit Files
+// UI offers Revert (not Delete) for them.
+router.post('/sessions/:id/files/revert', requireGM, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const saved = revertSeededFile(session, req.body && req.body.relative_path);
+    res.json({ ok: true, path: saved });
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
 router.post('/sessions/:id/files/delete', requireGM, (req, res, next) => {
   try {
     const session = getAccessibleSession(req, res, req.params.id);
@@ -2806,8 +3172,7 @@ router.post('/sessions/:id/entities/graphic-prompt', requireGM, async (req, res,
   try {
     const session = getAccessibleSession(req, res, req.params.id);
     if (!session) return;
-    if (await rejectIfAiBusy(res)) return;
-    await prepareGpuForLlm();
+    if (await gateLlmStart(res)) return;
     // Index-entity graphics are NOT character-sheet portraits — never reuse the
     // per-case portrait_style here; it would force portrait aspect/framing onto
     // places and objects.

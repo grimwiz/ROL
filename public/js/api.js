@@ -1,12 +1,22 @@
 const api = (() => {
-  async function req(method, path, body) {
+  async function req(method, path, body, timeoutMs) {
     const opts = {
       method,
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin'
     };
     if (body !== undefined) opts.body = JSON.stringify(body);
-    const res = await fetch('/api' + path, opts);
+    // Optional timeout so a dead/restarting server fails fast instead of hanging
+    // the caller (which otherwise wedges live capture and the browser tab).
+    if (timeoutMs && typeof AbortSignal !== 'undefined' && AbortSignal.timeout) {
+      opts.signal = AbortSignal.timeout(timeoutMs);
+    }
+    let res;
+    try {
+      res = await fetch('/api' + path, opts);
+    } catch (e) {
+      throw new Error((e && e.name === 'TimeoutError') ? 'request timed out' : ((e && e.message) || 'network error'));
+    }
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
     return data;
@@ -89,6 +99,17 @@ const api = (() => {
     getSheet: (sessionId, userId) => req('GET', `/sessions/${sessionId}/sheets/${userId}`),
     saveSheet: (sessionId, userId, data) => req('PUT', `/sessions/${sessionId}/sheets/${userId}`, { data }),
     getSessionScenarioInfo: (sessionId, asUser) => req('GET', asUser ? `/sessions/${sessionId}/scenario-info?as_user=${encodeURIComponent(asUser)}` : `/sessions/${sessionId}/scenario-info`),
+    getCharacterPersonality: (sessionId, characterId) => req('GET', `/sessions/${sessionId}/characters/${characterId}/personality`),
+    saveCharacterPersonality: (sessionId, characterId, content) => req('PUT', `/sessions/${sessionId}/characters/${characterId}/personality`, { content }),
+    transcribeAudio: (sessionId, payload) => req('POST', `/sessions/${sessionId}/transcribe`, payload, 30000),
+    diarizeChunk: (sessionId, audio_base64, mime) => req('POST', `/sessions/${sessionId}/diarize-chunk`, { audio_base64, mime }, 120000),
+    liveStart: (sessionId, rate) => req('POST', `/sessions/${sessionId}/live/start`, { rate }, 15000),
+    ingestAudio: (sessionId, pcm_base64) => req('POST', `/sessions/${sessionId}/ingest`, { pcm_base64 }, 15000),
+    diarizeWindow: (sessionId, final, until) => req('POST', `/sessions/${sessionId}/diarize-window`, { final: !!final, until: until || 0 }, 120000),
+    getVoices: (sessionId) => req('GET', `/sessions/${sessionId}/voices`),
+    setVoiceCharacter: (sessionId, voiceId, character) => req('PUT', `/sessions/${sessionId}/voices/${voiceId}`, { character }),
+    mergeVoice: (sessionId, voiceId, into) => req('POST', `/sessions/${sessionId}/voices/${voiceId}/merge`, { into }),
+    deleteVoice: (sessionId, voiceId) => req('DELETE', `/sessions/${sessionId}/voices/${voiceId}`),
     getSessionScenarioSources: (sessionId) => req('GET', `/sessions/${sessionId}/scenario-sources`),
     saveSessionScenarioSources: (sessionId, data) => req('PUT', `/sessions/${sessionId}/scenario-sources`, data),
     regenerateScenarioSections: (sessionId, body) => req('POST', `/sessions/${sessionId}/scenario-info/regenerate`, body || {}),
@@ -144,6 +165,7 @@ const api = (() => {
     replaceSessionFile: (sessionId, data) => req('POST', `/sessions/${sessionId}/files/replace`, data),
     renameSessionFile: (sessionId, data) => req('POST', `/sessions/${sessionId}/files/rename`, data),
     deleteSessionFile: (sessionId, path) => req('POST', `/sessions/${sessionId}/files/delete`, { path }),
+    revertSessionFile: (sessionId, relativePath) => req('POST', `/sessions/${sessionId}/files/revert`, { relative_path: relativePath }),
     saveSessionFilePrompt: (sessionId, path, text) => req('POST', `/sessions/${sessionId}/files/prompt`, { path, text }),
     generateEntityGraphicPrompt: (sessionId, data) => req('POST', `/sessions/${sessionId}/entities/graphic-prompt`, data),
   };
