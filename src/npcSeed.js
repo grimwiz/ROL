@@ -204,4 +204,39 @@ function exportGlobalNpcs(db) {
   return written;
 }
 
-module.exports = { seedNpcArchives, seedGlobalNpcs, exportGlobalNpcs, NPC_DIR };
+// Re-import the NPC JSON archives into the database, OVERWRITING existing sheet
+// data (matched by name) with the archive copy — the inverse of exportGlobalNpcs.
+// Use this to push archive changes (e.g. portraits) onto a DB whose NPCs already
+// exist, where seedNpcArchives deliberately refuses to overwrite. Case
+// allocations (scope) already in the DB are preserved (merged with the archive's).
+function reimportGlobalNpcs(db) {
+  const insert = db.prepare(
+    "INSERT INTO character_sheets (user_id, data, updated_at) VALUES (NULL, ?, datetime('now'))"
+  );
+  const update = db.prepare(
+    "UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ?"
+  );
+  let updated = 0;
+  let inserted = 0;
+  const tx = db.transaction(() => {
+    const existing = existingNpcsByNameKey(db);
+    for (const { npc } of readNpcFiles()) {
+      const name = String(npc && npc.name || '').trim();
+      if (!name) continue;
+      const data = buildSheetData(npc);
+      const entry = existing.get(nameKey(name));
+      if (entry) {
+        data.scope = mergeScopeNames(sheetScope(entry.data), Array.isArray(data.scope) ? data.scope : []);
+        update.run(JSON.stringify(data), entry.id);
+        updated += 1;
+      } else {
+        insert.run(JSON.stringify(data));
+        inserted += 1;
+      }
+    }
+  });
+  tx();
+  return { updated, inserted };
+}
+
+module.exports = { seedNpcArchives, seedGlobalNpcs, exportGlobalNpcs, reimportGlobalNpcs, NPC_DIR };
