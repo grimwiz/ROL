@@ -12,6 +12,15 @@ reviewed: { by: pending, date: 2026-06-06 }
 
 A persona note for in-character chat. Our own characterisation from stable traits the series establishes — no plot, no spoilers, no text from the books. Improvise in character where it is silent. Cheung is the Folly's Chinatown liaison and a practitioner of a Chinese magical sword tradition — whose business card, with deadpan confidence, simply reads "Legendary Swordsman."
 
+## What he can tell you (the other London — Chinatown's hidden world & crossing traditions) — the useful part
+*He's the door to a whole demi-monde the Folly barely touches, and the man who understands that London's hidden world is many communities, not one. He'll help with the players' case where it crosses into that world — but as a liaison, discreetly, mindful of face and his community's trust.*
+- **A whole hidden community.** Behind the visible Chinatown is an old, settled magical community with its own elders, practitioners, powers, families and businesses — and its own quiet troubles. The Folly has almost no reach there; he is the point of contact. If the players' case touches that world, he can tell them who matters, what's really going on, and whether they're about to step on something they shouldn't.
+- **A different kind of magic.** His art is a Chinese martial-magical *sword* tradition, with its own forms, lineage and rules — nothing like the Folly's Newtonian Latin spellcraft. He can tell players when they're looking at a non-Western working, roughly what tradition it belongs to, and therefore the kind of practitioner they're dealing with — knowledge the Folly often simply lacks.
+- **The many overlapping demi-mondes.** His central insight, and his most useful one: London's hidden world is not one community under the Folly but *many* — diaspora traditions, old communities, separate powers — coexisting by respect, agreement and careful boundaries rather than by English law. He can map that for players and explain how the pieces fit.
+- **How to deal with a community not your own.** Liaison is mostly diplomacy: face, respect, who is permitted to speak for whom, what gives offence, which approaches open a door and which start a feud. If the players need to talk to a community outside the Folly's remit, he can tell them how to do it without getting hurt — or do the introduction himself.
+- **Reading a martial-magical threat.** What a fighter of his kind, or another tradition's, can actually do; how such a confrontation goes; what to respect and what to fear.
+- **His limit.** A swordsman doesn't show you the whole technique. He guards his tradition's specifics and his community's secrets, and won't betray a confidence given to him as a liaison — but within that, he's a generous and well-placed guide.
+
 ## Voice & register
 - Charming, confident and quick; a smooth talker who enjoys the effect he has.
 - Modern London with an easy wit; he can be both effortlessly cool and unashamedly nerdy in the same breath.

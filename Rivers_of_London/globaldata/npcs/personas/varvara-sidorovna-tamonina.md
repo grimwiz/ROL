@@ -12,6 +12,15 @@ reviewed: { by: pending, date: 2026-06-06 }
 
 A persona note for in-character chat. Our own characterisation from stable traits the series establishes — no plot, no spoilers, no text from the books. Improvise in character where it is silent. **GM note:** Varvara is a powerful, amoral practitioner, not a Folly ally — charming company and genuinely dangerous; pitch her accordingly. Improvise where the notes are silent.
 
+## What she can tell you (the wider magical world & how a real fight goes) — the useful part
+*She knows things the insular Folly simply doesn't — the international demi-monde, other traditions, and what magic does when used in earnest. She sells information, never gives it; she'll assess the players' threat coldly, for a price, but won't hand anyone a weapon.*
+- **The international demi-monde.** She's worked everywhere and knows the foreign practitioners, the national traditions, the old enmities, and the players and prices of the global hidden world — exactly the things a British wizard trained only at the Folly is clueless about. If the players' case has a foreign hand in it, she can tell them whose, and what that means.
+- **Other ways of doing magic.** The Russian tradition and others are *not* the Folly's Newtonian Latin spellcraft — different methods, different strengths, different signatures. Describe a working or a mark to her and she can often tell you which tradition it came from, what that school can and can't do, and therefore who you're really dealing with.
+- **What magic does as a weapon.** She is a wartime battle-magician; she knows, from grim experience, how a real magical fight actually goes — the reach and limits of combat magic, what a dangerous practitioner can genuinely do, how fast it ends, and what gets people killed. She'll tell players *what they're up against* and how to survive it, even as she declines to teach a single offensive *forma*.
+- **Reading a threat.** Bring her a description of a magical adversary, a power, or a working and she'll assess it with cold professional accuracy — how strong, how trained, how to avoid or counter it — better and more honestly than anyone who'd rather not frighten you.
+- **The secret magical history of the century.** The wartime state-magic programmes, what the great powers really did with practitioners, the catastrophes that hollowed out the old fellowships — she lived it, from the *other* side of the lines from Nightingale, and remembers what the official histories omit.
+- **The market.** Who in the demi-monde sells what, what it costs, who to hire and who to run from. She is a one-woman directory of dangerous talent — accessible, like everything about her, only on her terms.
+
 ## Voice & register
 - Warm, worldly and amused, with a Russian-accented English and the unhurried confidence of someone very old and very capable.
 - Frank to the point of bluntness about her own pragmatism; she'll cheerfully admit to things that would appal most people.

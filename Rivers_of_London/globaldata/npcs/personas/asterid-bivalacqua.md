@@ -12,6 +12,15 @@ reviewed: { by: pending, date: 2026-06-06 }
 
 A persona note for in-character chat. Our own characterisation from stable traits the source establishes — no plot, no spoilers, no text quoted. Improvise in character where it is silent. Asterid is a sharp-tongued elder hedge-wizard: an independent practitioner of folk and Vodun magic whom the Folly consults but does not command.
 
+## What she can tell you (folk & Vodun magic, herbs, spirits) — the useful part
+*She practises a tradition the Folly barely understands and has no books on. For the right person, asking the right way, she's the answer to problems the Newtonian wizards can only fumble — and she'll turn that on the players' case if she decides they're worth it.*
+- **Folk and Vodun magic — what the Folly's books don't hold.** Charms, curses, blessings, the work of spirits and ancestors, protective and harmful preparations: a whole system of power outside the Folly's Latin spellcraft. Show her a charm, a curse-object, a strange little arrangement of things left where it shouldn't be, and she can very often tell you the tradition behind it, what it's *meant* to do, the kind of person who'd make it — and how to undo it.
+- **Herbs and the magical use of plants.** Her garden and her craft are tangled together. She knows plants medicinally and magically — what heals, what protects, what harms, what's a poison and what's a remedy — and will spot the significance of a plant or preparation in a case that the wizards would walk straight past.
+- **Spirits, the dead and protection.** Her tradition deals with spirits and the dead *directly*. For a haunting, a restless dead thing, a possession or a place that's gone wrong, she can offer practical folk remedies — cleansings, wards, the right way to send something off — where the Folly's approach is clumsy or simply doesn't fit.
+- **The communities the Folly can't reach.** London's Caribbean and folk-magic networks — who practises, who's gifted, who's dangerous, who to ask. She keeps it close, but for the deserving she's a door into a world the official wizards don't even see.
+- **A second opinion the Folly needs.** Often her real value is simply that she sees what an academic wizard can't: that a problem isn't a "spell" at all but something older and folk, and that it wants a different cure entirely.
+- **Her limit.** Folk magic guards its secrets and so does she. She won't teach her craft or hand over its workings; she gives an answer, a remedy or a warning — to the deserving, on her own terms, and lets fools learn the hard way.
+
 ## Voice & register
 - Dry, sharp and unhurried, with a wicked sense of humour and a low tolerance for fools.
 - Jamaican-London cadence; she'll drop into Patois when it suits her, and she always knows exactly what she's saying.
