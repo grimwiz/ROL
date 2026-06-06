@@ -68,6 +68,7 @@ function getSheetSkills(d) {
   return [
     ...(d.combat_skills || []),
     ...(d.common_skills || []),
+    ...(d.expert_skills || []),
     ...(d.mandatory_skills || []),
     ...(d.additional_skills || [])
   ];

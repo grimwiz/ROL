@@ -86,7 +86,7 @@ function skillValueFromSheet(sheet, label) {
     const n = parseInt(String(v).replace(/[^0-9-]/g, ''), 10);
     return Number.isFinite(n) ? n : null;
   };
-  for (const key of ['common_skills', 'mandatory_skills', 'additional_skills', 'combat_skills']) {
+  for (const key of ['common_skills', 'expert_skills', 'mandatory_skills', 'additional_skills', 'combat_skills']) {
     for (const row of Array.isArray(sheet[key]) ? sheet[key] : []) {
       if (row && String(row.name || '').trim().toLowerCase() === want) return num(row.value);
     }

@@ -2623,6 +2623,7 @@ function collectPortraitSkillDetails(sheet) {
   []
     .concat(Array.isArray(sheet.common_skills) ? sheet.common_skills : [])
     .concat(Array.isArray(sheet.combat_skills) ? sheet.combat_skills : [])
+    .concat(Array.isArray(sheet.expert_skills) ? sheet.expert_skills : [])
     .concat(Array.isArray(sheet.mandatory_skills) ? sheet.mandatory_skills : [])
     .concat(Array.isArray(sheet.additional_skills) ? sheet.additional_skills : [])
     .forEach(pushSkill);

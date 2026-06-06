@@ -12,11 +12,10 @@ const SheetForm = (() => {
       { name: 'Fighting', value: '30' },
       { name: 'Firearms', value: '30' }
     ],
-    mandatory_skills: [
-      { name: '', value: '' },
-      { name: '', value: '' }
-    ],
-    additional_skills: [
+    // Expert skills (base 00, only if selected/granted/acquired). RoL has two
+    // skill classes: Common (everyone has) and Expert. Languages live here too,
+    // as "Language (X)" entries. Combat skills stay in their own area below.
+    expert_skills: [
       { name: '', value: '' },
       { name: '', value: '' },
       { name: '', value: '' }
@@ -30,7 +29,6 @@ const SheetForm = (() => {
     carry: '',
     magic_spells: [],
     signare: { sound: '', smell: '', sensation: '', notes: '' },
-    languages: [{ name: '', value: '', own: false }],
     custom_fields: []
   };
 
@@ -382,22 +380,30 @@ const SheetForm = (() => {
     const base = JSON.parse(JSON.stringify(DEFAULT));
     if (!saved) return base;
     Object.assign(base, saved);
-    if (!Array.isArray(base.mandatory_skills)) base.mandatory_skills = DEFAULT.mandatory_skills;
-    if (!Array.isArray(base.additional_skills)) base.additional_skills = DEFAULT.additional_skills;
     if (!Array.isArray(base.custom_fields)) base.custom_fields = [];
     if (!Array.isArray(base.magic_spells)) base.magic_spells = [];
+    // Two skill classes: Common (everyone has) and Expert. Languages fold into
+    // Expert as "Language: X" entries; Combat keeps its own area. Migrate the
+    // legacy mandatory_skills / additional_skills / languages fields here so old
+    // sheets and NPC archives upgrade on load.
+    const _legacyExpert = []
+      .concat(Array.isArray(base.expert_skills) ? base.expert_skills : [])
+      .concat(Array.isArray(saved.mandatory_skills) ? saved.mandatory_skills : [])
+      .concat(Array.isArray(saved.additional_skills) ? saved.additional_skills : [])
+      .concat((Array.isArray(saved.languages) ? saved.languages : [])
+        .filter((l) => l && l.name)
+        .map((l) => ({ name: `Language: ${String(l.name).trim()}${l.own ? ' (own)' : ''}`, value: String(l.value == null ? '' : l.value).trim() })));
     base.common_skills = mergeCommonSkills(base.common_skills);
-    base.combat_skills = mergeCombatSkills(base.combat_skills, base.mandatory_skills, base.additional_skills);
-    // After combat-skill legacy recovery, drop duplicate/valueless extra skills.
-    const _extra = cleanExtraSkills(base.mandatory_skills, base.additional_skills);
-    base.mandatory_skills = _extra.mandatory;
-    base.additional_skills = _extra.additional;
+    // Recover any Fighting/Firearms stored among legacy expert skills into Combat.
+    base.combat_skills = mergeCombatSkills(base.combat_skills, _legacyExpert, []);
+    // Clean the expert list (drop nameless/valueless rows, common/combat collisions, dupes).
+    base.expert_skills = cleanExtraSkills(_legacyExpert, []).mandatory;
+    if (!base.expert_skills.length) base.expert_skills = JSON.parse(JSON.stringify(DEFAULT.expert_skills));
+    delete base.mandatory_skills;
+    delete base.additional_skills;
+    delete base.languages;
     if (!base.signare || typeof base.signare !== 'object' || Array.isArray(base.signare)) base.signare = {};
     base.signare = Object.assign({ sound: '', smell: '', sensation: '', notes: '' }, base.signare);
-    base.languages = (Array.isArray(base.languages) ? base.languages : [])
-      .filter((l) => l && typeof l === 'object')
-      .map((l) => ({ name: String(l.name || '').trim(), value: String(l.value == null ? '' : l.value).trim(), own: !!l.own }));
-    if (!base.languages.length) base.languages = [{ name: '', value: '', own: false }];
     base.damage = normaliseDamage(base.damage);
     base.weapons = normaliseWeapons(base.weapons);
     base.advantages = parseAdvantages(base.advantages).join(', ');
@@ -648,8 +654,7 @@ const SheetForm = (() => {
     const magicalAdvantage = parseAdvantages(d.advantages).some((adv) => /^magical\b/i.test(adv));
     return magicalAdvantage
       || hasMagicSkill(d.common_skills)
-      || hasMagicSkill(d.mandatory_skills)
-      || hasMagicSkill(d.additional_skills)
+      || hasMagicSkill(d.expert_skills)
       || hasMagicData(d);
   }
 
@@ -774,8 +779,9 @@ const SheetForm = (() => {
       </div>
 
       <label style="display:block;margin:1rem 0 0.75rem;font-size:0.78rem;font-weight:700;color:var(--text2);">EXPERT SKILLS</label>
+      <p class="card-sub" style="margin:0 0 0.6rem">Languages go here too — add them as "Language: French". Your mother tongue is free at INT or 60% (whichever is higher).</p>
       <div class="skills-grid" id="mandatory-skills">
-        ${d.mandatory_skills.concat(d.additional_skills || []).map((sk, i) => `
+        ${(d.expert_skills || []).map((sk, i) => `
           <div class="skill-row">
             <div class="skill-name-wrap">
               <input type="text" id="sf_msk_name_${i}" class="msk-name" value="${esc(sk.name)}" placeholder="Skill name"${rdAttr}>
@@ -784,17 +790,11 @@ const SheetForm = (() => {
             ${renderNumericSelect(`sf_msk_val_${i}`, sk.value, readonly, SKILL_PERCENT_OPTIONS, { className: 'msk-val', suffix: '%' })}
           </div>`).join('')}
       </div>
-      ${!readonly ? `<button type="button" class="btn btn-sm" style="margin-top:0.5rem" onclick="SheetForm.addMandatory()">+ Add expert skill</button>` : ''}
-
-      <label style="display:block;margin:1.25rem 0 0.4rem;font-size:0.78rem;font-weight:700;color:var(--text2);">LANGUAGES</label>
-      <p class="card-sub" style="margin:0 0 0.6rem">Your mother tongue is free at INT or 60% (whichever is higher) — tick "Own". RoL records languages in the Expert Skills space, so these print there on the sheet.</p>
-      <div class="languages-header">
-        <span>Language</span><span>%</span><span>Mother tongue</span><span></span>
-      </div>
-      <div id="languages">
-        ${d.languages.map((lg, i) => renderLanguageRow(lg, i, readonly)).join('')}
-      </div>
-      ${!readonly ? `<button type="button" class="btn btn-sm" style="margin-top:0.5rem" onclick="SheetForm.addLanguage()">+ Add language</button>` : ''}
+      ${!readonly ? `<div style="margin-top:0.5rem">
+        <button type="button" class="btn btn-sm" onclick="SheetForm.addMandatory()">+ Add expert skill</button>
+        <button type="button" class="btn btn-sm" onclick="SheetForm.addLanguage()">+ Add language</button>
+      </div>` : ''}
+      <div id="expert-skill-hint" class="card-sub" style="margin-top:0.6rem;color:var(--text2)"></div>
     </div>
   </div>
 
@@ -1048,6 +1048,7 @@ const SheetForm = (() => {
     syncCommonSkillsForAdvantages();
     updateCombatSkillHalves();
     updateMagicSectionVisibility();
+    updateExpertSkillHint();
     if (readonly) return;
     STAT_KEYS.forEach((stat) => {
       const el = document.getElementById(`sf_${stat}`);
@@ -1063,6 +1064,8 @@ const SheetForm = (() => {
     if (disadvantagesText) disadvantagesText.addEventListener('input', updateDerivedDisplay);
     const ageInput = document.getElementById('sf_age');
     if (ageInput) ageInput.addEventListener('input', updateDerivedDisplay);
+    const occInput = document.getElementById('sf_occupation');
+    if (occInput) occInput.addEventListener('input', updateExpertSkillHint);
     document.querySelectorAll('.combat-skill-full').forEach((el) => {
       el.addEventListener('input', updateCombatSkillHalves);
       el.addEventListener('change', updateCombatSkillHalves);
@@ -1071,9 +1074,39 @@ const SheetForm = (() => {
       el.addEventListener('input', updateMagicSectionVisibility);
       el.addEventListener('change', updateMagicSectionVisibility);
     });
+    document.querySelectorAll('#mandatory-skills .msk-name').forEach((el) => {
+      el.addEventListener('input', updateExpertSkillHint);
+    });
     document.querySelectorAll('#sf_magic_tradition, #sf_magic_notes, .spell-name, .spell-order, .spell-notes').forEach((el) => {
       el.addEventListener('input', updateMagicSectionVisibility);
     });
+  }
+
+  // Non-blocking hint: if the occupation has rulebook-required skills (Occupation
+  // Table, 03-character-creation.md) not present on the sheet, list them under
+  // the Expert area. Never auto-adds — the occupation may be a GM variant with
+  // allocated skills. No-op if occupation-skills.js (window.OccupationSkills)
+  // isn't loaded.
+  function updateExpertSkillHint() {
+    const box = document.getElementById('expert-skill-hint');
+    if (!box) return;
+    const OS = (typeof window !== 'undefined') && window.OccupationSkills;
+    if (!OS) { box.textContent = ''; return; }
+    const occEl = document.getElementById('sf_occupation');
+    const names = [];
+    document.querySelectorAll('#common-skills .csk-row').forEach((r) => names.push(String(r.dataset.name || '')));
+    document.querySelectorAll('#mandatory-skills .msk-name').forEach((el) => names.push(String(el.value || '')));
+    document.querySelectorAll('#combat-skills .combat-skill-row input[readonly]').forEach((el) => names.push(String(el.value || '')));
+    const hint = OS.requiredHint(occEl ? occEl.value : '', names);
+    if (!hint) { box.textContent = ''; return; }
+    if (hint.missing && hint.missing.length) {
+      box.innerHTML = `<strong>⚠ Required for this occupation, not yet listed:</strong> ${hint.missing.map(esc).join(', ')}. `
+        + `Add as Expert skills if your investigator has them — or ignore if this is a GM-allocated variant.`;
+    } else if (hint.complex) {
+      box.innerHTML = `<strong>Occupation required skills:</strong> ${esc(hint.text)}.`;
+    } else {
+      box.textContent = '';
+    }
   }
 
   // ── Mutators ───────────────────────────────────────────────────────────────
@@ -1092,24 +1125,40 @@ const SheetForm = (() => {
       el.addEventListener('input', updateMagicSectionVisibility);
       el.addEventListener('change', updateMagicSectionVisibility);
     });
+    div.querySelectorAll('.msk-name').forEach((el) => el.addEventListener('input', updateExpertSkillHint));
   }
 
   function removeMandatory(btn) {
     const row = btn && btn.closest('.skill-row');
     if (row) row.remove();
     updateMagicSectionVisibility();
+    updateExpertSkillHint();
   }
 
+  // Languages are Expert skills now; this just adds an Expert row pre-filled
+  // with "Language: " so they group together and print in the Expert space.
   function addLanguage() {
-    const wrap = document.getElementById('languages');
-    if (!wrap) return;
+    const grid = document.getElementById('mandatory-skills');
+    if (!grid) return;
+    const i = Date.now();
     const div = document.createElement('div');
-    div.innerHTML = renderLanguageRow({ name: '', value: '', own: false }, Date.now(), false);
-    wrap.appendChild(div.firstElementChild);
+    div.className = 'skill-row';
+    div.innerHTML = `<div class="skill-name-wrap">
+      <input type="text" id="sf_msk_name_${i}" class="msk-name" value="Language: " placeholder="Language: French">
+      <button type="button" class="btn btn-inline-remove" title="Remove expert skill" onclick="SheetForm.removeMandatory(this)">✕</button>
+    </div>
+    ${renderNumericSelect(`sf_msk_val_${i}`, '', false, SKILL_PERCENT_OPTIONS, { className: 'msk-val', suffix: '%' })}`;
+    grid.appendChild(div);
+    div.querySelectorAll('.msk-name').forEach((el) => {
+      el.addEventListener('input', updateMagicSectionVisibility);
+      el.addEventListener('input', updateExpertSkillHint);
+    });
+    const nameInput = div.querySelector('.msk-name');
+    if (nameInput) { nameInput.focus(); nameInput.setSelectionRange(nameInput.value.length, nameInput.value.length); }
   }
 
   function removeLanguage(btn) {
-    const row = btn && btn.closest('.language-row');
+    const row = btn && btn.closest('.skill-row');
     if (row) row.remove();
   }
 
@@ -1575,8 +1624,7 @@ const SheetForm = (() => {
       advantages: data.advantages,
       common_skills: data.common_skills,
       combat_skills: data.combat_skills,
-      mandatory_skills: data.mandatory_skills,
-      additional_skills: data.additional_skills,
+      expert_skills: data.expert_skills,
       weapons: data.weapons,
       magic_tradition: data.magic_tradition,
       magic_spells: data.magic_spells
@@ -1593,20 +1641,15 @@ const SheetForm = (() => {
       if (name) combat_skills.push({ name, value: value || '0' });
     });
 
-    const mandatory_skills = [];
+    // Expert skills (languages live here too, as "Language: X"). Clean drops
+    // valueless rows, common/combat collisions, and duplicates.
+    const expert_collected = [];
     document.querySelectorAll('#mandatory-skills .skill-row').forEach((row) => {
       const name = (row.querySelector('.msk-name') || {}).value || '';
       const value = (row.querySelector('.msk-val') || {}).value || '';
-      if (name) mandatory_skills.push({ name: name.trim(), value: value.trim() });
+      if (name.trim()) expert_collected.push({ name: name.trim(), value: value.trim() });
     });
-
-    const additional_skills = [];
-    document.querySelectorAll('#additional-skills .skill-row').forEach((row) => {
-      const name = (row.querySelector('.ask-name') || {}).value || '';
-      const value = (row.querySelector('.ask-val') || {}).value || '';
-      if (name) additional_skills.push({ name: name.trim(), value: value.trim() });
-    });
-    const _extra = cleanExtraSkills(mandatory_skills, additional_skills);
+    const expert_skills = cleanExtraSkills(expert_collected, []).mandatory;
 
     const common_skills = [];
     document.querySelectorAll('#common-skills .csk-row').forEach((row) => {
@@ -1648,14 +1691,6 @@ const SheetForm = (() => {
       notes: g('signare_notes')
     };
 
-    const languages = [];
-    document.querySelectorAll('#languages .language-row').forEach((row) => {
-      const name = ((row.querySelector('.lang-name') || {}).value || '').trim();
-      const value = ((row.querySelector('.lang-val') || {}).value || '').trim();
-      const own = !!((row.querySelector('.lang-own-cb') || {}).checked);
-      if (name || value) languages.push({ name, value, own });
-    });
-
     const damage = {
       hurt: !!((document.getElementById('sf_damage_hurt') || {}).checked),
       bloodied: !!((document.getElementById('sf_damage_bloodied') || {}).checked),
@@ -1685,10 +1720,10 @@ const SheetForm = (() => {
       advantages: g('advantages_text'),
       disadvantages: g('disadvantages'),
       experience_package: (document.getElementById('sf_experience_package') || {}).value || '',
-      combat_skills, common_skills, mandatory_skills: _extra.mandatory, additional_skills: _extra.additional,
+      combat_skills, common_skills, expert_skills,
       luck: luckVal, damage, weapons, carry: g('carry'),
       magic_tradition: g('magic_tradition'), magic_notes: g('magic_notes'), magic_spells,
-      signare, languages,
+      signare,
       derived,
       custom_fields
     };

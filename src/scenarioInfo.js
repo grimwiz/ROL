@@ -3499,7 +3499,7 @@ function npcStatLine(sheet) {
 function npcSkillLine(sheet) {
   const pick = (arr) => (Array.isArray(arr) ? arr : [])
     .filter((s) => s && s.name).map((s) => `${s.name} ${s.value}`).join(', ');
-  return [pick(sheet.common_skills), pick(sheet.mandatory_skills), pick(sheet.combat_skills)]
+  return [pick(sheet.common_skills), pick(sheet.expert_skills), pick(sheet.mandatory_skills), pick(sheet.combat_skills)]
     .filter(Boolean).join('; ');
 }
 
