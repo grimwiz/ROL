@@ -60,7 +60,7 @@ const PORTRAITS = {
     background: 'a dim, old-world panelled interior'
   },
   'dr-abdul-haqq-walid': {
-    subject: 'a spry white Scottish man in his fifties with a high forehead and a receding ginger hairline, in a shirt and tie',
+    subject: 'a spry white Scottish man in his fifties with a high forehead and a receding ginger hairline, wearing a white medical coat over a shirt and tie',
     background: 'a hint of a clean clinical hospital mortuary in stainless steel, softly out of focus'
   },
   'father-thames': {
@@ -73,7 +73,7 @@ const PORTRAITS = {
   },
   'abigail-kamara': {
     subject: 'a sharp, confident Black British teenage girl of about seventeen, hair in braids, in casual streetwear',
-    background: 'a softly out-of-focus north London estate with a railway line behind'
+    background: 'a softly out-of-focus north London housing estate of brick and concrete walkways'
   },
   'asterid-bivalacqua': {
     subject: 'an elegant, slender Black woman in her late seventies, short relaxed white hair, chunky jewellery and big earrings',
@@ -84,7 +84,7 @@ const PORTRAITS = {
     background: 'a police station interview room, softly out of focus'
   },
   'dr-jennifer-vaughan': {
-    subject: 'a small, sharp-eyed white woman in her early thirties with practical short hair, in a shirt',
+    subject: 'a small, sharp-eyed white woman in her early thirties with practical short hair, wearing blue surgical scrubs',
     background: 'a clean clinical hospital mortuary in stainless steel, softly out of focus'
   },
   'frank-caffrey': {

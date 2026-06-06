@@ -42,7 +42,7 @@ const ENTRIES = {
     // writing a second copy to globaldata creates a duplicate that reimport then
     // overwrites (last file by name wins), wiping the portrait. Target the real one.
     jsonPath: 'Rivers_of_London/canonical/cases/bookshop/npcs/pc-karnam-singh.json',
-    subject: 'a British Sikh man in his late twenties with a neatly tied dark turban (dastaar) and a trimmed black beard, calm and steady, in a smart shirt',
+    subject: 'a British Sikh man in his late twenties with a neatly tied dark turban (dastaar) and a trimmed black beard, calm and steady, in the dark uniform of a British Metropolitan Police constable with epaulettes and a tie',
     background: 'a softly out-of-focus London police station interior'
   }
 };
