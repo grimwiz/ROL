@@ -13,7 +13,7 @@ const QWEN_IMAGE_MODELS = {
 };
 
 const PORTRAIT_NEGATIVE_PROMPT = '低分辨率，低画质，肢体畸形，手指畸形，画面过饱和，蜡像感，人脸无细节，过度光滑，画面具有AI感。构图混乱。文字模糊，扭曲';
-const PORTRAIT_COMPOSITION = 'serious expression, three-quarters view, bust portrait, full head and hair fully visible, generous space above the head, clear face, clear eyes';
+const PORTRAIT_COMPOSITION = 'serious expression, three-quarters view, head-and-shoulders portrait, full head and hair fully visible with only a little space above the hair, the figure comfortably filling the frame, clear face, clear eyes';
 const DEFAULT_PORTRAIT_STYLE = 'Art Nouveau portrait styling with a restrained Art Deco frame around the portrait, clean elegant linework, muted earthy palette with antique gold accents, painterly illustration, not photorealistic, not modern snapshot';
 
 const PORTRAIT_RESTYLE_WORKFLOW_TEMPLATE = {
@@ -54,9 +54,19 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function buildRestyleInstruction(style) {
+function buildRestyleInstruction(style, opts = {}) {
   const styleText = (typeof style === 'string' && style.trim()) ? style.trim() : DEFAULT_PORTRAIT_STYLE;
-  return `Redraw this photograph in the following art style: ${styleText}. Preserve the person's identity and facial likeness, but fully restyle the colours, palette, linework and rendering to match. ${PORTRAIT_COMPOSITION}. No text, no watermark.`;
+  const subjectText = String((opts && opts.subject) || '').trim();
+  const backgroundText = String((opts && opts.background) || '').trim();
+  const subject = subjectText ? ` The subject is ${subjectText}.` : '';
+  // A background is ALWAYS requested now — the source crops sit on blank fields,
+  // and without this the model just keeps that emptiness (the "halo"/"floats in
+  // cream" complaint). A character-specific setting is preferred; otherwise a
+  // fitting one in-palette.
+  const background = backgroundText
+    ? ` Set the subject against ${backgroundText}, rendered in the same palette and style, softly out of focus so the face stays dominant — never an empty, flat or single-colour backdrop.`
+    : ' Give the portrait a fitting, softly-rendered background in the same palette — never an empty, flat or single-colour backdrop.';
+  return `Redraw this photograph in the following art style: ${styleText}.${subject} Preserve the person's identity, facial likeness, apparent age and build, but fully restyle the colours, palette, linework and rendering to match. ${PORTRAIT_COMPOSITION}.${background} No text, no watermark.`;
 }
 
 function decodeImageDataUrl(value) {
@@ -166,7 +176,7 @@ function normaliseDenoise(value) {
   return Math.min(1, Math.max(0.6, denoise));
 }
 
-async function queuePortraitRestyle({ image, style = '', strength, logger = () => {} }) {
+async function queuePortraitRestyle({ image, style = '', strength, subject = '', background = '', logger = () => {} }) {
   const editModel = effectiveComfyuiEditModel();
   const missingAssets = await ensureQwenPortraitAssets(editModel);
   if (missingAssets.length) {
@@ -175,7 +185,7 @@ async function queuePortraitRestyle({ image, style = '', strength, logger = () =
 
   const { buffer, ext } = decodeImageDataUrl(image);
   const uploadedName = await uploadImageToComfy(buffer, ext);
-  const instruction = buildRestyleInstruction(style);
+  const instruction = buildRestyleInstruction(style, { subject, background });
   const seed = Math.floor(Math.random() * 2 ** 31);
   const denoise = normaliseDenoise(strength);
   const workflow = JSON.parse(JSON.stringify(PORTRAIT_RESTYLE_WORKFLOW_TEMPLATE));
@@ -253,8 +263,8 @@ async function fetchGeneratedImageDataUrl(ref) {
   return dataUrlFromBuffer(buffer, contentType);
 }
 
-async function restylePortraitImage({ image, style = '', strength, timeoutMs, pollMs, logger } = {}) {
-  const queued = await queuePortraitRestyle({ image, style, strength, logger });
+async function restylePortraitImage({ image, style = '', strength, subject = '', background = '', timeoutMs, pollMs, logger } = {}) {
+  const queued = await queuePortraitRestyle({ image, style, strength, subject, background, logger });
   const ref = await waitForPromptImage(queued.promptId, { timeoutMs, pollMs });
   const dataUrl = await fetchGeneratedImageDataUrl(ref);
   return { ...queued, image: ref, dataUrl };
