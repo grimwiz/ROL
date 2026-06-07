@@ -4484,29 +4484,14 @@ function renderGmAnalysis(info) {
   return `<div class="gm-private-analysis">${topIndex}${pacing}${actionsSection}${briefsSection}</div>`;
 }
 
-// Read-only handout switcher for the player Handouts view — mirrors the Edit
-// Files file-selection behaviour (one doc shown at a time) without any editing.
-function selectPlayerHandout(idx) {
-  document.querySelectorAll('.scenario-file-list [data-handout-index]').forEach((btn) => {
-    btn.classList.toggle('active', Number(btn.dataset.handoutIndex) === idx);
-  });
-  document.querySelectorAll('#player-handout-docs .player-handout-doc').forEach((doc) => {
-    doc.hidden = Number(doc.dataset.handoutIndex) !== idx;
-  });
-  const activeBtn = document.querySelector(`.scenario-file-list [data-handout-index="${idx}"] span`);
-  const titleEl = document.getElementById('player-handout-title');
-  if (titleEl && activeBtn) titleEl.textContent = activeBtn.textContent;
-}
-window.selectPlayerHandout = selectPlayerHandout;
-
 function renderScenarioSourceEditor(sources) {
   const markdownSources = scenarioArray(sources.markdown_sources);
   if (State.user.role !== 'gm') {
-    // Player view mirrors the GM Edit Files layout — a file list plus a
-    // read-only viewer — instead of one long concatenated page. The server has
-    // already stripped GM-only files (routes.js scenario-sources).
-    const handoutName = (source, i) =>
-      String(source.relative_path || source.path || `Handout ${i + 1}`).split('/').pop().replace(/\.md$/i, '');
+    // Player view: the same file list + single panel as the GM Edit Files tab,
+    // but read-only. Shares selectScenarioSource, which renders into this
+    // read-only body when there's no editor textarea. GM-only files are already
+    // stripped server-side (routes.js scenario-sources).
+    const sourceName = (source) => String(source.relative_path || source.path || 'Source');
     if (!markdownSources.length) {
       return `
         <div class="card scenario-source-editor">
@@ -4515,6 +4500,7 @@ function renderScenarioSourceEditor(sources) {
         </div>
         ${assetFilesPanelHtml(sources, false)}`;
     }
+    State.scenarioSelectedSourceIndex = 0;
     return `
       <div class="card scenario-source-editor">
         <div class="card-header">
@@ -4526,18 +4512,14 @@ function renderScenarioSourceEditor(sources) {
         <div class="scenario-file-editor">
           <div class="scenario-file-list" role="list">
             ${markdownSources.map((source, i) => `
-              <button type="button" data-handout-index="${i}" class="${i === 0 ? 'active' : ''}" onclick="selectPlayerHandout(${i})">
-                <span>${esc(handoutName(source, i))}</span>
+              <button type="button" data-source-index="${i}" class="${i === 0 ? 'active' : ''}" onclick="selectScenarioSource(${i})">
+                <span>${esc(sourceName(source))}</span>
               </button>
             `).join('')}
           </div>
           <div class="scenario-file-panel">
-            <div class="scenario-file-meta"><strong id="player-handout-title">${esc(handoutName(markdownSources[0], 0))}</strong></div>
-            <div id="player-handout-docs">
-              ${markdownSources.map((source, i) => `
-                <div class="player-handout-doc scenario-body" data-handout-index="${i}"${i === 0 ? '' : ' hidden'}>${renderScenarioText(source.content || '')}</div>
-              `).join('')}
-            </div>
+            <div class="scenario-file-meta"><strong id="scenario-source-title">${esc(sourceName(markdownSources[0]))}</strong></div>
+            <div id="player-handout-body" class="scenario-body" data-source-index="0">${renderScenarioText(markdownSources[0].content || '')}</div>
           </div>
         </div>
       </div>
@@ -4670,25 +4652,34 @@ function scenarioSourceEditorDirty() {
   return norm(area.value) !== norm(source.content);
 }
 
+// Shared by the GM Edit Files tab and the player Handouts tab. The GM target is
+// the editable textarea (#scenario-source-editor); the player target is the
+// read-only viewer (#player-handout-body). Behaviour differs only where it must:
+// GM gets the unsaved-edits / mid-capture guards and editor buttons.
 function selectScenarioSource(sourceIndex) {
-  const area = el('scenario-source-editor');
-  if (!area) return;
-  // Re-selecting the file already open (e.g. returning to the tab mid-capture) is a
-  // no-op — never prompt to discard or reload over the live transcript.
-  if (Number(area.dataset.sourceIndex) === Number(sourceIndex)) return;
-  // A running capture writes into whichever file is open, so don't let the GM switch
-  // files mid-capture and misdirect the transcript — stop first.
-  if (_sessionCapture && _sessionCapture.active && String(_sessionCapture.sessionId) === String(State.currentSession)) {
-    showAlert('Stop the session capture before switching files.', 'danger', 'scenario-alert');
-    return;
+  const area = el('scenario-source-editor');     // GM editor textarea (absent for players)
+  const body = el('player-handout-body');         // player read-only viewer (absent for GM)
+  const target = area || body;
+  if (!target) return;
+  // Re-selecting the file already open is a no-op — never prompt to discard or
+  // reload over the live transcript.
+  if (Number(target.dataset.sourceIndex) === Number(sourceIndex)) return;
+  if (area) {
+    // A running capture writes into whichever file is open, so don't let the GM
+    // switch files mid-capture and misdirect the transcript — stop first.
+    if (_sessionCapture && _sessionCapture.active && String(_sessionCapture.sessionId) === String(State.currentSession)) {
+      showAlert('Stop the session capture before switching files.', 'danger', 'scenario-alert');
+      return;
+    }
+    if (scenarioSourceEditorDirty() && !confirm('Discard unsaved edits to the current file?')) return;
   }
-  if (scenarioSourceEditorDirty() && !confirm('Discard unsaved edits to the current file?')) return;
   const sources = scenarioArray(State.scenarioSources && State.scenarioSources.markdown_sources);
   const source = sources[Number(sourceIndex)];
   if (!source) return;
   State.scenarioSelectedSourceIndex = Number(sourceIndex);
-  area.dataset.sourceIndex = String(sourceIndex);
-  area.value = source.content || '';
+  target.dataset.sourceIndex = String(sourceIndex);
+  if (area) area.value = source.content || '';
+  else body.innerHTML = renderScenarioText(source.content || '');
   const title = el('scenario-source-title');
   if (title) title.textContent = source.relative_path || source.path || 'Source';
   const visibility = el('scenario-source-visibility');
@@ -4696,8 +4687,10 @@ function selectScenarioSource(sourceIndex) {
   document.querySelectorAll('.scenario-file-list button').forEach((button) => button.classList.remove('active'));
   const selectedButton = document.querySelector(`.scenario-file-list button[data-source-index="${Number(sourceIndex)}"]`);
   if (selectedButton) selectedButton.classList.add('active');
-  updateSeedActionButton();
-  updateEfSaveButton();
+  if (area) {
+    updateSeedActionButton();
+    updateEfSaveButton();
+  }
 }
 window.selectScenarioSource = selectScenarioSource;
 
