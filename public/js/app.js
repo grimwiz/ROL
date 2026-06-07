@@ -3066,11 +3066,18 @@ function wireSessionCapture(initialBtn, ta, sessionId) {
 
   async function liveTranscribe(f32, absStart, absEnd, gap) {
     if (f32.length < rate * 0.3) return;            // <0.3s, skip
-    try {
-      const r = await api.transcribeAudio(sessionId, { audio_base64: await blobToBase64(encodeWav(f32, rate)), mime: 'audio/wav' });
-      const t = (r && r.text || '').trim();
-      if (t) { liveSegs.push({ abs: absStart, end: absEnd, text: t, gap: !!gap }); rerender(); maybeDiarize(t, gap); }
-    } catch (e) { noteError('Live transcription failed — is the speech service up? ' + (e && e.message || e)); }
+    // Encode once; the audio is already in hand, so a transient failure should be
+    // RETRIED rather than silently dropping this utterance's words. Only after a
+    // few attempts do we surface an error (the box is genuinely down).
+    const payload = { audio_base64: await blobToBase64(encodeWav(f32, rate)), mime: 'audio/wav' };
+    let r = null, lastErr = null;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try { r = await api.transcribeAudio(sessionId, payload); lastErr = null; break; }
+      catch (e) { lastErr = e; if (attempt < 2) await new Promise((res) => setTimeout(res, 400 * (attempt + 1))); }
+    }
+    if (lastErr) { noteError('Live transcription failed after retries — is the speech service up? ' + (lastErr && lastErr.message || lastErr)); return; }
+    const t = (r && r.text || '').trim();
+    if (t) { liveSegs.push({ abs: absStart, end: absEnd, text: t, gap: !!gap }); rerender(); maybeDiarize(t, gap); }
   }
   // Kick off the diarization drain once enough speech has built up — preferring a
   // real pause that ends a sentence; or unconditionally once we hit the soft max.
