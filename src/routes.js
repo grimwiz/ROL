@@ -24,6 +24,7 @@ const {
   streamGmChat,
   streamRulesChat,
   listNpcPersonas,
+  caseNpcNameKeys,
   resolveNpcPersona,
   seedNpcPersonaIntoCase,
   streamNpcChat,
@@ -2329,8 +2330,10 @@ router.post('/rules/chat', requireAuth, async (req, res) => {
 
 // ── NPC persona chat ──────────────────────────────────────────────────────────
 // Chat in-character with an NPC. Personas are Markdown (canonical seed in
-// globaldata, overridable by a "<Name> - personality.md" case handout). Any
-// authenticated user may chat with any NPC (POC: no state/visibility gating).
+// globaldata, overridable by a "<Name> - personality.md" case handout).
+// Players may only chat with NPCs allocated to the case (Admin NPC scope); the
+// GM sees the full roster with each NPC flagged `allocated` so they can spot
+// anyone they have forgotten to assign.
 router.get('/sessions/:id/npc-personas', requireAuth, (req, res) => {
   const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(req.params.id) || null;
   // Attach each NPC's portrait (from its character sheet, matched by name) so
@@ -2341,10 +2344,16 @@ router.get('/sessions/:id/npc-personas', requireAuth, (req, res) => {
     const name = String(data.name || '').trim().toLowerCase();
     if (name && data.portrait) portraitByName.set(name, data.portrait);
   }
-  const npcs = listNpcPersonas(session).map((n) => ({
-    ...n,
-    portrait: portraitByName.get(String(n.name).toLowerCase()) || ''
-  }));
+  const allocated = caseNpcNameKeys(session, db);
+  const isGM = req.user.role === 'gm';
+  const npcs = listNpcPersonas(session)
+    .map((n) => ({
+      ...n,
+      allocated: allocated.has(String(n.name).toLowerCase()),
+      portrait: portraitByName.get(String(n.name).toLowerCase()) || ''
+    }))
+    // Players only see NPCs allocated to this case; the GM sees everyone.
+    .filter((n) => isGM || n.allocated);
   res.json({ npcs });
 });
 
@@ -2354,6 +2363,10 @@ router.post('/sessions/:id/npc-chat', requireAuth, async (req, res) => {
   const persona = resolveNpcPersona(session, slug);
   if (!persona) {
     return res.status(404).json({ error: 'That character has no personality file yet.' });
+  }
+  // Players may only talk to NPCs allocated to this case; the GM may talk to any.
+  if (req.user.role !== 'gm' && !caseNpcNameKeys(session, db).has(String(persona.name).toLowerCase())) {
+    return res.status(403).json({ error: 'That character isn’t part of this case.' });
   }
   if (await gateLlmStart(res)) return;
   const controller = new AbortController();

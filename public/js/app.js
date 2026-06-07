@@ -6203,7 +6203,20 @@ async function renderSessionNpcChat(sessionId) {
   }
   const selected = personas.find((p) => p.slug === st.slug);
   st.portrait = selected ? (selected.portrait || '') : '';
-  const options = personas.map((p) => `<option value="${esc(p.slug)}"${p.slug === st.slug ? ' selected' : ''}>${esc(p.name)}</option>`).join('');
+  const optionFor = (p) => `<option value="${esc(p.slug)}"${p.slug === st.slug ? ' selected' : ''}>${esc(p.name)}</option>`;
+  // The GM gets the full roster (some personas come back not allocated to this
+  // case); group those apart so a forgotten allocation stands out. Players only
+  // ever receive allocated NPCs, so they see a single flat list.
+  const gmView = personas.some((p) => !p.allocated);
+  let options;
+  if (gmView) {
+    const inCase = personas.filter((p) => p.allocated).map(optionFor).join('');
+    const notInCase = personas.filter((p) => !p.allocated).map(optionFor).join('');
+    options = `${inCase ? `<optgroup label="In this case">${inCase}</optgroup>` : ''}`
+      + `${notInCase ? `<optgroup label="Not allocated to this case">${notInCase}</optgroup>` : ''}`;
+  } else {
+    options = personas.map(optionFor).join('');
+  }
   tab.innerHTML = `
     <div class="page-header">
       <div>

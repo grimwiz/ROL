@@ -789,13 +789,22 @@ const SCENARIO_SECTIONS = {
     artifact: 'gm',
     path: ['npc_knowledge'],
     type: 'array',
-    goal: 'For each NPC allocated to this case, write a brief of what THAT NPC plausibly knows about this case from their own perspective — used so the character can answer questions in their own voice. Cover: who they are in this case, what they have personally witnessed or been told, what they believe (rightly or wrongly), their relationships and loyalties, what they want, and what they are hiding or unsure of. Ground every statement in the case material; only include what this character could plausibly know (never omniscient); never invent major facts; it is fine to note what they do NOT know.',
+    goal: [
+      'For each NPC allocated to this case, write a brief of what THAT NPC plausibly knows about this case AND the influence they have had on it, written from their own perspective — used so the character can answer questions in their own voice. Cover: who they are in this case, what they have personally witnessed or been told, what they believe (rightly or wrongly), their relationships and loyalties, what they want, what they are hiding or unsure of, AND what they have personally done, said, or set in motion this case (their influence — see below). Ground every statement in the case material; only include what this character could plausibly know or do (never omniscient); never invent major facts; it is fine to note what they do NOT know.',
+      '',
+      'INFERRING INFLUENCE FROM LIVE PLAY. The session transcripts are live play in which the GM voices the NPCs while the players act and discover. The transcript rarely labels who is speaking in what capacity, so you must infer it. Read what the GM tells the players and sort each thing into one of three kinds, then attribute only the right kinds to THIS NPC:',
+      '- Game framework / out-of-character: the GM running the game — rules calls, dice, scene framing, recaps, table-talk. This is NOT in-world knowledge for any NPC; ignore it for the persona UNLESS this NPC is the in-world source of it (see the calibration note below).',
+      '- Player discovery: things the players observed, examined, or worked out for themselves. An NPC knows these only if they were present or were later told; never give a character knowledge they could not plausibly have come by.',
+      '- NPC-delivered: things an NPC told the players — dialogue the GM voiced in that NPC\'s role, briefings, instructions, or in-character documents from or about that NPC. This is both what that NPC knows and what they have already disclosed; attribute it to them.',
+      'CALIBRATE TO THE NPC\'S ROLE. Weigh how central this character actually is before attributing anything. An NPC with only a walk-on (e.g. greeted the party, served a meal) knows almost nothing of the wider case — keep their influence short or omit it; never inflate a minor presence into case knowledge. But where the players operate within an institution this NPC heads or commands — they report to this NPC, work the case on their authority, or are tasked by them within the setting\'s structure — then the case\'s assignment, official status, protocol, and direction are in-world THIS NPC\'s briefing and influence, even when the GM delivered them as plain framework. Infer that and attribute it to them. In Rivers of London this most often applies to the senior Folly officer the players answer to (their SIO/handler).'
+    ].join('\n'),
     schemaHint: [
       'Return a JSON array, one element per NPC. Each element:',
       '```json',
       '{ "id": "npc-slug", "name": "NPC name", "content": "Markdown", "sources": [ { "path": "..." } ] }',
       '```',
-      '- `content` is GitHub-flavoured Markdown written from THIS NPC\'s optic, using these `###` sub-headings in order: `### Who they are in this case`, `### What they know`, `### Relationships & loyalties`, `### What they want`, `### What they are hiding or unsure of`. Use `**bold**` and `-` bullets within.',
+      '- `content` is GitHub-flavoured Markdown written from THIS NPC\'s optic, using these `###` sub-headings in order: `### Who they are in this case`, `### What they know`, `### What I have done and told the players this case`, `### Relationships & loyalties`, `### What they want`, `### What they are hiding or unsure of`. Use `**bold**` and `-` bullets within.',
+      '- `### What I have done and told the players this case` is this NPC\'s influence on the case (explicit AND inferred, per the goal): what they have personally done in-scene, told or briefed the players, tasked them with, or set in motion. Derive it by sorting the live-play transcript into game-framework / player-discovery / NPC-delivered and keeping only what is this NPC\'s. For a peripheral walk-on this may be a single line or omitted entirely; for the officer the players answer to it may be substantial. Never inflate a minor NPC into a mover of the plot.',
       '- Only what this character could plausibly know — never make them omniscient. Ground every statement in the case sources; never invent major facts.',
       '- GM-only reference: it may contain secrets the players have not yet learned.'
     ].join('\n')
@@ -2189,6 +2198,19 @@ function listNpcItems(session, db) {
   return items;
 }
 
+// Lowercased name-keys of the NPCs allocated to this case (the Admin NPC
+// allocations — same source as the per-NPC knowledge loop). Used to gate the
+// player-facing NPC chat down to the characters actually in this case. Matching
+// is by lowercased name, consistent with getNpcCaseKnowledge().
+function caseNpcNameKeys(session, db) {
+  if (!session || !db) return new Set();
+  try {
+    return new Set(listNpcItems(session, db).map((i) => i.name.toLowerCase()));
+  } catch {
+    return new Set();
+  }
+}
+
 const LOOPED_SECTIONS = {
   'player.summary.session_summaries': (session, db, paths) => detectSessionItems(session, db, paths),
   'player.entities.characters': (session, db) => listCharacterItems(session, db),
@@ -2233,7 +2255,8 @@ function itemFocusPrompt(config, item) {
     head.push(
       `- id: "${item.key}" (use exactly this id)`,
       `- name: "${item.name}"`,
-      `Write what the NPC "${item.name}" knows about this case, from their own perspective, grounded in the case sources. Include only what this character could plausibly know — never make them omniscient — and note what they do not know where relevant.`
+      `Write what the NPC "${item.name}" knows about this case, from their own perspective, grounded in the case sources. Include only what this character could plausibly know — never make them omniscient — and note what they do not know where relevant.`,
+      `Also infer "${item.name}"'s influence on the case from the live-play transcript: sort what the GM tells the players into game-framework / player-discovery / NPC-delivered, and attribute to "${item.name}" only what they witnessed, were told, did, disclosed, or — if the players operate under this character's authority within the setting — tasked and directed even where the GM delivered it as plain framework. Calibrate to how central "${item.name}" actually is: keep a walk-on's influence minimal or omit it; never inflate a minor presence.`
     );
   }
   head.push('', 'Return exactly one JSON object now.');
@@ -3600,6 +3623,7 @@ module.exports = {
   streamGmChat,
   streamRulesChat,
   listNpcPersonas,
+  caseNpcNameKeys,
   resolveNpcPersona,
   seedNpcPersonaIntoCase,
   streamNpcChat,
