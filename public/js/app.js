@@ -2901,7 +2901,7 @@ function wireSessionCapture(initialBtn, ta, sessionId) {
   const voiceName = {};   // voiceId -> character
 
   const pad = (n) => String(n).padStart(2, '0');
-  const clockOf = (absSec) => { const d = new Date(recStartMs + absSec * 1000); return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); };
+  const clockOf = (absSec) => { const d = new Date(recStartMs + absSec * 1000); return d.getFullYear() + '.' + pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); };
 
   function concatF32(chunks, len) {
     const out = new Float32Array(len); let o = 0;
