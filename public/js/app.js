@@ -4518,7 +4518,6 @@ function renderScenarioSourceEditor(sources) {
             `).join('')}
           </div>
           <div class="scenario-file-panel">
-            <div class="scenario-file-meta"><strong id="scenario-source-title">${esc(sourceName(markdownSources[0]))}</strong></div>
             <div id="player-handout-body" class="scenario-body" data-source-index="0">${renderScenarioText(markdownSources[0].content || '')}</div>
           </div>
         </div>
@@ -4570,7 +4569,6 @@ function renderScenarioSourceEditor(sources) {
         <div class="scenario-file-panel">
           ${preferredIndex ? `
             <div class="scenario-file-meta">
-              <strong id="scenario-source-title">${esc(preferredIndex.relative_path || preferredIndex.path || 'Source')}</strong>
               <span id="scenario-source-visibility">${preferredIndex.visibility === 'gm' ? 'GM Only' : 'Player Handout'}</span>
             </div>
             <textarea id="scenario-source-editor" data-source-index="${preferredIndex.index}" rows="18">${esc(preferredIndex.content || '')}</textarea>
