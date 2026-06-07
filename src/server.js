@@ -25,12 +25,16 @@ app.get('/js/vendor/markdown-it.min.js', (req, res) => {
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use('/rules-files', requireAuth, express.static(path.join(__dirname, '..', 'Rivers_of_London')));
 
-// Concise per-request access log (one line on response finish). Skips the
-// 3s /llm/status poll so it doesn't drown the console.
+// Per-request access log. QUIET by default: only failed requests (status >= 400)
+// are logged, so real errors stand out instead of drowning under 200/304 noise.
+// Set LOG_LEVEL=debug (or trace/verbose) to log every request. The 3s
+// /llm/status poll is always skipped.
+const LOG_HTTP_ALL = /^(debug|trace|verbose)$/i.test(process.env.LOG_LEVEL || '');
 app.use('/api', (req, res, next) => {
   if (req.path === '/llm/status') return next();
   const startedMs = Date.now();
   res.on('finish', () => {
+    if (!LOG_HTTP_ALL && res.statusCode < 400) return;
     console.info(`[http] method=${req.method} path=${req.originalUrl.split('?')[0]} status=${res.statusCode} ms=${Date.now() - startedMs}`);
   });
   next();
