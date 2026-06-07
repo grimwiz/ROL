@@ -3028,7 +3028,14 @@ function wireSessionCapture(initialBtn, ta, sessionId) {
     diarBusy = true; status();
     let more = false;
     try { const r = await api.diarizeWindow(sessionId, final, untilSec); if (r && !r.pending) { mergeResult(r); more = !!r.more; } }
-    catch (e) { noteError('Diarization failed — is the speech service up? ' + (e && e.message || e)); }
+    catch (e) {
+      // Diarization only LABELS the kept transcript, so a failure never loses
+      // words. On the final flush (stop) the session is already captured, so a
+      // busy/flaky speech box must not throw an alarming error at the user —
+      // note it quietly; reconcileLabels still assigns speakers from prior turns.
+      if (final) console.warn('Final diarization window failed; some speaker labels may be missing:', (e && e.message) || e);
+      else noteError('Diarization failed — is the speech service up? ' + (e && e.message || e));
+    }
     finally { diarBusy = false; status(); }
     return more;
   }
