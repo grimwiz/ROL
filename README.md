@@ -1,6 +1,26 @@
-# The Folly - Investigator Case Files
+# The Folly — Investigator Case Files
 
-Rivers of London RPG campaign-support web app. It combines multi-user GM/player access, per-case character sheets, global NPC sheets surfaced in cases, session summaries and entity briefs generated from source Markdown, GM-only brainstorming and handout generation, in-app rolls with Luck handling, embedded rulebook search, *The Domestic* solo adventure, AI portrait tools, and one-click export to the printed character sheet PDF.
+A campaign-support web app for the *Rivers of London* tabletop RPG — and, along the way, a working study in **applied AI integration**: one real tool I run for my own table that leans on four *different* kinds of AI for four *different* jobs, each with its own constraints, failure modes, and guardrails.
+
+> A personal GM tool, not a product — the portfolio value here is the engineering, not the game material it sits on top of. The full copyrighted rulebook is deliberately kept out of the repo (gitignored); what's bundled is the free *The Domestic* quickstart, the blank character sheet, and the GM's own paraphrased rules notes.
+
+## Four ways this project uses AI
+
+The interesting part isn't any one model — it's matching the *right* class of AI to each job, and keeping each one bounded:
+
+1. **AI as coder.** The application is built in close pair-programming with AI coding assistants (Claude Code / Codex) — architecture, implementation, and iterative debugging — with the human directing the design and owning anything irreversible. That discipline shows up in the codebase: a single generation path, deterministic non-LLM post-passes, and service boundaries around every model.
+
+2. **AI for prose & analysis.** A local Ollama model turns a GM's raw source Markdown into the material a session actually needs — *reconciling* stable content rather than churning it, and **re-presenting the same facts different ways**: chronological scene summaries, fragmented per-player WhatsApp-style threads, or place-by-place recall, plus entity-centric briefs for NPCs, places and things. Player-visible and GM-only material stay strictly separated, and prompts embed the allowed sources and live roster so the model reports rather than invents.
+
+3. **AI for illustrations & portraits.** Character portraits are generated and restyled with Qwen image / image-edit models on a local ComfyUI server — a prompt assembled from the character sheet (occupation, class, stats, skills, kit, magic), and a restyle path that preserves identity while changing the art treatment. The LAN-only image box is never exposed; the browser talks to authenticated proxy endpoints.
+
+4. **AI for speech-to-text.** Live sessions are captured from the GM's mic and turned into a diarized, speaker-labelled transcript (NVIDIA Parakeet + pyannote on a dedicated GPU box). Words appear as you speak and are **kept verbatim**; a separate diarization pass only attaches *who said it* — metadata never rewrites the words. Recognition is biased toward the case's proper nouns, and per-speaker voiceprints stay one identity across sessions (treated as GDPR Article 9 biometric data, stored locally and never surfaced).
+
+A theme across all four: **the AI is kept on a leash.** Each integration sits behind a service boundary, is biased with real project data instead of being trusted to know, keeps a deterministic or human-controlled path for anything that matters, and is never allowed to fluently overwrite ground truth.
+
+## What it is
+
+Multi-user GM/player access, per-case character sheets, NPC sheets surfaced across cases, session summaries and entity briefs generated from source Markdown, GM-only brainstorming and handout generation, in-app rolls with Luck handling, embedded rulebook search, *The Domestic* solo adventure, AI portrait tools, **live session capture (speech-to-text with speaker diarization)**, and one-click export to the printed character-sheet PDF.
 
 ## Requirements
 
@@ -8,6 +28,7 @@ Rivers of London RPG campaign-support web app. It combines multi-user GM/player 
 - npm
 - (Optional) A reachable Ollama server if you want AI scenario regeneration and GM Chat.
 - (Optional) A reachable [ComfyUI](https://github.com/comfyanonymous/ComfyUI) server with Qwen image/image-edit models installed, if you want portrait generation/restyling or GM handout generation.
+- (Optional) A reachable speech-to-text box (NVIDIA Parakeet + pyannote — see `BUILD_PARAKEET.md`) if you want live session capture with speaker diarization.
 
 ## Setup
 
@@ -68,8 +89,10 @@ On first start, if no users exist, a default GM account is created:
 | `COMFYUI_QWEN_TEXT_ENCODER` | `qwen_2.5_vl_7b_fp8_scaled.safetensors` | Text encoder model name |
 | `COMFYUI_QWEN_VAE` | `qwen_image_vae.safetensors` | VAE model name |
 | `COMFYUI_IDLE_UNLOAD_MS` | `300000` | Idle delay before asking ComfyUI to unload models; set `0` to disable |
+| `WHISPERX_URL` | LAN default | Base URL of the speech-to-text service (Parakeet/pyannote) used by live session capture |
+| `ROL_BOOST_ALPHA` | `0.5` | Default glossary-boost strength sent to the STT service (Admin-overridable; 0 disables) |
 
-Ollama and ComfyUI service URLs, active Ollama model, Ollama context, and ComfyUI image/edit model choices can also be changed from **Admin → LLM**. Those overrides persist in `data/app-config.json` and take effect immediately. Without ComfyUI reachable, every non-image feature still works; image buttons will fail cleanly.
+Ollama, ComfyUI and speech-to-text service URLs, the active Ollama model, Ollama context, the STT glossary-boost strength, and ComfyUI image/edit model choices can all be changed from **Admin → LLM / Service endpoints**. Those overrides persist in `data/app-config.json` and take effect immediately. Without ComfyUI reachable, every non-image feature still works; image buttons will fail cleanly. Without the speech box reachable, everything except live capture still works.
 
 ## Nginx proxy config (behind HTTPS)
 
@@ -126,7 +149,7 @@ GM-only management lives under the top-level **Admin** tab, with four sections:
 - **Accounts** — create accounts, change passwords, delete accounts, and **allocate each account to any number of cases** (or none). Player↔case assignment can also still be done in-case via a case file's **+ Assign player** button; both write the same data.
 - **NPCs** — create/edit/print NPC character sheets and **allocate each NPC to any number of cases** (or none), exactly the way accounts are allocated. The allocation list includes the built-in **The Domestic** as a case.
 - **Case Settings** — per-case roll mode (*RoL bonus/penalty die* or *Simple* advantage/disadvantage), ruleset mode (*Rivers of London* or CoC-style SIZ/HP/Build), and portrait style instructions used by that case's character/NPC portrait tools.
-- **LLM** — active Ollama model, Ollama context (128K/256K when supported by the model), Ollama/ComfyUI base URLs, and ComfyUI image/edit model selection.
+- **LLM / Service endpoints** — active Ollama model, Ollama context (128K/256K when supported by the model), the Ollama / ComfyUI / speech-to-text base URLs, the STT glossary-boost strength, and ComfyUI image/edit model selection.
 
 NPCs and accounts are both first-class, case-independent records: an NPC or account exists on its own and is *allocated* to arbitrary cases.
 
@@ -292,6 +315,17 @@ npm run portrait:restyle -- --session "The Bookshop" --character "Warwick Anders
 
 The list commands print the available cases and the character selectors inside a case. `--session Global` (or `--session 0`) targets the central NPC pool instead of a case allocation. The restyle command resolves the named character, restyles the supplied image with the relevant portrait style, and writes the generated portrait into the sheet so it is immediately visible in the web app for review. Use `--output path/to/generated.png` if you also want a loose file copy of the generated image.
 
+## Session capture (speech-to-text)
+
+The **Edit Files** tab can record a live game session from the GM's microphone and build a diarized transcript of `## Speaker  HH:MM` blocks straight into the session source file. It runs as two decoupled layers, on the principle that *diarization is metadata and must never change the words*:
+
+- A **live** pass transcribes each utterance the moment you pause for breath and prints it **kept verbatim** — those words are the transcript and are never rewritten or removed.
+- A separate **diarization** pass, run in bounded incremental windows (cut on a real pause so no speaker straddles a boundary), attaches the `## Speaker` heading to the words the live pass already wrote.
+
+Recognition is biased toward the case glossary (PCs, NPCs, places, spells) at recognition time — never an LLM rewrite — and a per-case **voiceprint registry** keeps each speaker one identity across windows and sessions: name a voice once and it's labelled everywhere, with merge/delete/unidentify controls for fixing mistakes. Dictating into a character's personality file enrols that speaker's voiceprint so future captures auto-label them.
+
+Transcription and diarization run on a separate, general-purpose GPU box (NVIDIA Parakeet + pyannote; it also exposes a Home Assistant Wyoming STT endpoint). ROL points at it via **Admin → Service endpoints → Speech URL**, with the **Glossary boost** dial alongside. The capture survives tab navigation (the top "Recording…" pill is a stop control from any tab), and the mic needs a **secure context** (HTTPS or `localhost`). Voiceprints and raw session audio are treated as **GDPR Article 9 biometric data** — stored only under the gitignored case folder, never surfaced or copied. Full design notes are in **`SESSION_CAPTURE.md`**; the STT service build is in **`BUILD_PARAKEET.md`**.
+
 ## PDF export
 
 A **Print / Export PDF** button on every sheet sends the in-memory sheet data to `POST /api/sheet/render-pdf`, which overlays it onto the official Chaosium *Rivers of London* blank character sheet (`Rivers_of_London/RoL_Charsheet.pdf`) using `pdf-lib` and streams back a download. The same renderer is exposed as a CLI for batch exports — see *Utility scripts* below.
@@ -380,6 +414,6 @@ If more decorations turn up later, adding them is manual — just drop the filen
 
 ## Data
 
-SQLite database stored at `DB_PATH`. Back it up by copying the `.db` file. The schema covers users, sessions, the session ↔ player join table, character sheets (one JSON blob per (session, user) pair), NPCs (including an optional full character-sheet JSON in the central `npcs.sheet` column), NPC↔case allocation (`npc_sessions`), per-case settings (`session_settings`), GM-assigned/self-service rolls (`session_rolls`), per-session wound state and temporary stat adjustments, and per-user *Domestic* progress.
+SQLite database stored at `DB_PATH`. Back it up by copying the `.db` file. The schema is deliberately small — `users`, `sessions`, the `session_players` join, and one **unified `character_sheets`** table: a player sheet is a row with an owning `user_id`, and an **NPC is the same row with `user_id` NULL** (no separate NPCs table). A character is allocated to cases by a **`scope` array of case names held inside its JSON `data`**, not by a per-session row. The rest is per-case `session_settings`, GM-assigned/self-service rolls (`session_rolls`), and per-session, per-character transient state — `session_character_state` (wounds) and `session_luck_adjustments` (temporary stat deltas), both keyed by `character_id` so one NPC catalogue row carries independent state in each case it appears in.
 
 Global app-level AI/service overrides live outside SQLite in `data/app-config.json` (Ollama model/context/base URL, ComfyUI URL, and ComfyUI image/edit model choices). Case source files and generated artifacts live under `data/sessions/<session-name-slug>/`.
