@@ -2897,6 +2897,7 @@ function wireSessionCapture(initialBtn, ta, sessionId) {
   let liveSpk = false, liveSil = 0, liveBuf = [], liveLen = 0, liveStartAbs = 0;
   let diarBusy = false, diarFlushing = false, lastDiarEndSec = 0, statusTimer = null;
   const liveSegs = [];    // {abs,end,text,voice?} live utterances — the kept transcript
+  const turns = [];       // {start,end,voice} every diarization turn — for the stop-time label reconcile
   const voiceName = {};   // voiceId -> character
 
   const pad = (n) => String(n).padStart(2, '0');
@@ -2985,6 +2986,7 @@ function wireSessionCapture(initialBtn, ta, sessionId) {
   // speaker is cached once, so rerender stays cheap and labels never disturb words.
   function mergeResult(r) {
     const newTurns = (r.segments || []).map((s) => ({ start: s.start, end: s.end, voice: s.voice }));
+    for (const tn of newTurns) turns.push(tn);
     const upto = (typeof r.cursor_sec === 'number') ? r.cursor_sec
       : (newTurns.length ? newTurns[newTurns.length - 1].end : lastDiarEndSec);
     for (const u of liveSegs) {
@@ -3001,6 +3003,22 @@ function wireSessionCapture(initialBtn, ta, sessionId) {
     if (typeof r.cursor_sec === 'number') lastDiarEndSec = r.cursor_sec;
     for (const v of (r.voices || [])) if (v.character) voiceName[v.id] = v.character;
     renderEfVoicesPanel(r.voices || [], sessionId);
+    rerender();
+  }
+  // On stop, leave no `## …`: give every still-unlabelled word a speaker — its nearest
+  // diarized turn, then carry the adjacent speaker into any tail no window ever covered.
+  function reconcileLabels() {
+    for (const u of liveSegs) {
+      if (u.voice || !turns.length) continue;
+      const mid = (u.abs + (u.end || u.abs)) / 2;
+      let pick = null, bg = 1e9;
+      for (const tn of turns) { const g = mid < tn.start ? tn.start - mid : (mid > tn.end ? mid - tn.end : 0); if (g < bg) { bg = g; pick = tn.voice; } }
+      if (pick) u.voice = pick;
+    }
+    let prev = null;
+    for (const u of liveSegs) { if (u.voice) prev = u.voice; else if (prev) u.voice = prev; }          // carry forward
+    let next = null;
+    for (let i = liveSegs.length - 1; i >= 0; i--) { if (liveSegs[i].voice) next = liveSegs[i].voice; else if (next) liveSegs[i].voice = next; }  // and backward
     rerender();
   }
   // Diarize ONE bounded window, ending at `untilSec` (a real pause) if given.
@@ -3091,7 +3109,7 @@ function wireSessionCapture(initialBtn, ta, sessionId) {
     try { await ctx.resume(); } catch (e) { /* may already be running */ }
     rate = ctx.sampleRate; recStartMs = Date.now();
     basePrefix = ((el('scenario-source-editor') || {}).value) || '';  // preserve existing content; append below it
-    total = 0; lastDiarEndSec = 0; liveSegs.length = 0;
+    total = 0; lastDiarEndSec = 0; liveSegs.length = 0; turns.length = 0;
     slice = []; sliceLen = 0; ingestChain = Promise.resolve();
     liveSpk = false; liveSil = 0; liveBuf = []; liveLen = 0; diarFlushing = false;
     try { await api.liveStart(sessionId, rate); }
@@ -3131,6 +3149,7 @@ function wireSessionCapture(initialBtn, ta, sessionId) {
       for (let i = 0; i < 30 && (diarBusy || diarFlushing); i++) await new Promise((r) => setTimeout(r, 200));  // let an in-flight drain settle
       await cap(runDiarFlush(true), 120000);             // stop: drain everything, incl. a short tail
     } catch { /* never let cleanup hang the UI */ }
+    reconcileLabels();                                   // resolve any leftover `## …` to a speaker
     finishing = false; status();                         // always hide the pill
     // If we stopped from the nav pill while the editor wasn't on screen, the transcript
     // hasn't been painted anywhere — flag it so re-opening Edit Files restores it once.
@@ -4654,6 +4673,15 @@ function scenarioSourceEditorDirty() {
 function selectScenarioSource(sourceIndex) {
   const area = el('scenario-source-editor');
   if (!area) return;
+  // Re-selecting the file already open (e.g. returning to the tab mid-capture) is a
+  // no-op — never prompt to discard or reload over the live transcript.
+  if (Number(area.dataset.sourceIndex) === Number(sourceIndex)) return;
+  // A running capture writes into whichever file is open, so don't let the GM switch
+  // files mid-capture and misdirect the transcript — stop first.
+  if (_sessionCapture && _sessionCapture.active && String(_sessionCapture.sessionId) === String(State.currentSession)) {
+    showAlert('Stop the session capture before switching files.', 'danger', 'scenario-alert');
+    return;
+  }
   if (scenarioSourceEditorDirty() && !confirm('Discard unsaved edits to the current file?')) return;
   const sources = scenarioArray(State.scenarioSources && State.scenarioSources.markdown_sources);
   const source = sources[Number(sourceIndex)];
