@@ -44,15 +44,18 @@ app.get('*', (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error(err);
   // Surface body-parser failures (oversized payload, malformed JSON) with their
-  // real status so the client can show something more useful than "Internal  // server error". Everything else still becomes a generic 500.
-  if (err && err.type === 'entity.too.large') {
-    return res.status(413).json({ error: 'Upload too large. Try a smaller image.' });
-  }
-  if (err && err.type === 'entity.parse.failed') {
-    return res.status(400).json({ error: 'Malformed request body.' });
-  }
+  // real status so the client can show something more useful than "Internal
+  // server error". Everything else still becomes a generic 500.
+  const status = (err && err.type === 'entity.too.large') ? 413
+    : (err && err.type === 'entity.parse.failed') ? 400
+      : 500;
+  // ALWAYS log enough to diagnose: which request failed, the status, the message,
+  // and the stack. A 500 with no traceable log is a dead end.
+  console.error(`[error] method=${req.method} path=${req.originalUrl} status=${status} msg=${JSON.stringify((err && err.message) || String(err))}`);
+  if (err && err.stack) console.error(err.stack);
+  if (status === 413) return res.status(413).json({ error: 'Upload too large. Try a smaller image.' });
+  if (status === 400) return res.status(400).json({ error: 'Malformed request body.' });
   res.status(500).json({ error: 'Internal server error' });
 });
 
