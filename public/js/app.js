@@ -4465,16 +4465,62 @@ function renderGmAnalysis(info) {
   return `<div class="gm-private-analysis">${topIndex}${pacing}${actionsSection}${briefsSection}</div>`;
 }
 
+// Read-only handout switcher for the player Handouts view — mirrors the Edit
+// Files file-selection behaviour (one doc shown at a time) without any editing.
+function selectPlayerHandout(idx) {
+  document.querySelectorAll('.scenario-file-list [data-handout-index]').forEach((btn) => {
+    btn.classList.toggle('active', Number(btn.dataset.handoutIndex) === idx);
+  });
+  document.querySelectorAll('#player-handout-docs .player-handout-doc').forEach((doc) => {
+    doc.hidden = Number(doc.dataset.handoutIndex) !== idx;
+  });
+  const activeBtn = document.querySelector(`.scenario-file-list [data-handout-index="${idx}"] span`);
+  const titleEl = document.getElementById('player-handout-title');
+  if (titleEl && activeBtn) titleEl.textContent = activeBtn.textContent;
+}
+window.selectPlayerHandout = selectPlayerHandout;
+
 function renderScenarioSourceEditor(sources) {
   const markdownSources = scenarioArray(sources.markdown_sources);
   if (State.user.role !== 'gm') {
+    // Player view mirrors the GM Edit Files layout — a file list plus a
+    // read-only viewer — instead of one long concatenated page. The server has
+    // already stripped GM-only files (routes.js scenario-sources).
+    const handoutName = (source, i) =>
+      String(source.relative_path || source.path || `Handout ${i + 1}`).split('/').pop().replace(/\.md$/i, '');
+    if (!markdownSources.length) {
+      return `
+        <div class="card scenario-source-editor">
+          <div class="card-header"><div><div class="card-title">Handouts</div></div></div>
+          <p class="card-sub">No player-visible handouts are available yet.</p>
+        </div>
+        ${assetFilesPanelHtml(sources, false)}`;
+    }
     return `
-      <div class="card scenario-summary-card">
-        <div class="card-title">Handouts</div>
-        ${markdownSources.length ? markdownSources.map((source) => `
-          <div class="scenario-subtitle">${esc(source.relative_path || source.path || 'Source')}</div>
-          <div class="scenario-body">${renderScenarioText(source.content || '')}</div>
-        `).join('') : '<p class="card-sub">No player-visible source files are available.</p>'}
+      <div class="card scenario-source-editor">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Handouts</div>
+            <div class="card-sub">Case files shared with the players — select one to read it.</div>
+          </div>
+        </div>
+        <div class="scenario-file-editor">
+          <div class="scenario-file-list" role="list">
+            ${markdownSources.map((source, i) => `
+              <button type="button" data-handout-index="${i}" class="${i === 0 ? 'active' : ''}" onclick="selectPlayerHandout(${i})">
+                <span>${esc(handoutName(source, i))}</span>
+              </button>
+            `).join('')}
+          </div>
+          <div class="scenario-file-panel">
+            <div class="scenario-file-meta"><strong id="player-handout-title">${esc(handoutName(markdownSources[0], 0))}</strong></div>
+            <div id="player-handout-docs">
+              ${markdownSources.map((source, i) => `
+                <div class="player-handout-doc scenario-body" data-handout-index="${i}"${i === 0 ? '' : ' hidden'}>${renderScenarioText(source.content || '')}</div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
       </div>
       ${assetFilesPanelHtml(sources, false)}`;
   }
