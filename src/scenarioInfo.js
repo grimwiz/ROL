@@ -609,6 +609,9 @@ function classifyGlobalVisibility(relativePath) {
 function classifySessionFileVisibility(fullPath, paths) {
   const rootRelative = normaliseSlash(path.relative(paths.root, fullPath));
   if (rootRelative === 'gm_sections.json') return 'gm';
+  // Auto-generated GM/LLM references — stat blocks and the key-NPC list (which
+  // names characters the players shouldn't know yet). Never player handouts.
+  if (rootRelative === 'NPC.md' || rootRelative === 'key-npcs.md') return 'gm';
   if (rootRelative === 'GM' || rootRelative.startsWith('GM/')) return 'gm';
   if (rootRelative === 'output_gm' || rootRelative.startsWith('output_gm/')) return 'gm';
   return 'player';
