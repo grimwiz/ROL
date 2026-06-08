@@ -40,6 +40,13 @@
 - **Effort.** **L.** Largest of the open items: data-model + on-disk layout
   change, copy-on-grant semantics, asset route/lister/injector rewrites, a
   multi-select UI, and a migration off the existing folder toggle.
+- **Motivating cases.** (a) **Pre-gen character sheets** — the Investigator Pack
+  is imported as player-area handout PNGs (like `Gallery/handout-spells-1.png`),
+  so today *every* player sees *all* of them; per-character visibility is what
+  lets each player see only their own sheet. (b) Per-character private clues.
+  (c) Appendix D maps/handouts (`scope-decision-needed`). Today's
+  `setSessionAssetVisibility` only moves an asset between GM-only and
+  visible-to-all (routes.js), so none of these are possible without this feature.
 
 ### 2. Letter / document handouts (.md → PDF via deterministic recipe parser)
 - **Gap.** No in-world PDF handout pipeline exists. The dependencies are present
@@ -64,22 +71,6 @@
   and per-case recipe storage are smaller. Fits the per-case-settings pattern and
   dovetails with the visibility-set work (item 1).
 
-### 3. Investigator Pack — the 12 image-only pre-gens (content, OCR/vision)
-- **Gap.** The six **rulebook Appendix A** pre-gens are done (see Done). The
-  separate **Investigator Pack PDF**
-  (`private/rulebook-source/…Investigator_Pack.pdf`) holds **12 full character
-  sheets as flattened 300-dpi images** (no extractable text), which are not yet
-  imported. Plan + precedent: `rules/tracking/investigator-pack-npc-extraction-plan.md`.
-- **Goal.** Render pages → OCR/local-vision transcribe to `globaldata/npcs/*.json`
-  (`scope: []`, `owner = NPC`), lock the field map on one sheet first, restyle
-  portraits from the NPC Portrait Pack, and seed-verify — exactly the pipeline
-  already proven on the six Appendix A pre-gens.
-- **Effort.** **M, content work** — the OCR/vision transcription of dense stat
-  blocks is the risk; everything downstream (JSON shape, seeding, portrait
-  restyle, PDF export) is now built and validated.
-- **Optional later:** Appendix D maps/handouts (`scope-decision-needed`) and the
-  per-character private-clue surfacing, both of which dovetail with item 1.
-
 ## Done
 
 - **Rulebook scenario/lore extraction — complete.** Chapter 7
@@ -93,7 +84,8 @@
   Jordan Schneider, Eli Venturini, Jules Garland, Mina Patel) imported as
   unallocated NPC sheets (`globaldata/npcs/*.json`, `scope: []`) with img2img-
   restyled portraits, so a GM can assign one to a player to pick up and play.
-  Seed-verified. The other 12 image-only Investigator Pack sheets remain — item 3.
+  Seed-verified. (The Investigator Pack's full 12 sheets are separately imported
+  as player-area handout PNGs; surfacing them per-player is item 1.)
 
 - **Setting & GM Reference surface + NPC-chat grounding.** The scenario corpus is
   now readable in-app: role-filtered `GET /api/rules/reference` and a "Setting &
