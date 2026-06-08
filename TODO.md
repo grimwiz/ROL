@@ -64,18 +64,7 @@
   and per-case recipe storage are smaller. Fits the per-case-settings pattern and
   dovetails with the visibility-set work (item 1).
 
-### 3. Case ownership and GM permissions
-- **Gap.** Authority is role-only: every GM can manage every case. No
-  `case_owner` / GM-case allocation exists. Acceptable for the Bookshop
-  teaching/demo case, but it will not hold once multiple GMs each own different
-  cases.
-- **Goal.** Add case ownership (or GM-case allocation, reusing the same
-  allocation model players already use) and gate case-management routes on it, so
-  GMs can run independent campaigns without seeing or editing each other's cases.
-- **Effort.** **M.** Schema (owner/allocation), an authorization check on the
-  case-management routes, and a small allocation UI.
-
-### 4. Investigator Pack — the 12 image-only pre-gens (content, OCR/vision)
+### 3. Investigator Pack — the 12 image-only pre-gens (content, OCR/vision)
 - **Gap.** The six **rulebook Appendix A** pre-gens are done (see Done). The
   separate **Investigator Pack PDF**
   (`private/rulebook-source/…Investigator_Pack.pdf`) holds **12 full character
@@ -104,7 +93,7 @@
   Jordan Schneider, Eli Venturini, Jules Garland, Mina Patel) imported as
   unallocated NPC sheets (`globaldata/npcs/*.json`, `scope: []`) with img2img-
   restyled portraits, so a GM can assign one to a player to pick up and play.
-  Seed-verified. The other 12 image-only Investigator Pack sheets remain — item 4.
+  Seed-verified. The other 12 image-only Investigator Pack sheets remain — item 3.
 
 - **Setting & GM Reference surface + NPC-chat grounding.** The scenario corpus is
   now readable in-app: role-filtered `GET /api/rules/reference` and a "Setting &
