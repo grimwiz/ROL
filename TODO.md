@@ -1,12 +1,12 @@
 # TODO
 
-> **Reconciled 2026-06-08 against the code.** An earlier agent session was
-> cleared before it wrote its completed work back here, so this list had drifted
-> out of date. Items that the code already implements have been moved to
-> **## Done**; everything under **## Outstanding work** below has been verified as
-> genuinely still pending and is framed as a proposal (Gap → Goal → Effort).
-> Effort sizing: **S** ≈ ½–1 day, **M** ≈ 2–3 days, **L** ≈ ~1 week, plus any
-> noted prerequisites.
+> **Reconciled 2026-06-08 against the code** (and again later that day after a
+> work session). An earlier agent session was cleared before it wrote its
+> completed work back here, so this list had drifted out of date. Items the code
+> implements are under **## Done**; everything under **## Outstanding work** has
+> been verified as genuinely still pending and is framed as a proposal
+> (Gap → Goal → Effort). Effort sizing: **S** ≈ ½–1 day, **M** ≈ 2–3 days,
+> **L** ≈ ~1 week, plus any noted prerequisites.
 
 ## Outstanding work (proposal)
 
@@ -31,7 +31,7 @@
   the GPU box. Lower priority now that capture works — do it when touching this
   area, not as an emergency.
 
-### 3. Visibility-set artifacts (master folder + audience copies)
+### 2. Visibility-set artifacts (master folder + audience copies)
 - **Gap.** Artifact visibility is still the coarse folder-based GM-only ⇄
   Player-Handout toggle. There is no per-artifact, per-audience visibility, no
   per-character private handouts, and no archive/unarchive — no `_master`/
@@ -62,7 +62,7 @@
   change, copy-on-grant semantics, asset route/lister/injector rewrites, a
   multi-select UI, and a migration off the existing folder toggle.
 
-### 4. Letter / document handouts (.md → PDF via deterministic recipe parser)
+### 3. Letter / document handouts (.md → PDF via deterministic recipe parser)
 - **Gap.** No in-world PDF handout pipeline exists. The dependencies are present
   (`markdown-it` is served to the client for rendering; `pdf-lib` is used by the
   character-sheet exporter) but there is no "Make PDF" action, recipe parser, or
@@ -83,9 +83,9 @@
   upstream "LLM drafts the `.md`" action (separate from rendering).
 - **Effort.** **M–L.** The recipe parser + multi-page flow is the bulk; UI action
   and per-case recipe storage are smaller. Fits the per-case-settings pattern and
-  dovetails with the visibility-set work (item 3).
+  dovetails with the visibility-set work (item 2).
 
-### 5. Case ownership and GM permissions
+### 4. Case ownership and GM permissions
 - **Gap.** Authority is role-only: every GM can manage every case. No
   `case_owner` / GM-case allocation exists. Acceptable for the Bookshop
   teaching/demo case, but it will not hold once multiple GMs each own different
@@ -96,30 +96,49 @@
 - **Effort.** **M.** Schema (owner/allocation), an authorization check on the
   case-management routes, and a small allocation UI.
 
-### 6. Rulebook scenario/lore extraction — finish the drafts (content)
-- **Gap.** Less open than it looked: the mechanical rules (`00`–`11`) are
-  `reviewed-complete` and wired into the app, and the scenario/lore **is already
-  drafted into markdown** under `Rivers_of_London/rules/scenario/`
-  (`policing-and-investigations.md`, `gm-procedures.md`, `npcs-and-beings.md`,
-  `folly-and-london.md`, `case-seeds.md`, `case-design.md`). But per
-  `rules/tracking/source-map.md` those files are at **`extracted-draft`** — they
-  have not passed the PDF completion gate (`pdf-review.md`) to become
-  `reviewed-complete`. The source PDF is available locally at
-  `private/rulebook-source/cha3200_…1.4.pdf` (gitignored), so they *can* be
-  verified. Two genuine gaps remain: `scenario/00-table-frame.md` is **not
-  created** (intro scenario tone / table-setup / safety frame, p.10–16), and
-  **Appendix A pregens** (p.343–349) are not extracted. The scenario/lore files
-  are also **not yet surfaced anywhere in the app** (nothing in `src/` loads
-  `rules/scenario/`) — a separate decision from extraction.
-- **Goal.** Promote the scenario/lore drafts to `reviewed-complete` via a PDF
-  pass against their printed page ranges (honouring the locked-table / paraphrase
-  -prose rules), create `scenario/00-table-frame.md`, and decide whether Appendix
-  A pregens are worth extracting. Surfacing this content in the app is a later,
-  separate item.
-- **Effort.** **M, content/verification work** — mostly review + reconciliation
-  against the PDF rather than fresh extraction. Iterate per tracking target.
+### 5. Investigator Pack — the 12 image-only pre-gens (content, OCR/vision)
+- **Gap.** The six **rulebook Appendix A** pre-gens are done (see Done). The
+  separate **Investigator Pack PDF**
+  (`private/rulebook-source/…Investigator_Pack.pdf`) holds **12 full character
+  sheets as flattened 300-dpi images** (no extractable text), which are not yet
+  imported. Plan + precedent: `rules/tracking/investigator-pack-npc-extraction-plan.md`.
+- **Goal.** Render pages → OCR/local-vision transcribe to `globaldata/npcs/*.json`
+  (`scope: []`, `owner = NPC`), lock the field map on one sheet first, restyle
+  portraits from the NPC Portrait Pack, and seed-verify — exactly the pipeline
+  already proven on the six Appendix A pre-gens.
+- **Effort.** **M, content work** — the OCR/vision transcription of dense stat
+  blocks is the risk; everything downstream (JSON shape, seeding, portrait
+  restyle, PDF export) is now built and validated.
+- **Optional later:** Appendix D maps/handouts (`scope-decision-needed`) and the
+  per-character private-clue surfacing, both of which dovetail with item 2.
 
 ## Done
+
+- **Rulebook scenario/lore extraction — complete.** Chapter 7
+  (`scenario/folly-and-london.md` + `scenario/case-seeds.md`, all 12 case seeds)
+  PDF-gated to `reviewed-complete`; the Ch5/6/8/9 scenario drafts reconciled from
+  `extracted-draft` to `reviewed-complete`; and `scenario/getting-started.md`
+  authored from the rulebook intro (renamed from the opaque `00-table-frame`).
+  Tracking (`pdf-review.md`, `source-map.md`, `subjects.md`) all match.
+
+- **Six Appendix A ready-to-play investigators** (Nafeesa Jones, Morgan Omans,
+  Jordan Schneider, Eli Venturini, Jules Garland, Mina Patel) imported as
+  unallocated NPC sheets (`globaldata/npcs/*.json`, `scope: []`) with img2img-
+  restyled portraits, so a GM can assign one to a player to pick up and play.
+  Seed-verified. The other 12 image-only Investigator Pack sheets remain — item 5.
+
+- **Setting & GM Reference surface + NPC-chat grounding.** The scenario corpus is
+  now readable in-app: role-filtered `GET /api/rules/reference` and a "Setting &
+  Reference" view in the Rules tab (GMs see all 7 docs, players the 3 player-safe
+  ones). NPC chat is grounded in the Folly + London canon, and persona `lore:`
+  tags resolve `rules/scenario/` stems as well as `globaldata/`.
+
+- **Character-sheet PDF export — validated and fixed.** Compared app-exported
+  sheets against the commercial Investigator Pack (placement + completeness):
+  extraction and field coverage pass; fixed four exporter gaps — render Signare,
+  word-wrap Equipment (was truncated), Magic Points 0 for non-magical, and the
+  Damage Bonus magnitude from `custom_fields`. Shared `buildPdf` powers the
+  in-app `POST /api/sheet/render-pdf` too.
 
 - **Per-session scenario generation** (replaced the single all-sessions
   `session_summaries` call). `session_summaries` is now a **looped section**:
@@ -134,7 +153,7 @@
 - **Handouts player view (GM-style, filtered, read-only).** Players see the
   handouts rendered the same way the GM does — shared file-list +
   `selectScenarioSource`, read-only, filtered to player-visible files
-  (`0232a9d`, `4445161`). The remaining finer-grained visibility work is item 3
+  (`0232a9d`, `4445161`). The remaining finer-grained visibility work is item 2
   above.
 
 - **Character-sheet skills restructure + combat as a separate area.** Common +
