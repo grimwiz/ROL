@@ -1,6 +1,6 @@
 # Rogues' Gallery — NPCs & Beings (Index)
 
-<!-- Source: Chapter 6 (A Rogues' Gallery), printed pages 231-258. Status: extracted-draft. Scenario-facing INDEX only — paraphrased roles plus pointers. No character prose is reproduced; full stat blocks live in the imported NPC sheets, and demi-monde mechanics in 11-demi-monde.md. -->
+<!-- Source: Chapter 6 (A Rogues' Gallery), printed pages 231-258. Status: reviewed-complete (PDF-checked index-only 2026-06-02; see rules/tracking/pdf-review.md). Scenario-facing INDEX only — paraphrased roles plus pointers. No character prose is reproduced; full stat blocks live in the imported NPC sheets, and demi-monde mechanics in 11-demi-monde.md. -->
 
 The rulebook's Rogues' Gallery is a roster of ready-to-use **named NPCs** and
 **example demi-monde beings**. This file is a GM-facing index — who's in it and

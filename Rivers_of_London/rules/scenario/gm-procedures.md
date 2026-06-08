@@ -1,6 +1,6 @@
 # GM Procedures
 
-<!-- Source: policing-and-gm-procedures, printed pages 218-230. Status: extracted-draft. -->
+<!-- Source: policing-and-gm-procedures, printed pages 218-230. Status: reviewed-complete (PDF-checked 2026-05-23; see rules/tracking/pdf-review.md). -->
 
 This file covers GM-facing procedure for tone, preparation, player agency, pacing, clues, props, technology, and table issues.
 

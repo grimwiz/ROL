@@ -1,6 +1,6 @@
 # Policing And Investigations
 
-<!-- Source: policing-and-gm-procedures, printed pages 195-217. Status: extracted-draft. -->
+<!-- Source: policing-and-gm-procedures, printed pages 195-217. Status: reviewed-complete (PDF-checked 2026-05-23; see rules/tracking/pdf-review.md). -->
 
 This file is a scenario-facing reference for Met structure, Folly placement, criminal investigation procedure, evidence, police powers, resources, and common terminology.
 

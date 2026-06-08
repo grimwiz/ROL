@@ -51,7 +51,7 @@ Use this file to decide where a subject belongs before extracting it. Add rows w
 
 | Subject | Destination | Source area | Status | Notes |
 |---|---|---|---|---|
-| Setting premise and campaign frame | `scenario/00-table-frame.md` | Introduction, Chapter 5 | unreviewed | Basic player-facing frame appears in `00-system-overview.md`; scenario tone/safety treatment still pending. |
+| Setting premise and campaign frame | `scenario/getting-started.md` | Introduction, Chapter 5 | reviewed-complete | Player-facing mechanical frame is in `00-system-overview.md`; the GM/table-facing frame (setup, spoiler split, investigator types, tone) authored in `scenario/getting-started.md` and PDF-gated 2026-06-08. Table boundaries/safety advice lives in `scenario/gm-procedures.md` (Ch 5). |
 | Folly purpose and operating remit | `scenario/folly-and-london.md` | Chapter 7, existing globaldata | unreviewed | Existing `globaldata/the-folly.md` is a note source, not canonical output. |
 | Society of the Wise history | `scenario/folly-and-london.md` | Chapter 7 | unreviewed | Useful for induction and scenarios. |
 | Folly building and procedures | `scenario/folly-and-london.md` | Chapter 7, handout maps | unreviewed | Include operational spaces; avoid copying map text. |

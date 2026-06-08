@@ -1,6 +1,6 @@
 # Case Seeds
 
-<!-- Source: folly-and-london (Chapter 7: Welcome to London), printed pages 259-284. Status: extracted-draft. Paraphrased one-paragraph GM hooks; novel footnote citations trimmed. Lore context lives in scenario/folly-and-london.md. -->
+<!-- Source: folly-and-london (Chapter 7: Welcome to London), printed pages 259-284. Status: reviewed-complete (PDF-gated 2026-06-08; all 12 chapter case seeds verified present). Paraphrased one-paragraph GM hooks; novel footnote citations trimmed. Lore context lives in scenario/folly-and-london.md. -->
 
 Short, self-contained Falcon hooks a GM can drop into play or expand into a full
 case. Each gives a situation and an open question; the answer is the GM's to set.

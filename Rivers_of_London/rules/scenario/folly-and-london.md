@@ -1,6 +1,6 @@
 # The Folly And London
 
-<!-- Source: folly-and-london (Chapter 7: Welcome to London), printed pages 259-284. Status: extracted-draft. Paraphrased GM reference; novel footnote citations and plot-outcome detail trimmed. Case seeds split to scenario/case-seeds.md. -->
+<!-- Source: folly-and-london (Chapter 7: Welcome to London), printed pages 259-284. Status: reviewed-complete (PDF-gated 2026-06-08 against printed p.259-284). Paraphrased GM reference; novel footnote citations and plot-outcome detail trimmed. Case seeds split to scenario/case-seeds.md. -->
 
 This file is a scenario-facing gazetteer of the Folly, the wider world of English
 magic, and the parts of London that see the most Falcon (supernatural) activity.
@@ -184,7 +184,7 @@ is warded.
 - **Charing Cross Road:** the book-trade quarter; esoteric/first-edition shops
   (Cecil Court, Watkins, Atlantis, Treadwell's) that would recognise - and report -
   a Newtonian tome.
-- **Skygarden / Elephant and Castle (42):** the demolished Skygarden Tower was
+- **Skygarden (18) / Elephant and Castle (42):** the demolished Skygarden Tower was
   built as an industrial magic "city crown" (*Stadtkrone*) powered by residents'
   vestigia. The crater is now a vestigia hot spot and an eco-protest site (inspired
   by Nicky, goddess of the Neckinger). Its architect, **Erik Stromberg** (a German

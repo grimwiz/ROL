@@ -1,6 +1,6 @@
 # Case Design
 
-<!-- Source: additional-rules, printed pages 336-342. Status: extracted-draft. -->
+<!-- Source: additional-rules, printed pages 336-342. Status: reviewed-complete (PDF-checked 2026-05-23; see rules/tracking/pdf-review.md). -->
 
 This file is GM-facing. It covers case construction, investigation flow, clue handling, location research, and campaign structure.
 

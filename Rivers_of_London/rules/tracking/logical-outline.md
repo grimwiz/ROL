@@ -26,7 +26,7 @@ The final extracted corpus should be organised for efficient use by experienced 
 
 | Order | File | Purpose | Source areas |
 |---:|---|---|---|
-| 00 | `scenario/00-table-frame.md` | Campaign premise, player-safe setting assumptions, tone/safety boundaries, spoiler posture. | `intro-core`, `character-creation`, `policing-and-gm-procedures` |
+| 00 | `scenario/getting-started.md` | Campaign premise, player-safe setting assumptions, tone/safety boundaries, spoiler posture. | `intro-core`, `character-creation`, `policing-and-gm-procedures` |
 | 01 | `scenario/01-folly-operations.md` | SAU/Folly remit, induction facts, consultant cards, records, building, custody/storage, operational constraints. | `intro-core`, `folly-and-london`, `policing-and-gm-procedures` |
 | 02 | `scenario/policing-and-investigations.md` | Met structure, ranks, investigation stages, crime scenes, evidence, incident room, police powers, resources, acronyms. | `policing-and-gm-procedures` |
 | 03 | `scenario/03-magic-and-demi-monde-context.md` | History of magic, Society of the Wise, other organisations, vestigia/signare as clues, demi-monde practices. | `newtonian-magic`, `rogues-and-demi-monde`, `folly-and-london` |
