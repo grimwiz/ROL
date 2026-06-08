@@ -1,7 +1,14 @@
 # Plan: Investigator Pack → unowned NPC characters
 
-Status: **planned, not started.** Saved at the user's request. Task B (Bookshop
-handouts) is being handled separately.
+Status: **planned, not started** for the 12-page Investigator Pack (image/OCR).
+Task B (Bookshop handouts) is being handled separately.
+
+> **Note (2026-06-08):** the **six rulebook Appendix A pre-gens** (p.343-349) are
+> a *separate, smaller* source with **extractable text** — these are DONE,
+> seed-verified, as `globaldata/npcs/{nafeesa-jones,morgan-omans,jordan-schneider,
+> eli-venturini,jules-garland,mina-patel}.json` (`scope: []`). This plan still
+> covers the **12 flattened-image** Investigator Pack sheets, which need OCR/vision
+> and are not started.
 
 ## Source
 

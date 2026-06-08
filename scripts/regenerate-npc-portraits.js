@@ -37,6 +37,33 @@ const JPEG_QUALITY = '6'; // ffmpeg -q:v (2=best .. 31=worst); ~120-160 KB at 67
 
 // Hand-curated visual descriptors — NEVER the RPG occupation label.
 const PORTRAITS = {
+  // Appendix A ready-to-play pre-gens (p.343-349) — descriptors drawn from each
+  // investigator's own rulebook illustration (Morgan and Jules are deliberately
+  // androgynous in the source, preserved here). Never the RPG occupation label.
+  'nafeesa-jones': {
+    subject: 'a young Black woman in her early twenties, dark hair pulled back tightly into a neat style, a slight warm smile, wearing a dark suit jacket over a white shirt with a small checked tie',
+    background: 'a softly out-of-focus modern police station interior'
+  },
+  'morgan-omans': {
+    subject: 'a pale-skinned young person in their early twenties with very short, cropped blond hair and an androgynous appearance, wearing a dark police uniform with shoulder epaulettes',
+    background: 'a softly out-of-focus police station corridor'
+  },
+  'jordan-schneider': {
+    subject: 'a powerfully built Black man in his late thirties with short dark hair, clean-shaven, wearing an open-collared white shirt',
+    background: 'a softly out-of-focus hospital corridor'
+  },
+  'eli-venturini': {
+    subject: 'a white man in his late forties with dark hair swept back from the forehead and a neat pointed Van Dyke goatee beard, wearing a smart suit and tie',
+    background: 'a softly out-of-focus university library lined with bookshelves'
+  },
+  'jules-garland': {
+    subject: 'a slim young person of Filipino heritage in their late twenties with long dark wavy hair and fine androgynous features, wearing a worn dark jacket',
+    background: 'a softly out-of-focus London street at dusk'
+  },
+  'mina-patel': {
+    subject: 'a South Asian woman in her late twenties with dark wavy shoulder-length hair, round glasses and large hoop earrings, wearing a striped top',
+    background: 'a softly out-of-focus home music studio'
+  },
   'beverley-brook': {
     subject: 'a warm, confident young Black woman in her early twenties, dark braided hair, an easy half-smile',
     background: 'a soft, out-of-focus suggestion of river water, reeds and a green riverbank'
