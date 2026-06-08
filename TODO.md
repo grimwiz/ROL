@@ -10,28 +10,7 @@
 
 ## Outstanding work (proposal)
 
-### 1. Session capture — optional cleanups (no longer a bug)
-- **Gap.** The capture bug (502s / lost words) is **fixed**: the STT service was
-  made concurrent (see `../scripts/stt`), and locally the capture path now
-  serialises ingest (`ingestChain`), single-flights diarization (`diarBusy` +
-  `runDiarFlush`), and retries `liveTranscribe` 3× before dropping words
-  (`03d15cb`). What remains are the three efficiency follow-ups that assumed a
-  diarize-only endpoint — they were never applied because concurrency was the
-  real fix. Today `diarizeAudioBuffer` still calls `/v1/transcribe?diarize=true`
-  (re-transcribes every diarized window), the "no-words-no-voice" phantom-speaker
-  filter is still server-side (`src/routes.js` ~1121–1135), and the band-aids
-  (retry loop, quiet final-flush from `0a02191`) are still in place.
-- **Goal.** Switch `diarizeAudioBuffer` to the new **`/v1/diarize`** (turns +
-  voiceprints, no re-transcription); move the phantom-speaker filter client-side
-  (keep a pyannote speaker only if its turns overlap a live segment that has
-  text); re-test end-to-end (no lost words / no 502s) and remove the band-aids
-  that are then unneeded. Net effect: less GPU work per window and a cleaner
-  capture path.
-- **Effort.** **S–M**, *gated on* the `/v1/diarize` endpoint being validated on
-  the GPU box. Lower priority now that capture works — do it when touching this
-  area, not as an emergency.
-
-### 2. Visibility-set artifacts (master folder + audience copies)
+### 1. Visibility-set artifacts (master folder + audience copies)
 - **Gap.** Artifact visibility is still the coarse folder-based GM-only ⇄
   Player-Handout toggle. There is no per-artifact, per-audience visibility, no
   per-character private handouts, and no archive/unarchive — no `_master`/
@@ -62,7 +41,7 @@
   change, copy-on-grant semantics, asset route/lister/injector rewrites, a
   multi-select UI, and a migration off the existing folder toggle.
 
-### 3. Letter / document handouts (.md → PDF via deterministic recipe parser)
+### 2. Letter / document handouts (.md → PDF via deterministic recipe parser)
 - **Gap.** No in-world PDF handout pipeline exists. The dependencies are present
   (`markdown-it` is served to the client for rendering; `pdf-lib` is used by the
   character-sheet exporter) but there is no "Make PDF" action, recipe parser, or
@@ -83,9 +62,9 @@
   upstream "LLM drafts the `.md`" action (separate from rendering).
 - **Effort.** **M–L.** The recipe parser + multi-page flow is the bulk; UI action
   and per-case recipe storage are smaller. Fits the per-case-settings pattern and
-  dovetails with the visibility-set work (item 2).
+  dovetails with the visibility-set work (item 1).
 
-### 4. Case ownership and GM permissions
+### 3. Case ownership and GM permissions
 - **Gap.** Authority is role-only: every GM can manage every case. No
   `case_owner` / GM-case allocation exists. Acceptable for the Bookshop
   teaching/demo case, but it will not hold once multiple GMs each own different
@@ -96,7 +75,7 @@
 - **Effort.** **M.** Schema (owner/allocation), an authorization check on the
   case-management routes, and a small allocation UI.
 
-### 5. Investigator Pack — the 12 image-only pre-gens (content, OCR/vision)
+### 4. Investigator Pack — the 12 image-only pre-gens (content, OCR/vision)
 - **Gap.** The six **rulebook Appendix A** pre-gens are done (see Done). The
   separate **Investigator Pack PDF**
   (`private/rulebook-source/…Investigator_Pack.pdf`) holds **12 full character
@@ -110,7 +89,7 @@
   blocks is the risk; everything downstream (JSON shape, seeding, portrait
   restyle, PDF export) is now built and validated.
 - **Optional later:** Appendix D maps/handouts (`scope-decision-needed`) and the
-  per-character private-clue surfacing, both of which dovetail with item 2.
+  per-character private-clue surfacing, both of which dovetail with item 1.
 
 ## Done
 
@@ -125,7 +104,7 @@
   Jordan Schneider, Eli Venturini, Jules Garland, Mina Patel) imported as
   unallocated NPC sheets (`globaldata/npcs/*.json`, `scope: []`) with img2img-
   restyled portraits, so a GM can assign one to a player to pick up and play.
-  Seed-verified. The other 12 image-only Investigator Pack sheets remain — item 5.
+  Seed-verified. The other 12 image-only Investigator Pack sheets remain — item 4.
 
 - **Setting & GM Reference surface + NPC-chat grounding.** The scenario corpus is
   now readable in-app: role-filtered `GET /api/rules/reference` and a "Setting &
@@ -153,7 +132,7 @@
 - **Handouts player view (GM-style, filtered, read-only).** Players see the
   handouts rendered the same way the GM does — shared file-list +
   `selectScenarioSource`, read-only, filtered to player-visible files
-  (`0232a9d`, `4445161`). The remaining finer-grained visibility work is item 2
+  (`0232a9d`, `4445161`). The remaining finer-grained visibility work is item 1
   above.
 
 - **Character-sheet skills restructure + combat as a separate area.** Common +
@@ -196,7 +175,11 @@
   player-Gallery files and rendered per-card at 0.3 LHS; filename layout tags
   (`<frac>LHS|RHS|FW`).
 
-- **Session capture (core).** Live transcription + speaker diarization with a
-  persistent voiceprint registry; STT service made concurrent and the local path
-  hardened (serial ingest, single-flight diarization, transcribe retry). See
-  item 1 for the optional diarize-only cleanup that remains.
+- **Session capture.** Live transcription + speaker diarization with a persistent
+  voiceprint registry. Fixed: STT service made concurrent, and the ROL-side calls
+  are ordered — **ingest is serialised** (`ingestChain`, `public/js/app.js`),
+  **diarization is single-flight** (`diarBusy`/`diarFlushing`), and live
+  transcription retries 3× before dropping words. Capture works; no follow-ups
+  tracked. (A diarize-only STT endpoint would skip the diarizer's discarded
+  re-transcription, but the saving is marginal and speculative — not worth a
+  task.)
