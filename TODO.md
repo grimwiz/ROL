@@ -179,7 +179,10 @@
   voiceprint registry. Fixed: STT service made concurrent, and the ROL-side calls
   are ordered — **ingest is serialised** (`ingestChain`, `public/js/app.js`),
   **diarization is single-flight** (`diarBusy`/`diarFlushing`), and live
-  transcription retries 3× before dropping words. Capture works; no follow-ups
-  tracked. (A diarize-only STT endpoint would skip the diarizer's discarded
-  re-transcription, but the saving is marginal and speculative — not worth a
-  task.)
+  transcription retries 3× before dropping words. Capture works; **nothing
+  outstanding**. (By design the app runs two passes — Parakeet live ASR for
+  low-latency subtitles plus a windowed diarization pass for speaker identity —
+  and keeps the live words while discarding the diarization pass's text. The STT
+  service correctly returns text + speakers because a general service can't know
+  the caller already has the transcript; the double-transcription is the app's
+  deliberate trade-off, not a defect.)
