@@ -1826,6 +1826,50 @@ function loadRulesIndex(variant = 'core') {
   };
 }
 
+// ── Setting & GM Reference (the rules/scenario/ corpus) ──────────────────────
+// The scenario corpus is the GM-facing setting material extracted from the
+// rulebook's scenario chapters (intro frame, Ch5 policing, Ch6 NPC index, Ch7
+// London gazetteer + case seeds, Ch9 case design). Unlike the numbered rules it
+// is NOT loaded by listRuleDocuments. Each file carries an audience so players
+// see only the player-safe subset while GMs see everything — mirroring the
+// rulebook's own "who reads what" split.
+const scenarioRoot = path.join(rulesRoot, 'scenario');
+const SCENARIO_DOCS = [
+  { file: 'getting-started.md', audience: 'player' },
+  { file: 'policing-and-investigations.md', audience: 'player' },
+  { file: 'folly-and-london.md', audience: 'player' },
+  { file: 'gm-procedures.md', audience: 'gm' },
+  { file: 'npcs-and-beings.md', audience: 'gm' },
+  { file: 'case-seeds.md', audience: 'gm' },
+  { file: 'case-design.md', audience: 'gm' }
+];
+
+function listScenarioDocuments(includeGm) {
+  if (!fs.existsSync(scenarioRoot)) return [];
+  return SCENARIO_DOCS
+    .filter((d) => includeGm || d.audience === 'player')
+    .map((d) => {
+      const filePath = path.join(scenarioRoot, d.file);
+      if (!fs.existsSync(filePath)) return null;
+      const markdown = stripPublicRulesComments(fs.readFileSync(filePath, 'utf8'));
+      return {
+        filename: d.file,
+        audience: d.audience,
+        title: firstMarkdownHeading(markdown, d.file.replace(/\.md$/i, '')),
+        markdown
+      };
+    })
+    .filter(Boolean);
+}
+
+function loadReferenceIndex(includeGm) {
+  const documents = listScenarioDocuments(includeGm);
+  if (!documents.length) return null;
+  const title = includeGm ? 'Setting & GM Reference' : 'Setting Guide';
+  const markdown = [`# ${title}`, '', ...documents.flatMap((doc) => [doc.markdown, ''])].join('\n').trim();
+  return { title, documents, markdown };
+}
+
 // Build the "What's New in Advanced" changelog by reading the per-mutation
 // provenance markers in the advanced corpus. Each advanced change is preceded
 // by `<!-- Advanced: <label> | add|supersede|supplement -->`; we capture the
@@ -2223,8 +2267,25 @@ router.get('/rules', requireAuth, (req, res) => {
     variant,
     title: rulesIndex.title,
     advancedAvailable: !!loadRulesIndex('advanced'),
+    referenceAvailable: !!loadReferenceIndex(req.user && req.user.role === 'gm'),
     sections: rulesIndex.documents.map((doc) => ({ filename: doc.filename, title: doc.title })),
     html: renderRulesMarkdownHtml(rulesIndex.markdown)
+  });
+});
+
+// Setting & GM Reference: the scenario corpus, role-filtered. Players get the
+// player-safe subset; GMs get everything (incl. spoiler-y NPC index, case seeds,
+// GM procedures). Rendered the same way as the rules so the Rules tab can show
+// it inline.
+router.get('/rules/reference', requireAuth, (req, res) => {
+  const includeGm = !!(req.user && req.user.role === 'gm');
+  const index = loadReferenceIndex(includeGm);
+  if (!index) return res.status(404).json({ error: 'Setting reference is not available on the server.' });
+  res.json({
+    title: index.title,
+    gm: includeGm,
+    sections: index.documents.map((doc) => ({ filename: doc.filename, title: doc.title, audience: doc.audience })),
+    html: renderRulesMarkdownHtml(index.markdown)
   });
 });
 

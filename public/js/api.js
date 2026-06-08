@@ -131,6 +131,7 @@ const api = (() => {
     cancelSessionRoll: (sessionId, rollId) => req('POST', `/sessions/${sessionId}/rolls/${rollId}/cancel`),
     getRules: (variant) => req('GET', variant === 'advanced' ? '/rules?variant=advanced' : '/rules'),
     getRulesChanges: () => req('GET', '/rules/changes'),
+    getRulesReference: () => req('GET', '/rules/reference'),
     getNpcPersonas: (sessionId) => req('GET', `/sessions/${sessionId}/npc-personas`),
     searchRules: (query) => req('GET', `/rules/search?q=${encodeURIComponent(query)}`),
     getDomesticAdventure: () => req('GET', '/adventure/domestic'),

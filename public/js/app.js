@@ -5949,6 +5949,10 @@ async function ensureRulesData(view) {
     if (!State.rulesCache.changes) State.rulesCache.changes = await api.getRulesChanges();
     return State.rulesCache.changes;
   }
+  if (view === 'reference') {
+    if (!State.rulesCache.reference) State.rulesCache.reference = await api.getRulesReference();
+    return State.rulesCache.reference;
+  }
   if (!State.rulesCache[view]) {
     State.rulesCache[view] = await api.getRules(view === 'advanced' ? 'advanced' : undefined);
   }
@@ -5960,9 +5964,11 @@ window.setRulesView = async function setRulesView(view) {
   await renderRulesTab();
 };
 
-function rulesViewTabsHtml(view, advancedAvailable) {
-  if (!advancedAvailable) return '';
-  const tabs = [['core', 'Core'], ['advanced', 'Advanced'], ['changes', "What's New"]];
+function rulesViewTabsHtml(view, advancedAvailable, referenceAvailable) {
+  const tabs = [['core', 'Core']];
+  if (advancedAvailable) tabs.push(['advanced', 'Advanced'], ['changes', "What's New"]);
+  if (referenceAvailable) tabs.push(['reference', 'Setting & Reference']);
+  if (tabs.length < 2) return '';
   return `<div class="rules-views" role="tablist">${tabs.map(([id, label]) =>
     `<button type="button" role="tab" aria-selected="${view === id}" class="rules-view-btn${view === id ? ' active' : ''}" onclick="setRulesView('${id}')">${esc(label)}</button>`
   ).join('')}</div>`;
@@ -6008,7 +6014,10 @@ async function renderRulesTab() {
     return;
   }
   const advancedAvailable = !!(core && core.advancedAvailable);
-  const effectiveView = (!advancedAvailable && view !== 'core') ? 'core' : view;
+  const referenceAvailable = !!(core && core.referenceAvailable);
+  let effectiveView = view;
+  if ((view === 'advanced' || view === 'changes') && !advancedAvailable) effectiveView = 'core';
+  if (view === 'reference' && !referenceAvailable) effectiveView = 'core';
   State.rulesView = effectiveView;
 
   let title = core.title || 'Rules Library';
@@ -6020,6 +6029,13 @@ async function renderRulesTab() {
       title = data.title || "What's New in Advanced";
       showPrint = false;
       bodyHtml = `<article class="rules-document"><div class="print-section">${rulesChangesHtml(data)}</div></article>`;
+    } else if (effectiveView === 'reference') {
+      const data = await ensureRulesData('reference');
+      title = data.title || 'Setting & GM Reference';
+      bodyHtml = `<article class="rules-document">
+        <div class="print-cover"><h1>${esc(title)}</h1></div>
+        <div class="print-section">${data.html || '<p>(no setting reference found)</p>'}</div>
+      </article>`;
     } else {
       const idx = await ensureRulesData(effectiveView);
       title = idx.title || title;
@@ -6037,7 +6053,7 @@ async function renderRulesTab() {
       <h2>${esc(title)}</h2>
       ${showPrint ? '<button class="btn btn-primary" type="button" onclick="printRulesTab()">Print rules</button>' : ''}
     </div>
-    ${rulesViewTabsHtml(effectiveView, advancedAvailable)}
+    ${rulesViewTabsHtml(effectiveView, advancedAvailable, referenceAvailable)}
     <div id="rules-view-body">${bodyHtml}</div>`;
 }
 

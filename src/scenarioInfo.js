@@ -6,6 +6,9 @@ const REPO_ROOT = path.join(__dirname, '..');
 const DATA_ROOT = path.join(REPO_ROOT, 'data');
 const SESSIONS_ROOT = path.join(DATA_ROOT, 'sessions');
 const GLOBAL_ROOT = path.join(REPO_ROOT, 'Rivers_of_London', 'globaldata');
+// GM-facing setting corpus extracted from the rulebook's scenario chapters.
+// Persona `lore:` tags may name files here as well as in globaldata/.
+const SCENARIO_ROOT = path.join(REPO_ROOT, 'Rivers_of_London', 'rules', 'scenario');
 const DOMESTIC_SYSTEM_DESCRIPTION = '__SYSTEM_DOMESTIC__';
 const GM_NAME = 'Stu Bentley';
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://openwebui37.dragon-net.local:11434';
@@ -2683,17 +2686,41 @@ function asLoreList(v) {
 // (frontmatter `lore: [the-folly, magic-overview, ...]`). Each tag is a stem of
 // a Markdown file in globaldata/. This is the per-NPC "knowledge matrix": which
 // setting docs get pulled into that character's chat, scoped to their remit.
+// Resolve a lore stem to a Markdown file, checking globaldata/ first then the
+// scenario corpus (rules/scenario/). Simple stem only — no path traversal.
+function loreFilePath(stem) {
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(stem)) return null;
+  for (const root of [GLOBAL_ROOT, SCENARIO_ROOT]) {
+    const fp = path.join(root, `${stem}.md`);
+    if (fs.existsSync(fp)) return fp;
+  }
+  return null;
+}
+
 function loadLoreFiles(loreList) {
   const out = [];
   for (const raw of asLoreList(loreList)) {
-    const stem = String(raw).toLowerCase().replace(/\.md$/, '');
-    if (!/^[a-z0-9][a-z0-9-]*$/.test(stem)) continue; // simple stem only — no path traversal
-    const fp = path.join(GLOBAL_ROOT, `${stem}.md`);
-    if (!fs.existsSync(fp)) continue;
+    const fp = loreFilePath(String(raw).toLowerCase().replace(/\.md$/, ''));
+    if (!fp) continue;
     const text = fs.readFileSync(fp, 'utf8').replace(/<!--[\s\S]*?-->/g, '').trim();
     if (text) out.push(text);
   }
   return out.join('\n\n---\n\n');
+}
+
+// Baseline in-world setting every NPC can draw on: the Folly + London gazetteer
+// (Chapter 7). Player-safe canon — no GM-only spoilers — so it is appropriate as
+// general knowledge for any character. Cached after first read.
+let _settingGroundingCache = null;
+function loadSettingGrounding() {
+  if (_settingGroundingCache != null) return _settingGroundingCache;
+  const fp = path.join(SCENARIO_ROOT, 'folly-and-london.md');
+  let text = '';
+  try {
+    if (fs.existsSync(fp)) text = fs.readFileSync(fp, 'utf8').replace(/<!--[\s\S]*?-->/g, '').trim();
+  } catch { /* non-fatal: NPC chat still works without setting grounding */ }
+  _settingGroundingCache = text;
+  return text;
 }
 
 function listCanonicalPersonas() {
@@ -3084,6 +3111,7 @@ function resolveNpcPersona(session, slug) {
     name: entry.name,
     body,
     world: loadLoreFiles(loreList),
+    setting: loadSettingGrounding(),
     knowledge: getNpcCaseKnowledge(session, entry.name),
     source: override ? 'case' : 'canonical'
   };
@@ -3155,6 +3183,10 @@ async function streamNpcChat(persona, clientMessages, opts = {}) {
   const world = String(persona.world || '').trim();
   if (world) {
     parts.push('', '# World knowledge you carry (general setting facts within your remit — speak from it in your own words, in character; do not recite it verbatim)', world);
+  }
+  const setting = String(persona.setting || '').trim();
+  if (setting) {
+    parts.push('', '# The Folly and London (general setting canon — common knowledge in your world; draw on it only where your character plausibly would, in your own words, never recited)', setting);
   }
   if (knows) {
     parts.push('', `# What ${persona.name} knows about the current case (your private knowledge — do not recite verbatim)`, knows);
