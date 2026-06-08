@@ -260,6 +260,12 @@ const COORDS = {
   p2NameX:        110, p2NameY:       65, p2NameMaxW:       180,
   p2OccupationX:  450, p2OccupationY: 65, p2OccupationMaxW: 125,
 
+  // SIGNARE section (page 2): 3 underlines on the left, measured y≈234.6/255.2/276.3.
+  p2SignareY0:    234.6,
+  p2SignarePitch: 20.6,
+  p2SignareRows:  3,
+  p2SignareX:     30,  p2SignareMaxW: 256,
+
   // BACKSTORY section (page 2): 11 two-column rows.
   // Left col underline x=28.3-288.5 (w=260), right col x=310.3-567.1 (w=257).
   // First row y=333.6, pitch ≈20.4pt.
@@ -416,9 +422,14 @@ async function buildPdf(sheet, blankPath) {
   }
   const mpFromDerived = (derived.mp !== undefined && derived.mp !== '') ? derived.mp : '';
   const mpLegacy = (sheet.magic_points !== undefined && sheet.magic_points !== '') ? sheet.magic_points : '';
+  // Only auto-derive Magic Points (POW/5) for magical investigators; a
+  // non-magical character's sheet shows 0, matching the published pre-gens.
+  const isMagical = /magical\b/i.test(String(sheet.advantages || '')) ||
+    String(sheet.magic_tradition || '').trim() !== '' ||
+    (Array.isArray(sheet.magic_spells) && sheet.magic_spells.length > 0);
   const mp = mpFromDerived !== '' ? mpFromDerived
     : mpLegacy !== '' ? mpLegacy
-    : (Number.isFinite(Number(sheet.pow)) ? Math.floor(Number(sheet.pow) / 5) : '');
+    : (isMagical && Number.isFinite(Number(sheet.pow)) ? Math.floor(Number(sheet.pow) / 5) : '0');
   if (mp !== '') {
     dcenter(p1, fontB, String(mp), COORDS.mpStartX, COORDS.mpStartY, FSN);
   }
@@ -433,9 +444,17 @@ async function buildPdf(sheet, blankPath) {
   const splitLines = s => (s ? String(s).split(/\r?\n|,\s*/).map(x => x.trim()).filter(Boolean) : []);
   const advList = splitLines(sheet.advantages);
   const disList = splitLines(sheet.disadvantages);
+  // The blank sheet has no dedicated Damage Bonus box; the publisher writes the
+  // magnitude next to the advantage name. Pull it from custom_fields and append.
+  const cf = Array.isArray(sheet.custom_fields) ? sheet.custom_fields : [];
+  const dbField = cf.find(f => f && /damage\s*bonus/i.test(f.key || ''));
+  const dbVal = dbField ? String(dbField.value || '').trim() : '';
+  const advOut = (dbVal && dbVal !== '0')
+    ? advList.map(a => /damage\s*bonus/i.test(a) ? `${a} (${dbVal})` : a)
+    : advList;
   for (let i = 0; i < 3; i += 1) {
     const y = COORDS.advDisY[i];
-    if (advList[i]) dtext(p1, font, advList[i], COORDS.advX, y, FS, COORDS.advMaxW);
+    if (advOut[i]) dtext(p1, font, advOut[i], COORDS.advX, y, FS, COORDS.advMaxW);
     if (disList[i]) dtext(p1, font, disList[i], COORDS.disX, y, FS, COORDS.disMaxW);
   }
 
@@ -538,6 +557,24 @@ async function buildPdf(sheet, blankPath) {
       dtext(p2, font, String(sheet.occupation), COORDS.p2OccupationX, COORDS.p2OccupationY, FS, COORDS.p2OccupationMaxW);
     }
 
+    // SIGNARE: the practitioner's magical signature. The form stores it as a
+    // dict (sound / smell / sensation / notes); a legacy fixture may store a
+    // plain string. Join the non-empty parts and word-wrap down the 3-line box.
+    const sig = (sheet.signare && typeof sheet.signare === 'object') ? sheet.signare : null;
+    const sigText = sig
+      ? [sig.sound, sig.smell, sig.sensation, sig.notes].map(s => String(s || '').trim()).filter(Boolean).join(', ')
+      : String(sheet.signare || '').trim();
+    if (sigText) {
+      let rem = sigText;
+      for (let r = 0; r < COORDS.p2SignareRows && rem; r += 1) {
+        const y = COORDS.p2SignareY0 + r * COORDS.p2SignarePitch;
+        const line = wrap(font, rem, FS, COORDS.p2SignareMaxW, 1)[0] || '';
+        if (!line) break;
+        dtext(p2, font, line, COORDS.p2SignareX, y, FS);
+        rem = rem.slice(line.length).replace(/^\s+/, '');
+      }
+    }
+
     // BACKSTORY: 11 rows × 2 columns. Fill column 1 top-to-bottom, then
     // column 2 top-to-bottom. Glitch sentence goes first, then backstory prose.
     const backstoryParts = [];
@@ -567,12 +604,23 @@ async function buildPdf(sheet, blankPath) {
       }
     }
 
-    // EQUIPMENT: render sheet.carry (one item per row; newline-separated input).
+    // EQUIPMENT: flow sheet.carry down the box. Accepts either newline-separated
+    // items or a single prose line; either way it word-wraps across the rows
+    // instead of truncating a long line to one row.
     if (sheet.carry) {
       const items = String(sheet.carry).split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-      for (let i = 0; i < Math.min(items.length, COORDS.p2EquipmentRows); i += 1) {
-        const y = COORDS.p2EquipmentY0 + i * COORDS.p2EquipmentPitch;
-        dtext(p2, font, items[i], COORDS.p2EquipmentX, y, FS, COORDS.p2EquipmentMaxW);
+      let row = 0;
+      for (const item of items) {
+        let rem = item;
+        while (rem && row < COORDS.p2EquipmentRows) {
+          const y = COORDS.p2EquipmentY0 + row * COORDS.p2EquipmentPitch;
+          const line = wrap(font, rem, FS, COORDS.p2EquipmentMaxW, 1)[0] || '';
+          if (!line) break;
+          dtext(p2, font, line, COORDS.p2EquipmentX, y, FS);
+          rem = rem.slice(line.length).replace(/^\s+/, '');
+          row += 1;
+        }
+        if (row >= COORDS.p2EquipmentRows) break;
       }
     }
   }
