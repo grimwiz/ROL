@@ -1,8 +1,9 @@
 /node_modules
 /data/
-# Build artifact: regenerated from devDeps via `npm run build:excalidraw`
-# (handled like node_modules — built on deploy, not tracked).
-/public/vendor/
+# NOTE: public/vendor/ (the built Excalidraw bundle) is deliberately TRACKED,
+# not ignored. node_modules is locked down (package-lock + integrity hashes +
+# npm ci) so it need not be committed; the build OUTPUT has no such lock and npm
+# packages can be yanked, so we commit the approved artifact to guarantee access.
 /comfyui-output.png
 /private/
 Rivers_of_London/test_write
