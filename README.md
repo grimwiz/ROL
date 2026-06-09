@@ -64,6 +64,8 @@ Node does not auto-install missing packages on server start. Re-run `npm ci --om
 
 To take a dependency security update, do it deliberately: bump locally, run `npm audit`, review, commit the updated `package-lock.json` (and rebuild the Excalidraw bundle if a vendored dep changed: `npm run build:excalidraw`), then deploy. Updates only land when you commit a new lockfile — never automatically.
 
+**Startup security gate.** On boot the server runs `npm audit` and **refuses to start if there is a CRITICAL finding**, so a known-critical deploy never serves traffic. Override only as a last resort by launching with `--cowboy-mode-on` (`node src/server.js --cowboy-mode-on`). The gate fails *open* on tooling/network errors (npm missing, offline) — it blocks only on a confirmed critical — and can be disabled with `SECURITY_GATE=off` (e.g. in tests). Run the full check any time with `npm run audit:all`. Continuous watching is handled by GitHub Dependabot.
+
 ## First run
 
 On first start, if no users exist, a default GM account is created:

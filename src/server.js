@@ -63,6 +63,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
+// Startup vulnerability gate: refuse to boot on a CRITICAL npm-audit finding
+// unless launched with --cowboy-mode-on. Runs before the port binds so a
+// known-critical deploy never serves traffic.
+require('./securityGate').enforceSecurityGate();
+
 app.listen(PORT, HOST, () => {
   console.log(`The Folly case files running on ${HOST}:${PORT}`);
 

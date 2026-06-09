@@ -6,6 +6,9 @@ After=network.target
 Type=simple
 User=root
 WorkingDirectory=/root/ROL
+# On boot the app runs `npm audit` and refuses to start on a CRITICAL finding
+# (npm must be on PATH). To start anyway despite criticals (NOT recommended),
+# append the flag:  ExecStart=/usr/bin/node src/server.js --cowboy-mode-on
 ExecStart=/usr/bin/node src/server.js
 Restart=on-failure
 RestartSec=5
