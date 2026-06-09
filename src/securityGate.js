@@ -32,12 +32,28 @@ function runAudit(cwd = path.join(__dirname, '..')) {
   try { data = JSON.parse(res.stdout || '{}'); } catch (e) { return { ok: false, reason: `unparseable npm audit output (${e.message})` }; }
   if (data.error) return { ok: false, reason: data.error.summary || 'npm audit reported an error' };
   const v = (data.metadata && data.metadata.vulnerabilities) || {};
+  // Build a per-package list of moderate-or-higher findings for reporting. The
+  // `via` array holds either parent package names (strings) or advisory objects
+  // ({ title, url, severity }); we surface the advisories where present.
+  const RANK = { info: 0, low: 1, moderate: 2, high: 3, critical: 4 };
+  const findings = [];
+  for (const [name, info] of Object.entries(data.vulnerabilities || {})) {
+    if ((RANK[info && info.severity] || 0) < RANK.moderate) continue;
+    const advisories = [];
+    for (const via of (info.via || [])) {
+      if (via && typeof via === 'object' && via.title) advisories.push({ title: via.title, url: via.url || '' });
+    }
+    findings.push({ name, severity: info.severity, advisories });
+  }
+  // Most severe first, then by name.
+  findings.sort((a, b) => (RANK[b.severity] - RANK[a.severity]) || a.name.localeCompare(b.name));
   return {
     ok: true,
     critical: v.critical || 0,
     high: v.high || 0,
     moderate: v.moderate || 0,
     low: v.low || 0,
+    findings,
   };
 }
 
@@ -56,18 +72,33 @@ function enforceSecurityGate({ argv = process.argv, logger = console, exit = (c)
     return;
   }
 
+  // Always REPORT every moderate-or-higher finding (visible each startup),
+  // independent of the halt decision below.
+  if (r.findings.length) {
+    logger.warn(`[security] ${r.findings.length} package(s) with moderate+ advisories — critical: ${r.critical}, high: ${r.high}, moderate: ${r.moderate}:`);
+    for (const f of r.findings) {
+      const tag = String(f.severity).toUpperCase().padEnd(8);
+      if (f.advisories.length) {
+        for (const a of f.advisories) logger.warn(`[security]   ${tag} ${f.name} — ${a.title}${a.url ? ` (${a.url})` : ''}`);
+      } else {
+        logger.warn(`[security]   ${tag} ${f.name} (via a vulnerable dependency)`);
+      }
+    }
+  } else {
+    logger.log('[security] startup audit: no moderate-or-higher findings.');
+  }
+
+  // HALT only on critical.
   if (r.critical > 0) {
     if (cowboy) {
-      logger.warn(`[security] ${r.critical} CRITICAL vulnerability(ies) present — starting anyway because ${COWBOY_FLAG} was given. Fix these.`);
+      logger.warn(`[security] ${r.critical} CRITICAL present — starting anyway because ${COWBOY_FLAG} was given. Fix these.`);
       return;
     }
-    logger.error(`[security] ${r.critical} CRITICAL vulnerability(ies) found (high: ${r.high}, moderate: ${r.moderate}). REFUSING TO START.`);
+    logger.error(`[security] ${r.critical} CRITICAL finding(s). REFUSING TO START.`);
     logger.error('[security] Run `npm run audit:all` to see them and fix (overrides/bumps + commit a new lockfile).');
     logger.error(`[security] To start anyway despite the risk, relaunch with ${COWBOY_FLAG}.`);
     return exit(1);
   }
-
-  logger.log(`[security] startup audit clean of critical findings (high: ${r.high}, moderate: ${r.moderate}, low: ${r.low}).`);
 }
 
 module.exports = { enforceSecurityGate, runAudit, COWBOY_FLAG };
