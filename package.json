@@ -31,5 +31,13 @@
     "esbuild": "^0.28.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
+  },
+  "comment:overrides": "Security pins for Excalidraw's transitive deps. lodash-es <=4.17.23 (code injection / prototype pollution) -> 4.18.1, the official patch by lodash author jdalton. nanoid: core uses the 3.x line (-> 3.3.8 fix); mermaid-to-excalidraw pins the 4.x line, whose fix is 5.0.9, scoped so it doesn't disturb core. Re-check with `npm audit` when bumping @excalidraw/excalidraw.",
+  "overrides": {
+    "lodash-es": "^4.18.1",
+    "nanoid": "^3.3.8",
+    "@excalidraw/mermaid-to-excalidraw": {
+      "nanoid": "^5.0.9"
+    }
   }
 }
