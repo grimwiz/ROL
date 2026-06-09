@@ -361,6 +361,7 @@ const ASSET_EXTENSIONS = new Set([...MARKDOWN_EXTENSIONS, ...GRAPHIC_EXTENSIONS,
 const GENERATED_FILENAMES = new Set([
   'scenario-info.json',
   'gm-analysis.json',
+  'seed-manifest.json',
   'player-refresh-instructions.md',
   'gm-refresh-instructions.md',
   'refresh-instructions.md'
@@ -534,6 +535,74 @@ function copyIfMissingOrEmpty(sourcePath, targetPath) {
   return true;
 }
 
+// ── Seed provenance manifest ────────────────────────────────────────────────
+// Per-case record of which seeded files came from where, with the size+mtime
+// captured at seed time (the pristine baseline). The file lister uses this to
+// decide — with a cheap stat, no content read — whether a seeded file has been
+// edited, and so whether to offer "Revert". Lives in the case root and is
+// excluded from the file lists (it is JSON, which no source lister includes).
+// Users edit files only through the app, which rewrites the file and therefore
+// always changes its mtime, so a stat baseline is exact (timestamps cannot be
+// spoofed via the app).
+const SEED_MANIFEST_NAME = 'seed-manifest.json';
+function seedManifestPath(paths) { return path.join(paths.root, SEED_MANIFEST_NAME); }
+function readSeedManifest(paths) {
+  try { const o = JSON.parse(fs.readFileSync(seedManifestPath(paths), 'utf8')); return (o && typeof o === 'object') ? o : {}; }
+  catch { return {}; }
+}
+function writeSeedManifest(paths, manifest) {
+  try { fs.writeFileSync(seedManifestPath(paths), `${JSON.stringify(manifest, null, 2)}\n`); } catch { /* non-fatal */ }
+}
+function fileBaseline(destPath) {
+  const st = fs.statSync(destPath);
+  return { size: st.size, mtime_ms: Math.round(st.mtimeMs) };
+}
+// Record a fresh pristine baseline (after a seed copy or a revert).
+function recordSeedBaseline(manifest, rel, sourceRepoRel, destPath) {
+  manifest[normaliseSlash(rel)] = { source: normaliseSlash(sourceRepoRel), ...fileBaseline(destPath) };
+}
+// Backfill an entry for a file seeded before this manifest existed (one-time,
+// content-compared so an already-edited file is correctly flagged diverged).
+// Returns true if the manifest changed.
+function ensureSeedEntry(manifest, rel, sourceRepoRel, destPath, sourcePath) {
+  rel = normaliseSlash(rel);
+  if (manifest[rel]) return false;
+  if (!fs.existsSync(destPath) || !fs.existsSync(sourcePath)) return false;
+  try {
+    const same = fs.readFileSync(sourcePath).equals(fs.readFileSync(destPath));
+    manifest[rel] = same
+      ? { source: normaliseSlash(sourceRepoRel), ...fileBaseline(destPath) }
+      : { source: normaliseSlash(sourceRepoRel), diverged: true };
+  } catch { return false; }
+  return true;
+}
+// Seed state for any case file (markdown, image, pdf, txt — all treated the
+// same): is it seeded, where from, and does it still match the seed? Divergence
+// is a cheap size+mtime check against the recorded baseline — no content read.
+function seedStateForFile(manifest, paths, fullPath) {
+  const rel = normaliseSlash(path.relative(paths.root, fullPath));
+  const m = manifest[rel];
+  if (!m || !m.source) return { seeded: false, seed_identical: false, seed_source: null };
+  let identical = false;
+  if (!m.diverged) {
+    try { const st = fs.statSync(fullPath); identical = (st.size === m.size && Math.round(st.mtimeMs) === m.mtime_ms); }
+    catch { /* treat as diverged */ }
+  }
+  return { seeded: true, seed_identical: identical, seed_source: m.source };
+}
+// Where a file could have moved to if a GM toggled its visibility (GM <-> player),
+// mirroring setSessionAssetVisibility's mapping. Used so seeding doesn't treat a
+// merely-relocated seeded file as "missing" and re-copy it (which duplicates it).
+function visibilityAltRels(rel) {
+  rel = normaliseSlash(rel);
+  if (rel.startsWith('GM/Gallery/')) return ['Gallery/' + rel.slice('GM/Gallery/'.length)];
+  if (rel.startsWith('Gallery/')) return ['GM/Gallery/' + rel.slice('Gallery/'.length)];
+  if (rel.startsWith('GM/')) return ['input/' + rel.slice('GM/'.length)];
+  if (rel.startsWith('input/')) return ['GM/' + rel.slice('input/'.length)];
+  if (!rel.includes('/')) return ['GM/' + rel, 'input/' + rel]; // a root-level file
+  return [];
+}
+
 function walkFiles(root, callback) {
   if (!fs.existsSync(root)) return;
   const entries = fs.readdirSync(root, { withFileTypes: true });
@@ -620,12 +689,41 @@ function classifySessionFileVisibility(fullPath, paths) {
   return 'player';
 }
 
+// Files whose visibility cannot be toggled: the canonical player/GM source stubs,
+// the auto-generated GM references (NPC.md, key-npcs.md — forced GM but living at
+// the case root, so "moving" them to the player area resolves to themselves), and
+// control/generated JSON. The Edit Files tab greys out the toggle for these.
+function isVisibilityFixed(fullPath, paths) {
+  const rel = normaliseSlash(path.relative(paths.root, fullPath));
+  const base = path.basename(rel);
+  return GENERATED_FILENAMES.has(base)
+    || base === 'player.md' || base === 'gm.md'
+    || rel === 'NPC.md' || rel === 'key-npcs.md'
+    || rel === 'gm_sections.json' || rel === 'player_sections.json';
+}
+
 function seedGlobalSessionFiles(paths) {
+  const manifest = readSeedManifest(paths);
+  let dirty = false;
   for (const file of listGlobalFiles()) {
     const sourcePath = path.join(REPO_ROOT, file.path);
-    const relative = path.relative(GLOBAL_ROOT, sourcePath);
-    copyIfMissingOrEmpty(sourcePath, path.join(paths.root, relative));
+    const relative = normaliseSlash(path.relative(GLOBAL_ROOT, sourcePath));
+    const dest = path.join(paths.root, relative);
+    // Locate the file: at its seed path, or — if a GM toggled its visibility —
+    // the GM<->player counterpart. Either counts as present, so we never re-seed
+    // a file that was merely moved (which would duplicate it).
+    let locatedRel = !isMissingOrEmpty(dest) ? relative
+      : (visibilityAltRels(relative).find((alt) => !isMissingOrEmpty(path.join(paths.root, alt))) || null);
+    if (!locatedRel) {
+      ensureParentDir(dest);
+      fs.copyFileSync(sourcePath, dest);
+      recordSeedBaseline(manifest, relative, file.path, dest);
+      dirty = true;
+    } else if (ensureSeedEntry(manifest, locatedRel, file.path, path.join(paths.root, locatedRel), sourcePath)) {
+      dirty = true;
+    }
   }
+  if (dirty) writeSeedManifest(paths, manifest);
 }
 
 function defaultPlayerSections() {
@@ -911,20 +1009,20 @@ function writeJsonIfMissingOrEmpty(filePath, value) {
   return true;
 }
 
-function ensureSessionDataFolders(session) {
+function ensureSessionDataFolders(session, options = {}) {
   const paths = getSessionPaths(session);
   migrateLegacySessionLayout(session, paths);
   fs.mkdirSync(paths.input, { recursive: true });
   fs.mkdirSync(paths.gmInput, { recursive: true });
   fs.mkdirSync(paths.outputPlayer, { recursive: true });
   fs.mkdirSync(paths.outputGm, { recursive: true });
-  if (!fs.existsSync(paths.publicSource)) {
-    fs.writeFileSync(paths.publicSource, `# ${session.name} Player Source\n\nAdd player-visible scenario notes here.\n`, 'utf8');
-  }
-  if (!fs.existsSync(paths.gmSource)) {
-    fs.writeFileSync(paths.gmSource, `# ${session.name} GM Source\n\nAdd GM-only scenario notes, plans, secrets, and pacing notes here.\n`, 'utf8');
-  }
-  seedGlobalSessionFiles(paths);
+  // player.md / gm.md are seeded like any other default file — not written here.
+  // A built-in case ships its own under canonical/cases/<slug>/; for everything
+  // else they come from globaldata/input/player.md and globaldata/GM/gm.md via
+  // the global seed below. Built-in case seeding passes deferGlobalSeed so it can
+  // lay its own files down first and have the copy-if-missing global pass skip
+  // them (see copyCanonicalCaseFiles).
+  if (!options.deferGlobalSeed) seedGlobalSessionFiles(paths);
   writeJsonIfMissingOrEmpty(paths.playerSections, defaultPlayerSections());
   writeJsonIfMissingOrEmpty(paths.gmSections, defaultGmSections());
   return paths;
@@ -968,6 +1066,7 @@ function getFileKind(ext) {
 function listSessionSourceFiles(session, options = {}) {
   const { includePrivate = false } = options;
   const paths = ensureSessionDataFolders(session);
+  const manifest = readSeedManifest(paths);
   const files = [];
 
   function addFile(fullPath, entry) {
@@ -979,12 +1078,18 @@ function listSessionSourceFiles(session, options = {}) {
 
     const stat = fs.statSync(fullPath);
     const kind = getFileKind(ext);
+    // All file types are treated the same: every file carries its seed state
+    // (seeded / seed_identical / seed_source) so the Edit Files tab can offer
+    // Revert uniformly — image, pdf, md, txt alike.
     const record = {
       path: repoRelative(fullPath),
+      relative_path: normaliseSlash(path.relative(paths.root, fullPath)),
       kind,
       visibility,
+      visibility_fixed: isVisibilityFixed(fullPath, paths),
       size_bytes: stat.size,
-      modified_at: stat.mtime.toISOString()
+      modified_at: stat.mtime.toISOString(),
+      ...seedStateForFile(manifest, paths, fullPath)
     };
     // A graphic's generating prompt lives in a "<file>.prompt.txt" sidecar
     // (itself never listed). Surface it so the Edit Files / index table can
@@ -1223,32 +1328,21 @@ function readJsonFile(filePath) {
 
 function listEditableMarkdownSources(paths, includePrivate = true) {
   const sources = [];
+  const manifest = readSeedManifest(paths);
   function addFile(fullPath, entry) {
     const ext = path.extname(entry.name).toLowerCase();
     if (!MARKDOWN_EXTENSIONS.has(ext)) return;
     const visibility = classifySessionFileVisibility(fullPath, paths);
     if (!includePrivate && visibility === 'gm') return;
     const content = fs.readFileSync(fullPath, 'utf8');
-    const rel = path.relative(paths.root, fullPath);
-    // A file is globaldata-seeded if globaldata holds one at the same relative
-    // path; such files are re-seeded when missing (so "deleting" only restores
-    // them). Flag whether the case copy still matches the seed.
-    const seedPath = path.join(GLOBAL_ROOT, rel);
-    let seeded = false, seedIdentical = false;
-    try {
-      if (fs.existsSync(seedPath) && fs.statSync(seedPath).isFile()) {
-        seeded = true;
-        const norm = (s) => String(s || '').replace(/\r\n?/g, '\n');
-        seedIdentical = norm(fs.readFileSync(seedPath, 'utf8')) === norm(content);
-      }
-    } catch { /* ignore */ }
+    const rel = normaliseSlash(path.relative(paths.root, fullPath));
     sources.push({
       path: repoRelative(fullPath),
-      relative_path: normaliseSlash(rel),
+      relative_path: rel,
       visibility,
+      visibility_fixed: isVisibilityFixed(fullPath, paths),
       content,
-      seeded,
-      seed_identical: seedIdentical
+      ...seedStateForFile(manifest, paths, fullPath)
     });
   }
 
@@ -2866,16 +2960,24 @@ function readCaseKeyNpcs(session) {
 // Only files that exist in globaldata at the same relative path may be reverted.
 // Returns the repo-relative path written.
 function revertSeededFile(session, relativePath) {
-  const rel = String(relativePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
+  const rel = normaliseSlash(String(relativePath || '').replace(/\\/g, '/').replace(/^\/+/, ''));
   if (!rel || rel.split('/').includes('..')) { const e = new Error('Bad path.'); e.statusCode = 400; throw e; }
-  const seedPath = path.join(GLOBAL_ROOT, rel);
-  if (!fs.existsSync(seedPath) || !fs.statSync(seedPath).isFile()) {
-    const e = new Error('That file is not seeded from globaldata.'); e.statusCode = 404; throw e;
-  }
   const paths = ensureSessionDataFolders(session);
+  const manifest = readSeedManifest(paths);
+  const m = manifest[rel];
+  // Revert to wherever the file was seeded from (globaldata or the case's
+  // canonical original), per the manifest; fall back to globaldata for any
+  // legacy entry that predates provenance tracking.
+  const seedRepoRel = (m && m.source) ? m.source : normaliseSlash(path.join('Rivers_of_London', 'globaldata', rel));
+  const seedPath = path.join(REPO_ROOT, seedRepoRel);
+  if (!fs.existsSync(seedPath) || !fs.statSync(seedPath).isFile()) {
+    const e = new Error('That file has no seed source to revert to.'); e.statusCode = 404; throw e;
+  }
   const dest = path.join(paths.root, rel);
   ensureParentDir(dest);
   fs.copyFileSync(seedPath, dest);
+  recordSeedBaseline(manifest, rel, seedRepoRel, dest);
+  writeSeedManifest(paths, manifest);
   return repoRelative(dest);
 }
 
@@ -3336,7 +3438,7 @@ function setSessionAssetVisibility(sessionId, db, requestPath, visibility) {
   const ext = path.extname(src).toLowerCase();
   if (!ASSET_EXTENSIONS.has(ext)) { const e = new Error('Not a toggleable asset'); e.statusCode = 400; throw e; }
   const base = path.basename(src);
-  if (GENERATED_FILENAMES.has(base) || base === 'player.md' || base === 'gm.md') {
+  if (isVisibilityFixed(src, paths)) {
     const e = new Error('This file’s visibility is fixed'); e.statusCode = 400; throw e;
   }
   const current = classifySessionFileVisibility(src, paths);
@@ -3359,6 +3461,20 @@ function setSessionAssetVisibility(sessionId, db, requestPath, visibility) {
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.renameSync(src, dest);
   carryPromptSidecar(src, dest);
+  // Move the seed-manifest entry with the file so Revert still works at the new
+  // location and the seeder won't see the old path as "missing". rename keeps the
+  // mtime, so a pristine file stays pristine.
+  try {
+    const manifest = readSeedManifest(paths);
+    if (manifest[rootRel]) {
+      const old = manifest[rootRel];
+      manifest[normaliseSlash(destRel)] = old.diverged
+        ? { source: old.source, diverged: true }
+        : { source: old.source, ...fileBaseline(dest) };
+      delete manifest[rootRel];
+      writeSeedManifest(paths, manifest);
+    }
+  } catch { /* non-fatal: visibility still toggled */ }
   return { path: repoRelative(dest), visibility: want };
 }
 
@@ -3634,6 +3750,7 @@ module.exports = {
   getFirstScenarioSession,
   findSessionByToken,
   ensureSessionDataFolders,
+  seedGlobalSessionFiles,
   ensureSessionDataFolderById,
   renameSessionDataFolder,
   listSessionSourceFiles,
@@ -3685,6 +3802,10 @@ module.exports = {
   readCaseGlossaryTerms,
   readCaseKeyNpcs,
   revertSeededFile,
+  readSeedManifest,
+  writeSeedManifest,
+  recordSeedBaseline,
+  ensureSeedEntry,
   loadVoiceRegistry,
   saveVoiceRegistry,
   matchVoice,

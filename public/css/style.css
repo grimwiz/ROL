@@ -1182,7 +1182,10 @@ tr:hover td { background: var(--bg3); }
   padding: 0.08rem 0.45rem; border-radius: 999px; border: 1px solid var(--border);
 }
 .vis-gm { color: var(--warning); border-color: var(--warning); background: rgba(243,156,18,0.12); }
-.vis-player { color: #5fd49a; border-color: #2f6f4f; background: rgba(39,174,96,0.12); }
+.vis-player { color: #1c7a48; border-color: #2f6f4f; background: rgba(39,174,96,0.12); }
+/* Marks a seeded file that has been hand-edited away from its original — a
+   unique, possibly valuable artifact (amber to read as "custom, mind this one"). */
+.seed-modified { color: #c9871f; font-weight: 600; font-size: 0.72rem; margin-right: 0.4rem; white-space: nowrap; }
 
 /* ── Index image manager ── */
 .entity-img-table { padding: 0.6rem 0.9rem; }

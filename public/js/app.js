@@ -4576,7 +4576,7 @@ function renderScenarioSourceEditor(sources) {
           ${editableSources.map((source) => `
             <button type="button" data-source-index="${source.index}" class="${source.index === State.scenarioSelectedSourceIndex ? 'active' : ''}" onclick="selectScenarioSource(${source.index})">
               <span>${esc(source.relative_path || source.path || `Source ${source.index + 1}`)}</span>
-              <small>${source.visibility === 'gm' ? 'GM Only' : 'Player Handout'}</small>
+              <small>${source.visibility === 'gm' ? 'GM Only' : 'Player Handout'}${source.seeded && !source.seed_identical ? ' · <span class="seed-modified">✎ edited</span>' : ''}</small>
             </button>
           `).join('')}
         </div>
@@ -4591,7 +4591,7 @@ function renderScenarioSourceEditor(sources) {
               <button class="btn" id="ef-capture"${(window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? '' : ' disabled title="Microphone needs an HTTPS (secure) connection"'} title="Record a live session; speakers are identified and labelled">🎙 Capture session</button>
               <button class="btn btn-primary" id="ef-save" onclick="saveSessionScenarioSources(${State.currentSession}, this)">Save file</button>
               <button class="btn" onclick="revertScenarioSourceEditor()">Revert</button>
-              <button class="btn" onclick="toggleSelectedSourceVisibility(${State.currentSession})" title="Move this file between the GM-only and player folders">GM Only ⇄ Player Handout</button>
+              <span id="ef-visibility-action"></span>
               <button class="btn" onclick="efDownloadSelected(${State.currentSession})">Download</button>
               <button class="btn" onclick="efReplaceSelected(${State.currentSession})" title="Overwrite this file with one you upload">Replace</button>
               <button class="btn" onclick="efRenameSelected(${State.currentSession})" title="Rename this file (extension kept)">Rename</button>
@@ -4626,17 +4626,27 @@ function assetFilesPanelHtml(sources, editable = true) {
           const media = f.kind === 'pdf'
             ? '<div class="asset-pdf">PDF</div>'
             : `<img src="${esc(url)}" alt="${esc(label)}" loading="lazy">`;
+          // Same seed-aware action as markdown: seeded+diverged → Revert,
+          // seeded+pristine → nothing (it re-seeds), non-seeded → Delete.
+          const seedAction = !f.seeded
+            ? `<button class="btn btn-sm btn-danger" onclick="efDeleteFile(${State.currentSession}, '${esc(f.path)}')">Delete</button>`
+            : (f.seed_identical
+                ? `<button class="btn btn-sm" disabled title="Matches its seeded original — nothing to restore">Return to Default</button>`
+                : `<span class="seed-modified" title="Edited from its seeded original — hand-crafted changes">✎ Modified</span><button class="btn btn-sm" onclick="efRevertFile(${State.currentSession}, '${esc(f.relative_path || '')}')" title="Discard your changes and restore the seeded original">Return to Default</button>`);
           return `<div class="asset-card">
             <a href="${esc(url)}" target="_blank" rel="noopener" title="${esc(f.path)}">${media}</a>
             <span>${esc(label)}</span>
-            <span class="vis-badge vis-${player ? 'player' : 'gm'}">${player ? 'Player Handout' : 'GM Only'}</span>
+            ${!editable
+              ? `<span class="vis-badge vis-${player ? 'player' : 'gm'}">${player ? 'Player Handout' : 'GM Only'}</span>`
+              : f.visibility_fixed
+                ? `<button class="btn btn-sm vis-badge vis-${player ? 'player' : 'gm'}" disabled title="This file's visibility is fixed">${player ? 'Player Handout' : 'GM Only'}</button>`
+                : `<button class="btn btn-sm vis-badge vis-${player ? 'player' : 'gm'}" onclick="toggleAssetVisibility(${State.currentSession}, '${esc(f.path)}', '${player ? 'gm' : 'player'}')" title="Click to change visibility">${player ? 'Player Handout → GM' : 'GM Only → Player'}</button>`}
             <div class="asset-card-actions">
               ${editable ? `
-                <button class="btn btn-sm" onclick="toggleAssetVisibility(${State.currentSession}, '${esc(f.path)}', '${player ? 'gm' : 'player'}')">${player ? 'Make GM Only' : 'Make Player Handout'}</button>
                 <a class="btn btn-sm" href="${esc(url)}?download=1" download>Download</a>
                 <button class="btn btn-sm" onclick="efReplaceFile(${State.currentSession}, '${esc(f.path)}')">Replace</button>
                 <button class="btn btn-sm" onclick="efRenameFile(${State.currentSession}, '${esc(f.path)}')">Rename</button>
-                <button class="btn btn-sm btn-danger" onclick="efDeleteFile(${State.currentSession}, '${esc(f.path)}')">Delete</button>
+                ${seedAction}
               ` : `<a class="btn btn-sm" href="${esc(url)}?download=1" download>Download</a>`}
             </div>
           </div>`;
@@ -4701,6 +4711,7 @@ function selectScenarioSource(sourceIndex) {
   if (selectedButton) selectedButton.classList.add('active');
   if (area) {
     updateSeedActionButton();
+    updateVisibilityToggleButton();
     updateEfSaveButton();
   }
 }
@@ -4783,6 +4794,7 @@ async function renderSessionScenarioInfo(sessionId, mode = 'gm') {
     }
     try { api.getVoices(sessionId).then((r) => { const vs = (r && r.voices) || []; renderEfVoicesPanel(vs, sessionId); applyVoiceNamesToEditor(vs); }).catch(() => {}); } catch {}
     updateSeedActionButton();
+    updateVisibilityToggleButton();
     updateEfSaveButton();
     return;
   }
@@ -5142,9 +5154,10 @@ function efDeleteSelected(sessionId) {
 }
 window.efDeleteSelected = efDeleteSelected;
 
-// Globaldata-seeded files are undeletable (re-seeded when missing), so their
-// per-file action is Revert (not Delete): hidden when the case copy still matches
-// the seed, "Revert" once it has diverged. Non-seeded files keep Delete.
+// Seeded files (from globaldata or a case's canonical original) are undeletable
+// — re-seeded when missing — so their per-file action is Revert (not Delete):
+// hidden when the case copy still matches the seed, "Revert" once it has diverged.
+// Non-seeded files keep Delete.
 function updateSeedActionButton() {
   const host = el('ef-seed-action');
   if (!host) return;
@@ -5154,23 +5167,49 @@ function updateSeedActionButton() {
   if (!src.seeded) {
     host.innerHTML = `<button class="btn btn-danger" onclick="efDeleteSelected(${sid})" title="Delete this file permanently">Delete</button>`;
   } else if (src.seed_identical) {
-    host.innerHTML = ''; // pristine globaldata copy — nothing to delete or revert
+    // seeded and unchanged — the action exists but there's nothing to restore.
+    host.innerHTML = `<button class="btn" disabled title="This file matches its seeded original — nothing to restore">Return to Default</button>`;
   } else {
-    host.innerHTML = `<button class="btn" onclick="efRevertSelected(${sid})" title="Restore the globaldata version (discards your edits to this file)">Revert</button>`;
+    // seeded but edited — flag it as hand-crafted and offer to restore the seed.
+    host.innerHTML = `<span class="seed-modified" title="Edited away from its seeded original — this file has hand-crafted changes">✎ Modified</span><button class="btn" onclick="efRevertSelected(${sid})" title="Discard your changes and restore the seeded original">Return to Default</button>`;
   }
 }
+
+// Markdown-editor visibility toggle — same colour/text as the asset-card button,
+// reflecting the selected file and flipping it GM <-> player on click.
+function updateVisibilityToggleButton() {
+  const host = el('ef-visibility-action');
+  if (!host) return;
+  const src = efSelectedSource();
+  if (!src) { host.innerHTML = ''; return; }
+  const player = src.visibility !== 'gm';
+  if (src.visibility_fixed) {
+    host.innerHTML = `<button class="btn btn-sm vis-badge vis-${player ? 'player' : 'gm'}" disabled title="This file's visibility is fixed">${player ? 'Player Handout' : 'GM Only'}</button>`;
+    return;
+  }
+  host.innerHTML = `<button class="btn btn-sm vis-badge vis-${player ? 'player' : 'gm'}" onclick="toggleSelectedSourceVisibility(${State.currentSession})" title="Click to change visibility">${player ? 'Player Handout → GM' : 'GM Only → Player'}</button>`;
+}
+window.updateVisibilityToggleButton = updateVisibilityToggleButton;
 window.updateSeedActionButton = updateSeedActionButton;
 
 async function efRevertSelected(sessionId) {
   const src = efSelectedSource();
   if (!src) { showAlert('Select a file first.', 'danger', 'scenario-alert'); return; }
-  if (!confirm(`Revert ${src.relative_path || src.path} to the globaldata version? Your edits to this file will be lost.`)) return;
+  await efRevertFile(sessionId, src.relative_path);
+}
+window.efRevertSelected = efRevertSelected;
+
+// Revert any seeded file (markdown, image, pdf, txt) to its originally seeded
+// version, by relative path. Used by both the markdown editor and asset cards.
+async function efRevertFile(sessionId, relativePath) {
+  if (!relativePath) { showAlert('No file selected.', 'danger', 'scenario-alert'); return; }
+  if (!confirm(`Revert ${relativePath} to its originally seeded version? Your changes to this file will be lost.`)) return;
   try {
-    await api.revertSessionFile(sessionId, src.relative_path);
+    await api.revertSessionFile(sessionId, relativePath);
     await reloadCurrentSessionPanel();
   } catch (e) { showAlert(e.message, 'danger', 'scenario-alert'); }
 }
-window.efRevertSelected = efRevertSelected;
+window.efRevertFile = efRevertFile;
 
 async function reloadCurrentSessionPanel() {
   if (!State.currentSession) return;

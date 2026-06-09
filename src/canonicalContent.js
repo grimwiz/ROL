@@ -2,7 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const {
   ensureSessionDataFolders,
-  slugifySessionName
+  seedGlobalSessionFiles,
+  slugifySessionName,
+  readSeedManifest,
+  writeSeedManifest,
+  recordSeedBaseline,
+  ensureSeedEntry
 } = require('./scenarioInfo');
 
 const REPO_ROOT = path.join(__dirname, '..');
@@ -79,9 +84,15 @@ function copyCanonicalCaseFiles(session, config, options = {}) {
     return { copied: 0, skipped: 0, source_missing: true };
   }
 
-  const paths = ensureSessionDataFolders(session);
+  // Defer the global seed so this case's own files (incl. its player.md/gm.md)
+  // are laid down first; the global copy-if-missing pass then runs below and
+  // skips anything the case already provided, falling back to the globaldata
+  // defaults only for files the case omits.
+  const paths = ensureSessionDataFolders(session, { deferGlobalSeed: true });
+  const manifest = readSeedManifest(paths);
   let copied = 0;
   let skipped = 0;
+  let manifestDirty = false;
 
   walkFiles(sourceRoot, (sourcePath) => {
     const relative = path.relative(sourceRoot, sourcePath);
@@ -92,14 +103,27 @@ function copyCanonicalCaseFiles(session, config, options = {}) {
       skipped += 1;
       return;
     }
+    const sourceRepoRel = path.relative(REPO_ROOT, sourcePath).split(path.sep).join('/');
+    const rel = relative.split(path.sep).join('/');
     if (!shouldSeedTarget(targetPath, session.name, overwrite)) {
       skipped += 1;
+      // Backfill provenance for a file that already exists in the case so the
+      // Edit Files tab can offer Revert against its canonical original.
+      if (ensureSeedEntry(manifest, rel, sourceRepoRel, targetPath, sourcePath)) manifestDirty = true;
       return;
     }
     fs.mkdirSync(path.dirname(targetPath), { recursive: true });
     fs.copyFileSync(sourcePath, targetPath);
     copied += 1;
+    recordSeedBaseline(manifest, rel, sourceRepoRel, targetPath);
+    manifestDirty = true;
   });
+
+  if (manifestDirty) writeSeedManifest(paths, manifest);
+
+  // Gap-fill from globaldata now that the case files are in place. Copy-if-missing
+  // leaves the case's own player.md/gm.md (and anything else it shipped) untouched.
+  seedGlobalSessionFiles(paths);
 
   return {
     copied,
