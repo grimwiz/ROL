@@ -981,6 +981,7 @@ async function openSession(sessionId, options = {}) {
       <div class="sheet-tab" data-session-panel="entities" onclick="switchSessionPanel(${sessionId}, 'entities')">Places/NPC/Things</div>
       ${isGM ? `<div class="sheet-tab" data-session-panel="gm-info" onclick="switchSessionPanel(${sessionId}, 'gm-info')">GM Info</div>` : ''}
       ${isGM ? `<div class="sheet-tab" data-session-panel="raw-data" onclick="switchSessionPanel(${sessionId}, 'raw-data')">Edit Files</div>` : ''}
+      ${isGM ? `<div class="sheet-tab" data-session-panel="case-settings" onclick="switchSessionPanel(${sessionId}, 'case-settings')">Settings</div>` : ''}
       <div class="sheet-tab" data-session-panel="gm-chat" onclick="switchSessionPanel(${sessionId}, 'gm-chat')">AI Support</div>
     </div>
     <div id="session-content"><p style="color:var(--text2)">Loading…</p></div>`;
@@ -1007,6 +1008,7 @@ async function switchSessionPanel(sessionId, panel) {
     else if (panel === 'entities') await renderSessionEntities(sessionId);
     else if (panel === 'gm-info') await renderSessionScenarioInfo(sessionId, 'gm');
     else if (panel === 'raw-data') await renderSessionScenarioInfo(sessionId, 'raw');
+    else if (panel === 'case-settings') await renderSessionSettings(sessionId);
     else if (panel === 'overview') await renderSessionOverview(sessionId);
     else if (panel === 'gm-chat') await renderSessionAiSupport(sessionId);
     else await renderSessionCharacters(sessionId);
@@ -3601,6 +3603,7 @@ function renderEntityImageManager(sessionId, items) {
           <button class="btn btn-sm" onclick="eitSavePrompt('${fid}')">Save prompt</button>
           ${sizeSel(fid)}
           <button class="btn btn-sm btn-primary" onclick="eitGenerate('${fid}', true)" title="Re-render this image in place, keeping its filename">Regenerate</button>
+          <button class="btn btn-sm" onclick="eitAiEdit('${fid}')" title="Edit this picture with an AI prompt (e.g. make it a nighttime scene) — saves a new copy">AI Edit</button>
           <button class="btn btn-sm" onclick="eitToggleVis('${fid}')">${g.visibility === 'gm' ? 'Make Player' : 'Make GM'}</button>
           <button class="btn btn-sm" onclick="eitRename('${fid}')">Rename</button>
           <button class="btn btn-sm btn-danger" onclick="eitDelete('${fid}')">Delete</button>
@@ -3628,6 +3631,7 @@ function renderEntityImageManager(sessionId, items) {
         <td>${orphanSelect(oid)}</td>
         <td class="eit-actions">
           <button class="btn btn-sm btn-primary" onclick="eitReassign('${oid}')" title="Rename this file's prefix to the chosen title so Regenerate Index re-attaches it">Reassign</button>
+          <button class="btn btn-sm" onclick="eitAiEdit('${oid}')" title="Edit this picture with an AI prompt (e.g. make it a nighttime scene) — saves a new copy">AI Edit</button>
           <button class="btn btn-sm" onclick="eitRename('${oid}')">Rename…</button>
           <button class="btn btn-sm btn-danger" onclick="eitDelete('${oid}')">Delete</button>
           <div class="eit-status" id="${oid}-status"></div>
@@ -3731,6 +3735,213 @@ async function eitReassign(oid) {
 }
 window.eitReassign = eitReassign;
 
+// Poll a queued ComfyUI prompt to completion and return its first output image
+// ref ({ filename, subfolder, type }). Shared by Generate/Regenerate and AI Edit.
+async function comfyWaitForImage(promptId, timeoutMs = 10 * 60 * 1000, shouldCancel = null) {
+  const started = Date.now();
+  const cancelled = () => {
+    if (shouldCancel && shouldCancel()) { const e = new Error('cancelled'); e.cancelled = true; throw e; }
+  };
+  while (Date.now() - started < timeoutMs) {
+    cancelled();
+    await new Promise((res) => setTimeout(res, 2000));
+    cancelled();
+    const h = await fetch(`/api/portrait/history/${encodeURIComponent(promptId)}`, { credentials: 'same-origin' });
+    if (!h.ok) continue;
+    const e = (await h.json())[promptId];
+    if (e && e.status && e.status.status_str === 'error') throw new Error('ComfyUI reported an error.');
+    if (e && e.status && e.status.completed) {
+      const outputs = e.outputs || {};
+      const node = outputs['10'] || Object.values(outputs).find((o) => o && o.images);
+      const img = node && node.images && node.images[0];
+      if (!img) throw new Error('ComfyUI finished but returned no image.');
+      return img;
+    }
+  }
+  throw new Error('Timed out waiting for ComfyUI.');
+}
+
+// AI Edit image (img2img): take ANY existing graphic as the basis and apply a
+// free-text edit instruction (e.g. "make this a nighttime scene"). Opens an
+// interactive modal — type the change, pick how closely to keep the original,
+// Generate, then Retry until happy and only then Keep (saves a NEW copy so the
+// original is always preserved; Cancel/Discard writes nothing). Works on
+// title-matched index graphics, unmatched/orphan graphics, and the plain image
+// list in Edit Files — anywhere a picture is shown.
+//   slug      → filename stem for the new copy; '' derives it from the source
+//               file (so an untitled image's edit lands beside it).
+//   statusId  → an eit-status cell to write the final outcome into; '' falls
+//               back to the page-level scenario-alert banner.
+async function aiEditImage(sessionId, relPath, { slug = '', statusId = '' } = {}) {
+  if (!relPath) return;
+  // Default save name = the source file's stem minus any trailing -timestamp, so
+  // repeated edits don't chain "-2026-..-2026-.." and the copy reads as a sibling.
+  const base = String(relPath).split('/').pop().replace(/\.[^.]+$/, '').replace(/-\d{4}-\d{2}-\d{2}-\d{6}$/, '');
+  const saveName = slug || base;
+  const report = (msg, cls) => {
+    if (statusId) { eitStatus(statusId, msg, cls); return; }
+    if (!msg) return;
+    showAlert(msg, cls === 'error' ? 'danger' : (cls === 'saved' ? 'success' : 'info'), 'scenario-alert');
+  };
+  const sourceUrl = scenarioAssetUrl(relPath); // the picture being edited (before)
+  // Pre-fill the box with the source image's saved prompt (its .prompt.txt
+  // sidecar), so the prompt that produced it is visible, editable and re-usable.
+  const srcMeta = (scenarioGraphicFiles || []).find((g) => g.path === relPath);
+  const sourcePrompt = (srcMeta && srcMeta.prompt) || '';
+
+  let lastImg = null; // the most recent generation; only this is saved on Keep
+  modal(`
+    <h3 style="margin-top:0">AI Edit image</h3>
+    <p style="margin:.25rem 0 .6rem;opacity:.75">Describe the change, Generate, and Retry until you like it. The original is never altered — Keep saves a new copy, Cancel writes nothing.</p>
+    <div class="form-group" style="margin-bottom:.5rem">
+      <textarea id="aiedit-prompt" rows="2" spellcheck="true" placeholder='e.g. "make this a nighttime scene", "add fog and rain"'>${esc(sourcePrompt)}</textarea>
+    </div>
+    <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem;flex-wrap:wrap">
+      <button class="btn btn-primary" id="aiedit-gen">Generate</button>
+      <button class="btn btn-sm" id="aiedit-saveprompt" title="Save this prompt onto the source picture for next time">Save prompt</button>
+      <span id="aiedit-status" style="font-size:.85em;opacity:.8"></span>
+    </div>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-start">
+      <figure style="flex:1 1 45%;min-width:150px;margin:0;text-align:center">
+        <figcaption style="font-size:.72em;opacity:.7;margin-bottom:.25rem">Source</figcaption>
+        <a href="${esc(sourceUrl)}" target="_blank" rel="noopener" title="Click to view full size"><img src="${esc(sourceUrl)}" alt="Source image" style="max-width:100%;max-height:45vh;border-radius:6px;cursor:zoom-in"></a>
+      </figure>
+      <figure style="flex:1 1 45%;min-width:150px;margin:0;text-align:center">
+        <figcaption style="font-size:.72em;opacity:.7;margin-bottom:.25rem">Result</figcaption>
+        <div id="aiedit-preview" style="min-height:120px;display:flex;align-items:center;justify-content:center;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:.4rem">
+          <span style="opacity:.6;font-size:.85em">Generate to preview</span>
+        </div>
+      </figure>
+    </div>
+    <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem">
+      <button class="btn" id="aiedit-cancel">Cancel</button>
+      <button class="btn btn-primary" id="aiedit-keep" disabled>Keep this copy</button>
+    </div>`, (root) => {
+    const promptEl = root.querySelector('#aiedit-prompt');
+    const genBtn = root.querySelector('#aiedit-gen');
+    const savePromptBtn = root.querySelector('#aiedit-saveprompt');
+    const keepBtn = root.querySelector('#aiedit-keep');
+    const cancelBtn = root.querySelector('#aiedit-cancel');
+    const previewEl = root.querySelector('#aiedit-preview');
+    const statusEl = root.querySelector('#aiedit-status');
+    const setStatus = (m) => { if (statusEl) statusEl.textContent = m || ''; };
+
+    let running = false;        // a generation is in flight
+    let cancelled = false;      // the GM hit Stop
+    let generatedOnce = false;
+    let currentPromptId = '';   // ComfyUI prompt_id of the in-flight job, for interrupt
+    // While running the Generate/Redo button becomes a red Stop, matching the
+    // other AI start buttons — clicking it aborts the wait so the GM can bail.
+    const setRunning = (on) => {
+      running = on;
+      genBtn.textContent = on ? 'Stop' : (generatedOnce ? 'Redo' : 'Generate');
+      genBtn.classList.toggle('btn-danger', on);
+      genBtn.classList.toggle('btn-primary', !on);
+    };
+
+    const generate = async () => {
+      const instruction = (promptEl.value || '').trim();
+      if (!instruction) { setStatus('Enter a description first.'); promptEl.focus(); return; }
+      if (eitBusy) { setStatus('An AI task is already running.'); return; }
+      eitBusy = true;
+      cancelled = false;
+      currentPromptId = '';
+      setRunning(true);
+      keepBtn.disabled = true; savePromptBtn.disabled = true;
+      llmPendingBegin('AI edit image');
+      setStatus('Editing… (can take ~1 min on first run)');
+      try {
+        const q = await api.editGraphic(sessionId, { path: relPath, prompt: instruction });
+        if (cancelled) { const e = new Error('cancelled'); e.cancelled = true; throw e; }
+        if (q && q.node_errors && Object.keys(q.node_errors).length) throw new Error('ComfyUI rejected the workflow.');
+        const promptId = q && q.prompt_id;
+        if (!promptId) throw new Error('ComfyUI returned no prompt_id.');
+        currentPromptId = promptId;
+        const img = await comfyWaitForImage(promptId, 10 * 60 * 1000, () => cancelled);
+        lastImg = img;
+        generatedOnce = true;
+        const params = new URLSearchParams();
+        params.set('filename', img.filename);
+        if (img.subfolder) params.set('subfolder', img.subfolder);
+        params.set('type', img.type || 'output');
+        const previewUrl = `/api/portrait/view?${params.toString()}`;
+        // Click the preview to open it full size in a new tab — the inline copy
+        // is necessarily small, so this is how the GM judges the result.
+        previewEl.innerHTML = `<a href="${esc(previewUrl)}" target="_blank" rel="noopener" title="Click to view full size"><img src="${esc(previewUrl)}" alt="AI edit result" style="max-width:100%;max-height:45vh;border-radius:6px;cursor:zoom-in"></a>`;
+        keepBtn.disabled = false;
+        setStatus('Click a picture to view full size. Keep it, or tweak and Redo.');
+      } catch (e) {
+        // On cancel the Stop handler owns the status message (it reports whether
+        // ComfyUI actually confirmed the interrupt), so don't overwrite it here.
+        if (!(e && e.cancelled)) setStatus(e.message || 'AI edit failed');
+      } finally {
+        eitBusy = false;
+        savePromptBtn.disabled = false;
+        setRunning(false);
+        llmPendingEnd();
+      }
+    };
+
+    genBtn.addEventListener('click', async () => {
+      if (!running) { generate(); return; }
+      // Stop: abort the client wait AND really interrupt the GPU job. Report
+      // honestly if ComfyUI doesn't confirm — don't imply it stopped if it may not have.
+      cancelled = true;
+      setStatus('Stopping…');
+      try {
+        const r = await api.interruptComfy({ promptId: currentPromptId });
+        setStatus(r && r.ok ? 'Stopped.' : 'Stopped waiting — but ComfyUI didn’t confirm the interrupt; the job may still finish.');
+      } catch (_) {
+        setStatus('Stopped waiting — but couldn’t reach ComfyUI to stop the job.');
+      }
+    });
+    // Persist the current prompt onto the SOURCE picture's sidecar (same as the
+    // Index manager's "Save prompt"), so it's remembered without regenerating.
+    savePromptBtn.addEventListener('click', async () => {
+      const p = (promptEl.value || '').trim();
+      savePromptBtn.disabled = true;
+      setStatus('Saving prompt…');
+      try {
+        await api.saveSessionFilePrompt(sessionId, relPath, p);
+        setStatus('Prompt saved to the source picture.');
+      } catch (e) {
+        setStatus(e.message || 'Could not save the prompt.');
+      } finally {
+        savePromptBtn.disabled = false;
+      }
+    });
+    cancelBtn.addEventListener('click', () => { root.remove(); report('Discarded — nothing was saved.'); });
+    keepBtn.addEventListener('click', async () => {
+      if (!lastImg) return;
+      keepBtn.disabled = true; genBtn.disabled = true;
+      setStatus('Saving…');
+      try {
+        await api.saveHandout(sessionId, {
+          filename: lastImg.filename, subfolder: lastImg.subfolder || '', type: lastImg.type || 'output',
+          prompt: (promptEl.value || '').trim(), name: saveName
+        });
+        root.remove();
+        report('AI-edited copy saved (GM-only).', 'saved');
+        await reloadCurrentSessionPanel();
+      } catch (e) {
+        setStatus(e.message || 'Save failed');
+        keepBtn.disabled = false; genBtn.disabled = false;
+      }
+    });
+    promptEl.focus();
+  });
+}
+window.aiEditImage = aiEditImage;
+
+// Registry-backed wrapper for the Index image manager rows (title-matched and
+// orphan alike). Orphans carry no slug, so the copy keeps the source file stem.
+function eitAiEdit(id) {
+  const r = eitRegistry[id];
+  if (!r || !r.path) { eitStatus(id, 'Generate or attach an image first.', 'error'); return; }
+  aiEditImage(r.sessionId, r.path, { slug: r.slug || '', statusId: id });
+}
+window.eitAiEdit = eitAiEdit;
+
 // Generate (or Regenerate in place) an entity's artifact via ComfyUI, then save
 // it. Mirrors the GM-chat handout flow but writes a title-slug filename so the
 // deterministic index injector attaches it.
@@ -3765,22 +3976,7 @@ async function eitGenerate(id, replace) {
     if (q && q.node_errors && Object.keys(q.node_errors).length) throw new Error('ComfyUI rejected the workflow.');
     const promptId = q && q.prompt_id;
     if (!promptId) throw new Error('ComfyUI returned no prompt_id.');
-    const started = Date.now();
-    let entry = null;
-    while (Date.now() - started < 10 * 60 * 1000) {
-      await new Promise((res) => setTimeout(res, 2000));
-      const h = await fetch(`/api/portrait/history/${encodeURIComponent(promptId)}`, { credentials: 'same-origin' });
-      if (h.ok) {
-        const e = (await h.json())[promptId];
-        if (e && e.status && e.status.completed) { entry = e; break; }
-        if (e && e.status && e.status.status_str === 'error') throw new Error('ComfyUI reported an error.');
-      }
-    }
-    if (!entry) throw new Error('Timed out waiting for ComfyUI.');
-    const outputs = entry.outputs || {};
-    const node = outputs['10'] || Object.values(outputs).find((o) => o && o.images);
-    const img = node && node.images && node.images[0];
-    if (!img) throw new Error('ComfyUI finished but returned no image.');
+    const img = await comfyWaitForImage(promptId);
     eitStatus(id, 'Saving…');
     const saveBody = { filename: img.filename, subfolder: img.subfolder || '', type: img.type || 'output', prompt: promptText };
     if (replace && r.path) saveBody.replace_path = r.path;
@@ -4612,45 +4808,87 @@ function assetFilesPanelHtml(sources, editable = true) {
   const files = scenarioArray(sources.source_files)
     .filter((f) => f && (f.kind === 'graphic' || f.kind === 'pdf'));
   if (!files.length) return '';
-  return `
+
+  // Player (read-only) view: a simple preview grid, Download only.
+  if (!editable) {
+    return `
     <div class="card scenario-source-editor" style="margin-top:1rem">
       <div class="card-header"><div>
         <div class="card-title">Graphics &amp; PDFs</div>
-        <div class="card-sub">View-only preview of image and PDF assets in this case.</div>
+        <div class="card-sub">Image and PDF handouts shared with you in this case.</div>
       </div></div>
       <div class="asset-grid">
         ${files.map((f) => {
           const url = scenarioAssetUrl(f.path);
           const label = String(f.path || '').split('/').slice(-1)[0];
-          const player = f.visibility !== 'gm';
-          const media = f.kind === 'pdf'
-            ? '<div class="asset-pdf">PDF</div>'
-            : `<img src="${esc(url)}" alt="${esc(label)}" loading="lazy">`;
-          // Same seed-aware action as markdown: seeded+diverged → Revert,
-          // seeded+pristine → nothing (it re-seeds), non-seeded → Delete.
-          const seedAction = !f.seeded
-            ? `<button class="btn btn-sm btn-danger" onclick="efDeleteFile(${State.currentSession}, '${esc(f.path)}')">Delete</button>`
-            : (f.seed_identical
-                ? `<button class="btn btn-sm" disabled title="Matches its seeded original — nothing to restore">Return to Default</button>`
-                : `<span class="seed-modified" title="Edited from its seeded original — hand-crafted changes">✎ Modified</span><button class="btn btn-sm" onclick="efRevertFile(${State.currentSession}, '${esc(f.relative_path || '')}')" title="Discard your changes and restore the seeded original">Return to Default</button>`);
+          const media = f.kind === 'pdf' ? '<div class="asset-pdf">PDF</div>' : `<img src="${esc(url)}" alt="${esc(label)}" loading="lazy">`;
           return `<div class="asset-card">
             <a href="${esc(url)}" target="_blank" rel="noopener" title="${esc(f.path)}">${media}</a>
             <span>${esc(label)}</span>
-            ${!editable
-              ? `<span class="vis-badge vis-${player ? 'player' : 'gm'}">${player ? 'Player Handout' : 'GM Only'}</span>`
-              : f.visibility_fixed
-                ? `<button class="btn btn-sm vis-badge vis-${player ? 'player' : 'gm'}" disabled title="This file's visibility is fixed">${player ? 'Player Handout' : 'GM Only'}</button>`
-                : `<button class="btn btn-sm vis-badge vis-${player ? 'player' : 'gm'}" onclick="toggleAssetVisibility(${State.currentSession}, '${esc(f.path)}', '${player ? 'gm' : 'player'}')" title="Click to change visibility">${player ? 'Player Handout → GM' : 'GM Only → Player'}</button>`}
-            <div class="asset-card-actions">
-              ${editable ? `
-                <a class="btn btn-sm" href="${esc(url)}?download=1" download>Download</a>
-                <button class="btn btn-sm" onclick="efReplaceFile(${State.currentSession}, '${esc(f.path)}')">Replace</button>
-                <button class="btn btn-sm" onclick="efRenameFile(${State.currentSession}, '${esc(f.path)}')">Rename</button>
-                ${seedAction}
-              ` : `<a class="btn btn-sm" href="${esc(url)}?download=1" download>Download</a>`}
-            </div>
+            <a class="btn btn-sm" href="${esc(url)}?download=1" download>Download</a>
           </div>`;
         }).join('')}
+      </div>
+    </div>`;
+  }
+
+  // GM view: the same row layout and shared verbs as the Case Info image
+  // manager. This is the raw list (no title matching), so it omits the index
+  // column and adds the file-management verbs (Download/Replace/Return to
+  // Default); the shared verbs (Save prompt, AI Edit, Make Player/GM, Rename,
+  // Delete) match the manager's labels and order.
+  const sid = State.currentSession;
+  const rows = files.map((f, i) => {
+    const id = `efa-${i}`;
+    const url = scenarioAssetUrl(f.path);
+    const label = String(f.path || '').split('/').slice(-1)[0];
+    const player = f.visibility !== 'gm';
+    const isGraphic = f.kind === 'graphic';
+    const media = isGraphic
+      ? `<a href="${esc(url)}" target="_blank" rel="noopener"><img src="${esc(url)}" alt="${esc(label)}" loading="lazy" class="eit-thumb"></a>`
+      : `<a href="${esc(url)}" target="_blank" rel="noopener" title="${esc(f.path)}"><span class="asset-pdf">PDF</span></a>`;
+    const visBadge = `<span class="vis-badge vis-${player ? 'player' : 'gm'}">${player ? 'Player' : 'GM'}</span>`;
+    const visBtn = f.visibility_fixed
+      ? `<button class="btn btn-sm" disabled title="This file's visibility is fixed">${player ? 'Player (fixed)' : 'GM (fixed)'}</button>`
+      : `<button class="btn btn-sm" onclick="toggleAssetVisibility(${sid}, '${esc(f.path)}', '${player ? 'gm' : 'player'}')">${player ? 'Make GM' : 'Make Player'}</button>`;
+    // Same seed-aware action as markdown: seeded+diverged → Revert,
+    // seeded+pristine → nothing (it re-seeds), non-seeded → Delete.
+    const seedAction = !f.seeded
+      ? `<button class="btn btn-sm btn-danger" onclick="efDeleteFile(${sid}, '${esc(f.path)}')">Delete</button>`
+      : (f.seed_identical
+          ? `<button class="btn btn-sm" disabled title="Matches its seeded original — nothing to restore">Return to Default</button>`
+          : `<span class="seed-modified" title="Edited from its seeded original — hand-crafted changes">✎ Modified</span><button class="btn btn-sm" onclick="efRevertFile(${sid}, '${esc(f.relative_path || '')}')" title="Discard your changes and restore the seeded original">Return to Default</button>`);
+    return `<tr class="eit-file-row">
+      <td class="eit-art">
+        ${media}
+        <div class="eit-file">${esc(label)} ${visBadge}</div>
+      </td>
+      <td>${isGraphic
+        ? `<textarea id="${id}-prompt" class="eit-prompt" rows="2" placeholder="This image's prompt">${esc(f.prompt || '')}</textarea>`
+        : '<span class="eit-none">—</span>'}</td>
+      <td class="eit-actions">
+        ${isGraphic ? `<button class="btn btn-sm" onclick="efSaveAssetPrompt(${sid}, '${esc(f.path)}', '${id}-prompt')">Save prompt</button>` : ''}
+        ${isGraphic ? `<button class="btn btn-sm" onclick="aiEditImage(${sid}, '${esc(f.path)}', {})" title="Edit this picture with an AI prompt (e.g. make it a nighttime scene) — saves a new copy">AI Edit</button>` : ''}
+        ${visBtn}
+        <a class="btn btn-sm" href="${esc(url)}?download=1" download>Download</a>
+        <button class="btn btn-sm" onclick="efReplaceFile(${sid}, '${esc(f.path)}')">Replace</button>
+        <button class="btn btn-sm" onclick="efRenameFile(${sid}, '${esc(f.path)}')">Rename</button>
+        ${seedAction}
+      </td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="card scenario-source-editor entity-img-table" style="margin-top:1rem">
+      <div class="card-header"><div>
+        <div class="card-title">Graphics &amp; PDFs</div>
+        <div class="card-sub">Every image/PDF in this case — the raw list (no title matching). Shared controls match the Case Info image manager.</div>
+      </div></div>
+      <div class="table-scroll">
+        <table class="eit">
+          <thead><tr><th>Graphic</th><th>Prompt</th><th>Actions</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
       </div>
     </div>`;
 }
@@ -5081,6 +5319,19 @@ async function efUploadFile(sessionId) {
   }
 }
 window.efUploadFile = efUploadFile;
+
+// Save a graphic's prompt sidecar from the Edit Files row (mirrors the Case Info
+// manager's "Save prompt"). Reads the row's textarea by id.
+async function efSaveAssetPrompt(sessionId, assetPath, taId) {
+  const ta = el(taId);
+  try {
+    await api.saveSessionFilePrompt(sessionId, assetPath, ta ? ta.value : '');
+    showAlert('Prompt saved.', 'success', 'scenario-alert');
+  } catch (e) {
+    showAlert(e.message || 'Save failed', 'danger', 'scenario-alert');
+  }
+}
+window.efSaveAssetPrompt = efSaveAssetPrompt;
 
 async function efReplaceFile(sessionId, assetPath) {
   if (!assetPath) { showAlert('Select a file first.', 'danger', 'scenario-alert'); return; }
@@ -5575,7 +5826,6 @@ async function loadAdminTab() {
     <div class="sheet-tabs">
       <div class="sheet-tab active" data-admin="accounts" onclick="adminShow('accounts')">Accounts</div>
       <div class="sheet-tab" data-admin="characters" onclick="adminShow('characters')">Characters</div>
-      <div class="sheet-tab" data-admin="cases" onclick="adminShow('cases')">Case Settings</div>
       <div class="sheet-tab" data-admin="llm" onclick="adminShow('llm')">LLM</div>
     </div>
     <div id="admin-content"><p style="color:var(--text2);padding:1rem">Loading…</p></div>`;
@@ -5586,78 +5836,93 @@ window.loadAdminTab = loadAdminTab;
 async function adminShow(section) {
   document.querySelectorAll('[data-admin]').forEach((t) => t.classList.toggle('active', t.dataset.admin === section));
   if (section === 'characters') await renderAdminCharacters();
-  else if (section === 'cases') await renderAdminCases();
   else if (section === 'llm') await renderAdminLlm();
   else await renderAdminAccounts();
 }
 window.adminShow = adminShow;
 
-async function renderAdminCases() {
-  const host = el('admin-content');
+// Per-case Settings tab (GM only): rules behaviour + portrait style for THIS
+// case. Lives with the case (under Edit Files) rather than a central admin list.
+async function renderSessionSettings(sessionId) {
+  const host = el('session-content');
   if (!host) return;
   host.innerHTML = '<p style="color:var(--text2);padding:1rem">Loading…</p>';
-  let sessions;
+  let s;
   try {
-    sessions = await api.getSessions();
-    const settings = await Promise.all(sessions.map((s) => api.getSessionSettings(s.id).catch(() => ({ advantage_mode: 'rol', ruleset: 'rol', rules_tier: 'basic', portrait_style: '' }))));
-    sessions.forEach((s, i) => {
-      s._adv = (settings[i] && settings[i].advantage_mode) || 'rol';
-      s._ruleset = (settings[i] && settings[i].ruleset) || 'rol';
-      s._tier = (settings[i] && settings[i].rules_tier) === 'advanced' ? 'advanced' : 'basic';
-      s._style = (settings[i] && settings[i].portrait_style) || '';
-    });
+    s = await api.getSessionSettings(sessionId);
   } catch (e) {
     host.innerHTML = `<div class="alert alert-danger">${esc(e.message)}</div>`;
     return;
   }
+  const adv = s.advantage_mode === 'simple' ? 'simple' : 'rol';
+  const ruleset = s.ruleset === 'coc' ? 'coc' : 'rol';
+  const tier = s.rules_tier === 'advanced' ? 'advanced' : 'basic';
+  // portrait_style is always concrete now (the data layer fills the built-in
+  // default into the DB), so the field just shows the stored value — no UI-side
+  // default substitution. portrait_style_default is only the Reset-to target.
+  const def = s.portrait_style_default || '';
+  const styleVal = s.portrait_style || def;
   host.innerHTML = `
-    <div class="page-header"><h2>Case Settings</h2></div>
-    <div id="cases-alert"></div>
-    ${sessions.length ? `<div class="card"><div class="table-wrap"><table>
-      <thead><tr><th>Case</th><th>Advantage / disadvantage handling</th><th>Ruleset</th><th>Rules set (Rules tab &amp; AI Support)</th></tr></thead>
-      <tbody>${sessions.map((s) => `<tr>
-        <td><strong>${esc(s.name)}</strong></td>
-        <td><select onchange="saveCaseAdvantage(${s.id}, this.value, this)">
-          <option value="rol"${s._adv !== 'simple' ? ' selected' : ''}>RoL bonus/penalty die (roll the tens die twice)</option>
-          <option value="simple"${s._adv === 'simple' ? ' selected' : ''}>Simple (roll two d100s, take best/worst)</option>
-        </select></td>
-        <td><select onchange="saveCaseRuleset(${s.id}, this.value, this)">
-          <option value="rol"${s._ruleset !== 'coc' ? ' selected' : ''}>Rivers of London (no SIZ; no HP/Build)</option>
-          <option value="coc"${s._ruleset === 'coc' ? ' selected' : ''}>CoC-style (SIZ, plus SIZ-derived HP &amp; Build)</option>
-        </select></td>
-        <td><select onchange="saveCaseRulesTier(${s.id}, this.value, this)">
-          <option value="basic"${s._tier !== 'advanced' ? ' selected' : ''}>Basic rules</option>
-          <option value="advanced"${s._tier === 'advanced' ? ' selected' : ''}>Advanced rules (integrated)</option>
-        </select></td>
-      </tr>`).join('')}</tbody>
-    </table></div></div>
+    <div class="page-header"><h2>Settings</h2></div>
+    <div id="session-settings-alert"></div>
+    <div class="card">
+      <div class="card-header"><div>
+        <div class="card-title">Rules</div>
+        <div class="card-sub">These apply to this case only.</div>
+      </div></div>
+      <div class="form-group" style="max-width:720px">
+        <label>Advantage / disadvantage handling</label>
+        <select onchange="saveCaseAdvantage(${sessionId}, this.value, this)">
+          <option value="rol"${adv !== 'simple' ? ' selected' : ''}>RoL bonus/penalty die (roll the tens die twice)</option>
+          <option value="simple"${adv === 'simple' ? ' selected' : ''}>Simple (roll two d100s, take best/worst)</option>
+        </select>
+      </div>
+      <div class="form-group" style="max-width:720px">
+        <label>Ruleset</label>
+        <select onchange="saveCaseRuleset(${sessionId}, this.value, this)">
+          <option value="rol"${ruleset !== 'coc' ? ' selected' : ''}>Rivers of London (no SIZ; no HP/Build)</option>
+          <option value="coc"${ruleset === 'coc' ? ' selected' : ''}>CoC-style (SIZ, plus SIZ-derived HP &amp; Build)</option>
+        </select>
+      </div>
+      <div class="form-group" style="max-width:720px">
+        <label>Rules set (Rules tab &amp; AI Support)</label>
+        <select onchange="saveCaseRulesTier(${sessionId}, this.value, this)">
+          <option value="basic"${tier !== 'advanced' ? ' selected' : ''}>Basic rules</option>
+          <option value="advanced"${tier === 'advanced' ? ' selected' : ''}>Advanced rules (integrated)</option>
+        </select>
+      </div>
+    </div>
 
     <div class="card">
       <div class="card-header"><div>
-        <div class="card-title">Portrait style (per case)</div>
-        <div class="card-sub">The art-style half of the auto-generated portrait prompt. Leave blank to use the built-in default (Art Nouveau / Mucha). Try e.g. <em>“photorealistic studio headshot, soft lighting”</em> or <em>“loose graphite pencil sketch on toned paper”</em>. Character framing (bust, headroom) and quality safeguards are kept automatically.</div>
+        <div class="card-title">Portrait style</div>
+        <div class="card-sub">The art-style half of the auto-generated portrait prompt. The field starts with the built-in default — edit it freely, e.g. <em>“photorealistic studio headshot, soft lighting”</em> or <em>“loose graphite pencil sketch on toned paper”</em>. Character framing (bust, headroom) and quality safeguards are kept automatically. <strong>Reset to default</strong> restores the default text.</div>
       </div></div>
-      ${sessions.map((s) => `<div class="form-group" style="max-width:720px">
-        <label>${esc(s.name)}</label>
-        <textarea id="case-style-${s.id}" rows="2" spellcheck="false" placeholder="Default: Art Nouveau / Mucha painterly illustration">${esc(s._style || '')}</textarea>
+      <div class="form-group" style="max-width:720px">
+        <textarea id="case-style-${sessionId}" rows="3" spellcheck="false" data-default="${esc(def)}">${esc(styleVal)}</textarea>
         <div style="display:flex;gap:0.5rem;align-items:center;margin-top:0.4rem">
-          <button class="btn btn-sm btn-primary" onclick="saveCasePortraitStyle(${s.id}, this)">Save</button>
-          <button class="btn btn-sm" onclick="saveCasePortraitStyle(${s.id}, this, true)">Reset to default</button>
+          <button class="btn btn-sm btn-primary" onclick="saveCasePortraitStyle(${sessionId}, this)">Save</button>
+          <button class="btn btn-sm" onclick="saveCasePortraitStyle(${sessionId}, this, true)">Reset to default</button>
         </div>
-      </div>`).join('')}
-    </div>` : '<div class="empty"><p>No GM case files yet.</p></div>'}`;
+      </div>
+    </div>`;
 }
+window.renderSessionSettings = renderSessionSettings;
 
 async function saveCasePortraitStyle(sessionId, btn, reset) {
   const ta = el(`case-style-${sessionId}`);
-  const style = reset ? '' : ((ta && ta.value) || '').trim();
+  // Reset puts the actual default text back in the field; Save stores the
+  // literal field content (no empty→default coercion behind the scenes).
+  if (reset && ta) ta.value = ta.dataset.default || '';
+  const style = (ta && ta.value) || '';
   btn.disabled = true;
   try {
     const r = await api.setSessionSettings(sessionId, { portrait_style: style });
-    if (ta) ta.value = r.portrait_style || '';
-    showAlert(reset ? 'Reset to the default portrait style.' : 'Portrait style saved.', 'success', 'cases-alert');
+    const def = (ta && ta.dataset.default) || '';
+    if (ta) ta.value = (r.portrait_style && r.portrait_style.trim()) ? r.portrait_style : def;
+    showAlert(reset ? 'Reset to the default portrait style.' : 'Portrait style saved.', 'success', 'session-settings-alert');
   } catch (e) {
-    showAlert(e.message, 'danger', 'cases-alert');
+    showAlert(e.message, 'danger', 'session-settings-alert');
   } finally {
     btn.disabled = false;
   }
@@ -5668,9 +5933,9 @@ async function saveCaseAdvantage(sessionId, mode, sel) {
   sel.disabled = true;
   try {
     await api.setSessionSettings(sessionId, { advantage_mode: mode });
-    showAlert('Saved.', 'success', 'cases-alert');
+    showAlert('Saved.', 'success', 'session-settings-alert');
   } catch (e) {
-    showAlert(e.message, 'danger', 'cases-alert');
+    showAlert(e.message, 'danger', 'session-settings-alert');
   } finally {
     sel.disabled = false;
   }
@@ -5681,9 +5946,9 @@ async function saveCaseRuleset(sessionId, ruleset, sel) {
   sel.disabled = true;
   try {
     await api.setSessionSettings(sessionId, { ruleset });
-    showAlert('Saved. Re-open a character sheet for this case to see the change.', 'success', 'cases-alert');
+    showAlert('Saved. Re-open a character sheet for this case to see the change.', 'success', 'session-settings-alert');
   } catch (e) {
-    showAlert(e.message, 'danger', 'cases-alert');
+    showAlert(e.message, 'danger', 'session-settings-alert');
   } finally {
     sel.disabled = false;
   }
@@ -5696,9 +5961,9 @@ async function saveCaseRulesTier(sessionId, tier, sel) {
     await api.setSessionSettings(sessionId, { rules_tier: tier });
     showAlert(tier === 'advanced'
       ? 'Saved. Rules-grounded AI Support for this case now uses the advanced (integrated) rules.'
-      : 'Saved. Rules-grounded AI Support for this case now uses the basic rules.', 'success', 'cases-alert');
+      : 'Saved. Rules-grounded AI Support for this case now uses the basic rules.', 'success', 'session-settings-alert');
   } catch (e) {
-    showAlert(e.message, 'danger', 'cases-alert');
+    showAlert(e.message, 'danger', 'session-settings-alert');
   } finally {
     sel.disabled = false;
   }

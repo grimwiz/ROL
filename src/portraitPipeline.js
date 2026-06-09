@@ -6,6 +6,7 @@ const {
   effectiveComfyuiEditModel,
   freeOllama
 } = require('./scenarioInfo');
+const { DEFAULT_PORTRAIT_STYLE } = require('./portraitDefaults');
 
 const QWEN_IMAGE_MODELS = {
   textEncoder: process.env.COMFYUI_QWEN_TEXT_ENCODER || 'qwen_2.5_vl_7b_fp8_scaled.safetensors',
@@ -14,7 +15,7 @@ const QWEN_IMAGE_MODELS = {
 
 const PORTRAIT_NEGATIVE_PROMPT = '低分辨率，低画质，肢体畸形，手指畸形，画面过饱和，蜡像感，人脸无细节，过度光滑，画面具有AI感。构图混乱。文字模糊，扭曲';
 const PORTRAIT_COMPOSITION = 'serious expression, three-quarters view, head-and-shoulders portrait, full head and hair fully visible with only a little space above the hair, the figure comfortably filling the frame, clear face, clear eyes';
-const DEFAULT_PORTRAIT_STYLE = 'Art Nouveau portrait styling with a restrained Art Deco frame around the portrait, clean elegant linework, muted earthy palette with antique gold accents, painterly illustration, not photorealistic, not modern snapshot';
+// DEFAULT_PORTRAIT_STYLE imported from ./portraitDefaults (single source) above.
 
 const PORTRAIT_RESTYLE_WORKFLOW_TEMPLATE = {
   '1': { class_type: 'UNETLoader', inputs: { unet_name: 'qwen_image_edit_2511_fp8mixed.safetensors', weight_dtype: 'default' } },

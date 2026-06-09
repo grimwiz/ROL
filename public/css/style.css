@@ -905,8 +905,14 @@ tr:hover td { background: var(--bg3); }
 
 .summary-content { color: var(--text); line-height: 1.55; }
 .summary-content p { margin: 0 0 0.7rem; }
+/* clear: both — a floated figure taller than its section's prose overhangs the
+   section boundary, and flow-root only contains the float at the body edge, not
+   between headings. Without this, the overhang spills past the next heading and
+   each following section steps further right. Clearing at headings starts every
+   section below the previous figure; prose within a section still wraps beside
+   it. (The taller the figure — e.g. with a caption — the worse the overhang.) */
 .summary-content .summary-h,
-.scenario-body .summary-h { color: var(--accent2); margin: 1.1rem 0 0.45rem; line-height: 1.3; scroll-margin-top: 1rem; }
+.scenario-body .summary-h { clear: both; color: var(--accent2); margin: 1.1rem 0 0.45rem; line-height: 1.3; scroll-margin-top: 1rem; }
 .summary-content .summary-h1,
 .summary-content .summary-h2,
 .scenario-body .summary-h1,
@@ -1125,9 +1131,12 @@ tr:hover td { background: var(--bg3); }
 }
 /* Filename-tagged inline layout: title block sits above, figure floats
    left/right, prose wraps beside it. The natural CSS pattern.
-   Stepping (figure overflowing into the next card) is prevented by
-   `display: flow-root` on the cards/body — that creates a Block Formatting
-   Context that contains the float without needing a clearfix hack. */
+   Two containment layers are needed:
+   - `display: flow-root` on the cards/body (below) is a Block Formatting
+     Context that stops a float overflowing past the CARD boundary.
+   - `clear: both` on .summary-h headings (see the heading rule above) stops a
+     tall figure overflowing past the next SECTION heading inside one body —
+     flow-root alone does not cover that, which caused a right-stepping cascade. */
 .scenario-figure.sf-full { width: 100%; margin: 0.75rem 0; }
 .scenario-figure.sf-left,
 .scenario-figure.sf-right { width: var(--sf-w, 30%); max-width: 70%; }

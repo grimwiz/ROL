@@ -160,6 +160,8 @@ const api = (() => {
     getComfyModels: () => req('GET', '/comfy/models'),
     setComfyModels: (patch) => req('PUT', '/comfy/models', patch || {}),
     generateHandout: (sessionId, prompt, size) => req('POST', `/sessions/${sessionId}/handouts/generate`, { prompt, size }),
+    editGraphic: (sessionId, data) => req('POST', `/sessions/${sessionId}/graphics/edit`, data),
+    interruptComfy: (data) => req('POST', '/portrait/interrupt', data || {}),
     saveHandout: (sessionId, ref) => req('POST', `/sessions/${sessionId}/handouts/save`, ref),
     setAssetVisibility: (sessionId, path, visibility) => req('POST', `/sessions/${sessionId}/assets/visibility`, { path, visibility }),
     createSessionFile: (sessionId, data) => req('POST', `/sessions/${sessionId}/files`, data),

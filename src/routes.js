@@ -77,6 +77,7 @@ const {
   comfyModelsConfig
 } = require('./scenarioInfo');
 const sessionRolls = require('./sessionRolls');
+const { DEFAULT_PORTRAIT_STYLE } = require('./portraitDefaults');
 const { resetCanonicalCase } = require('./canonicalContent');
 const { buildPdf } = require('../scripts/export-character-sheet');
 const { sheetScope, sheetHasCase, addCaseToScope, scopeNameKey } = require('./characterScope');
@@ -1647,7 +1648,9 @@ router.post('/sessions/:id/chat/export', requireGM, (req, res) => {
 router.get('/sessions/:id/settings', requireGM, (req, res) => {
   const session = getAccessibleSession(req, res, req.params.id);
   if (!session) return;
-  res.json(sessionRolls.getSettings(db, session.id));
+  // Surface the built-in portrait-style default so the UI can pre-fill the field
+  // with the actual text (editable) rather than a placeholder + hidden fallback.
+  res.json({ ...sessionRolls.getSettings(db, session.id), portrait_style_default: DEFAULT_PORTRAIT_STYLE });
 });
 
 router.put('/sessions/:id/settings', requireGM, (req, res) => {
@@ -2555,11 +2558,10 @@ const PORTRAIT_NEGATIVE_PROMPT = '低分辨率，低画质，肢体畸形，手�
 // Framing/composition is held fixed so every case's portrait still crops
 // cleanly into the printed character-sheet box, whatever the art style.
 const PORTRAIT_COMPOSITION = 'serious expression, three-quarters view, bust portrait, full head and hair fully visible, generous space above the head, clear face, clear eyes';
-// The art-style half of the prompt. Per-case overridable via session_settings
-// .portrait_style; this is the fallback when a case has none set. Note the
-// "not photorealistic" clause lives here (it is style-specific), unlike the
-// style-agnostic quality negatives in PORTRAIT_NEGATIVE_PROMPT.
-const DEFAULT_PORTRAIT_STYLE = 'Art Nouveau portrait styling with a restrained Art Deco frame around the portrait, clean elegant linework, muted earthy palette with antique gold accents, painterly illustration, not photorealistic, not modern snapshot';
+// The art-style half of the prompt lives in ./portraitDefaults (single source,
+// imported above). It is materialised into each case's session_settings
+// .portrait_style, so reads use the stored value; this constant is only the
+// seed for that and a last-ditch guard for direct-style callers.
 // Aspect-neutral art style for index-entity graphics (places, objects, scenes,
 // people). Deliberately carries NO "portrait", framing, or composition wording
 // — those break sites and objects. Conveys only medium/era/palette.
@@ -3122,6 +3124,99 @@ router.post('/sessions/:id/handouts/save', requireGM, async (req, res, next) => 
     res.json({ ok: true, ...saved });
   } catch (e) {
     if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// ── AI Edit image (img2img) ──────────────────────────────────────────────────
+// Second-stage edit of an EXISTING session graphic: take the picture as the
+// basis and apply the GM's free-text instruction (e.g. "make this a nighttime
+// scene") via the Qwen image-edit workflow. Unlike /handouts/generate (text →
+// image), this keeps the source pixels as the latent basis. Returns the ComfyUI
+// passthrough (prompt_id); the client polls /portrait/history and saves the
+// result via /handouts/save (so the prompt sidecar is written there).
+router.post('/sessions/:id/graphics/edit', requireGM, async (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const relPath = String((req.body && req.body.path) || '').trim();
+    const editPrompt = String((req.body && req.body.prompt) || '').trim();
+    if (!relPath) return res.status(400).json({ error: 'Missing image path.' });
+    if (!editPrompt) return res.status(400).json({ error: 'An edit prompt is required.' });
+    if (await rejectIfAiBusy(res)) return;
+
+    const editModel = effectiveComfyuiEditModel();
+    const missingAssets = await ensureQwenPortraitAssets(editModel);
+    if (missingAssets.length) {
+      return res.status(503).json({ error: `Qwen image-edit workflow is not fully installed in ComfyUI: missing ${missingAssets.join(', ')}.` });
+    }
+
+    // Resolve the existing graphic server-side (GM may edit GM-only assets).
+    const abs = resolveSessionAssetPath(session.id, relPath, db, true);
+    if (!abs) return res.status(404).json({ error: 'Image not found in this case.' });
+    const ext = (path.extname(abs).slice(1).toLowerCase() || 'png').replace('jpeg', 'jpg');
+    const uploadedName = await uploadImageToComfy(fs.readFileSync(abs), ext);
+
+    // With the Plus reference conditioning the edit wants denoise 1.0; lowering
+    // it pulls back toward the literal source. Default 1.0, floor 0.6.
+    let denoise = parseFloat(req.body && req.body.strength);
+    if (!Number.isFinite(denoise)) denoise = 1.0;
+    denoise = Math.min(1, Math.max(0.6, denoise));
+
+    const seed = Math.floor(Math.random() * 2 ** 31);
+    const workflow = JSON.parse(JSON.stringify(PORTRAIT_RESTYLE_WORKFLOW_TEMPLATE));
+    workflow['1'].inputs.unet_name = editModel;
+    workflow['11'].inputs.image = uploadedName;
+    workflow['4'].inputs.prompt = editPrompt; // GM's raw instruction, no portrait framing
+    workflow['8'].inputs.seed = seed;
+    workflow['8'].inputs.denoise = denoise;
+
+    logLine('graphic.edit', { userId: req.user.id, sessionId: session.id, path: relPath, sourceImage: uploadedName, seed, denoise, prompt: editPrompt });
+    await prepareGpuForImage();
+    touchComfyActivity();
+    const upstream = await fetch(`${effectiveComfyuiUrl()}/prompt`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ prompt: workflow })
+    });
+    const text = await upstream.text();
+    res.status(upstream.status)
+       .type(upstream.headers.get('content-type') || 'application/json')
+       .send(text);
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// Real stop for a ComfyUI image job. ComfyUI's POST /interrupt aborts the
+// prompt currently executing on the GPU; passing the prompt_id also lets us
+// drop it from the pending queue if it hasn't started yet. Best-effort: a 502
+// is returned if ComfyUI is unreachable so the client can report honestly
+// rather than imply the job stopped when it didn't.
+router.post('/portrait/interrupt', requireGM, async (req, res, next) => {
+  try {
+    const promptId = String((req.body && req.body.promptId) || '').trim();
+    const base = effectiveComfyuiUrl();
+    // Remove from the pending queue first (no-op if it is already running/done).
+    if (promptId) {
+      try {
+        await fetch(`${base}/queue`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ delete: [promptId] })
+        });
+      } catch (_) { /* best-effort */ }
+    }
+    // Interrupt whatever is currently executing on the GPU.
+    let ok = false;
+    try {
+      const upstream = await fetch(`${base}/interrupt`, { method: 'POST' });
+      ok = upstream.ok;
+    } catch (_) { ok = false; }
+    logLine('comfy.interrupt', { userId: req.user.id, promptId, ok });
+    res.status(ok ? 200 : 502).json({ ok });
+  } catch (e) {
     next(e);
   }
 });

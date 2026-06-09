@@ -2086,8 +2086,14 @@ function imagesForName(name, imgs) {
 function mdHasImage(md, file) {
   return String(md || '').includes(`](${file})`);
 }
-function imageLine(caption, file) {
-  return `![${String(caption || '').replace(/[\[\]]/g, '')}](${file})`;
+// Auto-injected images carry NO caption: the matcher only attaches a file whose
+// name prefix-matches the heading/entity it sits under, so any caption would just
+// echo that heading — redundant, and a visible <figcaption> crowds the prose. A
+// GM's own `![caption](file)` typed in source markdown is left alone (it is not
+// a standalone auto-injected line). Empty alt → the client falls back to the
+// filename for accessibility.
+function imageLine(file) {
+  return `![](${file})`;
 }
 
 // Remove EVERY standalone image line. Image delivery is fully deterministic:
@@ -2111,10 +2117,10 @@ function injectImagesIntoContent(content, itemName, imgs) {
   const lines = md.split('\n');
   const out = [];
   let anyHeadingMatched = false;
-  const pushImages = (caption, matches) => {
+  const pushImages = (matches) => {
     const pending = matches.filter((im) => !mdHasImage(out.join('\n'), im.file) && !mdHasImage(md, im.file));
     if (!pending.length) return false;
-    for (const im of pending) out.push('', imageLine(caption, im.file), '');
+    for (const im of pending) out.push('', imageLine(im.file), '');
     return true;
   };
 
@@ -2125,7 +2131,7 @@ function injectImagesIntoContent(content, itemName, imgs) {
     const h = line.trim().match(/^#{2,4}\s+(.*?)\s*#*$/);
     if (h) {
       const matches = imagesForName(h[1], imgs);
-      if (matches.length && pushImages(h[1].trim(), matches)) {
+      if (matches.length && pushImages(matches)) {
         anyHeadingMatched = true;
       }
     }
@@ -2142,13 +2148,13 @@ function injectImagesIntoContent(content, itemName, imgs) {
       for (const line of itemLines) {
         next.push(line);
         if (!placed && line.trim().match(/^#{2,4}\s+(.*?)\s*#*$/)) {
-          for (const im of matches) next.push('', imageLine(itemName, im.file), '');
+          for (const im of matches) next.push('', imageLine(im.file), '');
           placed = true;
         }
       }
       md = placed
         ? next.join('\n')
-        : `${matches.map((im) => imageLine(itemName, im.file)).join('\n\n')}\n\n${md}`;
+        : `${matches.map((im) => imageLine(im.file)).join('\n\n')}\n\n${md}`;
     }
   }
   return md;

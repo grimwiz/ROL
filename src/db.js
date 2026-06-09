@@ -6,6 +6,7 @@ const JOURNAL_MODE = String(process.env.SQLITE_JOURNAL_MODE || 'DELETE').toUpper
 const ALLOWED_JOURNAL_MODES = new Set(['DELETE', 'TRUNCATE', 'PERSIST', 'MEMORY', 'WAL', 'OFF']);
 
 const fs = require('fs');
+const { DEFAULT_PORTRAIT_STYLE } = require('./portraitDefaults');
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 
 const db = new Database(DB_PATH);
@@ -132,6 +133,14 @@ if (setColumns.length && !setColumns.some((c) => c.name === 'ruleset')) {
 const setColumns2 = db.prepare("PRAGMA table_info(session_settings)").all();
 if (setColumns2.length && !setColumns2.some((c) => c.name === 'portrait_style')) {
   db.exec("ALTER TABLE session_settings ADD COLUMN portrait_style TEXT");
+}
+// Backfill the built-in default into any empty/NULL portrait_style so the column
+// is a complete source of truth — readers use the stored value as-is rather than
+// re-deriving the default at the UI or portrait-builder layer.
+if (db.prepare("PRAGMA table_info(session_settings)").all().length) {
+  db.prepare(
+    "UPDATE session_settings SET portrait_style = ? WHERE portrait_style IS NULL OR TRIM(portrait_style) = ''"
+  ).run(DEFAULT_PORTRAIT_STYLE);
 }
 // rules_tier selects the basic vs advanced (integrated) rules corpus per case,
 // used by the rules-grounded AI chat. Existing cases default to 'basic'.

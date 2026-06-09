@@ -6,6 +6,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { getSessionById, ensureSessionDataFolders } = require('./scenarioInfo');
 const { sheetHasCase, sheetScope } = require('./characterScope');
+const { DEFAULT_PORTRAIT_STYLE } = require('./portraitDefaults');
 
 // Resolve "the character sheet this user owns in this case" to a character_sheets.id.
 // Returns null if the user has no character scoped to that case.
@@ -105,8 +106,12 @@ function getSettings(db, sessionId) {
     ruleset: (row && row.ruleset) || 'rol',
     // basic ⇒ core rules corpus; advanced ⇒ integrated advanced corpus.
     rules_tier: (row && row.rules_tier) === 'advanced' ? 'advanced' : 'basic',
-    // Empty string ⇒ caller uses the built-in default portrait style.
-    portrait_style: (row && row.portrait_style) || ''
+    // Always a concrete value: the built-in default fills in for an empty/absent
+    // row, so every reader (UI field, portrait builder) uses what's returned
+    // here directly — no second default-substitution downstream.
+    portrait_style: (row && row.portrait_style && row.portrait_style.trim())
+      ? row.portrait_style
+      : DEFAULT_PORTRAIT_STYLE
   };
 }
 
@@ -121,9 +126,11 @@ function setSettings(db, sessionId, patch) {
     ? 'coc' : 'rol';
   const rulesTier = (patch.rules_tier !== undefined ? patch.rules_tier : cur.rules_tier) === 'advanced'
     ? 'advanced' : 'basic';
+  // Persist a concrete style: an empty submission stores the built-in default
+  // rather than a blank, so the DB column is the single source of truth.
   const portraitStyle = (patch.portrait_style !== undefined
     ? String(patch.portrait_style == null ? '' : patch.portrait_style)
-    : cur.portrait_style).trim();
+    : cur.portrait_style).trim() || DEFAULT_PORTRAIT_STYLE;
   db.prepare(`
     INSERT INTO session_settings (session_id, advantage_mode, ruleset, rules_tier, portrait_style, updated_at)
     VALUES (?, ?, ?, ?, ?, datetime('now'))
