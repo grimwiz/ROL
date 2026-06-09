@@ -33,8 +33,12 @@ Multi-user GM/player access, per-case character sheets, NPC sheets surfaced acro
 ## Setup
 
 ```bash
-# Install/update dependencies from package-lock.json
-npm install
+# Install the EXACT, locked dependencies. Use `npm ci`, not `npm install`:
+# ci installs precisely what package-lock.json pins (verifying every integrity
+# hash) and never silently bumps a version, so deploys can't drift. On a server
+# add --omit=dev (the Excalidraw build tooling is dev-only; the built bundle is
+# committed under public/vendor/, so nothing needs building at deploy time).
+npm ci                 # server deploy: npm ci --omit=dev
 
 # (Optional) Set environment variables — see below
 export JWT_SECRET="a-long-random-secret-string"
@@ -56,7 +60,9 @@ npm run scenario:regenerate -- --scenario 1
 
 The app will be available on `http://localhost:3000` (or your configured port).
 
-Node does not auto-install missing packages on server start. Re-run `npm install` after pulling changes that update `package.json` or `package-lock.json`.
+Node does not auto-install missing packages on server start. Re-run `npm ci --omit=dev` after pulling changes that update `package.json` or `package-lock.json`. Prefer `scripts/deploy.sh`, which does the pinned pull + install for you.
+
+To take a dependency security update, do it deliberately: bump locally, run `npm audit`, review, commit the updated `package-lock.json` (and rebuild the Excalidraw bundle if a vendored dep changed: `npm run build:excalidraw`), then deploy. Updates only land when you commit a new lockfile — never automatically.
 
 ## First run
 
