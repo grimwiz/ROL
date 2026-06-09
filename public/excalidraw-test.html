@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Excalidraw vendor test</title>
+  <link rel="stylesheet" href="/vendor/excalidraw/host.css" />
+  <style>
+    html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; }
+    #bar { padding: 12px; display: flex; gap: 10px; align-items: center; }
+    /* Full-screen editor overlay used by window.ROLExcalidraw.open() */
+    .rol-exc-host, .rol-exc-overlay { position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; background: #fff; }
+    .rol-exc-toolbar { display: flex; gap: 8px; align-items: center; padding: 8px 12px; border-bottom: 1px solid #ddd; }
+    .rol-exc-title { font-weight: 600; }
+    .rol-exc-error { color: #b00020; }
+    .rol-exc-spacer { flex: 1; }
+    .rol-exc-canvas { flex: 1; min-height: 0; }
+    .rol-exc-toolbar button.primary { font-weight: 600; }
+  </style>
+  <!-- Point Excalidraw at the vendored fonts/locales (offline, no CDN). -->
+  <script>window.EXCALIDRAW_ASSET_PATH = "/vendor/excalidraw/";</script>
+</head>
+<body>
+  <div id="bar">
+    <button id="open">Open blank editor</button>
+    <span id="status">Module loading…</span>
+  </div>
+  <script type="module">
+    import "/vendor/excalidraw/host.js";
+    document.getElementById("status").textContent =
+      window.ROLExcalidraw ? "Ready — click Open." : "FAILED to expose ROLExcalidraw (check console).";
+  </script>
+  <script>
+    document.getElementById("open").addEventListener("click", () => {
+      if (!window.ROLExcalidraw) { alert("Editor not loaded — check the browser console."); return; }
+      window.ROLExcalidraw.open({
+        title: "Test diagram",
+        scene: null,
+        onSave: async ({ sceneJson, blob }) => {
+          console.log("scene JSON bytes:", sceneJson.length, "PNG bytes:", blob.size);
+          // Show the exported PNG so you can confirm the round-trip works.
+          window.open(URL.createObjectURL(blob), "_blank");
+        },
+      });
+    });
+  </script>
+</body>
+</html>

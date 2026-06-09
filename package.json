@@ -14,7 +14,8 @@
     "npcs:export": "node scripts/export-rulebook-npcs.js",
     "npcs:reimport": "node scripts/reimport-npcs.js",
     "portrait:restyle": "node scripts/restyle-character-portrait.js",
-    "compare:sheets": "python3 scripts/compare-character-sheet-dbs.py"
+    "compare:sheets": "python3 scripts/compare-character-sheet-dbs.py",
+    "build:excalidraw": "node scripts/build-excalidraw.mjs"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -24,5 +25,11 @@
     "jsonwebtoken": "^9.0.2",
     "markdown-it": "^14.1.1",
     "pdf-lib": "^1.17.1"
+  },
+  "devDependencies": {
+    "@excalidraw/excalidraw": "^0.18.1",
+    "esbuild": "^0.28.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }

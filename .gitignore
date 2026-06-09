@@ -1,5 +1,8 @@
 /node_modules
 /data/
+# Build artifact: regenerated from devDeps via `npm run build:excalidraw`
+# (handled like node_modules — built on deploy, not tracked).
+/public/vendor/
 /comfyui-output.png
 /private/
 Rivers_of_London/test_write
