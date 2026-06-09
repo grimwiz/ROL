@@ -15,7 +15,8 @@
     "npcs:reimport": "node scripts/reimport-npcs.js",
     "portrait:restyle": "node scripts/restyle-character-portrait.js",
     "compare:sheets": "python3 scripts/compare-character-sheet-dbs.py",
-    "build:excalidraw": "node scripts/build-excalidraw.mjs"
+    "build:excalidraw": "node scripts/build-excalidraw.mjs",
+    "audit:all": "bash scripts/security-audit.sh"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
