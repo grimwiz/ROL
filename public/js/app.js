@@ -3798,7 +3798,6 @@ async function aiEditImage(sessionId, relPath, { slug = '', statusId = '' } = {}
     </div>
     <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem;flex-wrap:wrap">
       <button class="btn btn-primary" id="aiedit-gen">Generate</button>
-      <button class="btn btn-sm" id="aiedit-saveprompt" title="Save this prompt onto the source picture for next time">Save prompt</button>
       <span id="aiedit-status" style="font-size:.85em;opacity:.8"></span>
     </div>
     <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-start">
@@ -3819,7 +3818,6 @@ async function aiEditImage(sessionId, relPath, { slug = '', statusId = '' } = {}
     </div>`, (root) => {
     const promptEl = root.querySelector('#aiedit-prompt');
     const genBtn = root.querySelector('#aiedit-gen');
-    const savePromptBtn = root.querySelector('#aiedit-saveprompt');
     const keepBtn = root.querySelector('#aiedit-keep');
     const cancelBtn = root.querySelector('#aiedit-cancel');
     const previewEl = root.querySelector('#aiedit-preview');
@@ -3847,7 +3845,7 @@ async function aiEditImage(sessionId, relPath, { slug = '', statusId = '' } = {}
       cancelled = false;
       currentPromptId = '';
       setRunning(true);
-      keepBtn.disabled = true; savePromptBtn.disabled = true;
+      keepBtn.disabled = true;
       llmPendingBegin('AI edit image');
       setStatus('Editing… (can take ~1 min on first run)');
       try {
@@ -3876,7 +3874,6 @@ async function aiEditImage(sessionId, relPath, { slug = '', statusId = '' } = {}
         if (!(e && e.cancelled)) setStatus(e.message || 'AI edit failed');
       } finally {
         eitBusy = false;
-        savePromptBtn.disabled = false;
         setRunning(false);
         llmPendingEnd();
       }
@@ -3893,21 +3890,6 @@ async function aiEditImage(sessionId, relPath, { slug = '', statusId = '' } = {}
         setStatus(r && r.ok ? 'Stopped.' : 'Stopped waiting — but ComfyUI didn’t confirm the interrupt; the job may still finish.');
       } catch (_) {
         setStatus('Stopped waiting — but couldn’t reach ComfyUI to stop the job.');
-      }
-    });
-    // Persist the current prompt onto the SOURCE picture's sidecar (same as the
-    // Index manager's "Save prompt"), so it's remembered without regenerating.
-    savePromptBtn.addEventListener('click', async () => {
-      const p = (promptEl.value || '').trim();
-      savePromptBtn.disabled = true;
-      setStatus('Saving prompt…');
-      try {
-        await api.saveSessionFilePrompt(sessionId, relPath, p);
-        setStatus('Prompt saved to the source picture.');
-      } catch (e) {
-        setStatus(e.message || 'Could not save the prompt.');
-      } finally {
-        savePromptBtn.disabled = false;
       }
     });
     cancelBtn.addEventListener('click', () => { root.remove(); report('Discarded — nothing was saved.'); });
