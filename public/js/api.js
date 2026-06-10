@@ -163,6 +163,8 @@ const api = (() => {
     editGraphic: (sessionId, data) => req('POST', `/sessions/${sessionId}/graphics/edit`, data),
     interruptComfy: (data) => req('POST', '/portrait/interrupt', data || {}),
     saveHandout: (sessionId, ref) => req('POST', `/sessions/${sessionId}/handouts/save`, ref),
+    saveDiagram: (sessionId, data) => req('POST', `/sessions/${sessionId}/diagrams/save`, data),
+    getDiagramScene: (sessionId, path) => req('GET', `/sessions/${sessionId}/diagrams/scene?path=${encodeURIComponent(path)}`),
     setAssetVisibility: (sessionId, path, visibility) => req('POST', `/sessions/${sessionId}/assets/visibility`, { path, visibility }),
     createSessionFile: (sessionId, data) => req('POST', `/sessions/${sessionId}/files`, data),
     replaceSessionFile: (sessionId, data) => req('POST', `/sessions/${sessionId}/files/replace`, data),

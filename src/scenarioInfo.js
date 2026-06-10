@@ -1099,6 +1099,11 @@ function listSessionSourceFiles(session, options = {}) {
         const sidecar = `${fullPath}.prompt.txt`;
         if (fs.existsSync(sidecar)) record.prompt = fs.readFileSync(sidecar, 'utf8').trim();
       } catch { /* non-fatal */ }
+      // A "<file>.excalidraw.json" sidecar means this graphic was drawn in the
+      // diagram editor and can be reopened/edited there (vs. a flat raster).
+      try {
+        if (fs.existsSync(`${fullPath}.excalidraw.json`)) record.scene = true;
+      } catch { /* non-fatal */ }
     }
     files.push(record);
   }
@@ -3380,11 +3385,18 @@ function revertScenarioSection(sessionId, sectionId, db) {
 // Persist a GM-generated handout image into the session's GM-only gallery
 // (GM/Gallery). Never visible to players until the GM moves it to the
 // player gallery from Edit Files.
-function saveSessionHandout(sessionId, db, { bytes, name, ext, prompt, replacePath } = {}) {
+function saveSessionHandout(sessionId, db, { bytes, name, ext, prompt, replacePath, scene } = {}) {
   const session = getSessionById(db, sessionId);
   if (!session) { const e = new Error('Session not found'); e.statusCode = 404; throw e; }
   if (!bytes || !bytes.length) { const e = new Error('No image data to save'); e.statusCode = 400; throw e; }
   const paths = ensureSessionDataFolders(session);
+  // An editor-made diagram round-trips through a "<file>.excalidraw.json" scene
+  // sidecar so it can be reopened and re-edited; null/empty means a flat image.
+  const sceneJson = scene == null ? '' : String(scene).trim();
+  const writeScene = (target) => {
+    if (sceneJson) fs.writeFileSync(`${target}.excalidraw.json`, sceneJson, 'utf8');
+    else if (fs.existsSync(`${target}.excalidraw.json`)) { try { fs.unlinkSync(`${target}.excalidraw.json`); } catch { /* non-fatal */ } }
+  };
   // Regenerate-in-place: overwrite an existing in-scope graphic's bytes,
   // keeping its filename (so the index injector keeps matching it) and
   // visibility; refresh its prompt sidecar too.
@@ -3397,6 +3409,7 @@ function saveSessionHandout(sessionId, db, { bytes, name, ext, prompt, replacePa
     fs.writeFileSync(target, bytes);
     const pTxt = String(prompt == null ? '' : prompt).trim();
     if (pTxt) fs.writeFileSync(`${target}.prompt.txt`, pTxt + '\n', 'utf8');
+    writeScene(target);
     return { path: repoRelative(target), file: path.basename(target), replaced: true };
   }
   const dir = paths.gmGallery;
@@ -3415,18 +3428,37 @@ function saveSessionHandout(sessionId, db, { bytes, name, ext, prompt, replacePa
   if (promptText) {
     fs.writeFileSync(`${fullPath}.prompt.txt`, promptText + '\n', 'utf8');
   }
+  writeScene(fullPath);
   return { path: repoRelative(fullPath), file };
 }
 
+// Read back the editable Excalidraw scene for a diagram graphic, resolving the
+// path inside the case folder (GM-only — the editor is a GM tool). Returns the
+// scene JSON string, or null if the graphic has no scene sidecar.
+function readSessionDiagramScene(sessionId, db, requestPath) {
+  const abs = resolveSessionAssetPath(sessionId, requestPath, db, true);
+  if (!abs) return null;
+  const sidecar = `${abs}.excalidraw.json`;
+  if (!fs.existsSync(sidecar)) return null;
+  try { return fs.readFileSync(sidecar, 'utf8'); } catch { return null; }
+}
+
 // Toggle a session asset between GM-only and player-visible by moving it
-// Carry a graphic's "<file>.prompt.txt" sidecar with the image whenever the
-// image moves (visibility toggle, rename). Without this the prompt is stranded
-// in the old folder and the editor shows a blank box. Best-effort.
+// Suffixes of the per-graphic sidecars kept alongside an image but out of the
+// asset listings: the generating prompt and (for editor-made diagrams) the
+// editable Excalidraw scene. They must travel with the image on every move.
+const GRAPHIC_SIDECAR_SUFFIXES = ['.prompt.txt', '.excalidraw.json'];
+
+// Carry a graphic's sidecars with the image whenever it moves (visibility
+// toggle, rename). Without this the prompt/scene is stranded in the old folder
+// and the editor shows a blank box. Best-effort.
 function carryPromptSidecar(src, dest) {
-  try {
-    const from = `${src}.prompt.txt`;
-    if (fs.existsSync(from)) fs.renameSync(from, `${dest}.prompt.txt`);
-  } catch { /* non-fatal */ }
+  for (const suffix of GRAPHIC_SIDECAR_SUFFIXES) {
+    try {
+      const from = `${src}${suffix}`;
+      if (fs.existsSync(from)) fs.renameSync(from, `${dest}${suffix}`);
+    } catch { /* non-fatal */ }
+  }
 }
 
 // between the GM and player areas, which is what classifySessionFileVisibility
@@ -3592,8 +3624,10 @@ function deleteSessionFile(sessionId, db, { path: requestPath } = {}) {
     const e = new Error('This file is structural and cannot be deleted'); e.statusCode = 400; throw e;
   }
   fs.unlinkSync(src);
-  const sidecar = `${src}.prompt.txt`;
-  if (fs.existsSync(sidecar)) { try { fs.unlinkSync(sidecar); } catch { /* non-fatal */ } }
+  for (const suffix of GRAPHIC_SIDECAR_SUFFIXES) {
+    const sidecar = `${src}${suffix}`;
+    if (fs.existsSync(sidecar)) { try { fs.unlinkSync(sidecar); } catch { /* non-fatal */ } }
+  }
   return { path: repoRelative(src), deleted: true };
 }
 
@@ -3784,6 +3818,7 @@ module.exports = {
   streamNpcChat,
   writeGmChatExport,
   saveSessionHandout,
+  readSessionDiagramScene,
   setSessionAssetVisibility,
   createSessionFile,
   replaceSessionFile,

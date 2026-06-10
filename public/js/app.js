@@ -3942,6 +3942,73 @@ function eitAiEdit(id) {
 }
 window.eitAiEdit = eitAiEdit;
 
+// ── Diagram editor (vendored Excalidraw) ─────────────────────────────────────
+// The 8.7MB editor bundle is loaded lazily on first use (not on every page) and
+// talks to us only through window.ROLExcalidraw.open(); see
+// scripts/excalidraw/entry.jsx. The asset path must be set before host.js runs.
+let _excalidrawLoad = null;
+function ensureExcalidraw() {
+  if (window.ROLExcalidraw) return Promise.resolve(window.ROLExcalidraw);
+  if (_excalidrawLoad) return _excalidrawLoad;
+  _excalidrawLoad = (async () => {
+    window.EXCALIDRAW_ASSET_PATH = '/vendor/excalidraw/';
+    if (!document.querySelector('link[data-excalidraw]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = '/vendor/excalidraw/host.css';
+      link.setAttribute('data-excalidraw', '');
+      document.head.appendChild(link);
+    }
+    await import('/vendor/excalidraw/host.js');
+    if (!window.ROLExcalidraw) throw new Error('Diagram editor failed to load.');
+    return window.ROLExcalidraw;
+  })();
+  _excalidrawLoad = _excalidrawLoad.catch((e) => { _excalidrawLoad = null; throw e; });
+  return _excalidrawLoad;
+}
+
+// Open the diagram editor. With relPath, reopens an existing editor-made diagram
+// (loads its scene) and overwrites it on save; without, creates a new GM-only
+// diagram in the case gallery. The saved PNG slots into the graphics manager.
+async function openDiagramEditor(sessionId, { relPath = '', title = 'Diagram' } = {}) {
+  let editor;
+  try {
+    editor = await ensureExcalidraw();
+  } catch (e) {
+    alert(e.message || 'Could not load the diagram editor.');
+    return;
+  }
+  let scene = null;
+  if (relPath) {
+    try { scene = await api.getDiagramScene(sessionId, relPath); }
+    catch { scene = null; } // missing/older diagram → start from a blank canvas
+  }
+  editor.open({
+    title,
+    scene,
+    onSave: async ({ sceneJson, blob }) => {
+      const png = await blobToDataUrl(blob);
+      await api.saveDiagram(sessionId, {
+        png,
+        scene: sceneJson,
+        name: relPath ? '' : 'diagram',
+        replace_path: relPath || undefined
+      });
+      await reloadCurrentSessionPanel();
+    }
+  });
+}
+window.openDiagramEditor = openDiagramEditor;
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(new Error('Could not read the exported image.'));
+    r.readAsDataURL(blob);
+  });
+}
+
 // Generate (or Regenerate in place) an entity's artifact via ComfyUI, then save
 // it. Mirrors the GM-chat handout flow but writes a title-slug filename so the
 // deterministic index injector attaches it.
@@ -4807,7 +4874,9 @@ function renderScenarioSourceEditor(sources) {
 function assetFilesPanelHtml(sources, editable = true) {
   const files = scenarioArray(sources.source_files)
     .filter((f) => f && (f.kind === 'graphic' || f.kind === 'pdf'));
-  if (!files.length) return '';
+  // Player view hides entirely when empty; the GM view always renders so the
+  // "New diagram" action is reachable even before any graphic exists.
+  if (!files.length && !editable) return '';
 
   // Player (read-only) view: a simple preview grid, Download only.
   if (!editable) {
@@ -4869,6 +4938,7 @@ function assetFilesPanelHtml(sources, editable = true) {
       <td class="eit-actions">
         ${isGraphic ? `<button class="btn btn-sm" onclick="efSaveAssetPrompt(${sid}, '${esc(f.path)}', '${id}-prompt')">Save prompt</button>` : ''}
         ${isGraphic ? `<button class="btn btn-sm" onclick="aiEditImage(${sid}, '${esc(f.path)}', {})" title="Edit this picture with an AI prompt (e.g. make it a nighttime scene) — saves a new copy">AI Edit</button>` : ''}
+        ${f.scene ? `<button class="btn btn-sm" onclick="openDiagramEditor(${sid}, { relPath: '${esc(f.path)}', title: '${esc(label)}' })" title="Reopen this diagram in the editor">Edit diagram</button>` : ''}
         ${visBtn}
         <a class="btn btn-sm" href="${esc(url)}?download=1" download>Download</a>
         <button class="btn btn-sm" onclick="efReplaceFile(${sid}, '${esc(f.path)}')">Replace</button>
@@ -4880,16 +4950,19 @@ function assetFilesPanelHtml(sources, editable = true) {
 
   return `
     <div class="card scenario-source-editor entity-img-table" style="margin-top:1rem">
-      <div class="card-header"><div>
-        <div class="card-title">Graphics &amp; PDFs</div>
-        <div class="card-sub">Every image/PDF in this case — the raw list (no title matching). Shared controls match the Case Info image manager.</div>
-      </div></div>
-      <div class="table-scroll">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Graphics &amp; PDFs</div>
+          <div class="card-sub">Every image/PDF in this case — the raw list (no title matching). Shared controls match the Case Info image manager.</div>
+        </div>
+        <button class="btn btn-sm" onclick="openDiagramEditor(${sid}, {})" title="Draw a new diagram or map in the editor — saved as a GM-only graphic you can share">New diagram</button>
+      </div>
+      ${files.length ? `<div class="table-scroll">
         <table class="eit">
           <thead><tr><th>Graphic</th><th>Prompt</th><th>Actions</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
-      </div>
+      </div>` : '<div class="empty scenario-empty"><p>No graphics or PDFs yet. Use <strong>New diagram</strong> to draw one.</p></div>'}
     </div>`;
 }
 

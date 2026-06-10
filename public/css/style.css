@@ -1686,3 +1686,26 @@ body.print-mode #app { display: none !important; }
   border: 1px solid var(--border);
   margin-top: 0.8rem;
 }
+
+/* Full-screen diagram editor overlay (vendored Excalidraw). The editor itself
+   is themed by host.css; these rules only frame the host's toolbar + canvas.
+   Kept light-on-white so the drawing surface reads the same in either theme. */
+.rol-exc-host, .rol-exc-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; flex-direction: column; background: #fff;
+}
+.rol-exc-toolbar {
+  display: flex; gap: 8px; align-items: center;
+  padding: 8px 12px; border-bottom: 1px solid #ddd;
+  background: #fff; color: #111;
+}
+.rol-exc-title { font-weight: 600; }
+.rol-exc-error { color: #b00020; }
+.rol-exc-spacer { flex: 1; }
+.rol-exc-canvas { flex: 1; min-height: 0; }
+.rol-exc-toolbar button {
+  padding: 6px 14px; border: 1px solid #c7c7d1; border-radius: 6px;
+  background: #f3f3f6; color: #111; cursor: pointer; font: inherit;
+}
+.rol-exc-toolbar button.primary { font-weight: 600; background: var(--accent, #5b5bd6); color: #fff; border-color: transparent; }
+.rol-exc-toolbar button:disabled { opacity: 0.55; cursor: default; }

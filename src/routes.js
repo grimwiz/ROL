@@ -33,6 +33,7 @@ const {
   cancelOllama,
   isCloudLlm,
   saveSessionHandout,
+  readSessionDiagramScene,
   setSessionAssetVisibility,
   createSessionFile,
   replaceSessionFile,
@@ -3122,6 +3123,48 @@ router.post('/sessions/:id/handouts/save', requireGM, async (req, res, next) => 
     const ext = path.extname(String(filename)).toLowerCase() || '.png';
     const saved = saveSessionHandout(session.id, db, { bytes: buf, name, ext, prompt, replacePath: replace_path });
     res.json({ ok: true, ...saved });
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// ── Diagram editor (Excalidraw) ──────────────────────────────────────────────
+// Persist a diagram drawn in the vendored Excalidraw editor. The client sends
+// the flattened PNG (base64) for display/handout plus the editable scene JSON
+// so the diagram can be reopened. New diagrams land GM-only in the gallery;
+// replace_path overwrites an existing diagram in place (keeping its visibility).
+router.post('/sessions/:id/diagrams/save', requireGM, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const { png, scene, name, replace_path } = req.body || {};
+    const b64 = String(png || '').replace(/^data:image\/png;base64,/, '');
+    if (!b64) return res.status(400).json({ error: 'Missing diagram image.' });
+    let bytes;
+    try { bytes = Buffer.from(b64, 'base64'); } catch { bytes = null; }
+    if (!bytes || !bytes.length) return res.status(400).json({ error: 'Diagram image could not be decoded.' });
+    const saved = saveSessionHandout(session.id, db, {
+      bytes, ext: '.png', name: name || 'diagram', scene: scene || '', replacePath: replace_path
+    });
+    res.json({ ok: true, ...saved });
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// Return the editable scene JSON for a diagram graphic so the editor can reopen
+// it. 404 if the graphic has no scene sidecar (i.e. it's a flat raster).
+router.get('/sessions/:id/diagrams/scene', requireGM, (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    const relPath = String((req.query && req.query.path) || '').trim();
+    if (!relPath) return res.status(400).json({ error: 'Missing image path.' });
+    const scene = readSessionDiagramScene(session.id, db, relPath);
+    if (scene == null) return res.status(404).json({ error: 'No editable scene for this image.' });
+    res.type('application/json').send(scene);
   } catch (e) {
     if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
     next(e);
