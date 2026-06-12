@@ -3952,7 +3952,7 @@ function ensureExcalidraw() {
 // Open the diagram editor. With relPath, reopens an existing editor-made diagram
 // (loads its scene) and overwrites it on save; without, creates a new GM-only
 // diagram in the case gallery. The saved PNG slots into the graphics manager.
-async function openDiagramEditor(sessionId, { relPath = '', title = 'Diagram' } = {}) {
+async function openDiagramEditor(sessionId, { relPath = '', title = 'Diagram', scene = null, name = 'diagram', definition = null } = {}) {
   let editor;
   try {
     editor = await ensureExcalidraw();
@@ -3960,8 +3960,9 @@ async function openDiagramEditor(sessionId, { relPath = '', title = 'Diagram' } 
     alert(e.message || 'Could not load the diagram editor.');
     return;
   }
-  let scene = null;
-  if (relPath) {
+  // Precedence: an explicit pre-built scene (the letter composer) wins; else
+  // reopen an existing diagram by path; else a blank canvas.
+  if (!scene && relPath) {
     try { scene = await api.getDiagramScene(sessionId, relPath); }
     catch { scene = null; } // missing/older diagram → start from a blank canvas
   }
@@ -3973,8 +3974,11 @@ async function openDiagramEditor(sessionId, { relPath = '', title = 'Diagram' } 
       await api.saveDiagram(sessionId, {
         png,
         scene: sceneJson,
-        name: relPath ? '' : 'diagram',
-        replace_path: relPath || undefined
+        name: relPath ? '' : name,
+        replace_path: relPath || undefined,
+        // For letters, persist the compose-form definition (JSON) in the prompt
+        // sidecar so the letter can be reopened in the composer pre-filled.
+        prompt: definition ? JSON.stringify(definition) : undefined
       });
       await reloadCurrentSessionPanel();
     }
@@ -3990,6 +3994,539 @@ function blobToDataUrl(blob) {
     r.readAsDataURL(blob);
   });
 }
+
+// ── Letter composer ──────────────────────────────────────────────────────────
+// A letter is just an Excalidraw scene: the composer collects header (company
+// logo + address), body (typed or AI-drafted) and tail (sign-off + signature),
+// assembles a scene, and opens it in the editor where the GM finishes/exports.
+// Companies and signatories come from the global, reusable letterhead library.
+
+async function imageUrlToDataUrl(url) {
+  const res = await fetch(url, { credentials: 'same-origin' });
+  if (!res.ok) throw new Error(`Could not load image (HTTP ${res.status}).`);
+  return blobToDataUrl(await res.blob());
+}
+
+function loadImageSize(dataUrl) {
+  return new Promise((resolve) => {
+    const im = new Image();
+    im.onload = () => resolve({ w: im.naturalWidth || 0, h: im.naturalHeight || 0 });
+    im.onerror = () => resolve({ w: 0, h: 0 });
+    im.src = dataUrl;
+  });
+}
+
+// Knock the white field out of an ink image (a Qwen signature is black ink on
+// pure white) so the magnolia paper shows through. Luminance ramps the alpha:
+// near-white → transparent, ink → opaque, with a soft edge so strokes feather
+// onto the paper instead of leaving a hard halo. Returns the original on any
+// failure (e.g. a tainted canvas). Same-origin data URLs are not tainted.
+function makeWhiteTransparent(dataUrl, { hi = 240, lo = 200 } = {}) {
+  return new Promise((resolve) => {
+    const im = new Image();
+    im.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = im.naturalWidth; c.height = im.naturalHeight;
+      if (!c.width || !c.height) { resolve(dataUrl); return; }
+      const ctx = c.getContext('2d');
+      ctx.drawImage(im, 0, 0);
+      let img;
+      try { img = ctx.getImageData(0, 0, c.width, c.height); }
+      catch { resolve(dataUrl); return; }
+      const px = img.data;
+      for (let i = 0; i < px.length; i += 4) {
+        const lum = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+        let a;
+        if (lum >= hi) a = 0;
+        else if (lum <= lo) a = 255;
+        else a = Math.round((255 * (hi - lum)) / (hi - lo));
+        if (a < px[i + 3]) px[i + 3] = a; // never make a pixel more opaque
+      }
+      ctx.putImageData(img, 0, 0);
+      resolve(c.toDataURL('image/png'));
+    };
+    im.onerror = () => resolve(dataUrl);
+    im.src = dataUrl;
+  });
+}
+
+// Greedy word-wrap to an approximate column count (the editor lets the GM
+// reflow afterwards; this just avoids one runaway line).
+function wrapTextLines(text, maxChars) {
+  const out = [];
+  for (const para of String(text || '').split(/\n/)) {
+    if (!para.trim()) { out.push(''); continue; }
+    let line = '';
+    for (const word of para.split(/\s+/)) {
+      if (line && (line.length + 1 + word.length) > maxChars) { out.push(line); line = word; }
+      else line = line ? `${line} ${word}` : word;
+    }
+    if (line) out.push(line);
+  }
+  return out;
+}
+
+let _exSeq = 0;
+function exId(p) { return `rol-${p}-${Date.now().toString(36)}-${_exSeq++}`; }
+function exBase(over) {
+  return Object.assign({
+    angle: 0, strokeColor: '#1e1e1e', backgroundColor: 'transparent', fillStyle: 'solid',
+    strokeWidth: 1, strokeStyle: 'solid', roughness: 0, opacity: 100, groupIds: [], frameId: null,
+    roundness: null, seed: Math.floor(Math.random() * 2 ** 31), version: 1,
+    versionNonce: Math.floor(Math.random() * 2 ** 31), isDeleted: false, boundElements: null,
+    updated: Date.now(), link: null, locked: false
+  }, over);
+}
+function exText(text, x, y, { fontSize = 16, width = null, align = 'left' } = {}) {
+  const lineHeight = 1.25;
+  const str = String(text);
+  const rows = str.split('\n');
+  const longest = rows.reduce((m, l) => Math.max(m, l.length), 0);
+  const w = width || Math.max(40, Math.round(longest * fontSize * 0.55));
+  const h = Math.round(rows.length * fontSize * lineHeight);
+  return exBase({
+    id: exId('t'), type: 'text', x, y, width: w, height: h, text: str, fontSize, fontFamily: 2,
+    textAlign: align, verticalAlign: 'top', containerId: null, originalText: str, lineHeight,
+    baseline: Math.round(fontSize * lineHeight)
+  });
+}
+function exImageFile(files, dataUrl) {
+  const fid = exId('f');
+  files[fid] = { mimeType: 'image/png', id: fid, dataURL: dataUrl, created: Date.now(), lastRetrieved: Date.now() };
+  return fid;
+}
+function exImage(fileId, x, y, w, h) {
+  return exBase({ id: exId('i'), type: 'image', x, y, width: w, height: h, strokeColor: 'transparent', status: 'saved', fileId, scale: [1, 1] });
+}
+function exRect(x, y, w, h, over = {}) {
+  return exBase(Object.assign({ id: exId('r'), type: 'rectangle', x, y, width: w, height: h, roundness: null }, over));
+}
+
+// Lay the letter parts onto an A4-ish portrait page (~794×1123 @96dpi). The
+// result feeds Excalidraw initialData; the GM nudges anything before export.
+async function buildLetterScene({ company, logoDataUrl, dateStr, recipient, body, signoff, signatureDataUrl, signatory }) {
+  const L = 60, R = 734, CONTENT_W = R - L;
+  const elements = [];
+  const files = {};
+
+  // Lay a warm magnolia "page" with a ruled border behind everything, so the
+  // exported PNG reads as a real sheet of headed notepaper rather than a stark
+  // white screen. These go first so they sit at the bottom of the z-order.
+  const PAGE_W = 794, PAGE_H = 1123, PAPER = '#f6f1e3', FRAME = '#b8a888';
+  elements.push(exRect(0, 0, PAGE_W, PAGE_H, { backgroundColor: PAPER, fillStyle: 'solid', strokeColor: 'transparent' }));
+  elements.push(exRect(24, 24, PAGE_W - 48, PAGE_H - 48, { backgroundColor: 'transparent', strokeColor: FRAME, strokeWidth: 2 }));
+
+  // Centred masthead: a large logo over the company name and address, closed by
+  // a rule — proper letterhead stationery, rather than a small corner mark.
+  const CX = PAGE_W / 2;
+  let y = 52;
+
+  if (logoDataUrl) {
+    const fid = exImageFile(files, logoDataUrl);
+    const sz = await loadImageSize(logoDataUrl);
+    const ratio = sz.h ? Math.min(160 / sz.h, 380 / (sz.w || 1)) : 1;
+    const w = Math.round((sz.w || 200) * ratio) || 200;
+    const h = Math.round((sz.h || 160) * ratio) || 160;
+    elements.push(exImage(fid, Math.round(CX - w / 2), y, w, h));
+    y += h + 14;
+  }
+  if (company && company.name) {
+    const t = exText(company.name, L, y, { fontSize: 24, width: CONTENT_W, align: 'center' });
+    elements.push(t); y += t.height + 6;
+  }
+  if (company && company.address) {
+    const t = exText(company.address, L, y, { fontSize: 14, width: CONTENT_W, align: 'center' });
+    elements.push(t); y += t.height + 14;
+  }
+  // Thin rule under the masthead.
+  elements.push(exRect(L, y, CONTENT_W, 2, { backgroundColor: FRAME, fillStyle: 'solid', strokeColor: 'transparent' }));
+  y += 30;
+
+  if (dateStr) { const t = exText(dateStr, L, y, { fontSize: 16 }); elements.push(t); y += t.height + 20; }
+  if (recipient) { const t = exText(recipient, L, y, { fontSize: 16, width: CONTENT_W }); elements.push(t); y += t.height + 20; }
+  if (body) {
+    const t = exText(wrapTextLines(body, 78).join('\n'), L, y, { fontSize: 16, width: CONTENT_W });
+    elements.push(t); y += t.height + 28;
+  }
+  if (signoff) { const t = exText(signoff, L, y, { fontSize: 16 }); elements.push(t); y += t.height + 12; }
+  if (signatureDataUrl) {
+    const fid = exImageFile(files, signatureDataUrl);
+    const sz = await loadImageSize(signatureDataUrl);
+    const ratio = sz.h ? Math.min(70 / sz.h, 280 / (sz.w || 1)) : 1;
+    const w = Math.round((sz.w || 220) * ratio) || 220;
+    const h = Math.round((sz.h || 70) * ratio) || 70;
+    elements.push(exImage(fid, L, y, w, h)); y += h + 6;
+  }
+  const nameBlock = [signatory && signatory.name, signatory && signatory.title].filter(Boolean).join('\n');
+  if (nameBlock) { elements.push(exText(nameBlock, L, y, { fontSize: 15, width: CONTENT_W })); }
+
+  return { elements, files, appState: { viewBackgroundColor: '#f6f1e3' } };
+}
+
+// Generate-or-upload image control, reused for company logos and signatures.
+// Returns { get() } yielding the chosen image as a PNG data URL (or '').
+function letterImagePicker(host, { sessionId, size = 'square', label = 'image', placeholder = '', initialUrl = '' }) {
+  let pending = '';
+  host.innerHTML = `
+    <div class="lh-preview" style="min-height:70px;display:flex;align-items:center;justify-content:center;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:.3rem;font-size:.8em;opacity:.7">none yet</div>
+    <textarea class="lh-prompt" rows="3" placeholder="${esc(placeholder)}" style="width:100%;margin-top:.4rem;resize:vertical"></textarea>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-top:.4rem">
+      <button type="button" class="btn btn-sm lh-gen">Generate</button>
+      <label class="btn btn-sm" style="margin:0;cursor:pointer">Upload<input type="file" accept="image/*" class="lh-up" hidden></label>
+      <span class="lh-status" style="font-size:.78em;opacity:.8"></span>
+    </div>`;
+  const preview = host.querySelector('.lh-preview');
+  const promptEl = host.querySelector('.lh-prompt');
+  const genBtn = host.querySelector('.lh-gen');
+  const upEl = host.querySelector('.lh-up');
+  const statusEl = host.querySelector('.lh-status');
+  const setPreview = (url) => { preview.innerHTML = url ? `<img src="${url}" style="max-height:70px;max-width:100%">` : 'none yet'; };
+  // Editing an existing record: show its current image. `pending` stays '' so
+  // get() returns '' ("keep what's stored") unless the GM generates/uploads anew.
+  if (initialUrl) { setPreview(initialUrl); statusEl.textContent = 'Current image — Generate or Upload to replace it.'; }
+
+  upEl.addEventListener('change', async () => {
+    const f = upEl.files && upEl.files[0];
+    if (!f) return;
+    pending = await blobToDataUrl(f);
+    setPreview(pending);
+    statusEl.textContent = 'Uploaded.';
+  });
+  genBtn.addEventListener('click', async () => {
+    const prompt = (promptEl.value || '').trim();
+    if (!prompt) { statusEl.textContent = 'Describe it first.'; return; }
+    if (eitBusy) { statusEl.textContent = 'An AI task is already running.'; return; }
+    eitBusy = true; genBtn.disabled = true; statusEl.textContent = 'Generating… (~1 min first run)';
+    llmPendingBegin(`Letter ${label}`);
+    try {
+      const q = await api.generateHandout(sessionId, prompt, size);
+      const pid = q && q.prompt_id;
+      if (!pid) throw new Error('ComfyUI returned no prompt_id.');
+      const img = await comfyWaitForImage(pid);
+      const params = new URLSearchParams();
+      params.set('filename', img.filename);
+      if (img.subfolder) params.set('subfolder', img.subfolder);
+      params.set('type', img.type || 'output');
+      pending = await imageUrlToDataUrl(`/api/portrait/view?${params.toString()}`);
+      setPreview(pending);
+      statusEl.textContent = 'Generated — tweak the prompt and Generate again, or Upload your own.';
+    } catch (e) {
+      statusEl.textContent = e.message || 'Generation failed';
+    } finally {
+      eitBusy = false; genBtn.disabled = false; llmPendingEnd();
+    }
+  });
+  return {
+    get: () => pending,
+    // Let callers seed the prompt box (e.g. an AI-suggested letterhead brief).
+    setPrompt: (text) => { promptEl.value = String(text || ''); },
+    getPrompt: () => (promptEl.value || '').trim()
+  };
+}
+
+// `existing` (a company view) turns this into an edit dialog.
+function newCompanyDialog(sessionId, onCreated, existing = null) {
+  modal(`
+    <h3 style="margin-top:0">${existing ? 'Edit company' : 'New company'}</h3>
+    <div class="form-group"><label>AI suggest <span style="opacity:.6;font-weight:400">(optional)</span></label>
+      <div style="display:flex;gap:.4rem;align-items:flex-start"><textarea id="lhc-hint" rows="2" placeholder="Steer it, e.g. &quot;the Folly&quot; or &quot;a shady antiques dealer&quot; — or leave blank" style="flex:1;resize:vertical"></textarea>
+      <button class="btn btn-sm" id="lhc-ai">AI Generate</button></div>
+      <div style="font-size:.78em;opacity:.7;margin-top:.2rem">Invents a plausible name, London address and a letterhead-style logo brief from this case's notes.</div></div>
+    <div class="form-group"><label>Name</label><input id="lhc-name" type="text" placeholder="e.g. The Folly"></div>
+    <div class="form-group"><label>Address</label><textarea id="lhc-addr" rows="3" placeholder="Postal address — one line per row"></textarea></div>
+    <div class="form-group"><label>Logo</label><div id="lhc-logo"></div></div>
+    <div class="save-status" id="lhc-status"></div>
+    <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem">
+      <button class="btn" id="lhc-cancel">Cancel</button>
+      <button class="btn btn-primary" id="lhc-save">${existing ? 'Save changes' : 'Save company'}</button>
+    </div>`, (root) => {
+    root.querySelector('.modal').classList.add('modal-wide');
+    const picker = letterImagePicker(root.querySelector('#lhc-logo'), {
+      sessionId, size: 'square', label: 'logo',
+      placeholder: 'e.g. "an engraved letterpress crest for a magical police unit, single ink on cream"',
+      initialUrl: (existing && existing.has_logo) ? api.companyLogoUrl(existing.id) : ''
+    });
+    const status = root.querySelector('#lhc-status');
+    if (existing) {
+      root.querySelector('#lhc-name').value = existing.name || '';
+      root.querySelector('#lhc-addr').value = existing.address || '';
+      if (existing.ai_hint) root.querySelector('#lhc-hint').value = existing.ai_hint;
+      if (existing.logo_prompt) picker.setPrompt(existing.logo_prompt);
+    }
+    root.querySelector('#lhc-ai').addEventListener('click', async () => {
+      if (eitBusy) { status.textContent = 'An AI task is already running.'; return; }
+      const btn = root.querySelector('#lhc-ai'); btn.disabled = true;
+      status.textContent = 'Inventing a sender…';
+      eitBusy = true; llmPendingBegin('Company details');
+      try {
+        const out = await api.draftCompany(sessionId, { hint: (root.querySelector('#lhc-hint').value || '').trim() });
+        if (out.name) root.querySelector('#lhc-name').value = out.name;
+        if (out.address) root.querySelector('#lhc-addr').value = out.address;
+        if (out.logo_prompt) picker.setPrompt(out.logo_prompt);
+        status.textContent = 'Suggested — edit anything, then Generate the logo and Save.';
+      } catch (e) {
+        status.textContent = e.message || 'Could not generate details';
+      } finally {
+        eitBusy = false; btn.disabled = false; llmPendingEnd();
+      }
+    });
+    root.querySelector('#lhc-cancel').addEventListener('click', () => root.remove());
+    root.querySelector('#lhc-save').addEventListener('click', async () => {
+      const name = (root.querySelector('#lhc-name').value || '').trim();
+      if (!name) { status.textContent = 'A name is required.'; return; }
+      const btn = root.querySelector('#lhc-save'); btn.disabled = true; status.textContent = 'Saving…';
+      try {
+        const address = root.querySelector('#lhc-addr').value;
+        // Keep the prompt boxes' content so the Edit dialog can repopulate them.
+        const fields = {
+          name, address,
+          logo_prompt: picker.getPrompt(),
+          ai_hint: (root.querySelector('#lhc-hint').value || '').trim()
+        };
+        const c = existing
+          ? await api.updateCompany(existing.id, fields)
+          : await api.createCompany(fields);
+        const logo = picker.get();
+        if (logo) await api.saveCompanyLogo(c.id, logo);
+        root.remove();
+        if (onCreated) onCreated(c.id);
+      } catch (e) { status.textContent = e.message || 'Save failed'; btn.disabled = false; }
+    });
+  });
+}
+
+// `existing` (a signatory view) turns this into an edit dialog.
+function newSignatoryDialog(sessionId, onCreated, existing = null) {
+  modal(`
+    <h3 style="margin-top:0">${existing ? 'Edit signatory' : 'New signatory'}</h3>
+    <div class="form-group"><label>NPC voice <span style="opacity:.6;font-weight:400">(optional)</span></label>
+      <select id="lhs-npc"><option value="">— not an NPC (neutral draft) —</option></select>
+      <div style="font-size:.78em;opacity:.7;margin-top:.2rem">Back this signatory with an NPC so AI drafts are written in that character's voice — just like chatting with them in AI Support.</div></div>
+    <div class="form-group"><label>Name</label><input id="lhs-name" type="text" placeholder="e.g. T. Nightingale"></div>
+    <div class="form-group"><label>Title</label><input id="lhs-title" type="text" placeholder="e.g. Detective Chief Inspector"></div>
+    <div class="form-group"><label>Sign-off</label><input id="lhs-signoff" type="text" placeholder="e.g. Yours sincerely,"></div>
+    <div class="form-group"><label>Signature</label><div id="lhs-sig"></div></div>
+    <div class="save-status" id="lhs-status"></div>
+    <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem">
+      <button class="btn" id="lhs-cancel">Cancel</button>
+      <button class="btn btn-primary" id="lhs-save">${existing ? 'Save changes' : 'Save signatory'}</button>
+    </div>`, (root) => {
+    root.querySelector('.modal').classList.add('modal-wide');
+    const picker = letterImagePicker(root.querySelector('#lhs-sig'), {
+      sessionId, size: 'landscape', label: 'signature',
+      placeholder: 'e.g. "a flowing handwritten ink signature, black ink on pure white"',
+      initialUrl: (existing && existing.has_signature) ? api.signatureUrl(existing.id) : ''
+    });
+    const status = root.querySelector('#lhs-status');
+    const npcSel = root.querySelector('#lhs-npc');
+    const nameEl = root.querySelector('#lhs-name');
+    if (existing) {
+      nameEl.value = existing.name || '';
+      root.querySelector('#lhs-title').value = existing.title || '';
+      root.querySelector('#lhs-signoff').value = existing.signoff || '';
+      if (existing.signature_prompt) picker.setPrompt(existing.signature_prompt);
+    }
+    // Populate the NPC list from the same source as AI Support; picking one
+    // pre-fills the name so the signatory and the persona stay in step.
+    api.getNpcPersonas(sessionId).then((r) => {
+      for (const n of (r && r.npcs) || []) {
+        const o = document.createElement('option');
+        o.value = n.slug; o.textContent = n.name;
+        npcSel.appendChild(o);
+      }
+      if (existing && existing.persona_slug) npcSel.value = existing.persona_slug;
+    }).catch(() => { /* leave neutral-only */ });
+    npcSel.addEventListener('change', () => {
+      const opt = npcSel.options[npcSel.selectedIndex];
+      if (npcSel.value && !nameEl.value.trim()) nameEl.value = opt.textContent;
+    });
+    root.querySelector('#lhs-cancel').addEventListener('click', () => root.remove());
+    root.querySelector('#lhs-save').addEventListener('click', async () => {
+      const name = (nameEl.value || '').trim();
+      if (!name) { status.textContent = 'A name is required.'; return; }
+      const btn = root.querySelector('#lhs-save'); btn.disabled = true; status.textContent = 'Saving…';
+      try {
+        const fields = {
+          name, title: root.querySelector('#lhs-title').value, persona_slug: npcSel.value || '',
+          signature_prompt: picker.getPrompt(), signoff: (root.querySelector('#lhs-signoff').value || '').trim()
+        };
+        const s = existing
+          ? await api.updateSignatory(existing.id, fields)
+          : await api.createSignatory(fields);
+        const sig = picker.get();
+        if (sig) await api.saveSignature(s.id, sig);
+        root.remove();
+        if (onCreated) onCreated(s.id);
+      } catch (e) { status.textContent = e.message || 'Save failed'; btn.disabled = false; }
+    });
+  });
+}
+
+// `existing` (optional) reopens a saved letter pre-filled from its definition
+// and overwrites that file on save, instead of creating a new one.
+async function composeLetter(sessionId, existing = null) {
+  const def = (existing && existing.definition) || null;
+  let companies = [];
+  let signatories = [];
+  try {
+    companies = (await api.listCompanies()).companies || [];
+    signatories = (await api.listSignatories()).signatories || [];
+  } catch (e) {
+    showAlert(e.message || 'Could not load the letterhead library.', 'danger', 'scenario-alert');
+    return;
+  }
+  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const opt = (arr, ph) => ['<option value="">— ' + ph + ' —</option>']
+    .concat(arr.map((o) => `<option value="${o.id}">${esc(o.name)}${o.title ? ' (' + esc(o.title) + ')' : ''}${o.persona_slug ? ' · NPC voice' : ''}</option>`)).join('');
+
+  const root = modal(`
+    <h3 style="margin-top:0">${def ? 'Edit letter' : 'Compose letter'}</h3>
+    <p style="margin:.2rem 0 .8rem;opacity:.75">Builds the letter, then opens it in the editor to finish and export. Players see the exported picture — like a scanned page.</p>
+    <div class="form-group"><label>From (company)</label>
+      <div style="display:flex;gap:.4rem"><select id="lt-company" style="flex:1">${opt(companies, 'choose a company')}</select>
+      <button class="btn btn-sm" id="lt-newco">New…</button>
+      <button class="btn btn-sm" id="lt-editco" title="Edit the selected company">Edit…</button>
+      <button class="btn btn-sm btn-danger" id="lt-delco" title="Delete the selected company from the library">Delete</button></div></div>
+    <div style="display:flex;gap:.8rem">
+      <div class="form-group" style="flex:1;margin-bottom:0"><label>To (recipient)</label><input id="lt-to" type="text" placeholder="e.g. Detective Constable Peter Grant"></div>
+      <div class="form-group" style="flex:0 0 190px;margin-bottom:0"><label>Date</label><input id="lt-date" type="text" value="${esc(today)}"></div>
+    </div>
+    <div class="form-group"><label>Body</label>
+      <div style="display:flex;gap:.4rem;margin-bottom:.35rem;align-items:flex-start"><textarea id="lt-brief" rows="2" placeholder="AI brief: what should the letter say?" style="flex:1;resize:vertical"></textarea><button class="btn btn-sm" id="lt-draft">Draft with AI</button></div>
+      <textarea id="lt-body" rows="8" placeholder="Type the body, or draft it with AI above"></textarea></div>
+    <div class="form-group"><label>Signed by <span style="opacity:.6;font-weight:400">(carries its own sign-off)</span></label>
+      <div style="display:flex;gap:.4rem"><select id="lt-sig" style="flex:1">${opt(signatories, 'choose a signatory')}</select>
+      <button class="btn btn-sm" id="lt-newsig">New…</button>
+      <button class="btn btn-sm" id="lt-editsig" title="Edit the selected signatory">Edit…</button>
+      <button class="btn btn-sm btn-danger" id="lt-delsig" title="Delete the selected signatory from the library">Delete</button></div></div>
+    <div class="save-status" id="lt-status"></div>
+    <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem">
+      <button class="btn" id="lt-cancel">Cancel</button>
+      <button class="btn btn-primary" id="lt-open">Open in editor</button>
+    </div>`, (r) => {
+    r.querySelector('.modal').classList.add('modal-wide');
+    const status = r.querySelector('#lt-status');
+    const coSel = r.querySelector('#lt-company');
+    const sigSel = r.querySelector('#lt-sig');
+    const refill = (sel, arr, ph, pick) => { sel.innerHTML = opt(arr, ph); if (pick) sel.value = String(pick); };
+
+    // Reopening a saved letter: re-seed the form. A company/signatory that has
+    // since been deleted from the library just stays unselected.
+    if (def) {
+      if (def.company_id) coSel.value = String(def.company_id);
+      if (def.signatory_id) sigSel.value = String(def.signatory_id);
+      r.querySelector('#lt-to').value = def.recipient || '';
+      if (def.date) r.querySelector('#lt-date').value = def.date;
+      r.querySelector('#lt-body').value = def.body || '';
+      if (def.brief) r.querySelector('#lt-brief').value = def.brief;
+    }
+
+    r.querySelector('#lt-cancel').addEventListener('click', () => r.remove());
+    const picked = (arr, sel) => arr.find((o) => o.id === Number(sel.value)) || null;
+    const reloadCompanies = async (id) => { companies = (await api.listCompanies()).companies || []; refill(coSel, companies, 'choose a company', id); };
+    const reloadSignatories = async (id) => { signatories = (await api.listSignatories()).signatories || []; refill(sigSel, signatories, 'choose a signatory', id); };
+
+    r.querySelector('#lt-newco').addEventListener('click', () => newCompanyDialog(sessionId, reloadCompanies));
+    r.querySelector('#lt-editco').addEventListener('click', () => {
+      const c = picked(companies, coSel);
+      if (!c) { status.textContent = 'Pick a company to edit first.'; return; }
+      newCompanyDialog(sessionId, reloadCompanies, c);
+    });
+    r.querySelector('#lt-delco').addEventListener('click', async () => {
+      const c = picked(companies, coSel);
+      if (!c) { status.textContent = 'Pick a company to delete first.'; return; }
+      if (!confirm(`Delete the company "${c.name}" from the letterhead library? Letters you've already saved keep their look.`)) return;
+      try { await api.deleteCompany(c.id); await reloadCompanies(); status.textContent = 'Company deleted.'; }
+      catch (e) { status.textContent = e.message || 'Delete failed'; }
+    });
+
+    r.querySelector('#lt-newsig').addEventListener('click', () => newSignatoryDialog(sessionId, reloadSignatories));
+    r.querySelector('#lt-editsig').addEventListener('click', () => {
+      const s = picked(signatories, sigSel);
+      if (!s) { status.textContent = 'Pick a signatory to edit first.'; return; }
+      newSignatoryDialog(sessionId, reloadSignatories, s);
+    });
+    r.querySelector('#lt-delsig').addEventListener('click', async () => {
+      const s = picked(signatories, sigSel);
+      if (!s) { status.textContent = 'Pick a signatory to delete first.'; return; }
+      if (!confirm(`Delete the signatory "${s.name}" from the letterhead library? Letters you've already saved keep their look.`)) return;
+      try { await api.deleteSignatory(s.id); await reloadSignatories(); status.textContent = 'Signatory deleted.'; }
+      catch (e) { status.textContent = e.message || 'Delete failed'; }
+    });
+
+    r.querySelector('#lt-draft').addEventListener('click', async () => {
+      const brief = (r.querySelector('#lt-brief').value || '').trim();
+      if (!brief) { status.textContent = 'Enter a brief first.'; return; }
+      if (eitBusy) { status.textContent = 'An AI task is already running.'; return; }
+      const company = companies.find((c) => c.id === Number(coSel.value)) || null;
+      const signatory = signatories.find((s) => s.id === Number(sigSel.value)) || null;
+      const slug = (signatory && signatory.persona_slug) || '';
+      const btn = r.querySelector('#lt-draft'); btn.disabled = true;
+      status.textContent = slug ? `Drafting in ${signatory.name}'s voice…` : 'Drafting…';
+      eitBusy = true; llmPendingBegin('Letter draft');
+      try {
+        const out = await api.draftLetter(sessionId, {
+          intent: brief, sender: company && company.name, recipient: (r.querySelector('#lt-to').value || '').trim(), slug
+        });
+        r.querySelector('#lt-body').value = out.body || '';
+        status.textContent = out.voice ? `Drafted in ${out.voice}'s voice — edit as needed.` : 'Drafted — edit as needed.';
+      } catch (e) {
+        status.textContent = e.message || 'Draft failed';
+      } finally {
+        eitBusy = false; btn.disabled = false; llmPendingEnd();
+      }
+    });
+
+    r.querySelector('#lt-open').addEventListener('click', async () => {
+      const company = companies.find((c) => c.id === Number(coSel.value)) || null;
+      const signatory = signatories.find((s) => s.id === Number(sigSel.value)) || null;
+      const btn = r.querySelector('#lt-open'); btn.disabled = true; status.textContent = 'Assembling…';
+      try {
+        const logoDataUrl = (company && company.has_logo) ? await imageUrlToDataUrl(api.companyLogoUrl(company.id)) : '';
+        let signatureDataUrl = (signatory && signatory.has_signature) ? await imageUrlToDataUrl(api.signatureUrl(signatory.id)) : '';
+        // Drop the signature's white field so the paper colour shows through.
+        if (signatureDataUrl) signatureDataUrl = await makeWhiteTransparent(signatureDataUrl);
+        const dateStr = (r.querySelector('#lt-date').value || '').trim();
+        const recipient = (r.querySelector('#lt-to').value || '').trim();
+        const body = r.querySelector('#lt-body').value;
+        // Sign-off now lives on the signatory (default if they have none set).
+        const signoff = signatory ? (signatory.signoff || 'Yours sincerely,') : '';
+        const scene = await buildLetterScene({
+          company, logoDataUrl, dateStr, recipient, body, signoff, signatureDataUrl, signatory
+        });
+        // The definition rides the prompt sidecar so the letter can be reopened
+        // in this form; an edit overwrites the original file in place.
+        const definition = {
+          _letter: 1,
+          company_id: company ? company.id : null,
+          signatory_id: signatory ? signatory.id : null,
+          recipient, date: dateStr, body,
+          brief: (r.querySelector('#lt-brief').value || '').trim()
+        };
+        r.remove();
+        await openDiagramEditor(sessionId, {
+          scene, definition,
+          relPath: existing ? existing.relPath : '',
+          title: 'Letter',
+          name: company ? `${company.name} letter` : 'letter'
+        });
+      } catch (e) {
+        status.textContent = e.message || 'Could not assemble the letter';
+        btn.disabled = false;
+      }
+    });
+  });
+  return root;
+}
+window.composeLetter = composeLetter;
+
+// Saved-letter definitions, keyed by file path, stashed during file-row render
+// so the row's "Edit letter" button can reopen the composer pre-filled.
+const letterDefRegistry = {};
+function editLetter(sessionId, relPath) {
+  composeLetter(sessionId, { relPath, definition: letterDefRegistry[relPath] || {} });
+}
+window.editLetter = editLetter;
 
 // Generate (or Regenerate in place) an entity's artifact via ComfyUI, then save
 // it. Mirrors the GM-chat handout flow but writes a title-slug filename so the
@@ -4895,6 +5432,9 @@ function assetFilesPanelHtml(sources, editable = true) {
     const label = String(f.path || '').split('/').slice(-1)[0];
     const player = f.visibility !== 'gm';
     const isGraphic = f.kind === 'graphic';
+    // A letter carries its compose-form definition; stash it so "Edit letter"
+    // can reopen the composer pre-filled.
+    if (f.letter) letterDefRegistry[f.path] = f.letter;
     const media = isGraphic
       ? `<a href="${esc(url)}" target="_blank" rel="noopener"><img src="${esc(url)}" alt="${esc(label)}" loading="lazy" class="eit-thumb"></a>`
       : `<a href="${esc(url)}" target="_blank" rel="noopener" title="${esc(f.path)}"><span class="asset-pdf">PDF</span></a>`;
@@ -4920,7 +5460,8 @@ function assetFilesPanelHtml(sources, editable = true) {
       <td class="eit-actions">
         ${isGraphic ? `<button class="btn btn-sm" onclick="efSaveAssetPrompt(${sid}, '${esc(f.path)}', '${id}-prompt')">Save prompt</button>` : ''}
         ${isGraphic ? `<button class="btn btn-sm" onclick="aiEditImage(${sid}, '${esc(f.path)}', {})" title="Edit this picture with an AI prompt (e.g. make it a nighttime scene) — saves a new copy">AI Edit</button>` : ''}
-        ${f.scene ? `<button class="btn btn-sm" onclick="openDiagramEditor(${sid}, { relPath: '${esc(f.path)}', title: '${esc(label)}' })" title="Reopen this diagram in the editor">Edit diagram</button>` : ''}
+        ${f.letter ? `<button class="btn btn-sm" onclick="editLetter(${sid}, '${esc(f.path)}')" title="Reopen the Compose letter form pre-filled — change the wording, company or signatory and re-save">Edit letter</button>` : ''}
+        ${f.scene ? `<button class="btn btn-sm" onclick="openDiagramEditor(${sid}, { relPath: '${esc(f.path)}', title: '${esc(label)}' })" title="Reopen this diagram or letter in the raw editor to nudge the layout, fonts or images by hand">Edit in editor</button>` : ''}
         ${visBtn}
         <a class="btn btn-sm" href="${esc(url)}?download=1" download>Download</a>
         <button class="btn btn-sm" onclick="efReplaceFile(${sid}, '${esc(f.path)}')">Replace</button>
@@ -4937,7 +5478,10 @@ function assetFilesPanelHtml(sources, editable = true) {
           <div class="card-title">Graphics &amp; PDFs</div>
           <div class="card-sub">Every image/PDF in this case — the raw list (no title matching). Shared controls match the Case Info image manager.</div>
         </div>
-        <button class="btn btn-sm" onclick="openDiagramEditor(${sid}, {})" title="Draw a new diagram or map in the editor — saved as a GM-only graphic you can share">New diagram</button>
+        <div style="display:flex;gap:.4rem">
+          <button class="btn btn-sm" onclick="composeLetter(${sid})" title="Compose a letter handout — pick a company letterhead, write the body, add a signature">New letter</button>
+          <button class="btn btn-sm" onclick="openDiagramEditor(${sid}, {})" title="Draw a new diagram or map in the editor — saved as a GM-only graphic you can share">New diagram</button>
+        </div>
       </div>
       ${files.length ? `<div class="table-scroll">
         <table class="eit">

@@ -1097,7 +1097,16 @@ function listSessionSourceFiles(session, options = {}) {
     if (kind === 'graphic') {
       try {
         const sidecar = `${fullPath}.prompt.txt`;
-        if (fs.existsSync(sidecar)) record.prompt = fs.readFileSync(sidecar, 'utf8').trim();
+        if (fs.existsSync(sidecar)) {
+          const raw = fs.readFileSync(sidecar, 'utf8').trim();
+          record.prompt = raw;
+          // Letters stash their compose-form definition (JSON) in this same
+          // sidecar so the composer can reopen pre-filled; flag it so the UI
+          // can offer "Edit letter" alongside the raw editor.
+          if (raw.startsWith('{')) {
+            try { const def = JSON.parse(raw); if (def && def._letter) record.letter = def; } catch { /* a plain prompt that merely starts with { */ }
+          }
+        }
       } catch { /* non-fatal */ }
       // A "<file>.excalidraw.json" sidecar means this graphic was drawn in the
       // diagram editor and can be reopened/edited there (vs. a flat raster).
@@ -3686,6 +3695,88 @@ async function generateEntityImagePrompt(sessionId, db, { name, kind, descriptio
   return { prompt: cleaned };
 }
 
+// One-shot LLM call: draft the BODY of an in-game letter from the GM's brief.
+// This is a GM authoring aid (the letter is fiction the GM is writing), so it
+// drafts freely from the intent rather than grounding to case canon. Returns
+// just the body prose — the helper adds letterhead, sign-off and signature.
+async function draftLetterBody(sessionId, db, { intent, sender, recipient, tone } = {}) {
+  const session = getSessionById(db, sessionId);
+  if (!session) { const e = new Error('Session not found'); e.statusCode = 404; throw e; }
+  const brief = String(intent || '').trim();
+  if (!brief) { const e = new Error('Describe what the letter should say'); e.statusCode = 400; throw e; }
+  const lines = [
+    'Write the BODY of a letter for a Rivers of London tabletop game handout.',
+    sender ? `It is sent by: ${String(sender).trim()}` : '',
+    recipient ? `It is addressed to: ${String(recipient).trim()}` : '',
+    tone ? `Tone: ${String(tone).trim()}` : '',
+    `What it needs to say: ${brief}`,
+    'Write only the body paragraphs — no letterhead, no date, no "Dear ...", no "Yours sincerely", no signature, no markdown. Plain prose, a few short paragraphs at most.'
+  ].filter(Boolean).join('\n\n');
+  const raw = await callOllama(lines, {
+    label: 'letter body draft',
+    messages: [
+      { role: 'system', content: 'You draft concise, period-plausible letter prose for a tabletop RPG. You reply with body text only — no letterhead, salutation, sign-off or commentary.' },
+      { role: 'user', content: lines }
+    ]
+  });
+  const body = String(raw || '')
+    .replace(/^```[a-z]*\n?|\n?```$/gi, '')
+    .replace(/^\s*(dear\b.*|to whom it may concern.*)$/gim, '')
+    .replace(/^\s*(yours (sincerely|faithfully|truly)|kind regards|regards|sincerely)\b.*$/gim, '')
+    .trim();
+  if (!body) { const e = new Error('The model returned an empty draft'); e.statusCode = 502; throw e; }
+  return { body };
+}
+
+// Invent a plausible in-world sender for the letter composer: an organisation
+// name, a multi-line UK postal address, and a brief for an OLD-FASHIONED printed
+// letterhead device (engraved crest / monogram, NOT a flat website logo).
+// Grounded in this case's scenario info so it fits the game. Behind the AI gate.
+async function draftCompanyDetails(sessionId, db, { hint } = {}) {
+  const session = getSessionById(db, sessionId);
+  if (!session) { const e = new Error('Session not found'); e.statusCode = 404; throw e; }
+  const paths = ensureSessionDataFolders(session);
+  const scenarioInfo = readExistingJsonForPrompt(paths.scenarioInfo) || {};
+  const steer = String(hint || '').trim();
+
+  const system = [
+    'You invent letterhead details for the sender of a letter in a Rivers of London (present-day London, urban-fantasy police procedural) tabletop game.',
+    'From the case context, make up ONE plausible organisation that could send a letter as a player handout.',
+    'Return ONLY a JSON object — no prose, no commentary, no code fence — with exactly these keys:',
+    '  "name": the organisation\'s name.',
+    '  "address": its postal address as 2 to 4 lines separated by \\n (building/street, area, "London", postcode). Use real-sounding London geography.',
+    '  "logo_prompt": a brief for an image generator to render this organisation\'s LETTERHEAD device. Describe an old-fashioned PRINTED emblem — an engraved or letterpress crest, monogram or wax-seal-style mark in a single ink colour on cream paper, the kind embossed at the head of formal headed notepaper. Explicitly NOT a modern flat vector website logo: no gradients, no app icon, no rounded-rectangle badge, no photography. Include the organisation name or its initials as engraved lettering. One or two sentences.',
+    'Keep everything grounded in the case context and do not contradict it.'
+  ].join('\n');
+
+  const user = [
+    steer
+      ? `The GM wants the sender to be: ${steer}`
+      : 'No specific steer — pick an organisation, agency, firm, estate or institution that already fits the case.',
+    '',
+    '## Case context',
+    renderJsonBlock(scenarioInfo)
+  ].join('\n');
+
+  const raw = await callOllama(null, {
+    label: 'company details draft',
+    messages: [
+      { role: 'system', content: system },
+      { role: 'user', content: user }
+    ]
+  });
+  let parsed;
+  try { parsed = JSON.parse(extractJsonCandidate(raw)); } catch { parsed = null; }
+  if (!parsed || typeof parsed !== 'object') {
+    const e = new Error('The model did not return usable company details'); e.statusCode = 502; throw e;
+  }
+  const name = String(parsed.name || '').trim();
+  const address = String(parsed.address || '').replace(/\\n/g, '\n').trim();
+  const logo_prompt = String(parsed.logo_prompt || '').trim();
+  if (!name) { const e = new Error('The model returned no company name'); e.statusCode = 502; throw e; }
+  return { name, address, logo_prompt };
+}
+
 function resolveSessionAssetPath(sessionId, requestPath, db, isGM = false) {
   const session = getSessionById(db, sessionId);
   if (!session) return null;
@@ -3819,6 +3910,8 @@ module.exports = {
   writeGmChatExport,
   saveSessionHandout,
   readSessionDiagramScene,
+  draftLetterBody,
+  draftCompanyDetails,
   setSessionAssetVisibility,
   createSessionFile,
   replaceSessionFile,

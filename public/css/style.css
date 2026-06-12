@@ -741,6 +741,9 @@ tr:hover td { background: var(--bg3); }
   width: 100%; max-width: 440px;
   max-height: 90vh; overflow-y: auto;
 }
+/* Roomier dialogs for content-heavy forms (letter composer, letterhead editors)
+   where the default column is too narrow to type/read prompts comfortably. */
+.modal.modal-wide { max-width: 720px; }
 .modal .table-wrap {
   margin-top: 0.25rem;
 }

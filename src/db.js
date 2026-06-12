@@ -122,6 +122,31 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_luck_adj_session ON session_luck_adjustments(session_id, character_id);
 
   DROP TABLE IF EXISTS domestic_sheets;
+
+  -- Reusable letterhead library for PDF-style letter handouts. Global (not
+  -- per-case): a company's logo+address and a signatory's signature image are
+  -- created once and reused across cases. The images live as PNGs under
+  -- data/letterhead/<kind>/<id>/; these rows hold the structured fields and the
+  -- relative path to the stored image.
+  CREATE TABLE IF NOT EXISTS letter_companies (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    address TEXT,
+    logo_path TEXT,
+    logo_prompt TEXT,
+    ai_hint TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+  CREATE TABLE IF NOT EXISTS letter_signatories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    title TEXT,
+    signature_path TEXT,
+    persona_slug TEXT,
+    signature_prompt TEXT,
+    signoff TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 // Pre-migration column adds against legacy tables. These run before the
@@ -153,6 +178,32 @@ if (sessionColumns.length && !sessionColumns.some((c) => c.name === 'system_key'
   db.exec("ALTER TABLE sessions ADD COLUMN system_key TEXT");
 }
 db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_system_key ON sessions(system_key) WHERE system_key IS NOT NULL");
+
+// A letter signatory can be backed by an NPC persona so the AI body draft is
+// written in that NPC's voice (the same persona that powers AI Support chat).
+const sigColumns = db.prepare("PRAGMA table_info(letter_signatories)").all();
+if (sigColumns.length && !sigColumns.some((c) => c.name === 'persona_slug')) {
+  db.exec("ALTER TABLE letter_signatories ADD COLUMN persona_slug TEXT");
+}
+// Keep the signature's generation prompt so the Edit dialog can repopulate it.
+if (sigColumns.length && !sigColumns.some((c) => c.name === 'signature_prompt')) {
+  db.exec("ALTER TABLE letter_signatories ADD COLUMN signature_prompt TEXT");
+}
+// The sign-off ("Yours sincerely,") lives on the signatory so the letter form
+// doesn't need its own field — a signatory generally signs off the same way.
+if (sigColumns.length && !sigColumns.some((c) => c.name === 'signoff')) {
+  db.exec("ALTER TABLE letter_signatories ADD COLUMN signoff TEXT");
+}
+
+// Keep the logo's generation prompt and the AI-suggest steer on the company so
+// the Edit dialog can repopulate those boxes (tweak-and-regenerate the logo).
+const coColumns = db.prepare("PRAGMA table_info(letter_companies)").all();
+if (coColumns.length && !coColumns.some((c) => c.name === 'logo_prompt')) {
+  db.exec("ALTER TABLE letter_companies ADD COLUMN logo_prompt TEXT");
+}
+if (coColumns.length && !coColumns.some((c) => c.name === 'ai_hint')) {
+  db.exec("ALTER TABLE letter_companies ADD COLUMN ai_hint TEXT");
+}
 
 const adjColumns = db.prepare("PRAGMA table_info(session_luck_adjustments)").all();
 if (adjColumns.length && !adjColumns.some((c) => c.name === 'stat')) {

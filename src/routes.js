@@ -7,6 +7,7 @@ const { spawn } = require('child_process');
 const db = require('./db');
 const { signToken, requireAuth, requireGM, COOKIE_NAME, COOKIE_OPTS } = require('./auth');
 const { loadDomesticAdventure } = require('./domesticAdventure');
+const letterhead = require('./letterhead');
 const {
   DATA_ROOT,
   findSessionCover,
@@ -34,6 +35,8 @@ const {
   isCloudLlm,
   saveSessionHandout,
   readSessionDiagramScene,
+  draftLetterBody,
+  draftCompanyDetails,
   setSessionAssetVisibility,
   createSessionFile,
   replaceSessionFile,
@@ -3138,14 +3141,17 @@ router.post('/sessions/:id/diagrams/save', requireGM, (req, res, next) => {
   try {
     const session = getAccessibleSession(req, res, req.params.id);
     if (!session) return;
-    const { png, scene, name, replace_path } = req.body || {};
+    const { png, scene, name, replace_path, prompt } = req.body || {};
     const b64 = String(png || '').replace(/^data:image\/png;base64,/, '');
     if (!b64) return res.status(400).json({ error: 'Missing diagram image.' });
     let bytes;
     try { bytes = Buffer.from(b64, 'base64'); } catch { bytes = null; }
     if (!bytes || !bytes.length) return res.status(400).json({ error: 'Diagram image could not be decoded.' });
+    // `prompt` doubles as the letter composer's definition blob (JSON) for
+    // letters, or a plain image prompt for hand-drawn diagrams; both ride the
+    // existing .prompt.txt sidecar.
     const saved = saveSessionHandout(session.id, db, {
-      bytes, ext: '.png', name: name || 'diagram', scene: scene || '', replacePath: replace_path
+      bytes, ext: '.png', name: name || 'diagram', scene: scene || '', replacePath: replace_path, prompt
     });
     res.json({ ok: true, ...saved });
   } catch (e) {
@@ -3165,6 +3171,120 @@ router.get('/sessions/:id/diagrams/scene', requireGM, (req, res, next) => {
     const scene = readSessionDiagramScene(session.id, db, relPath);
     if (scene == null) return res.status(404).json({ error: 'No editable scene for this image.' });
     res.type('application/json').send(scene);
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// ── Letterhead library (companies + signatories) ─────────────────────────────
+// Global, reusable senders and signatories for the letter composer. The images
+// (logo / signature PNGs) are stored once and embedded into the Excalidraw
+// scene the composer builds. GM-only throughout.
+function sendLibraryImage(res, abs) {
+  if (!abs) return res.status(404).json({ error: 'No image stored.' });
+  res.type('image/png');
+  res.sendFile(abs);
+}
+
+router.get('/letterhead/companies', requireGM, (req, res, next) => {
+  try { res.json({ companies: letterhead.listCompanies() }); } catch (e) { next(e); }
+});
+router.post('/letterhead/companies', requireGM, (req, res, next) => {
+  try { res.json(letterhead.createCompany(req.body || {})); }
+  catch (e) { if (e.statusCode) return res.status(e.statusCode).json({ error: e.message }); next(e); }
+});
+router.put('/letterhead/companies/:id', requireGM, (req, res, next) => {
+  try { res.json(letterhead.updateCompany(Number(req.params.id), req.body || {})); }
+  catch (e) { if (e.statusCode) return res.status(e.statusCode).json({ error: e.message }); next(e); }
+});
+router.delete('/letterhead/companies/:id', requireGM, (req, res, next) => {
+  try { res.json(letterhead.deleteCompany(Number(req.params.id))); }
+  catch (e) { if (e.statusCode) return res.status(e.statusCode).json({ error: e.message }); next(e); }
+});
+router.post('/letterhead/companies/:id/logo', requireGM, (req, res, next) => {
+  try { res.json(letterhead.saveCompanyLogo(Number(req.params.id), (req.body || {}).png)); }
+  catch (e) { if (e.statusCode) return res.status(e.statusCode).json({ error: e.message }); next(e); }
+});
+router.get('/letterhead/companies/:id/logo', requireGM, (req, res, next) => {
+  try { sendLibraryImage(res, letterhead.companyLogoFile(Number(req.params.id))); } catch (e) { next(e); }
+});
+
+router.get('/letterhead/signatories', requireGM, (req, res, next) => {
+  try { res.json({ signatories: letterhead.listSignatories() }); } catch (e) { next(e); }
+});
+router.post('/letterhead/signatories', requireGM, (req, res, next) => {
+  try { res.json(letterhead.createSignatory(req.body || {})); }
+  catch (e) { if (e.statusCode) return res.status(e.statusCode).json({ error: e.message }); next(e); }
+});
+router.put('/letterhead/signatories/:id', requireGM, (req, res, next) => {
+  try { res.json(letterhead.updateSignatory(Number(req.params.id), req.body || {})); }
+  catch (e) { if (e.statusCode) return res.status(e.statusCode).json({ error: e.message }); next(e); }
+});
+router.delete('/letterhead/signatories/:id', requireGM, (req, res, next) => {
+  try { res.json(letterhead.deleteSignatory(Number(req.params.id))); }
+  catch (e) { if (e.statusCode) return res.status(e.statusCode).json({ error: e.message }); next(e); }
+});
+router.post('/letterhead/signatories/:id/signature', requireGM, (req, res, next) => {
+  try { res.json(letterhead.saveSignatureImage(Number(req.params.id), (req.body || {}).png)); }
+  catch (e) { if (e.statusCode) return res.status(e.statusCode).json({ error: e.message }); next(e); }
+});
+router.get('/letterhead/signatories/:id/signature', requireGM, (req, res, next) => {
+  try { sendLibraryImage(res, letterhead.signatureFile(Number(req.params.id))); } catch (e) { next(e); }
+});
+
+// Draft a letter body from the GM's brief (one-shot LLM). Behind the AI gate.
+// If the signatory is NPC-backed (a persona `slug` is supplied), the draft runs
+// through the SAME persona path as AI Support NPC chat, so the letter is written
+// in that NPC's voice with their case knowledge. Otherwise a neutral draft.
+router.post('/sessions/:id/letters/draft', requireGM, async (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    if (await rejectIfAiBusy(res)) return;
+    const body = req.body || {};
+    const slug = String(body.slug || '').trim();
+    const brief = String(body.intent || '').trim();
+    if (!brief) return res.status(400).json({ error: 'Describe what the letter should say.' });
+
+    if (slug) {
+      const persona = resolveNpcPersona(session, slug);
+      if (!persona) return res.status(404).json({ error: 'That NPC persona was not found for this case.' });
+      // One scripted turn, exactly like a player asking the NPC to write a letter.
+      const recipient = String(body.recipient || '').trim();
+      const ask = [
+        `Please write the body of a letter you are sending${recipient ? ` to ${recipient}` : ''}.`,
+        `It needs to: ${brief}.`,
+        'Reply with only the letter body, in your own voice — no letterhead, no date, no "Dear ...", no sign-off, no signature; I will add those.'
+      ].join(' ');
+      const text = await streamNpcChat(persona, [{ role: 'user', content: ask }], {});
+      const draft = String(text || '')
+        .replace(/^```[a-z]*\n?|\n?```$/gi, '')
+        .replace(/^\s*(dear\b.*|to whom it may concern.*)$/gim, '')
+        .replace(/^\s*(yours (sincerely|faithfully|truly)|kind regards|regards|sincerely)\b.*$/gim, '')
+        .trim();
+      if (!draft) return res.status(502).json({ error: 'The NPC returned an empty draft.' });
+      return res.json({ body: draft, voice: persona.name });
+    }
+
+    const out = await draftLetterBody(session.id, db, body);
+    res.json(out);
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
+    next(e);
+  }
+});
+
+// Invent a plausible sender (company name + London address + letterhead-logo
+// brief) from this case's game info, so the GM doesn't have to. One-shot LLM,
+// behind the AI gate. The logo brief is seeded into the logo image generator.
+router.post('/sessions/:id/companies/draft', requireGM, async (req, res, next) => {
+  try {
+    const session = getAccessibleSession(req, res, req.params.id);
+    if (!session) return;
+    if (await rejectIfAiBusy(res)) return;
+    const out = await draftCompanyDetails(session.id, db, req.body || {});
+    res.json(out);
   } catch (e) {
     if (e.statusCode) return res.status(e.statusCode).json({ error: e.message });
     next(e);
