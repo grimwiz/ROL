@@ -63,6 +63,10 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
+// Nudge if the lockfile moved ahead of the installed modules (e.g. a git pull
+// advanced package-lock.json but the box hasn't reinstalled). Advisory only.
+require('./depFreshness').checkDependencyFreshness();
+
 // Startup vulnerability gate: refuse to boot on a CRITICAL npm-audit finding
 // unless launched with --cowboy-mode-on. Runs before the port binds so a
 // known-critical deploy never serves traffic.
