@@ -186,25 +186,24 @@ const SheetForm = (() => {
     return pow ? Math.round(pow / 5) + masteredSpellCount : '';
   }
 
-  // Advanced rules: MOV drops by decade from the 40s (printed p.309).
-  function ageMovAdjustment(age) {
-    const a = parseInt(age, 10);
-    if (!Number.isFinite(a) || a < 40) return 0;
-    if (a >= 80) return -5;
-    if (a >= 70) return -4;
-    if (a >= 60) return -3;
-    if (a >= 50) return -2;
-    return -1; // 40s
+  // The active ruleset pack's character subsystem (registry-backed). _ruleset is
+  // a legacy short key ('rol'/'coc'); the registry normalises and falls back to
+  // the default pack, so this is always non-null once the pack scripts load.
+  function packCharacter() {
+    const R = (typeof window !== 'undefined') && window.Rulesets;
+    const pack = R && R.get(_ruleset);
+    return (pack && pack.character) || null;
   }
 
   // Base MOV 8; Speedy → 9. Advanced rules also apply Slow-Footed (5, before
-  // age) and the age adjustment. Returns a number (>= 1).
+  // age) and the age adjustment (ageMovAdjustment now lives in the ruleset pack).
+  // Returns a number (>= 1).
   function computeMove(advantages, disadvantages, age) {
     const advs = (advantages || []).map((x) => String(x).toLowerCase());
     const diss = (disadvantages || []).map((x) => String(x).toLowerCase());
     let base = advs.some((a) => a.startsWith('speedy')) ? 9 : 8;
     if (advancedEnabled() && diss.some((d) => d.startsWith('slow-footed'))) base = 5;
-    let mov = base + (advancedEnabled() ? ageMovAdjustment(age) : 0);
+    let mov = base + (advancedEnabled() ? packCharacter().ageMovAdjustment(age) : 0);
     return mov < 1 ? 1 : mov;
   }
 
