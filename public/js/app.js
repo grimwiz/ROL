@@ -6846,6 +6846,17 @@ async function loadRulesTab() {
 
 // Lazy-load and cache each Rules view: 'core'/'advanced' return a rendered
 // rules index; 'changes' returns the advanced changelog.
+// The Rules tab is global: a game dropdown picks the system, and that system's
+// rule sets (+ RoL's derived What's New / Setting & Reference) follow on the same
+// line. The tree + availability flags come from GET /rules; each rule set's
+// content is fetched on demand by its "<game>/<dir>" key. 'changes'/'reference'
+// are the two RoL derived views.
+async function ensureRulesTree() {
+  State.rulesCache = State.rulesCache || {};
+  if (!State.rulesCache.__tree) State.rulesCache.__tree = await api.getRules();
+  return State.rulesCache.__tree;
+}
+
 async function ensureRulesData(view) {
   State.rulesCache = State.rulesCache || {};
   if (view === 'changes') {
@@ -6856,25 +6867,40 @@ async function ensureRulesData(view) {
     if (!State.rulesCache.reference) State.rulesCache.reference = await api.getRulesReference();
     return State.rulesCache.reference;
   }
-  if (!State.rulesCache[view]) {
-    State.rulesCache[view] = await api.getRules(view === 'advanced' ? 'advanced' : undefined);
-  }
+  if (!State.rulesCache[view]) State.rulesCache[view] = await api.getRulesSection(view);
   return State.rulesCache[view];
 }
+
+// Selectable views for a game: its rule sets, plus (for RoL) the derived views.
+function gameViews(game, treeData) {
+  const views = (game.ruleSets || []).map((s) => [s.key, s.label]);
+  if (game.key === 'rivers-of-london') {
+    if (treeData.advancedAvailable) views.push(['changes', "What's New"]);
+    if (treeData.referenceAvailable) views.push(['reference', 'Setting & Reference']);
+  }
+  return views;
+}
+
+window.setRulesGame = async function setRulesGame(gameKey) {
+  State.rulesGame = gameKey;
+  State.rulesView = null; // fall to the game's first view
+  await renderRulesTab();
+};
 
 window.setRulesView = async function setRulesView(view) {
   State.rulesView = view;
   await renderRulesTab();
 };
 
-function rulesViewTabsHtml(view, advancedAvailable, referenceAvailable) {
-  const tabs = [['core', 'Core']];
-  if (advancedAvailable) tabs.push(['advanced', 'Advanced'], ['changes', "What's New"]);
-  if (referenceAvailable) tabs.push(['reference', 'Setting & Reference']);
-  if (tabs.length < 2) return '';
-  return `<div class="rules-views" role="tablist">${tabs.map(([id, label]) =>
-    `<button type="button" role="tab" aria-selected="${view === id}" class="rules-view-btn${view === id ? ' active' : ''}" onclick="setRulesView('${id}')">${esc(label)}</button>`
-  ).join('')}</div>`;
+// One horizontal line: the game dropdown, then the selected game's view buttons.
+function rulesNavHtml(treeData, game, view) {
+  const select = `<select class="rules-game-select" aria-label="Game system" onchange="setRulesGame(this.value)">${
+    treeData.tree.map((g) => `<option value="${esc(g.key)}"${g.key === game.key ? ' selected' : ''}>${esc(g.label)}</option>`).join('')
+  }</select>`;
+  const btns = gameViews(game, treeData).map(([id, label]) =>
+    `<button type="button" role="tab" aria-selected="${view === id}" class="rules-view-btn${view === id ? ' active' : ''}" onclick="setRulesView('${esc(id)}')">${esc(label)}</button>`
+  ).join('');
+  return `<div class="rules-views" role="tablist">${select}${btns}</div>`;
 }
 
 const RULES_CHANGE_BADGES = {
@@ -6904,59 +6930,56 @@ function rulesChangesHtml(data) {
 async function renderRulesTab() {
   const tab = el('tab-rules');
   if (!tab) return;
-  const view = State.rulesView || 'core';
 
-  // Loading Core also tells us whether the advanced corpus is on the server.
-  let core;
+  let treeData;
   try {
-    core = await ensureRulesData('core');
+    treeData = await ensureRulesTree();
   } catch (e) {
-    tab.innerHTML = `
-      <div class="page-header"><h2>Rules Library</h2></div>
-      <div class="alert alert-danger">${esc(e.message)}</div>`;
+    tab.innerHTML = `<div class="page-header"><h2>Rules Library</h2></div><div class="alert alert-danger">${esc(e.message)}</div>`;
     return;
   }
-  const advancedAvailable = !!(core && core.advancedAvailable);
-  const referenceAvailable = !!(core && core.referenceAvailable);
-  let effectiveView = view;
-  if ((view === 'advanced' || view === 'changes') && !advancedAvailable) effectiveView = 'core';
-  if (view === 'reference' && !referenceAvailable) effectiveView = 'core';
-  State.rulesView = effectiveView;
+  const games = (treeData && treeData.tree) || [];
+  if (!games.length) {
+    tab.innerHTML = `<div class="page-header"><h2>Rules Library</h2></div><div class="empty" style="padding:1.5rem"><p>No rules are loaded on the server.</p></div>`;
+    return;
+  }
 
-  let title = core.title || 'Rules Library';
+  // Selected game: default Rivers of London, else the first discovered game.
+  const game = games.find((g) => g.key === State.rulesGame)
+    || games.find((g) => g.key === 'rivers-of-london') || games[0];
+  State.rulesGame = game.key;
+
+  // Selected view within the game; fall back to its first rule set.
+  const viewIds = gameViews(game, treeData).map(([id]) => id);
+  const view = viewIds.includes(State.rulesView) ? State.rulesView : viewIds[0];
+  State.rulesView = view;
+
+  let title = 'Rules';
   let showPrint = true;
   let bodyHtml = '';
   try {
-    if (effectiveView === 'changes') {
+    if (view === 'changes') {
       const data = await ensureRulesData('changes');
       title = data.title || "What's New in Advanced";
       showPrint = false;
-      bodyHtml = `<article class="rules-document"><div class="print-section">${rulesChangesHtml(data)}</div></article>`;
-    } else if (effectiveView === 'reference') {
+      bodyHtml = `<article class="rules-document"><div class="print-cover"><h1>${esc(title)}</h1></div><div class="print-section">${rulesChangesHtml(data)}</div></article>`;
+    } else if (view === 'reference') {
       const data = await ensureRulesData('reference');
       title = data.title || 'Setting & GM Reference';
-      bodyHtml = `<article class="rules-document">
-        <div class="print-cover"><h1>${esc(title)}</h1></div>
-        <div class="print-section">${data.html || '<p>(no setting reference found)</p>'}</div>
-      </article>`;
+      bodyHtml = `<article class="rules-document"><div class="print-cover"><h1>${esc(title)}</h1></div><div class="print-section">${data.html || '<p>(no setting reference found)</p>'}</div></article>`;
     } else {
-      const idx = await ensureRulesData(effectiveView);
+      const idx = await ensureRulesData(view);
       title = idx.title || title;
-      bodyHtml = `<article class="rules-document">
-        <div class="print-cover"><h1>${esc(idx.title || 'Rivers of London Compact Rules Reference')}</h1></div>
-        <div class="print-section">${idx.html || '<p>(no rule files found)</p>'}</div>
-      </article>`;
+      bodyHtml = `<article class="rules-document"><div class="print-cover"><h1>${esc(idx.title || title)}</h1></div><div class="print-section">${idx.html || '<p>(no rule files found)</p>'}</div></article>`;
     }
   } catch (e) {
     bodyHtml = `<div class="alert alert-danger">${esc(e.message)}</div>`;
   }
 
+  // Title shows once, at the top of the content; the header carries only the action.
   tab.innerHTML = `
-    <div class="page-header rules-print-actions">
-      <h2>${esc(title)}</h2>
-      ${showPrint ? '<button class="btn btn-primary" type="button" onclick="printRulesTab()">Print rules</button>' : ''}
-    </div>
-    ${rulesViewTabsHtml(effectiveView, advancedAvailable, referenceAvailable)}
+    ${showPrint ? `<div class="page-header rules-print-actions"><button class="btn btn-primary" type="button" onclick="printRulesTab()">Print rules</button></div>` : ''}
+    ${rulesNavHtml(treeData, game, view)}
     <div id="rules-view-body">${bodyHtml}</div>`;
 }
 

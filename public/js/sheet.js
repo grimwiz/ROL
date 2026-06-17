@@ -187,12 +187,13 @@ const SheetForm = (() => {
   }
 
   // The active ruleset pack's character subsystem (registry-backed). _ruleset is
-  // a legacy short key ('rol'/'coc'); the registry normalises and falls back to
-  // the default pack, so this is always non-null once the pack scripts load.
+  // a legacy short key ('rol'/'coc'); capability() inherits the default pack's
+  // implementation when the active pack hasn't provided its own (Call of Cthulhu
+  // currently shares the RoL sheet engine), so this is non-null once the pack
+  // scripts load.
   function packCharacter() {
     const R = (typeof window !== 'undefined') && window.Rulesets;
-    const pack = R && R.get(_ruleset);
-    return (pack && pack.character) || null;
+    return R ? R.capability(_ruleset, 'character') : null;
   }
 
   // Base MOV 8; Speedy → 9. Advanced rules also apply Slow-Footed (5, before
@@ -734,7 +735,7 @@ const SheetForm = (() => {
     <div class="sheet-section-body">
       <label style="display:block;margin-bottom:0.5rem;font-size:0.78rem;font-weight:700;color:var(--text2);">BASE STATS</label>
       <div class="characteristics-grid characteristics-grid-6">
-        ${(sizEnabled() ? ['str','con','dex','int','pow','siz'] : ['str','con','dex','int','pow']).map(s => `
+        ${packCharacter().schema.characteristics({ ruleset: _ruleset, tier: _rulesTier }).map(s => `
           <div class="char-field form-group">
             <label>${s.toUpperCase()}</label>
             ${renderStatSelect(s, d[s], readonly)}

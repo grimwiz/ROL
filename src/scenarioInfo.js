@@ -5,10 +5,10 @@ const { sheetHasCase, sheetScope, scopeNameKey } = require('./characterScope');
 const REPO_ROOT = path.join(__dirname, '..');
 const DATA_ROOT = path.join(REPO_ROOT, 'data');
 const SESSIONS_ROOT = path.join(DATA_ROOT, 'sessions');
-const GLOBAL_ROOT = path.join(REPO_ROOT, 'Rivers_of_London', 'globaldata');
+const GLOBAL_ROOT = path.join(REPO_ROOT, 'game-systems', 'rivers-of-london', 'globaldata');
 // GM-facing setting corpus extracted from the rulebook's scenario chapters.
 // Persona `lore:` tags may name files here as well as in globaldata/.
-const SCENARIO_ROOT = path.join(REPO_ROOT, 'Rivers_of_London', 'rules', 'scenario');
+const SCENARIO_ROOT = path.join(REPO_ROOT, 'game-systems', 'rivers-of-london', 'rules', 'scenario');
 const DOMESTIC_SYSTEM_DESCRIPTION = '__SYSTEM_DOMESTIC__';
 const GM_NAME = 'Stu Bentley';
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://openwebui37.dragon-net.local:11434';
@@ -2828,7 +2828,7 @@ function loadLoreFiles(loreList) {
 let _settingGroundingCache = null;
 function loadSettingGrounding() {
   if (_settingGroundingCache != null) return _settingGroundingCache;
-  const fp = path.join(SCENARIO_ROOT, 'folly-and-london.md');
+  const fp = path.join(GLOBAL_ROOT, 'folly-and-london.md');
   let text = '';
   try {
     if (fs.existsSync(fp)) text = fs.readFileSync(fp, 'utf8').replace(/<!--[\s\S]*?-->/g, '').trim();
@@ -2876,8 +2876,10 @@ function findSessionPersonaByName(session, name) {
 }
 
 // On assigning an NPC to a case, copy its canonical personality file into the
-// case's player area ("<Name> - personality.md") if no personality file for
-// that NPC exists there yet. From then on the case copy is the editable canon
+// case's GM area ("<Name> - personality.md") if no personality file for that NPC
+// exists there yet. Personality handouts are GM-only (they carry secrets, hidden
+// motives, things the character is concealing), so they must NOT land in the
+// player-readable input area. From then on the case copy is the editable canon
 // and overrides the seed. Returns true if a file was written.
 function seedNpcPersonaIntoCase(session, npcName) {
   const name = String(npcName || '').trim();
@@ -2889,7 +2891,7 @@ function seedNpcPersonaIntoCase(session, npcName) {
   if (!fs.existsSync(src)) return false;
   const paths = ensureSessionDataFolders(session);
   const safeName = name.replace(/[\/\\]/g, '-');
-  const dest = path.join(paths.input, `${safeName} - personality.md`);
+  const dest = path.join(paths.gmInput, `${safeName} - personality.md`);
   try {
     fs.copyFileSync(src, dest);
     return true;
@@ -2898,15 +2900,16 @@ function seedNpcPersonaIntoCase(session, npcName) {
   }
 }
 
-// A character's personality handout ("<Name> - personality.md" in the player
-// input area), keyed by character name. Backs the in-tab dictation editor and is
-// the same file the talk-to-character AI reads. Works for player characters and
-// GM-owned NPCs alike — the caller enforces who may write which character.
+// A character's personality handout ("<Name> - personality.md" in the GM area),
+// keyed by character name. Backs the in-tab dictation editor and is the same file
+// the talk-to-character AI reads. Personality handouts are GM-only, so they live
+// under GM/, never the player-readable input area. Works for player characters
+// and GM-owned NPCs alike — the caller enforces who may write which character.
 function characterPersonalityPath(session, charName) {
   const safe = String(charName || '').trim().replace(/[\/\\]/g, '-');
   if (!safe) return null;
   const paths = ensureSessionDataFolders(session);
-  return path.join(paths.input, `${safe} - personality.md`);
+  return path.join(paths.gmInput, `${safe} - personality.md`);
 }
 function readCharacterPersonality(session, charName) {
   const dest = characterPersonalityPath(session, charName);
@@ -2988,7 +2991,7 @@ function revertSeededFile(session, relativePath) {
   // Revert to wherever the file was seeded from (globaldata or the case's
   // canonical original), per the manifest; fall back to globaldata for any
   // legacy entry that predates provenance tracking.
-  const seedRepoRel = (m && m.source) ? m.source : normaliseSlash(path.join('Rivers_of_London', 'globaldata', rel));
+  const seedRepoRel = (m && m.source) ? m.source : normaliseSlash(path.join('game-systems', 'rivers-of-london', 'globaldata', rel));
   const seedPath = path.join(REPO_ROOT, seedRepoRel);
   if (!fs.existsSync(seedPath) || !fs.statSync(seedPath).isFile()) {
     const e = new Error('That file has no seed source to revert to.'); e.statusCode = 404; throw e;

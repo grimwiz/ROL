@@ -23,7 +23,7 @@ app.get('/js/vendor/markdown-it.min.js', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'node_modules', 'markdown-it', 'dist', 'markdown-it.min.js'));
 });
 app.use(express.static(path.join(__dirname, '..', 'public')));
-app.use('/rules-files', requireAuth, express.static(path.join(__dirname, '..', 'Rivers_of_London')));
+app.use('/rules-files', requireAuth, express.static(path.join(__dirname, '..', 'game-systems', 'rivers-of-london')));
 
 // Per-request access log. QUIET by default: only failed requests (status >= 400)
 // are logged, so real errors stand out instead of drowning under 200/304 noise.

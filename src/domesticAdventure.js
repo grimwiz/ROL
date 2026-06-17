@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const rulesRoot = path.join(__dirname, '..', 'Rivers_of_London');
+const rulesRoot = path.join(__dirname, '..', 'game-systems', 'rivers-of-london');
 const adventurePath = path.join(rulesRoot, 'The Domestic.md');
 const imageBlacklistPath = path.join(rulesRoot, 'image-blacklist.txt');
 

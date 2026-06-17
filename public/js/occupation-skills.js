@@ -1,5 +1,5 @@
 // Occupation → required skills, transcribed verbatim from the rulebook
-// Occupation Table (Rivers_of_London/rules/03-character-creation.md). Drives the
+// Occupation Table (game-systems/rivers-of-london/rules/03-character-creation.md). Drives the
 // non-blocking "required skills not yet listed" hint under the Expert skills
 // area. We never auto-add — an occupation may be a GM variant with allocated
 // skills — we only warn.

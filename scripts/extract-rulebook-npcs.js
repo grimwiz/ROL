@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Parses the bundled Rivers of London rulebook Markdown and writes one NPC
-// character-sheet JSON per named NPC into Rivers_of_London/globaldata/npcs/.
+// character-sheet JSON per named NPC into game-systems/rivers-of-london/globaldata/npcs/.
 // The rulebook is the single source of truth; re-run this whenever it changes.
 //
 //   npm run npcs:extract
@@ -14,7 +14,7 @@ const path = require('path');
 
 const REPO_ROOT = path.join(__dirname, '..');
 const RULEBOOK = path.join(REPO_ROOT, 'private', 'rulebook-source', 'cha3200_-_rivers_of_london_1.4.md');
-const OUT_DIR = path.join(REPO_ROOT, 'Rivers_of_London', 'globaldata', 'npcs');
+const OUT_DIR = path.join(REPO_ROOT, 'game-systems', 'rivers-of-london', 'globaldata', 'npcs');
 
 const COMMON_SKILL_NAMES = [
   'Athletics', 'Drive', 'Navigate', 'Observation', 'Read Person',
@@ -245,8 +245,9 @@ function parseProfile(profile) {
     disadvantages,
     combat_skills: combat.length ? combat : [{ name: 'Fighting', value: '30' }, { name: 'Firearms', value: '30' }],
     common_skills: common,
-    mandatory_skills: expert,
-    additional_skills: languages,
+    // RoL skill model: common / combat / expert. Expert skills and languages
+    // (which are expert skills too) both live under expert_skills.
+    expert_skills: expert.concat(languages),
     luck,
     damage: { hurt: false, bloodied: false, down: false, impaired: false },
     weapons: [],
@@ -290,7 +291,7 @@ function main() {
     seen.add(slug);
     fs.writeFileSync(path.join(OUT_DIR, `${slug}.json`), `${JSON.stringify(npc, null, 2)}\n`, 'utf8');
     written += 1;
-    console.log(`  ${npc.name}  (STR ${npc.sheet.str || '-'}, ${npc.sheet.common_skills.length} common / ${npc.sheet.mandatory_skills.length} expert skills, ${npc.sheet.magic_spells.length} spells)`);
+    console.log(`  ${npc.name}  (STR ${npc.sheet.str || '-'}, ${npc.sheet.common_skills.length} common / ${npc.sheet.expert_skills.length} expert skills, ${npc.sheet.magic_spells.length} spells)`);
   }
   console.log(`\nWrote ${written} NPC sheet(s) to ${path.relative(REPO_ROOT, OUT_DIR)}/`);
 }

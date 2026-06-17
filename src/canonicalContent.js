@@ -11,7 +11,7 @@ const {
 } = require('./scenarioInfo');
 
 const REPO_ROOT = path.join(__dirname, '..');
-const CANONICAL_ROOT = path.join(REPO_ROOT, 'Rivers_of_London', 'canonical');
+const CANONICAL_ROOT = path.join(REPO_ROOT, 'game-systems', 'rivers-of-london', 'canonical');
 const CANONICAL_CASES_ROOT = path.join(CANONICAL_ROOT, 'cases');
 
 const BUILT_IN_CASES = [

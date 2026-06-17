@@ -3,8 +3,8 @@ const path = require('path');
 const { sheetScope, scopeNameKey } = require('./characterScope');
 
 const REPO_ROOT = path.join(__dirname, '..');
-const NPC_DIR = path.join(REPO_ROOT, 'Rivers_of_London', 'globaldata', 'npcs');
-const CANONICAL_CASES_DIR = path.join(REPO_ROOT, 'Rivers_of_London', 'canonical', 'cases');
+const NPC_DIR = path.join(REPO_ROOT, 'game-systems', 'rivers-of-london', 'globaldata', 'npcs');
+const CANONICAL_CASES_DIR = path.join(REPO_ROOT, 'game-systems', 'rivers-of-london', 'canonical', 'cases');
 
 function slugify(value) {
   return String(value || 'npc').toLowerCase()

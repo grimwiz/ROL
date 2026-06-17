@@ -22,5 +22,20 @@
     return -1; // 40s
   }
 
-  Rulesets.register('rivers-of-london', { character: { ageMovAdjustment } });
+  // ── Sheet schema (pack-driven; replacing sizEnabled()/_ruleset toggles in
+  //    sheet.js one aspect at a time) ─────────────────────────────────────────
+  // ctx: { ruleset, tier }. NOTE: during the migration the RoL pack still answers
+  // for CoC-style cases (capability fallback), so it adds SIZ when ctx.ruleset is
+  // 'coc'. Once the Call of Cthulhu pack supplies its own schema, this stays the
+  // plain RoL set and CoC declares its own.
+  const BASE_CHARACTERISTICS = ['str', 'con', 'dex', 'int', 'pow'];
+
+  function characteristics(ctx) {
+    const coc = ctx && String(ctx.ruleset || '').toLowerCase() === 'coc';
+    return coc ? BASE_CHARACTERISTICS.concat('siz') : BASE_CHARACTERISTICS.slice();
+  }
+
+  const schema = { characteristics };
+
+  Rulesets.register('rivers-of-london', { character: { ageMovAdjustment, schema } });
 })(typeof window !== 'undefined' ? window : null);

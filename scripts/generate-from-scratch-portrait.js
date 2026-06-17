@@ -24,7 +24,7 @@ const {
   dataUrlToBuffer
 } = require('../src/portraitPipeline');
 
-const JSON_DIR = path.join(__dirname, '..', 'Rivers_of_London', 'globaldata', 'npcs');
+const JSON_DIR = path.join(__dirname, '..', 'game-systems', 'rivers-of-london', 'globaldata', 'npcs');
 const REVIEW_DIR = path.join(__dirname, '..', 'private', 'portrait-review');
 const JPEG_QUALITY = '6';
 
@@ -41,7 +41,7 @@ const ENTRIES = {
     // Karnam's authoritative sheet lives in the bookshop case, NOT globaldata —
     // writing a second copy to globaldata creates a duplicate that reimport then
     // overwrites (last file by name wins), wiping the portrait. Target the real one.
-    jsonPath: 'Rivers_of_London/canonical/cases/bookshop/npcs/pc-karnam-singh.json',
+    jsonPath: 'game-systems/rivers-of-london/canonical/cases/bookshop/npcs/pc-karnam-singh.json',
     subject: 'a British Sikh man in his late twenties with a neatly tied dark turban (dastaar) and a trimmed black beard, calm and steady, in the dark uniform of a British Metropolitan Police constable with epaulettes and a tie',
     background: 'a softly out-of-focus London police station interior'
   }

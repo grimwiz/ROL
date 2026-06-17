@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// NPC persona extraction — implements Rivers_of_London/rules/tracking/
+// NPC persona extraction — implements game-systems/rivers-of-london/rules/tracking/
 // npc-persona-extraction-method.md. Gathers name/keyword windows from the
 // PRIVATE novels in private/Books/, sends ONLY those windows to the LOCAL Ollama
 // (never a cloud model, never a web route), and writes an original-paraphrase
@@ -18,8 +18,8 @@ const { effectiveOllamaUrl, effectiveOllamaModel } = require('../src/scenarioInf
 
 const REPO = path.join(__dirname, '..');
 const BOOKS_DIR = path.join(REPO, 'private', 'Books');
-const PERSONA_DIR = path.join(REPO, 'Rivers_of_London', 'globaldata', 'npcs', 'personas');
-const NPC_DIR = path.join(REPO, 'Rivers_of_London', 'globaldata', 'npcs');
+const PERSONA_DIR = path.join(REPO, 'game-systems', 'rivers-of-london', 'globaldata', 'npcs', 'personas');
+const NPC_DIR = path.join(REPO, 'game-systems', 'rivers-of-london', 'globaldata', 'npcs');
 
 const CONTEXT_BEFORE = 2, CONTEXT_AFTER = 6;   // lines of surround per hit
 const MAX_WINDOW_CHARS = 36000;                 // cap gathered text so it stays focused + in-context

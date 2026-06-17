@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Restore local image assets referenced by Rivers_of_London/The Domestic.md."""
+"""Restore local image assets referenced by game-systems/rivers-of-london/The Domestic.md."""
 
 from __future__ import annotations
 
@@ -13,9 +13,9 @@ from urllib.parse import unquote, urlparse
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DOMESTIC_MD = ROOT / "Rivers_of_London" / "The Domestic.md"
+DOMESTIC_MD = ROOT / "game-systems" / "rivers-of-london" / "The Domestic.md"
 PRIVATE_SOURCE = ROOT / "private" / "rulebook-source"
-PUBLIC_ROOT = ROOT / "Rivers_of_London"
+PUBLIC_ROOT = ROOT / "game-systems" / "rivers-of-london"
 IMAGE_EXTENSIONS = {".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"}
 
 

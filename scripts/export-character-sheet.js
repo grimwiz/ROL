@@ -2,7 +2,7 @@
 // scripts/export-character-sheet.js
 //
 // Reads a character sheet from data/folly.db and renders it as a PDF by
-// overlaying the saved data onto the blank Rivers_of_London/RoL_Charsheet.pdf.
+// overlaying the saved data onto the blank game-systems/rivers-of-london/RoL_Charsheet.pdf.
 //
 // Usage:
 //   node scripts/export-character-sheet.js --list
@@ -18,7 +18,7 @@
 //   --json                 Print the raw sheet JSON to stdout and exit (no PDF)
 //   --pretty               When --json is set, pretty-print the JSON
 //   --db <path>            Override DB path (default: data/folly.db)
-//   --blank <path>         Override blank PDF path (default: Rivers_of_London/RoL_Charsheet.pdf)
+//   --blank <path>         Override blank PDF path (default: game-systems/rivers-of-london/RoL_Charsheet.pdf)
 //   --from-json <path>     Render straight from a sheet JSON file (skip the DB entirely)
 //   -h, --help             Show usage
 
@@ -208,7 +208,7 @@ const COORDS = {
   skillY0:     424,
   skillPitch:  20.6,
 
-  // Expert skills (additional_skills) — MIDDLE column. Same y grid.
+  // Expert skills (sheet.expert_skills) — MIDDLE column. Same y grid.
   // Measured: NAME x=213.1-312.0 (w=99), FULL x=325.9-350.4 (mid 338),
   // HALF x=353.8-377.8 (mid 366).
   expertNameX: 215, expertNameMaxW: 95,
@@ -459,16 +459,14 @@ async function buildPdf(sheet, blankPath) {
   }
 
   // Common skills (LEFT column). Names + Base are preprinted; only fill FULL + HALF.
-  // Real form stores the 9 preprinted skills in sheet.common_skills; legacy
-  // fixture uses sheet.mandatory_skills. Fall back to the latter for compat.
+  // The RoL skill model has three groups — common / combat / expert — stored in
+  // sheet.common_skills, sheet.combat_skills, sheet.expert_skills.
   const COMMON_SKILL_ORDER = ['Athletics','Drive','Navigate','Observation','Read Person','Research','Sense Vestigia','Social','Stealth'];
-  let commons;
+  let commons = [];
   if (Array.isArray(sheet.common_skills) && sheet.common_skills.length) {
     // Reorder so each slot matches its preprinted label.
     const byName = new Map(sheet.common_skills.map(s => [String(s.name || '').toLowerCase(), s]));
     commons = COMMON_SKILL_ORDER.map(n => byName.get(n.toLowerCase()) || {});
-  } else {
-    commons = Array.isArray(sheet.mandatory_skills) ? sheet.mandatory_skills : [];
   }
   for (let i = 0; i < Math.min(commons.length, 9); i += 1) {
     const y = COORDS.skillY0 + i * COORDS.skillPitch;
@@ -479,16 +477,11 @@ async function buildPdf(sheet, blankPath) {
     if (Number.isFinite(n)) dcenter(p1, font, String(Math.floor(n / 2)), COORDS.skillHalfX, y, FSS);
   }
 
-  // Expert skills (MIDDLE column). Real form splits user-typed skills across
-  // mandatory_skills + additional_skills; legacy fixture puts them all in
-  // additional_skills. Combine both when common_skills is populated.
-  const hasCommon = Array.isArray(sheet.common_skills) && sheet.common_skills.length > 0;
-  const experts = hasCommon
-    ? [].concat(
-        Array.isArray(sheet.mandatory_skills) ? sheet.mandatory_skills : [],
-        Array.isArray(sheet.additional_skills) ? sheet.additional_skills : []
-      )
-    : (Array.isArray(sheet.additional_skills) ? sheet.additional_skills : []);
+  // Expert skills (MIDDLE column) come straight from sheet.expert_skills. The old
+  // mandatory_skills / additional_skills keys were folded into expert and no
+  // longer exist; the form's collect() always emits expert_skills (migrating
+  // older sheets on load), so no legacy fallback is needed here.
+  const experts = Array.isArray(sheet.expert_skills) ? sheet.expert_skills : [];
   for (let i = 0; i < Math.min(experts.length, 9); i += 1) {
     const y = COORDS.skillY0 + i * COORDS.skillPitch;
     const s = experts[i] || {};
@@ -680,7 +673,7 @@ async function main() {
 
   const repoRoot = path.resolve(__dirname, '..');
   const dbPath    = args.db    || path.join(repoRoot, 'data', 'folly.db');
-  const blankPath = args.blank || path.join(repoRoot, 'Rivers_of_London', 'RoL_Charsheet.pdf');
+  const blankPath = args.blank || path.join(repoRoot, 'game-systems', 'rivers-of-london', 'RoL_Charsheet.pdf');
 
   // --from-json: skip the DB entirely and render straight from a JSON file.
   if (args.fromJson) {

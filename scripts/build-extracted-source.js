@@ -165,7 +165,7 @@ const header = [
   '',
   'This file is an internal staging source for LLM-assisted distillation. It is not the final extracted rules corpus and is intentionally gitignored.',
   '',
-  'The final corpus must be logically ordered, paraphrased, compact, and written into `Rivers_of_London/rules/` and `Rivers_of_London/rules/scenario/`.',
+  'The final corpus must be logically ordered, paraphrased, compact, and written into `game-systems/rivers-of-london/rules/` and `game-systems/rivers-of-london/rules/scenario/`.',
   '',
   includeBookshop
     ? 'Optional Chapter 8 scenario source is included because `--include-bookshop` was passed.'

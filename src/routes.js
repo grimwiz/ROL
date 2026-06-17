@@ -1759,8 +1759,9 @@ router.post('/sessions/:id/stat-adjustments/:adjId/clear', requireGM, (req, res)
 
 // ── Rules library ────────────────────────────────────────────────────────────
 
-const rulesRoot = path.join(__dirname, '..', 'Rivers_of_London', 'rules');
-const rulesAdvancedRoot = path.join(__dirname, '..', 'Rivers_of_London', 'rules-advanced');
+const ruleSections = require('./ruleSections');
+const rulesRoot = path.join(__dirname, '..', 'game-systems', 'rivers-of-london', 'rules');
+const rulesAdvancedRoot = path.join(__dirname, '..', 'game-systems', 'rivers-of-london', 'rules-advanced');
 
 function rulesRootForVariant(variant) {
   return variant === 'advanced' ? rulesAdvancedRoot : rulesRoot;
@@ -1833,6 +1834,37 @@ function loadRulesIndex(variant = 'core') {
   };
 }
 
+// The Rules tab is global (outside any case), so it lists every rule set the
+// catalogue auto-discovers across game-systems/ (src/ruleSections.js). RoL's
+// Core + Advanced are already surfaced as the Core/Advanced tabs above; every
+// OTHER discovered rule set (RoL Advanced Source, Call of Cthulhu GM/Player,
+// later RuneQuest) is offered as its own tab, labelled "<Game> — <Set>".
+const TOP_LEVEL_RULE_SETS = new Set(['rivers-of-london/rules', 'rivers-of-london/rules-advanced']);
+
+function extraRuleSections() {
+  return ruleSections.list()
+    .filter((s) => !TOP_LEVEL_RULE_SETS.has(s.key))
+    .map((s) => ({ key: s.key, label: `${s.gameLabel} — ${s.label}` }));
+}
+
+// Build a rendered rules index for one discovered rule set (by "<game>/<dir>"
+// key), mirroring the shape loadRulesIndex returns so the client renders it
+// identically.
+function loadSectionIndex(key) {
+  const section = ruleSections.get(key);
+  if (!section) return null;
+  const documents = listRuleDocuments(section.dir);
+  if (!documents.length) return null;
+  const title = `${section.gameLabel} — ${section.label}`;
+  const markdown = [`# ${title}`, '', ...documents.flatMap((doc) => [doc.markdown, ''])].join('\n').trim();
+  return {
+    section: section.key,
+    title,
+    sections: documents.map((doc) => ({ filename: doc.filename, title: doc.title })),
+    html: renderRulesMarkdownHtml(markdown)
+  };
+}
+
 // ── Setting & GM Reference (the rules/scenario/ corpus) ──────────────────────
 // The scenario corpus is the GM-facing setting material extracted from the
 // rulebook's scenario chapters (intro frame, Ch5 policing, Ch6 NPC index, Ch7
@@ -1844,7 +1876,8 @@ const scenarioRoot = path.join(rulesRoot, 'scenario');
 const SCENARIO_DOCS = [
   { file: 'getting-started.md', audience: 'player' },
   { file: 'policing-and-investigations.md', audience: 'player' },
-  { file: 'folly-and-london.md', audience: 'player' },
+  // folly-and-london.md moved to globaldata/ (it seeds NPC/setting grounding;
+  // kept out of the rules corpus to avoid double-feeding the LLM).
   { file: 'gm-procedures.md', audience: 'gm' },
   { file: 'npcs-and-beings.md', audience: 'gm' },
   { file: 'case-seeds.md', audience: 'gm' },
@@ -2263,20 +2296,30 @@ function rulesVariantForSession(sessionId) {
 }
 
 router.get('/rules', requireAuth, (req, res) => {
-  const variant = rulesVariantFromReq(req);
-  const rulesIndex = loadRulesIndex(variant);
-  if (!rulesIndex) {
-    return res.status(404).json({ error: 'Rules files are not available on the server.' });
+  // A non-RoL section (e.g. Call of Cthulhu) is requested by its catalog key.
+  const sectionKey = String(req.query.section || '').trim();
+  if (sectionKey) {
+    const sectionIndex = loadSectionIndex(sectionKey);
+    if (!sectionIndex) {
+      return res.status(404).json({ error: 'That rule section is not available on the server.' });
+    }
+    return res.json(sectionIndex);
   }
-  // Pre-rendered HTML lets the client embed the rules inline (no iframe) and
-  // hand the same HTML to the print-doc overlay used by Case Files → Overview.
+
+  // No section requested: return the game → rule-set tree for the Rules-tab nav
+  // (a game dropdown + that game's rule sets), plus whether RoL's derived views
+  // (What's New / Setting & Reference) are available. Each rule set's content is
+  // then fetched on demand via ?section=<game>/<dir>. No absolute paths leak.
+  const includeGm = !!(req.user && req.user.role === 'gm');
+  const tree = ruleSections.games().map((g) => ({
+    key: g.key,
+    label: g.label,
+    ruleSets: g.ruleSets.map((s) => ({ key: s.key, label: s.label }))
+  }));
   res.json({
-    variant,
-    title: rulesIndex.title,
+    tree,
     advancedAvailable: !!loadRulesIndex('advanced'),
-    referenceAvailable: !!loadReferenceIndex(req.user && req.user.role === 'gm'),
-    sections: rulesIndex.documents.map((doc) => ({ filename: doc.filename, title: doc.title })),
-    html: renderRulesMarkdownHtml(rulesIndex.markdown)
+    referenceAvailable: !!loadReferenceIndex(includeGm)
   });
 });
 
@@ -3528,7 +3571,7 @@ router.post('/sessions/:id/entities/graphic-prompt', requireGM, async (req, res,
 router.post('/sheet/render-pdf', requireAuth, async (req, res) => {
   try {
     const sheet = (req.body && typeof req.body.data === 'object' && req.body.data) || {};
-    const blankPath = path.join(__dirname, '..', 'Rivers_of_London', 'RoL_Charsheet.pdf');
+    const blankPath = path.join(__dirname, '..', 'game-systems', 'rivers-of-london', 'RoL_Charsheet.pdf');
     const pdfBytes = await buildPdf(sheet, blankPath);
     const slug = (String(sheet.name || 'character')
       .replace(/[^a-z0-9]+/gi, '_').replace(/^_|_$/g, '')) || 'character';

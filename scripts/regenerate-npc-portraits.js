@@ -31,7 +31,7 @@ const {
 } = require('../src/portraitPipeline');
 
 const SRC_DIR = path.join(__dirname, '..', 'private', 'rulebook-source', 'npc-portraits');
-const JSON_DIR = path.join(__dirname, '..', 'Rivers_of_London', 'globaldata', 'npcs');
+const JSON_DIR = path.join(__dirname, '..', 'game-systems', 'rivers-of-london', 'globaldata', 'npcs');
 const REVIEW_DIR = path.join(__dirname, '..', 'private', 'portrait-review');
 const JPEG_QUALITY = '6'; // ffmpeg -q:v (2=best .. 31=worst); ~120-160 KB at 672x768
 
