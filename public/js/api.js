@@ -80,7 +80,7 @@ const api = (() => {
       return req('GET', `/character-sheets?owner=NPC&${q}`);
     },
     createNpc: (data) => req('POST', '/character-sheets', { ...data, owner: 'NPC' }),
-    updateNpc: (id, data) => req('PUT', `/character-sheets/${id}`, data),
+    updateNpc: (id, data) => req('PUT', '/character-sheets', { id, ...data }),
     deleteNpc: (id) => req('DELETE', `/character-sheets/${id}`),
     setNpcSessions: (id, sessionIds) => req('PUT', `/character-sheets/${id}/scope`, { session_ids: sessionIds }),
     setCharacterOwner: (id, userId) => req('PUT', `/character-sheets/${id}/owner`, { user_id: userId }),
@@ -97,7 +97,7 @@ const api = (() => {
 
     getSheets: (sessionId) => req('GET', `/sessions/${sessionId}/sheets`),
     getSheet: (sessionId, userId) => req('GET', `/sessions/${sessionId}/sheets/${userId}`),
-    saveSheet: (sessionId, userId, data) => req('PUT', `/sessions/${sessionId}/sheets/${userId}`, { data }),
+    saveSheet: (sessionId, userId, data) => req('PUT', '/character-sheets', { session_id: sessionId, user_id: userId, data }),
     getSessionScenarioInfo: (sessionId, asUser) => req('GET', asUser ? `/sessions/${sessionId}/scenario-info?as_user=${encodeURIComponent(asUser)}` : `/sessions/${sessionId}/scenario-info`),
     getCharacterPersonality: (sessionId, characterId) => req('GET', `/sessions/${sessionId}/characters/${characterId}/personality`),
     saveCharacterPersonality: (sessionId, characterId, content) => req('PUT', `/sessions/${sessionId}/characters/${characterId}/personality`, { content }),

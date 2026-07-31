@@ -270,6 +270,23 @@ function findUserSheetInCase(userId, caseName) {
   return null;
 }
 
+// A character's NAME is its identity within a case — two sheets with the same name
+// in the same case are the same character, so saves address the row by name first
+// (regardless of who owns the row). Prevents duplicates like a player save missing
+// a pool-owned (user_id NULL) copy and inserting a second sheet.
+function sheetNameKey(name) { return String(name || '').trim().toLowerCase(); }
+function findSheetInCaseByName(caseName, name, excludeId) {
+  const key = sheetNameKey(name);
+  if (!key) return null;
+  const rows = db.prepare('SELECT * FROM character_sheets').all();
+  for (const row of rows) {
+    if (excludeId != null && row.id === excludeId) continue;
+    const data = parseStoredSheetData(row.data);
+    if (sheetNameKey(data.name) === key && sheetHasCase(data, caseName)) return row;
+  }
+  return null;
+}
+
 // Resolve a scope array of case names to {id, name} session rows. Names match
 // case-insensitively; entries that don't resolve to a known session are dropped.
 function sessionsForScope(scope) {
@@ -347,7 +364,7 @@ function rowToCharacter(row) {
 // Parse a character-sheet create/update body. Accepts either a full `data`
 // object or the legacy NPC shape (top-level name/role/status/etc + nested
 // `sheet`). The result always has a single merged `data` object.
-function readCharacterPayload(body) {
+function readCharacterPayload(body, requireName = true) {
   const payload = body && typeof body === 'object' ? body : {};
   let data;
   if (payload.data && typeof payload.data === 'object') {
@@ -392,10 +409,14 @@ function readCharacterPayload(body) {
     scopeExplicit = true;
   }
   const name = String(data.name || '').trim();
-  if (!name) return { error: 'name required' };
+  if (requireName && !name) return { error: 'name required' };
   data.name = name;
   const json = JSON.stringify(data);
-  if (json.length > 200000) return { error: 'sheet too large' };
+  // No per-sheet byte cap here. The player-in-case route (PUT /sessions/:id/sheets/:userId)
+  // has none, so capping ONLY this Characters-pool route meant a portrait-bearing character
+  // failed to save here while the very same sheet saved fine as a player sheet — an
+  // inconsistency, not a real limit. Both paths share the 20 MB express body backstop
+  // (src/server.js) and a TEXT column, so they now behave identically.
   return { data, json, scopeExplicit };
 }
 
@@ -570,6 +591,13 @@ router.get('/character-sheets/:id', requireGM, (req, res) => {
 router.post('/character-sheets', requireGM, (req, res) => {
   const parsed = readCharacterPayload(req.body);
   if (parsed.error) return res.status(400).json({ error: parsed.error });
+  // The name is the character's identity within a case — creating a second sheet with
+  // an existing name would duplicate (and eventually overwrite) that character.
+  for (const cn of sheetScope(parsed.data)) {
+    if (findSheetInCaseByName(cn, parsed.data.name)) {
+      return res.status(409).json({ error: `A character named "${parsed.data.name}" already exists in case "${cn}".` });
+    }
+  }
   // owner: 'NPC' (default) → user_id IS NULL. 'player' → explicit user_id.
   const ownerHint = String(req.body && req.body.owner || 'NPC').toLowerCase();
   let ownerId;
@@ -595,25 +623,103 @@ router.post('/character-sheets', requireGM, (req, res) => {
   res.status(201).json(rowToCharacter(row));
 });
 
-router.put('/character-sheets/:id', requireGM, (req, res) => {
-  const row = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Character not found' });
-  const parsed = readCharacterPayload(req.body);
-  if (parsed.error) return res.status(400).json({ error: parsed.error });
-  const beforeScope = sheetScope(parseStoredSheetData(row.data));
-  // Generic sheet saves don't carry scope (SheetForm.collect() omits it); use
-  // the dedicated /scope route to change case allocations. Preserve the
-  // existing scope here so a save doesn't drop the character off every case.
-  if (!parsed.scopeExplicit) parsed.data.scope = beforeScope;
-  const dataJson = JSON.stringify(parsed.data);
-  db.prepare("UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ?")
-    .run(dataJson, req.params.id);
-  const updated = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(req.params.id);
-  if (updated.user_id == null) {
-    const affected = [...new Set([...sessionIdsForScope(beforeScope), ...sessionIdsForScope(sheetScope(parsed.data))])];
-    regenerateNpcSummaries(db, affected);
-  }
-  res.json(rowToCharacter(updated));
+// ROL has global GMs (no per-case grants), so "is GM of this case" = "is a GM".
+// RPG Support's equivalent checks per-system grants; kept as a function with the same
+// (req, sessionId) signature so the save route below stays byte-identical across both apps.
+function isCaseGm(req) { return !!(req.user && req.user.role === 'gm'); }
+
+// THE single character-sheet save path. A sheet on screen is persisted the same
+// way regardless of who saves it — the only differences are auth and how the target
+// row is addressed, handled up front:
+//   • { id, … }                  → save that row (GM, or the owning player)
+//   • { session_id, user_id, … } → save that player's sheet in that case (upsert)
+// Both reuse readCharacterPayload for sanitisation, share scope handling, have no
+// per-sheet byte cap, and do NOT regenerate NPC prose (that's tied to creation /
+// scope changes / explicit prose regeneration, not to a stat edit).
+router.put('/character-sheets', requireAuth, (req, res, next) => {
+  try {
+    const body = req.body || {};
+    let row = null;
+    let caseName = null;
+    let insertUserId = null;
+    let requireName = true;
+
+    if (body.id != null) {
+      row = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(body.id);
+      if (!row) return res.status(404).json({ error: 'Character not found' });
+      if (req.user.role !== 'gm' && row.user_id !== req.user.id) return res.status(403).json({ error: 'Access denied' });
+    } else if (body.session_id != null && body.user_id != null) {
+      const session = db.prepare('SELECT id, name FROM sessions WHERE id = ?').get(body.session_id);
+      if (!session) return res.status(404).json({ error: 'Session not found' });
+      caseName = session.name;
+      requireName = false; // a player's sheet may be unnamed early in creation
+      if (!isCaseGm(req, body.session_id) && req.user.id !== parseInt(body.user_id, 10)) return res.status(403).json({ error: 'Access denied' });
+      if (!db.prepare('SELECT 1 FROM session_players WHERE session_id = ? AND user_id = ?').get(body.session_id, body.user_id)) {
+        return res.status(403).json({ error: 'Player not assigned to this session' });
+      }
+    } else {
+      return res.status(400).json({ error: 'Provide either id, or session_id + user_id.' });
+    }
+
+    const parsed = readCharacterPayload(body, requireName);
+    if (parsed.error) return res.status(400).json({ error: parsed.error });
+
+    if (caseName) {
+      // The name IS the character's identity within a case: a save for "Father Nearer"
+      // in this case always lands on the existing Father Nearer row — even if that row
+      // is pool-owned (user_id NULL) — so a second copy can never be created. Fall back
+      // to the user's own (possibly still unnamed) sheet in the case.
+      row = findSheetInCaseByName(caseName, parsed.data.name)
+        || findUserSheetInCase(body.user_id, caseName) || null;
+      // A name owned by a different player is a conflict for EVERYONE — including the
+      // GM, who would otherwise silently overwrite that player's character. Deliberate
+      // GM edits of an existing character go through the id-addressed path.
+      if (row && row.user_id != null && row.user_id !== parseInt(body.user_id, 10)) {
+        return res.status(409).json({ error: 'A character with that name already exists in this case and belongs to another player.' });
+      }
+      if (!row) insertUserId = parseInt(body.user_id, 10);
+    } else if (row) {
+      // id-addressed save: renaming onto a name that already exists in one of this
+      // sheet's cases would create two same-named characters — the name is the identity.
+      const scope = sheetScope(parsed.scopeExplicit ? parsed.data : parseStoredSheetData(row.data));
+      for (const cn of scope) {
+        if (findSheetInCaseByName(cn, parsed.data.name, row.id)) {
+          return res.status(409).json({ error: `A character named "${parsed.data.name}" already exists in case "${cn}".` });
+        }
+      }
+    }
+
+    // Scope: a case-addressed save keeps that case in scope (and preserves the other
+    // cases the character already belongs to); an id save preserves the existing scope
+    // unless set explicitly — case allocations are edited via the /scope route.
+    const beforeScope = row ? sheetScope(parseStoredSheetData(row.data)) : [];
+    if (caseName) parsed.data.scope = sheetScope(addCaseToScope({ ...parsed.data, scope: beforeScope }, caseName));
+    else if (!parsed.scopeExplicit) parsed.data.scope = beforeScope;
+    const dataJson = JSON.stringify(parsed.data);
+
+    let outRow;
+    if (row) {
+      db.prepare("UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ?").run(dataJson, row.id);
+      outRow = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(row.id);
+    } else {
+      const r = db.prepare("INSERT INTO character_sheets (user_id, data, updated_at) VALUES (?, ?, datetime('now'))").run(insertUserId, dataJson);
+      outRow = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(r.lastInsertRowid);
+    }
+
+    try {
+      const prev = row ? parseStoredSheetData(row.data) : {};
+      logAudit('sheet.saved', {
+        actorUserId: req.user.id, actorUsername: req.user.username, actorRole: req.user.role,
+        ip: getClientAddress(req), scope: caseName ? 'session' : 'pool', mode: row ? 'update' : 'create',
+        sessionId: body.session_id != null ? Number(body.session_id) : null, sessionName: caseName || null,
+        sheetUserId: body.user_id != null ? Number(body.user_id) : (outRow.user_id != null ? outRow.user_id : null),
+        changedFieldCount: listChangedSheetFields(prev, parsed.data).length,
+        summary: summarizeSheetData(parsed.data),
+      });
+    } catch (e) { /* audit is best-effort */ }
+
+    res.json(rowToCharacter(outRow));
+  } catch (e) { next(e); }
 });
 
 router.put('/character-sheets/:id/scope', requireGM, (req, res) => {
@@ -854,47 +960,9 @@ router.get('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
   res.json({ ...sheet, data: parseStoredSheetData(sheet.data), ruleset, rules_tier });
 });
 
-router.put('/sessions/:sessionId/sheets/:userId', requireAuth, (req, res) => {
-  const { sessionId, userId } = req.params;
-  if (req.user.role !== 'gm' && req.user.id !== parseInt(userId)) {
-    return res.status(403).json({ error: 'Access denied' });
-  }
-  const session = db.prepare('SELECT id, name FROM sessions WHERE id = ?').get(sessionId);
-  if (!session) return res.status(404).json({ error: 'Session not found' });
-  const assigned = db.prepare('SELECT 1 FROM session_players WHERE session_id = ? AND user_id = ?').get(sessionId, userId);
-  if (!assigned) return res.status(403).json({ error: 'Player not assigned to this session' });
-
-  const previousRow = findUserSheetInCase(userId, session.name);
-  const previousData = parseStoredSheetData(previousRow && previousRow.data);
-  const nextData = (req.body && typeof req.body.data === 'object' && req.body.data) || {};
-  // The session's case name must remain in the sheet's scope after save.
-  nextData.scope = sheetScope(addCaseToScope(nextData, session.name));
-  const dataJson = JSON.stringify(nextData);
-  if (previousRow) {
-    db.prepare("UPDATE character_sheets SET data = ?, updated_at = datetime('now') WHERE id = ?")
-      .run(dataJson, previousRow.id);
-  } else {
-    db.prepare("INSERT INTO character_sheets (user_id, data, updated_at) VALUES (?, ?, datetime('now'))")
-      .run(userId, dataJson);
-  }
-  const changedFields = listChangedSheetFields(previousData, nextData);
-  logAudit('sheet.saved', {
-    actorUserId: req.user.id,
-    actorUsername: req.user.username,
-    actorRole: req.user.role,
-    ip: getClientAddress(req),
-    scope: 'session',
-    mode: previousRow ? 'update' : 'create',
-    sessionId: Number(sessionId),
-    sessionName: session.name,
-    sheetUserId: Number(userId),
-    sheetUsername: getUsernameById(userId),
-    changedFieldCount: changedFields.length,
-    changedFields: changedFields.slice(0, 20),
-    summary: summarizeSheetData(nextData)
-  });
-  res.json({ ok: true });
-});
+// A player's in-case sheet is now saved through the single PUT /character-sheets
+// route (addressed by session_id + user_id). This route was a second persist path
+// that diverged from the pool save (different size cap, scope, audit) — removed.
 
 
 router.get('/adventure/domestic', requireAuth, (req, res) => {

@@ -71,13 +71,19 @@ function buildSheetData(npc) {
 }
 
 function existingNpcsByNameKey(db) {
+  // The name is a character's identity — a player-owned sheet with an archive NPC's
+  // name IS that character (e.g. a promoted/assigned NPC), so the seeder must see ALL
+  // rows here or it resurrects a stale pool copy on every restart.
   const out = new Map();
-  for (const row of db.prepare("SELECT id, data FROM character_sheets WHERE user_id IS NULL").all()) {
+  for (const row of db.prepare('SELECT id, user_id, data FROM character_sheets').all()) {
     let parsed;
     try { parsed = JSON.parse(row.data || '{}'); } catch { parsed = {}; }
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) parsed = {};
     const key = nameKey(parsed.name);
-    if (key && !out.has(key)) out.set(key, { id: row.id, data: parsed });
+    if (!key) continue;
+    const entry = { id: row.id, data: parsed, owned: row.user_id != null };
+    // Prefer the owner-less row when both exist so scope-extension still targets it.
+    if (!out.has(key) || (out.get(key).owned && !entry.owned)) out.set(key, entry);
   }
   return out;
 }
@@ -135,6 +141,9 @@ function seedNpcArchives(db, options = {}) {
       }
       const entry = existing.get(nameKey(name));
       if (entry) {
+        // A player-owned sheet with this name IS this character — leave it entirely
+        // alone (no copy, no scope edits; the seeder never touches player sheets).
+        if (entry.owned) continue;
         // Existing NPC — extend scope only, never overwrite sheet data.
         const beforeScope = sheetScope(entry.data);
         const merged = mergeScopeNames(beforeScope, archiveScope);
@@ -146,7 +155,7 @@ function seedNpcArchives(db, options = {}) {
         continue;
       }
       insert.run(JSON.stringify(data));
-      existing.set(nameKey(name), { id: null, data });
+      existing.set(nameKey(name), { id: null, data, owned: false });
       seeded += 1;
     }
   });
