@@ -423,8 +423,8 @@ function readCharacterPayload(body, requireName = true) {
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 router.post('/auth/login', async (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+  const { username, password } = req.body || {};
+  if (typeof username !== 'string' || !username.trim() || username.length > 256 || typeof password !== 'string' || !password || Buffer.byteLength(password) > 72) return res.status(400).json({ error: 'Username and password required' });
   const retryAfterMs = getRetryAfterMs(req, username);
   if (retryAfterMs > 0) {
     const retrySeconds = Math.max(1, Math.ceil(retryAfterMs / 1000));
@@ -514,8 +514,8 @@ router.put('/users/:id/sessions', requireGM, (req, res) => {
 });
 
 router.post('/users', requireGM, async (req, res) => {
-  const { username, password, role } = req.body;
-  if (!username || !password || !role) return res.status(400).json({ error: 'username, password and role required' });
+  const { username, password, role } = req.body || {};
+  if (typeof username !== 'string' || !username.trim() || username.length > 256 || typeof password !== 'string' || !password || Buffer.byteLength(password) > 72 || !role) return res.status(400).json({ error: 'username, password and role required' });
   if (!['gm', 'player'].includes(role)) return res.status(400).json({ error: 'role must be gm or player' });
 
   const hash = await bcrypt.hash(password, 12);
@@ -529,8 +529,8 @@ router.post('/users', requireGM, async (req, res) => {
 });
 
 router.put('/users/:id/password', requireGM, async (req, res) => {
-  const { password } = req.body;
-  if (!password) return res.status(400).json({ error: 'password required' });
+  const { password } = req.body || {};
+  if (typeof password !== 'string' || !password || Buffer.byteLength(password) > 72) return res.status(400).json({ error: 'password required' });
   const hash = await bcrypt.hash(password, 12);
   const result = db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, req.params.id);
   if (!result.changes) return res.status(404).json({ error: 'User not found' });
@@ -671,6 +671,9 @@ router.put('/character-sheets', requireAuth, (req, res, next) => {
       // to the user's own (possibly still unnamed) sheet in the case.
       row = findSheetInCaseByName(caseName, parsed.data.name)
         || findUserSheetInCase(body.user_id, caseName) || null;
+      if (row && !isCaseGm(req, body.session_id) && row.user_id !== req.user.id) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
       // A name owned by a different player is a conflict for EVERYONE — including the
       // GM, who would otherwise silently overwrite that player's character. Deliberate
       // GM edits of an existing character go through the id-addressed path.
@@ -694,7 +697,7 @@ router.put('/character-sheets', requireAuth, (req, res, next) => {
     // unless set explicitly — case allocations are edited via the /scope route.
     const beforeScope = row ? sheetScope(parseStoredSheetData(row.data)) : [];
     if (caseName) parsed.data.scope = sheetScope(addCaseToScope({ ...parsed.data, scope: beforeScope }, caseName));
-    else if (!parsed.scopeExplicit) parsed.data.scope = beforeScope;
+    else if (!parsed.scopeExplicit || req.user.role !== 'gm') parsed.data.scope = beforeScope;
     const dataJson = JSON.stringify(parsed.data);
 
     let outRow;

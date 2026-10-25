@@ -90,7 +90,7 @@ On first start, if no users exist, a default GM account is created:
 | `DB_PATH` | `./data/folly.db` | Path to the SQLite database file |
 | `GM_INITIAL_PASSWORD` | *(generated)* | Password for auto-created GM account (first run only) |
 | `NODE_ENV` | — | Set to `production` to enable secure cookies (requires HTTPS) |
-| `TRUST_PROXY` | `1` | Express trust-proxy hops (set to your reverse-proxy depth) |
+| `TRUST_PROXY` | `loopback` | Trusted reverse-proxy IPs/subnets. Set explicitly for a remote proxy; direct clients must not be able to spoof forwarding headers. |
 | `COMFYUI_URL` | LAN default | Base URL of a reachable ComfyUI server (portraits and GM handouts) |
 | `COMFYUI_QWEN_DIFFUSION_MODEL` | `qwen_image_2512_fp8_e4m3fn.safetensors` | Text-to-image model name in ComfyUI |
 | `COMFYUI_QWEN_EDIT_MODEL` | `qwen_image_edit_2511_fp8mixed.safetensors` | Image-edit/restyle model name in ComfyUI |

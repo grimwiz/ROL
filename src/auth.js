@@ -17,19 +17,35 @@ const COOKIE_OPTS = {
 };
 
 function signToken(user) {
-  return jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '8h' });
+  return jwt.sign({ id: user.id, authVersion: authVersion(user.password_hash) }, JWT_SECRET, { algorithm: 'HS256', expiresIn: '8h' });
+}
+
+// Bind sessions to the current credentials without putting the password hash in
+// a readable JWT. A password reset invalidates every token issued before it.
+function authVersion(passwordHash) {
+  return crypto.createHmac('sha256', JWT_SECRET).update(passwordHash).digest('base64url');
 }
 
 function requireAuth(req, res, next) {
-  const token = req.cookies[COOKIE_NAME];
+  const token = req.cookies && req.cookies[COOKIE_NAME];
   if (!token) return res.status(401).json({ error: 'Not authenticated' });
+  let claims;
   try {
-    req.user = jwt.verify(token, JWT_SECRET);
-    next();
+    claims = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
   } catch {
-    res.clearCookie(COOKIE_NAME);
+    res.clearCookie(COOKIE_NAME, { ...COOKIE_OPTS, maxAge: undefined });
     return res.status(401).json({ error: 'Session expired' });
   }
+  const user = Number.isSafeInteger(claims.id)
+    ? require('./db').prepare('SELECT id, username, role, password_hash FROM users WHERE id = ?').get(claims.id)
+    : null;
+  if (!user || claims.authVersion !== authVersion(user.password_hash)) {
+    res.clearCookie(COOKIE_NAME, { ...COOKIE_OPTS, maxAge: undefined });
+    return res.status(401).json({ error: 'Session expired' });
+  }
+  // Always use the live role: demotion and deletion take effect immediately.
+  req.user = { id: user.id, username: user.username, role: user.role };
+  next();
 }
 
 function requireGM(req, res, next) {

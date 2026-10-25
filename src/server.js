@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 app.disable('x-powered-by');
 const trustProxy = process.env.TRUST_PROXY;
-if (trustProxy === undefined || trustProxy === '') app.set('trust proxy', 1);
+if (trustProxy === undefined || trustProxy === '') app.set('trust proxy', 'loopback');
 else if (/^\d+$/.test(trustProxy)) app.set('trust proxy', Number(trustProxy));
 else if (/^(true|false)$/i.test(trustProxy)) app.set('trust proxy', /^true$/i.test(trustProxy));
 else app.set('trust proxy', trustProxy);
