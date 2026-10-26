@@ -159,6 +159,8 @@ const api = (() => {
     cancelLlm: () => req('POST', '/llm/cancel', {}),
     getLlmServices: () => req('GET', '/llm/services'),
     setLlmServices: (patch) => req('PUT', '/llm/services', patch || {}),
+    getTtsSettings: () => req('GET', '/tts/settings'),
+    setTtsSettings: (patch) => req('PUT', '/tts/settings', patch || {}),
     getComfyModels: () => req('GET', '/comfy/models'),
     setComfyModels: (patch) => req('PUT', '/comfy/models', patch || {}),
     generateHandout: (sessionId, prompt, size) => req('POST', `/sessions/${sessionId}/handouts/generate`, { prompt, size }),

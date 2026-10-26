@@ -26,6 +26,8 @@ const {
   streamGmChat,
   streamRulesChat,
   listNpcPersonas,
+  listPlayerChatPersonas,
+  resolvePlayerChatPersona,
   caseNpcNameKeys,
   resolveNpcPersona,
   seedNpcPersonaIntoCase,
@@ -46,6 +48,7 @@ const {
   saveSessionFilePrompt,
   generateEntityImagePrompt,
   effectiveOllamaModel,
+  tts,
   setOllamaModel,
   ollamaContextConfig,
   setOllamaNumCtx,
@@ -89,6 +92,7 @@ const { buildPdf } = require('../scripts/export-character-sheet');
 const { sheetScope, sheetHasCase, addCaseToScope, scopeNameKey } = require('./characterScope');
 
 const router = express.Router();
+router.use('/tts', tts.router({ requireAuth, requireGM }));
 const DOMESTIC_SYSTEM_DESCRIPTION = '__SYSTEM_DOMESTIC__';
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_MAX_ATTEMPTS_PER_IP = 25;
@@ -2535,7 +2539,8 @@ router.post('/rules/chat', requireAuth, async (req, res) => {
 // GM sees the full roster with each NPC flagged `allocated` so they can spot
 // anyone they have forgotten to assign.
 router.get('/sessions/:id/npc-personas', requireAuth, (req, res) => {
-  const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(req.params.id) || null;
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
   // Attach each NPC's portrait (from its character sheet, matched by name) so
   // the chat can show a small avatar on that character's messages.
   const portraitByName = new Map();
@@ -2546,26 +2551,33 @@ router.get('/sessions/:id/npc-personas', requireAuth, (req, res) => {
   }
   const allocated = caseNpcNameKeys(session, db);
   const isGM = req.user.role === 'gm';
+  const playerPersonas = listPlayerChatPersonas(session, db);
+  const playerNames = new Set(playerPersonas.map((p) => p.name.toLowerCase()));
   const npcs = listNpcPersonas(session)
+    .filter((n) => !playerNames.has(n.name.toLowerCase()))
     .map((n) => ({
       ...n,
+      kind: 'npc',
       allocated: allocated.has(String(n.name).toLowerCase()),
       portrait: portraitByName.get(String(n.name).toLowerCase()) || ''
     }))
     // Players only see NPCs allocated to this case; the GM sees everyone.
     .filter((n) => isGM || n.allocated);
-  res.json({ npcs });
+  res.json({ npcs: [...npcs, ...playerPersonas] });
 });
 
 router.post('/sessions/:id/npc-chat', requireAuth, async (req, res) => {
-  const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(req.params.id) || null;
+  const session = getAccessibleSession(req, res, req.params.id);
+  if (!session) return;
   const slug = req.body && typeof req.body.slug === 'string' ? req.body.slug : '';
-  const persona = resolveNpcPersona(session, slug);
+  const persona = slug.startsWith('pc:')
+    ? resolvePlayerChatPersona(session, slug, req.user, db)
+    : resolveNpcPersona(session, slug);
   if (!persona) {
-    return res.status(404).json({ error: 'That character has no personality file yet.' });
+    return res.status(404).json({ error: 'That character is unavailable in this case or has no personality file yet.' });
   }
   // Players may only talk to NPCs allocated to this case; the GM may talk to any.
-  if (req.user.role !== 'gm' && !caseNpcNameKeys(session, db).has(String(persona.name).toLowerCase())) {
+  if (persona.kind !== 'player' && req.user.role !== 'gm' && !caseNpcNameKeys(session, db).has(String(persona.name).toLowerCase())) {
     return res.status(403).json({ error: 'That character isn’t part of this case.' });
   }
   if (await gateLlmStart(res)) return;

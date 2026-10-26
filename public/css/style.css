@@ -1727,3 +1727,10 @@ body.print-mode #app { display: none !important; }
 }
 .rol-exc-toolbar button.primary { font-weight: 600; background: var(--accent, #5b5bd6); color: #fff; border-color: transparent; }
 .rol-exc-toolbar button:disabled { opacity: 0.55; cursor: default; }
+
+.scenario-reading-footer { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; margin-top:.75rem; }
+.scenario-reading-footer .scenario-sources { flex:1; min-width:0; margin:0; }
+.read-aloud-controls { display:flex; align-items:center; flex-wrap:wrap; gap:.4rem; }
+.read-aloud-controls [data-read-toggle] { display:inline-flex; align-items:center; justify-content:center; min-width:40px; min-height:40px; }
+.read-aloud-controls [hidden] { display:none; }
+.read-aloud-status { font-size:.8rem; color:var(--text2); }

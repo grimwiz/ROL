@@ -630,6 +630,7 @@ function llmPendingEnd() {
 }
 
 async function switchTab(tab, options = {}) {
+  if (window.ReadAloud) window.ReadAloud.stop();
   const { replaceUrl = false, preserveSession = false } = options;
   if (tab === 'admin' && State.user.role !== 'gm') tab = 'sessions';
   setActiveMainTab(tab);
@@ -647,6 +648,7 @@ async function switchTab(tab, options = {}) {
 }
 
 async function doLogout() {
+  if (window.ReadAloud) window.ReadAloud.stop();
   await api.logout();
   resetUserScopedState();
   State.user = null;
@@ -945,6 +947,7 @@ function storeGmPlayerId(sessionId, userId) {
 }
 
 async function openSession(sessionId, options = {}) {
+  if (window.ReadAloud) window.ReadAloud.stop();
   const { replaceUrl = false } = options;
   const session = State.sessions.find(s => s.id === sessionId);
   if (!session) {
@@ -997,6 +1000,7 @@ function setSessionPanelActive(panel) {
 }
 
 async function switchSessionPanel(sessionId, panel) {
+  if (window.ReadAloud) window.ReadAloud.stop();
   State.currentSessionPanel = panel;
   setSessionPanelActive(panel);
   const content = el('session-content');
@@ -1168,7 +1172,7 @@ function aiSupportToggleHtml(sessionId, mode) {
   return `<div class="gmchat-mode" role="group" aria-label="AI Support mode">
     ${isGM ? b('gm', '💬 GM Chat') : ''}
     ${b('rules', '📖 Rules')}
-    ${b('npc', '🎭 NPCs')}
+    ${b('npc', '🎭 Characters')}
   </div>`;
 }
 
@@ -4606,12 +4610,11 @@ function renderScenarioTags(items) {
 
 function renderScenarioSources(sources) {
   const entries = scenarioArray(sources);
-  if (!entries.length) return '';
-  return `<div class="scenario-sources">${entries.map((source) => {
+  return `<div class="scenario-reading-footer"><div class="scenario-sources">${entries.map((source) => {
     const path = typeof source === 'string' ? source : source.path;
     const note = typeof source === 'object' ? source.note || source.line || '' : '';
     return path ? `<span>${esc(path)}${note ? ` ${esc(note)}` : ''}</span>` : '';
-  }).join('')}</div>`;
+  }).join('')}</div>${window.ReadAloud ? window.ReadAloud.controls() : ''}</div>`;
 }
 
 function renderScenarioSectionActions(sectionId) {
@@ -5039,7 +5042,7 @@ window.scrollToAnchor = scrollToAnchor;
 // Falls back to legacy { body|summary } prose if no Markdown content is present.
 function renderStructuredSummary(obj, anchorPrefix, showIndex = true) {
   if (!obj || typeof obj !== 'object') {
-    return `<div class="scenario-body">${renderScenarioText(obj)}</div>`;
+    return `<div class="scenario-body">${renderScenarioText(obj)}</div>${renderScenarioSources([])}`;
   }
   const md = typeof obj.content === 'string' ? obj.content
     : (typeof obj.body === 'string' && /[#*\->]/.test(obj.body) ? obj.body : '');
@@ -5179,6 +5182,7 @@ function gmCharBrief(c, active) {
 }
 
 function gmInfoSelectChar(slug) {
+  if (window.ReadAloud) window.ReadAloud.stop();
   document.querySelectorAll('#gm-brief-tabs .sheet-tab').forEach((t) => t.classList.toggle('active', t.dataset.char === slug));
   document.querySelectorAll('#gm-brief-area .gm-brief').forEach((b) => { b.hidden = (b.id !== `gmbrief_${slug}`); });
 }
@@ -5768,6 +5772,7 @@ function clearCharStoryTabs() {
 }
 
 async function scenarioSelectPlayer(sessionId, userId, username) {
+  if (window.ReadAloud) window.ReadAloud.stop();
   storeGmPlayerId(sessionId, userId);
   clearCharStoryTabs();
   const tabBtn = el(`sptab_${userId}`);
@@ -5796,6 +5801,7 @@ window.scenarioSelectPlayer = scenarioSelectPlayer;
 // NPCs are selected the same way as players: their tab fills the shared bottom
 // area with that NPC's GM-only case knowledge (gm.npc_knowledge entry).
 async function scenarioSelectNpcStory(sessionId, npcId) {
+  if (window.ReadAloud) window.ReadAloud.stop();
   clearCharStoryTabs();
   const tabBtn = el(`sntab_${npcId}`);
   if (tabBtn) tabBtn.classList.add('active');
@@ -6587,6 +6593,11 @@ async function renderAdminLlm() {
   } catch {
     svc = { ollama: { url: '', default: '' }, comfyui: { url: '', default: '' }, whisperx: { url: '', default: '', boost_alpha: '', boost_default: 0.5 } };
   }
+  let ttsConfig;
+  try { ttsConfig = await api.getTtsSettings(); }
+  catch { ttsConfig = { url: '', default_url: 'http://tts37.dragon-net.local:8082', voice: 'default', mode: 'auto', voices: [], error: 'Could not load TTS settings.' }; }
+  const ttsVoices = Array.isArray(ttsConfig.voices) ? ttsConfig.voices.slice() : [];
+  if (!ttsVoices.some(v => v.id === ttsConfig.voice)) ttsVoices.unshift({ id: ttsConfig.voice || 'default', name: String(ttsConfig.voice || 'default').replace(/[^\p{L}\p{N}\s]/gu, ' ') });
   let cm;
   try {
     cm = await api.getComfyModels();
@@ -6698,6 +6709,31 @@ async function renderAdminLlm() {
 
     <div class="card">
       <div class="card-header"><div>
+        <div class="card-title">Read aloud</div>
+        <div class="card-sub">The microphone icon beside each subsection's sources reads that subsection. Use the TTS service or browser speech.</div>
+      </div></div>
+      <div id="tts-alert"></div>
+      <div class="form-group" style="max-width:560px">
+        <label for="tts-mode">Speech source</label>
+        <select id="tts-mode"><option value="auto"${ttsConfig.mode !== 'browser' ? ' selected' : ''}>TTS service with browser fallback</option><option value="browser"${ttsConfig.mode === 'browser' ? ' selected' : ''}>Browser speech</option></select>
+      </div>
+      <div class="form-group" style="max-width:560px">
+        <label for="tts-url">Text to speech URL</label>
+        <input type="text" id="tts-url" value="${esc(ttsConfig.url || '')}" placeholder="${esc(ttsConfig.default_url)}" spellcheck="false" autocomplete="off">
+      </div>
+      <div class="form-group" style="max-width:560px">
+        <label for="tts-voice">Voice</label>
+        <select id="tts-voice">${ttsVoices.map(v => `<option value="${esc(v.id)}"${v.id === ttsConfig.voice ? ' selected' : ''}>${esc(v.name)}</option>`).join('')}</select>
+        ${ttsConfig.error ? `<div class="card-sub">${esc(ttsConfig.error)}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center">
+        <button class="btn btn-primary" onclick="saveAdminTtsSettings(this)">Save</button>
+        <button class="btn" onclick="saveAdminTtsSettings(this, true)">Reset to defaults</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div>
         <div class="card-title">ComfyUI image models</div>
         <div class="card-sub">Which installed ComfyUI model drives each task. <strong>Generation</strong> = Random portrait &amp; GM handouts (text→image); <strong>Edit</strong> = “Style this picture” (image→image). Lists are filtered by name (“image” / “edit”); persists in <code>data/app-config.json</code>, effective immediately.</div>
       </div></div>
@@ -6719,6 +6755,17 @@ async function renderAdminLlm() {
     </div>`;
 }
 
+async function saveAdminTtsSettings(btn, reset) {
+  btn.disabled = true;
+  try {
+    await api.setTtsSettings({ url: reset ? '' : el('tts-url').value.trim(),
+      voice: reset ? 'default' : el('tts-voice').value, mode: reset ? 'auto' : el('tts-mode').value });
+    await renderAdminLlm();
+    showAlert('Read aloud settings saved.', 'success', 'tts-alert');
+  } catch (error) { showAlert(error.message || 'Could not save TTS settings.', 'danger', 'tts-alert'); }
+  finally { btn.disabled = false; }
+}
+
 async function saveAdminComfyModels(btn, reset) {
   const image = reset ? '' : ((el('cmodel-image') && el('cmodel-image').value) || '').trim();
   const edit = reset ? '' : ((el('cmodel-edit') && el('cmodel-edit').value) || '').trim();
@@ -6734,6 +6781,7 @@ async function saveAdminComfyModels(btn, reset) {
   }
 }
 window.saveAdminComfyModels = saveAdminComfyModels;
+window.saveAdminTtsSettings = saveAdminTtsSettings;
 
 async function saveAdminLlmServices(btn, reset) {
   const ollama = reset ? '' : ((el('svc-ollama') && el('svc-ollama').value) || '').trim();
@@ -7214,8 +7262,8 @@ window.clearRulesChat = clearRulesChat;
 async function renderSessionNpcChat(sessionId) {
   const tab = el('session-content');
   if (!tab) return;
-  let personas = State.npcPersonasCache[sessionId];
-  if (!personas) {
+  let personas;
+  {
     try { const r = await api.getNpcPersonas(sessionId); personas = (r && r.npcs) || []; }
     catch { personas = []; }
     State.npcPersonasCache[sessionId] = personas;
@@ -7231,24 +7279,16 @@ async function renderSessionNpcChat(sessionId) {
   const selected = personas.find((p) => p.slug === st.slug);
   st.portrait = selected ? (selected.portrait || '') : '';
   const optionFor = (p) => `<option value="${esc(p.slug)}"${p.slug === st.slug ? ' selected' : ''}>${esc(p.name)}</option>`;
-  // The GM gets the full roster (some personas come back not allocated to this
-  // case); group those apart so a forgotten allocation stands out. Players only
-  // ever receive allocated NPCs, so they see a single flat list.
-  const gmView = personas.some((p) => !p.allocated);
-  let options;
-  if (gmView) {
-    const inCase = personas.filter((p) => p.allocated).map(optionFor).join('');
-    const notInCase = personas.filter((p) => !p.allocated).map(optionFor).join('');
-    options = `${inCase ? `<optgroup label="In this case">${inCase}</optgroup>` : ''}`
-      + `${notInCase ? `<optgroup label="Not allocated to this case">${notInCase}</optgroup>` : ''}`;
-  } else {
-    options = personas.map(optionFor).join('');
-  }
+  const group = (label, entries) => entries.length
+    ? `<optgroup label="${label}">${entries.map(optionFor).join('')}</optgroup>` : '';
+  const options = group('Player characters', personas.filter((p) => p.kind === 'player'))
+    + group('NPCs in this case', personas.filter((p) => p.kind !== 'player' && p.allocated))
+    + group('NPCs not allocated to this case', personas.filter((p) => p.kind !== 'player' && !p.allocated));
   tab.innerHTML = `
     <div class="page-header">
       <div>
         <h2>AI Support</h2>
-        <p class="card-sub">Chat in character with an NPC. <em>In character — not rules advice.</em></p>
+        <p class="card-sub">Chat with an AI portrayal of a player character or NPC. Player characters draw on their Character Story, using the story content available to you. <em>In character — not rules advice.</em></p>
       </div>
       <div style="display:flex;gap:0.5rem;align-items:center">
         ${aiSupportToggleHtml(sessionId, 'npc')}
@@ -7271,14 +7311,14 @@ async function renderSessionNpcChat(sessionId) {
           <button class="btn" id="npc-chat-stop" onclick="stopNpcChat()" style="display:none">Stop</button>
         </div>
       </div>
-    </div>` : '<div class="empty" style="padding:1.5rem"><p>No NPC personalities are available yet. Add a “&lt;Name&gt; - personality.md” handout in Edit Files, or seed a canonical persona.</p></div>'}`;
+    </div>` : '<div class="empty" style="padding:1.5rem"><p>No characters are available yet. Assign a player with a case character sheet or add an NPC personality.</p></div>'}`;
   if (personas.length) { renderNpcChatLog(); setNpcChatStreaming(st.streaming); wireChatMic('npc-chat-mic', 'npc-chat-text', sessionId); }
 }
 
 function npcChatLogHtml() {
   const st = State.npcChat;
   if (!st.messages.length) {
-    return `<div class="empty" style="padding:1.5rem"><p>You're speaking with <strong>${esc(st.name || 'an NPC')}</strong>, in character. They won't answer game-rules questions or reveal your case's secrets.</p></div>`;
+    return `<div class="empty" style="padding:1.5rem"><p>You're speaking with an AI portrayal of <strong>${esc(st.name || 'a character')}</strong>. Their replies use their available case story and personality; they won't answer game-rules questions.</p></div>`;
   }
   return st.messages.map((m, i) => {
     const isNpc = m.role === 'assistant';

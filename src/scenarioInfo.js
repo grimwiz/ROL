@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const CharacterDraft = require('../public/js/character-draft');
+const { createTts } = require('./tts');
+const { createPlayerChat } = require('./playerChat');
 const { createOllamaContext } = require('./ollamaContext');
 const { sheetHasCase, sheetScope, scopeNameKey } = require('./characterScope');
 
@@ -53,6 +55,7 @@ function effectiveOllamaModel() {
   const m = readAppConfig().ollama_model;
   return (typeof m === 'string' && m.trim()) ? m.trim() : OLLAMA_MODEL;
 }
+const tts = createTts({ readConfig: readAppConfig, writeConfig: writeAppConfig });
 
 // Ollama cloud models (tag suffix `-cloud` or `:cloud`) run off-box, so they
 // neither contend for the local GPU nor need the server-side single-flight lock;
@@ -3154,6 +3157,16 @@ function listNpcPersonas(session) {
 
 // What this NPC knows about the current case, from the generated GM artifact
 // (gm.npc_knowledge). Empty until that section has been generated for the case.
+const playerChat = createPlayerChat({
+  pathsForSession: ensureSessionDataFolders,
+  personalityForName: findSessionPersonaByName,
+  filterStory(entry, character, user, session, db) {
+    const subjects = user && (user.role === 'gm' || user.id === character.user_id)
+      ? [character.name] : getViewerSubjects(user, db, session.id);
+    return filterEntryList([entry], subjects, false)[0];
+  }
+});
+
 function getNpcCaseKnowledge(session, npcName) {
   if (!session || !npcName) return '';
   try {
@@ -3257,6 +3270,8 @@ async function streamNpcChat(persona, clientMessages, opts = {}) {
     `# Persona: ${persona.name}`,
     String(persona.body || '').trim()
   ];
+  const sheet = String(persona.characterSheet || opts.characterSheet || '').trim();
+  if (sheet) parts.push('', `# ${persona.name}'s own character sheet`, sheet);
   const world = String(persona.world || '').trim();
   if (world) {
     parts.push('', '# World knowledge you carry (general setting facts within your remit — speak from it in your own words, in character; do not recite it verbatim)', world);
@@ -3858,6 +3873,8 @@ module.exports = {
   streamGmChat,
   streamRulesChat,
   listNpcPersonas,
+  listPlayerChatPersonas: playerChat.list,
+  resolvePlayerChatPersona: playerChat.resolve,
   caseNpcNameKeys,
   resolveNpcPersona,
   seedNpcPersonaIntoCase,
@@ -3875,6 +3892,7 @@ module.exports = {
   saveSessionFilePrompt,
   generateEntityImagePrompt,
   effectiveOllamaModel,
+  tts,
   isCloudLlm,
   setOllamaModel,
   ollamaContextConfig,

@@ -125,6 +125,34 @@ test('authentication and authorization regressions over HTTP', async (t) => {
       assert.equal((await request('/character-sheets', playerToken, payload, 'PUT')).status, 409);
       assert.equal(db.prepare("SELECT COUNT(*) AS n FROM character_sheets WHERE user_id = ? AND json_extract(data, '$.name') = ?").get(playerId, 'Draft character').n, 0);
     });
+    await t.test('character chat lists only assigned case sheets and rejects access to other cases', async () => {
+      const sessionId = Number(db.prepare('INSERT INTO sessions (name) VALUES (?)').run('Character chat case').lastInsertRowid);
+      const sheetId = Number(db.prepare('INSERT INTO character_sheets (user_id, data) VALUES (?, ?)').run(playerId,
+        JSON.stringify({ name: 'Chat investigator', scope: ['Character chat case'] })).lastInsertRowid);
+      const listPath = `/sessions/${sessionId}/npc-personas`;
+      const chatPath = `/sessions/${sessionId}/npc-chat`;
+      assert.equal((await request(listPath, playerToken)).status, 403);
+      assert.equal((await request(chatPath, playerToken, { slug: `pc:${sheetId}` })).status, 403);
+      db.prepare('INSERT INTO session_players (session_id,user_id) VALUES (?,?)').run(sessionId, playerId);
+      const listed = await (await request(listPath, playerToken)).json();
+      const character = listed.npcs.find(p => p.slug === `pc:${sheetId}`);
+      assert.equal(character.name, 'Chat investigator');
+      assert.equal(character.kind, 'player');
+      assert.equal(Object.hasOwn(character, 'knowledge'), false);
+      assert.equal((await request(chatPath, playerToken, { slug: 'pc:999999' })).status, 404);
+      const otherCase = Number(db.prepare('INSERT INTO sessions (name) VALUES (?)').run('Another chat case').lastInsertRowid);
+      assert.equal((await request(`/sessions/${otherCase}/npc-chat`, gmToken, { slug: `pc:${sheetId}` })).status, 404);
+      assert.equal((await request('/sessions/999999/npc-personas', gmToken)).status, 404);
+    });
+    await t.test('speech requires login, settings require GM, and invalid synthesis input is rejected', async () => {
+      assert.equal((await request('/tts/config')).status, 401);
+      assert.equal((await request('/tts/speech', null, { text: 'Read this' })).status, 401);
+      assert.equal((await request('/tts/settings', playerToken)).status, 403);
+      assert.equal((await request('/tts/settings', playerToken, { mode: 'browser' }, 'PUT')).status, 403);
+      assert.equal((await request('/tts/config', playerToken)).status, 200);
+      assert.equal((await request('/tts/speech', playerToken, { text: 'x'.repeat(1001) })).status, 400);
+      assert.equal((await request('/tts/speech', playerToken, { text: {} })).status, 400);
+    });
     await t.test('password reset and deletion invalidate existing sessions', async () => {
       assert.equal((await request(`/users/${playerId}/password`, gmToken, { password: 'replacement-password' }, 'PUT')).status, 200);
       assert.equal((await request('/auth/me', playerToken)).status, 401);

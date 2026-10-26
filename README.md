@@ -305,6 +305,32 @@ Player-defined key/value pairs that don't fit the canonical sheet — handy for 
 
 A case file's first subtab (GM only), **Overview**, is the at-a-glance session board: one card for **Player Characters** and a second, identically-formatted card for the **NPCs** allocated to this case (condition, resources, notable skills, weapons, play notes per row). The **Characters** subtab (now to the right of Overview) holds the per-player sheet tabs and the full editable sheet.
 
+## Chat with case characters
+
+In **AI Support → Characters**, the **Speaking with** picker groups player
+characters and NPCs. Player characters must have a saved sheet scoped to the case
+and an owner assigned to it. Their saved **Character Story** supplies their case
+memory; an optional personality handout and their own sheet supply characterisation.
+Regenerating Character Stories from the session files updates the next chat reply.
+The GM and owner can use the character's full story; other players receive only
+story content already shared with them. Replies are AI portrayals and do not make
+decisions or save changes for the human player. NPC case knowledge works as before.
+
+## Read a subsection aloud
+
+Each generated subsection (including the summary, individual session analyses,
+character stories and entity entries) has a microphone icon beside its source
+citations. It reads only that subsection. Click again to pause or resume, or use
+Stop. Changing page, case or selected character stops playback.
+
+**Admin → LLM → Read aloud** configures the speech source, TTS URL and voice.
+The default is `http://tts37.dragon-net.local:8082` (Chatterbox), with browser
+speech as a fallback. The voice picker lists the server's voices with punctuation
+removed from display names. Browser-only speech can also be selected. Audio is
+requested through the authenticated app; the browser does not need direct access
+to the TTS server. Only displayed subsection text is spoken; controls, hidden
+content and source filenames are excluded.
+
 ## Portrait generation and restyling (Qwen via ComfyUI)
 
 The sheet portrait controls can upload, capture from webcam, generate a new random portrait, or restyle the current image with **Style this picture**. Random portraits build a prompt from the character's occupation, age, social class, reputation, advantages, top stats, top skills, weapons, and magic tradition, then dispatch it to the configured ComfyUI server using the selected Qwen image model. Restyling uses the selected Qwen image-edit model and the case's portrait-style instructions, preserving identity while changing the art treatment. The browser polls a small set of authenticated proxy endpoints (`/api/portrait/random`, `/api/portrait/restyle`, `/api/portrait/history/:id`, `/api/portrait/view`) so the LAN-only ComfyUI server never has to be exposed.
