@@ -1211,10 +1211,11 @@ async function renderSessionAiSupport(sessionId) {
     <div class="gmchat-wrap">
       <div class="gmchat-log" id="rules-chat-log"></div>
       <div class="gmchat-compose gmchat-compose-inline">
-        <textarea id="rules-chat-text" rows="3" placeholder="Ask how a rule works, or how it applies${isGM ? ' to a character' : ' to your character'}…" onkeydown="rulesChatKey(event)"></textarea>
+        <textarea id="rules-chat-text" rows="3" placeholder="Ask a rules question, or paste a character synopsis and ask for a character…" onkeydown="rulesChatKey(event)"></textarea>
         <div class="gmchat-actions gmchat-actions-side">
           ${chatMicBtnHtml('rules-chat-mic')}
           <button class="btn btn-primary" id="rules-chat-send" onclick="sendRulesChat()">Send</button>
+          <button class="btn" id="rules-chat-generate" onclick="sendRulesChat(true)">Generate character</button>
           <button class="btn" id="rules-chat-stop" onclick="stopRulesChat()" style="display:none">Stop</button>
         </div>
       </div>
@@ -6998,15 +6999,80 @@ function printRulesTab() {
 }
 window.printRulesTab = printRulesTab;
 
+async function reviewRulesCharacter(index) {
+  const message = State.rulesChat.messages[index];
+  if (!message || !message.draft || message.sessionId !== State.currentSession) return;
+  const sessionId = message.sessionId;
+  const isGM = typeof currentCaseGm === 'function' ? currentCaseGm() : State.user.role === 'gm';
+  try {
+    let players = [{ id: State.user.id, username: State.user.username }];
+    if (isGM) {
+      const [assigned, sheets] = await Promise.all([api.getSessionPlayers(sessionId), api.getSheets(sessionId)]);
+      players = assigned.filter((p) => !sheets.some((s) => Number(s.user_id) === Number(p.id)));
+    } else {
+      const existing = await api.getSheet(sessionId, State.user.id);
+      if (existing.id) throw new Error('You already have a saved character in this case. This draft has not replaced it.');
+    }
+    if (!players.length) throw new Error('Every assigned player already has a character. Assign a player without a character before saving this draft.');
+    if (sessionId !== State.currentSession) return;
+    const settings = message.sheetSettings;
+    modal(`
+      <h2>Review character draft</h2>
+      <p class="card-sub">Check the characteristics, skills and creation choices before saving. Your GM can adjust the draft for play. Add a portrait from the character tab after saving.</p>
+      <div id="character-draft-alert"></div>
+      <div class="form-group"><label>Player</label><select id="character-draft-player">${players.map((p) => `<option value="${Number(p.id)}">${esc(p.username)}</option>`).join('')}</select></div>
+      <div id="character-draft-sheet"></div>
+      <div class="modal-actions">
+        <button class="btn" id="character-draft-cancel">Cancel</button>
+        <button class="btn btn-primary" id="character-draft-save">Save character to case</button>
+      </div>`, (bd) => {
+      bd.querySelector('.modal').style.maxWidth = '1100px';
+      SheetForm.setRuleset(settings.ruleset);
+      if (SheetForm.setRulesTier) SheetForm.setRulesTier(settings.rulesTier);
+      SheetForm.setGmEditor(isGM);
+      SheetForm.setSessionId(sessionId);
+      SheetForm.setPortraitAi(false);
+      SheetForm.render(bd.querySelector('#character-draft-sheet'), message.draft, false);
+      const portrait = bd.querySelector('.sheet-portrait-block');
+      if (portrait) portrait.style.display = 'none';
+      bd.querySelector('#character-draft-cancel').onclick = () => bd.remove();
+      bd.querySelector('#character-draft-save').onclick = async (event) => {
+        const button = event.currentTarget;
+        button.disabled = true;
+        try {
+          if (State.currentSession !== sessionId) throw new Error('Return to the original case before saving this draft.');
+          const userId = isGM ? Number(bd.querySelector('#character-draft-player').value) : State.user.id;
+          await api.createSheetDraft(sessionId, userId, CharacterDraft.normalise(SheetForm.collect()));
+          bd.remove();
+          message.draft = null;
+          renderRulesChatLog();
+          State.currentSheetUserId = userId;
+          if (isGM) storeGmPlayerId(sessionId, userId);
+          await switchSessionPanel(sessionId, 'characters');
+        } catch (error) {
+          showAlert(error.message, 'danger', 'character-draft-alert');
+          button.disabled = false;
+        }
+      };
+    });
+  } catch (error) { showAlert(error.message, 'danger', 'rules-chat-alert'); }
+}
+window.reviewRulesCharacter = reviewRulesCharacter;
+
+
 function rulesChatLogHtml() {
   const st = State.rulesChat;
   if (!st.messages.length) {
     return '<div class="empty" style="padding:1.5rem"><p>Ask about a mechanic, a roll, character creation, skills, Luck, or magic. This chat is grounded in the compact rules only.</p></div>';
   }
-  return st.messages.map((m) => {
+  return st.messages.map((m, index) => {
     const who = m.role === 'user' ? 'You' : 'Assistant';
     const markdownBody = m.role === 'assistant';
-    let body = markdownBody ? renderAiMarkdown(m.content || '') : esc(m.content || '');
+    const display = m.draft ? (m.content || '').replace(/```character-sheet\s*\n[\s\S]*?```/g, '').trim() || 'Character draft ready for review.' : m.content || '';
+    let body = markdownBody ? renderAiMarkdown(display) : esc(display);
+    if (m.draft && !m.streaming && !m.error && m.sessionId === State.currentSession) {
+      body += `<div style="margin-top:0.75rem"><button class="btn btn-primary" onclick="reviewRulesCharacter(${index})">Review character</button></div>`;
+    }
     if (m.streaming) body += '<span class="gmchat-caret">▍</span>';
     if (m.error) body += `<div class="gmchat-error">Error: ${esc(m.error)}</div>`;
     return `<div class="gmchat-msg gmchat-${m.role}"><div class="gmchat-who">${who}</div><div class="gmchat-body${markdownBody ? ' gmchat-markdown-body' : ''}">${body || '<em style="color:var(--text2)">...</em>'}</div></div>`;
@@ -7023,10 +7089,12 @@ function renderRulesChatLog() {
 function setRulesChatStreaming(on) {
   const send = el('rules-chat-send');
   const stop = el('rules-chat-stop');
+  const generate = el('rules-chat-generate');
   const text = el('rules-chat-text');
   if (send) send.style.display = on ? 'none' : '';
   if (stop) stop.style.display = on ? '' : 'none';
   if (text) text.disabled = on;
+  if (generate) generate.disabled = on;
 }
 
 function rulesChatKey(ev) {
@@ -7037,12 +7105,13 @@ function rulesChatKey(ev) {
 }
 window.rulesChatKey = rulesChatKey;
 
-async function sendRulesChat() {
+async function sendRulesChat(generateCharacter = false) {
   const st = State.rulesChat;
   if (st.streaming) return;
   const textEl = el('rules-chat-text');
-  const text = (textEl && textEl.value || '').trim();
-  if (!text) return;
+  let text = (textEl && textEl.value || '').trim();
+  if (!text) { if (generateCharacter) showAlert('Paste a character synopsis first.', 'danger', 'rules-chat-alert'); return; }
+  if (generateCharacter) text += '\n\nGenerate a complete character draft from this synopsis using this case’s rules, ready to review and save to the character sheet.';
   textEl.value = '';
   st.messages.push({ role: 'user', content: text });
   const reply = { role: 'assistant', content: '', streaming: true };
@@ -7057,6 +7126,9 @@ async function runRulesStream(reply) {
   const cut = st.messages.indexOf(reply);
   const payload = st.messages.slice(0, cut < 0 ? st.messages.length : cut)
     .map(({ role, content }) => ({ role, content }));
+  reply.sessionId = State.currentSession || null;
+  reply.draft = null;
+  reply.completed = false;
   reply.content = '';
   reply.error = null;
   reply.streaming = true;
@@ -7066,11 +7138,19 @@ async function runRulesStream(reply) {
   llmPendingBegin('Rules Chat');
   renderRulesChatLog();
   try {
+    let characterTemplate = null;
+    if (reply.sessionId) {
+      const sheet = await api.getSheet(reply.sessionId, State.user.id);
+      reply.sheetSettings = { ruleset: sheet.ruleset || 'rol', rulesTier: sheet.rules_tier || 'basic' };
+      SheetForm.setRuleset(reply.sheetSettings.ruleset);
+      if (SheetForm.setRulesTier) SheetForm.setRulesTier(reply.sheetSettings.rulesTier);
+      characterTemplate = SheetForm.blank();
+    }
     const res = await fetch('/api/rules/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
-      body: JSON.stringify({ messages: payload, sessionId: State.currentSession || null }),
+      body: JSON.stringify({ messages: payload, sessionId: reply.sessionId, characterTemplate }),
       signal: st.controller.signal
     });
     if (!res.ok) {
@@ -7086,6 +7166,7 @@ async function runRulesStream(reply) {
       if (!t) return;
       let obj;
       try { obj = JSON.parse(t); } catch { return; }
+      if (obj.done) reply.completed = true;
       if (obj.delta) { reply.content += obj.delta; renderRulesChatLog(); }
       else if (obj.error) { reply.error = obj.error; }
     };
@@ -7105,6 +7186,7 @@ async function runRulesStream(reply) {
     else reply.error = e.message || 'Rules chat failed';
   } finally {
     reply.streaming = false;
+    if (reply.completed && !reply.error && reply.sessionId) reply.draft = CharacterDraft.extract(reply.content);
     if (!reply.content && !reply.error) st.messages = st.messages.filter((m) => m !== reply);
     st.streaming = false;
     st.controller = null;

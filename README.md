@@ -425,3 +425,15 @@ If more decorations turn up later, adding them is manual — just drop the filen
 SQLite database stored at `DB_PATH`. Back it up by copying the `.db` file. The schema is deliberately small — `users`, `sessions`, the `session_players` join, and one **unified `character_sheets`** table: a player sheet is a row with an owning `user_id`, and an **NPC is the same row with `user_id` NULL** (no separate NPCs table). A character is allocated to cases by a **`scope` array of case names held inside its JSON `data`**, not by a per-session row. The rest is per-case `session_settings`, GM-assigned/self-service rolls (`session_rolls`), and per-session, per-character transient state — `session_character_state` (wounds) and `session_luck_adjustments` (temporary stat deltas), both keyed by `character_id` so one NPC catalogue row carries independent state in each case it appears in.
 
 Global app-level AI/service overrides live outside SQLite in `data/app-config.json` (Ollama model/context/base URL, ComfyUI URL, and ComfyUI image/edit model choices). Case source files and generated artifacts live under `data/sessions/<session-name-slug>/`.
+
+### Create a character from a synopsis
+
+In a case, open **AI Support → Rules**, paste a character synopsis, and choose
+**Generate character** (or ask for a complete character in the conversation).
+When the AI supplies a character draft, choose **Review character** to open the
+normal editable sheet, check the characteristics, skills and creation choices,
+then choose **Save character to case**. Players save to their own empty character
+slot; a case GM can choose an assigned player who does not yet have a sheet.
+Existing characters are never replaced by this action. The character appears in
+**Characters** with its player ownership and case allocation already set. Add a
+portrait after saving. Generated statistics and choices remain subject to GM review.

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const CharacterDraft = require('../public/js/character-draft');
 const { createOllamaContext } = require('./ollamaContext');
 const { sheetHasCase, sheetScope, scopeNameKey } = require('./characterScope');
 
@@ -2686,13 +2687,14 @@ async function streamRulesChat(rulesMarkdown, characterContext, clientMessages, 
   }
 
   const systemPrompt = [
-    'You answer Rivers of London tabletop RPG rules questions for players.',
+    'You answer tabletop RPG rules questions for the game system in the supplied reference.',
     'Use only the compact rules reference and the character JSON supplied below.',
     'Do not use, cite, or imply access to the original rulebook, private source files, scenario notes, GM-only material, or hidden app data.',
     'Respect each character ruleset. If a stat or derived value is absent from the character JSON, treat that absence as intentional and do not infer it from adjacent BRP-family games.',
     'If the compact rules reference does not contain the answer, say that the current compact rules set does not yet cover it.',
     'When the character JSON is relevant, apply the rule to that character concretely. If multiple characters are present and the question does not specify one, state which character data you used or ask the player to clarify.',
     '',
+    CharacterDraft.instructions(opts.characterTemplate),
     '# Compact Rules Reference',
     String(rulesMarkdown || '').trim(),
     '',

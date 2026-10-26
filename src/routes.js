@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 const db = require('./db');
+const CharacterDraft = require('../public/js/character-draft');
 const { signToken, requireAuth, requireGM, COOKIE_NAME, COOKIE_OPTS } = require('./auth');
 const { loadDomesticAdventure } = require('./domesticAdventure');
 const letterhead = require('./letterhead');
@@ -645,6 +646,7 @@ router.put('/character-sheets', requireAuth, (req, res, next) => {
     let insertUserId = null;
     let requireName = true;
 
+    if (body.create_only === true && body.id != null) return res.status(400).json({ error: 'A draft must be saved as a new case character.' });
     if (body.id != null) {
       row = db.prepare('SELECT * FROM character_sheets WHERE id = ?').get(body.id);
       if (!row) return res.status(404).json({ error: 'Character not found' });
@@ -662,8 +664,16 @@ router.put('/character-sheets', requireAuth, (req, res, next) => {
       return res.status(400).json({ error: 'Provide either id, or session_id + user_id.' });
     }
 
-    const parsed = readCharacterPayload(body, requireName);
+    if (body.create_only === true && (!caseName || findUserSheetInCase(body.user_id, caseName))) {
+      return res.status(409).json({ error: 'This player already has a character in this case. The draft has not replaced it.' });
+    }
+    const parsed = readCharacterPayload(body, body.create_only === true || requireName);
     if (parsed.error) return res.status(400).json({ error: parsed.error });
+    if (body.create_only === true) {
+      try { parsed.data = CharacterDraft.normalise(body.data); }
+      catch (error) { return res.status(400).json({ error: error.message }); }
+      parsed.data.meta = { ...(parsed.data.meta && typeof parsed.data.meta === 'object' && !Array.isArray(parsed.data.meta) ? parsed.data.meta : {}), system: (sessionRolls.getSettings(db, body.session_id).ruleset === 'coc' ? 'call-of-cthulhu-2e' : 'rivers-of-london') };
+    }
 
     if (caseName) {
       // The name IS the character's identity within a case: a save for "Father Nearer"
@@ -672,6 +682,7 @@ router.put('/character-sheets', requireAuth, (req, res, next) => {
       // to the user's own (possibly still unnamed) sheet in the case.
       row = findSheetInCaseByName(caseName, parsed.data.name)
         || findUserSheetInCase(body.user_id, caseName) || null;
+      if (body.create_only === true && row) return res.status(409).json({ error: 'A character with that name already exists in this case.' });
       if (row && !isCaseGm(req, body.session_id) && row.user_id !== req.user.id) {
         return res.status(403).json({ error: 'Access denied' });
       }
@@ -2486,6 +2497,7 @@ router.get('/rules/search', requireAuth, (req, res) => {
 
 router.post('/rules/chat', requireAuth, async (req, res) => {
   const sessionId = req.body && Number.isFinite(Number(req.body.sessionId)) ? Number(req.body.sessionId) : null;
+  if (sessionId && !getAccessibleSession(req, res, sessionId)) return;
   const variant = rulesVariantForSession(sessionId);
   const rulesIndex = loadRulesIndex(variant) || loadRulesIndex('core');
   if (!rulesIndex) {
@@ -2502,6 +2514,7 @@ router.post('/rules/chat', requireAuth, async (req, res) => {
   try {
     logLine('ruleschat.start', { userId: req.user.id, sessionId, rulesVariant: rulesIndex.variant });
     await streamRulesChat(rulesIndex.markdown, loadRulesCharacterContext(req.user, sessionId), req.body && req.body.messages, {
+      characterTemplate: sessionId ? req.body.characterTemplate : null,
       signal: controller.signal,
       onToken: (delta) => res.write(`${JSON.stringify({ delta })}\n`)
     });

@@ -93,6 +93,38 @@ test('authentication and authorization regressions over HTTP', async (t) => {
       assert.equal(saved.hp, 12);
       assert.deepEqual(saved.scope, ['Renamed linked case']);
     });
+    await t.test('a generated draft creates the assigned player sheet with server-owned case and ownership', async () => {
+      const caseId = Number(db.prepare('INSERT INTO sessions (name) VALUES (?)').run('Draft creation case').lastInsertRowid);
+      db.prepare('INSERT INTO session_players (session_id, user_id) VALUES (?, ?)').run(caseId, playerId);
+      const draft = { name: 'Generated investigator', occupation: 'Detective', str: '60', common_skills: [{ name: 'Observation', value: '55' }], scope: ['Other case'], user_id: gmId, owner: 'NPC', meta: { system: 'wrong-system' } };
+      const body = { session_id: caseId, user_id: playerId, create_only: true, data: draft };
+      const created = await request('/character-sheets', playerToken, body, 'PUT');
+      assert.equal(created.status, 200);
+      const result = await created.json();
+      assert.equal(result.user_id, playerId);
+      assert.equal(result.owner, 'player');
+      assert.deepEqual(result.sheet.scope, ['Draft creation case']);
+      assert.equal(result.sheet.meta.system, 'rivers-of-london');
+      assert.equal(result.sheet.common_skills[0].value, '55');
+      const get = await request(`/sessions/${caseId}/sheets/${playerId}`, playerToken);
+      assert.equal((await get.json()).data.name, 'Generated investigator');
+      const before = db.prepare('SELECT data FROM character_sheets WHERE id = ?').get(result.id).data;
+      assert.equal((await request('/character-sheets', playerToken, { ...body, data: { name: 'Replacement' } }, 'PUT')).status, 409);
+      assert.equal(db.prepare('SELECT data FROM character_sheets WHERE id = ?').get(result.id).data, before);
+    });
+    await t.test('draft saving rejects unassigned users, other owners and existing NPC names', async () => {
+      const caseId = Number(db.prepare('INSERT INTO sessions (name) VALUES (?)').run('Draft permissions case').lastInsertRowid);
+      const payload = { session_id: caseId, user_id: playerId, create_only: true, data: { name: 'Draft character' } };
+      assert.equal((await request('/character-sheets', playerToken, payload, 'PUT')).status, 403);
+      assert.equal((await request('/rules/chat', playerToken, { sessionId: caseId, messages: [{ role: 'user', content: 'Generate a character' }] })).status, 403);
+      db.prepare('INSERT INTO session_players (session_id, user_id) VALUES (?, ?)').run(caseId, playerId);
+      assert.equal((await request('/character-sheets', playerToken, { ...payload, user_id: gmId }, 'PUT')).status, 403);
+      assert.equal((await request('/character-sheets', playerToken, { ...payload, id: 1 }, 'PUT')).status, 400);
+      assert.equal((await request('/character-sheets', playerToken, { ...payload, data: { name: {} } }, 'PUT')).status, 400);
+      db.prepare('INSERT INTO character_sheets (data) VALUES (?)').run(JSON.stringify({ name: 'Draft character', scope: ['Draft permissions case'] }));
+      assert.equal((await request('/character-sheets', playerToken, payload, 'PUT')).status, 409);
+      assert.equal(db.prepare("SELECT COUNT(*) AS n FROM character_sheets WHERE user_id = ? AND json_extract(data, '$.name') = ?").get(playerId, 'Draft character').n, 0);
+    });
     await t.test('password reset and deletion invalidate existing sessions', async () => {
       assert.equal((await request(`/users/${playerId}/password`, gmToken, { password: 'replacement-password' }, 'PUT')).status, 200);
       assert.equal((await request('/auth/me', playerToken)).status, 401);

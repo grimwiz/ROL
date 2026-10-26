@@ -1730,6 +1730,21 @@ const SheetForm = (() => {
   }
 
   return {
+    blank: () => {
+      const schema = (packCharacter() || {}).schema;
+      if (schema && schema.defaults) return schema.defaults();
+      const data = merge({});
+      if (!sizEnabled()) {
+        delete data.siz;
+        for (const key of ['hp', 'san', 'build']) delete data.derived[key];
+      }
+      data.experience_package = '';
+      data.magic_tradition = '';
+      data.magic_notes = '';
+      data.magic_spells = [{ name: '', order: '', notes: '' }];
+      data.custom_fields = [{ key: '', value: '' }];
+      return data;
+    },
     render, collect, setRuleset, setRulesTier, setGmEditor, setSessionId, setPortraitAi,
     addMandatory, removeMandatory,
     addAdditional, removeAdditional,

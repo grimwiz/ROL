@@ -98,6 +98,7 @@ const api = (() => {
     getSheets: (sessionId) => req('GET', `/sessions/${sessionId}/sheets`),
     getSheet: (sessionId, userId) => req('GET', `/sessions/${sessionId}/sheets/${userId}`),
     saveSheet: (sessionId, userId, data) => req('PUT', '/character-sheets', { session_id: sessionId, user_id: userId, data }),
+    createSheetDraft: (sessionId, userId, data) => req('PUT', '/character-sheets', { session_id: sessionId, user_id: userId, data, create_only: true }),
     getSessionScenarioInfo: (sessionId, asUser) => req('GET', asUser ? `/sessions/${sessionId}/scenario-info?as_user=${encodeURIComponent(asUser)}` : `/sessions/${sessionId}/scenario-info`),
     getCharacterPersonality: (sessionId, characterId) => req('GET', `/sessions/${sessionId}/characters/${characterId}/personality`),
     saveCharacterPersonality: (sessionId, characterId, content) => req('PUT', `/sessions/${sessionId}/characters/${characterId}/personality`, { content }),
