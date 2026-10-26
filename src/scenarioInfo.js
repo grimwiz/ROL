@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { createOllamaContext } = require('./ollamaContext');
 const { sheetHasCase, sheetScope, scopeNameKey } = require('./characterScope');
 
 const REPO_ROOT = path.join(__dirname, '..');
@@ -13,8 +14,7 @@ const DOMESTIC_SYSTEM_DESCRIPTION = '__SYSTEM_DOMESTIC__';
 const GM_NAME = 'Stu Bentley';
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://openwebui37.dragon-net.local:11434';
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen3.6_36b:codex';
-const OLLAMA_NUM_CTX = parseInt(process.env.OLLAMA_NUM_CTX || '262144', 10);
-const OLLAMA_CONTEXT_OPTIONS = [131072, 262144];
+const OLLAMA_NUM_CTX = process.env.OLLAMA_NUM_CTX;
 // Hard upper bound for a single section generation (default 30 min). Streaming
 // keeps the connection alive during generation; this only catches a truly
 // stuck call. The server-side cancel endpoint also aborts through this path.
@@ -97,65 +97,14 @@ async function modelMaxContext(model) {
   return max;
 }
 
-function formatContextSize(n) {
-  const v = Number(n);
-  return Number.isFinite(v) && v >= 1024 ? `${Math.round(v / 1024)}K` : String(n);
-}
-
-function defaultOllamaNumCtx() {
-  return OLLAMA_CONTEXT_OPTIONS.includes(OLLAMA_NUM_CTX) ? OLLAMA_NUM_CTX : 262144;
-}
-
-function configuredOllamaNumCtx() {
-  const n = Number(readAppConfig().ollama_num_ctx);
-  return OLLAMA_CONTEXT_OPTIONS.includes(n) ? n : defaultOllamaNumCtx();
-}
-
-function supportedContextOptions(max) {
-  return OLLAMA_CONTEXT_OPTIONS.filter((n) => !(Number.isFinite(max) && max > 0) || n <= max);
-}
-
-async function ollamaContextConfig() {
-  const max = await modelMaxContext(effectiveOllamaModel());
-  const current = configuredOllamaNumCtx();
-  const effective = (Number.isFinite(max) && max > 0) ? Math.min(current, max) : current;
-  return {
-    current,
-    effective,
-    default: defaultOllamaNumCtx(),
-    model_max: max,
-    options: supportedContextOptions(max),
-    all_options: OLLAMA_CONTEXT_OPTIONS.slice()
-  };
-}
-
-async function setOllamaNumCtx(value) {
-  const n = Number(value);
-  if (!OLLAMA_CONTEXT_OPTIONS.includes(n)) {
-    const e = new Error('Context must be 128K or 256K');
-    e.statusCode = 400;
-    throw e;
-  }
-  const max = await modelMaxContext(effectiveOllamaModel());
-  if (Number.isFinite(max) && max > 0 && n > max) {
-    const e = new Error(`The active model only supports ${formatContextSize(max)} context`);
-    e.statusCode = 400;
-    throw e;
-  }
-  const cfg = readAppConfig();
-  cfg.ollama_num_ctx = n;
-  writeAppConfig(cfg);
-  return ollamaContextConfig();
-}
-
-// num_ctx to request: the persisted size, clamped only to the model's real
-// maximum (so we never ask for more than the model supports). The large
-// window is intentional: sections analyse a lot of source data.
-async function resolveNumCtx() {
-  const configured = configuredOllamaNumCtx();
-  const max = await modelMaxContext(effectiveOllamaModel());
-  return (Number.isFinite(max) && max > 0) ? Math.min(configured, max) : configured;
-}
+const { configuredOllamaNumCtx, ollamaContextConfig, setOllamaNumCtx, requestContextOptions } = createOllamaContext({
+  readConfig: readAppConfig,
+  writeConfig: writeAppConfig,
+  model: effectiveOllamaModel,
+  modelMaxContext,
+  isCloud: isCloudLlm,
+  envDefault: OLLAMA_NUM_CTX
+});
 
 // Per-service base-URL overrides for the AI hosts (Ollama, ComfyUI). Each
 // independently overrides its env/default base URL; a blank value clears the
@@ -1962,9 +1911,10 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
   if (label) ollamaActivity.lastSection = label;
 
   try {
-    const numCtx = await resolveNumCtx();
+    const contextOptions = await requestContextOptions();
+    const numCtx = contextOptions.num_ctx ?? null;
     const requestedModel = effectiveOllamaModel();
-    console.info(`[ai.call] requested=${requestedModel} ctx=${numCtx} label=${label ?? "?"}`);
+    console.info(`[ai.call] requested=${requestedModel} ctx=${numCtx ?? 'default'} label=${label ?? "?"}`);
     const response = await fetch(`${effectiveOllamaUrl()}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1975,7 +1925,7 @@ async function callOllama(prompt, { signal, label, onProgress, onToken, messages
         stream: true,
         keep_alive: OLLAMA_KEEP_ALIVE,
         options: {
-          num_ctx: numCtx,
+          ...contextOptions,
           temperature: 0.2
         },
         messages: Array.isArray(messages) && messages.length ? messages : [

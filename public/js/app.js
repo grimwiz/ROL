@@ -6094,7 +6094,7 @@ async function runStreamingRegen(btn, label, url, body) {
     if (obj.type === 'start') setStatus(`${obj.id} ${obj.index}/${obj.total}…`);
     else if (obj.type === 'progress') {
       const m = obj.metrics;
-      if (m) setStatus(`${progressName} prefill=${m.prompt_eval_count ?? '?'} out=${m.eval_count ?? '?'} ${m.tok_per_s ?? '?'}t/s ctx=${m.num_ctx ?? '?'}`);
+      if (m) setStatus(`${progressName} prefill=${m.prompt_eval_count ?? '?'} out=${m.eval_count ?? '?'} ${m.tok_per_s ?? '?'}t/s ctx=${m.num_ctx ?? 'default'}`);
       else if (obj.chars != null) setStatus(`${progressName} ${obj.chars}c ${Math.round((obj.elapsedMs || 0) / 1000)}s`);
       else if (obj.item_label && obj.item_index && obj.item_total) setStatus(`${obj.item_label} ${obj.item_index}/${obj.item_total}…`);
     }
@@ -6611,15 +6611,16 @@ async function renderAdminLlm() {
   const def = info.default || '';
   const options = models.slice();
   if (current && !options.some((m) => m.name === current)) options.unshift({ name: current, context: null });
-  const ctxLabel = (c) => (c == null ? '? ctx' : (c >= 1024 ? `${Math.round(c / 1024)}K` : String(c)));
+  const ctxLabel = (c) => (c == null ? '? ctx' : (c >= 1048576 && c % 1048576 === 0 ? `${c / 1048576}M` : (c >= 1024 ? `${Math.round(c / 1024)}K` : String(c))));
   const ctx = info.context || {};
-  const ctxCurrent = Number(ctx.current || ctx.effective || 0);
-  const ctxEffective = Number(ctx.effective || ctxCurrent || 0);
+  const ctxCurrent = ctx.current == null ? null : Number(ctx.current);
+  const ctxEffective = ctx.effective == null ? null : Number(ctx.effective);
   const ctxModelMax = Number(ctx.model_max);
-  const ctxAll = (Array.isArray(ctx.all_options) && ctx.all_options.length ? ctx.all_options : [131072, 262144])
+  const ctxAll = (Array.isArray(ctx.all_options) && ctx.all_options.length ? ctx.all_options : [131072, 262144, 524288, 1048576])
     .map(Number).filter((n) => Number.isFinite(n));
   const ctxSupported = Array.isArray(ctx.options) ? ctx.options.map(Number) : ctxAll;
-  const contextButtons = ctxAll.map((n) => {
+  const defaultContextButton = `<button class="btn btn-sm${ctxCurrent === null ? ' btn-primary' : ''}" onclick="saveAdminLlmContext(this, null)" title="Let Ollama choose the context; cloud models use their full hosted window">Use default</button>`;
+  const contextButtons = defaultContextButton + ctxAll.map((n) => {
     const supported = ctxSupported.includes(n);
     const selected = n === ctxCurrent || (!ctxAll.includes(ctxCurrent) && n === ctxEffective);
     const title = supported ? `Use ${ctxLabel(n)} context` : `Not supported by ${current || 'the active model'}`;
@@ -6627,7 +6628,9 @@ async function renderAdminLlm() {
   }).join('');
   const ctxSub = ctx.error
     ? `Could not read context metadata: ${esc(ctx.error)}`
-    : `Model maximum: ${Number.isFinite(ctxModelMax) && ctxModelMax > 0 ? ctxLabel(ctxModelMax) : 'unknown'}. Active request: ${ctxLabel(ctxCurrent)}${ctxEffective && ctxEffective !== ctxCurrent ? `, effective ${ctxLabel(ctxEffective)}` : ''}.`;
+    : `Model maximum: ${Number.isFinite(ctxModelMax) && ctxModelMax > 0 ? ctxLabel(ctxModelMax) : 'unknown'}. ${ctxCurrent === null
+      ? 'Using Ollama default. Cloud models use their full hosted context window.'
+      : `Active request: ${ctxLabel(ctxCurrent)}${ctxEffective && ctxEffective !== ctxCurrent ? `, effective ${ctxLabel(ctxEffective)}` : ''}.`}`;
 
   const selector = options.length
     ? `<select id="llm-model-select">
@@ -6649,7 +6652,7 @@ async function renderAdminLlm() {
       </div>
       <div class="form-group" style="max-width:520px">
         <label>LLM context</label>
-        <div style="display:flex;gap:0.5rem;align-items:center">
+        <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
           ${contextButtons}
           <span class="save-status" id="llm-context-status"></span>
         </div>
@@ -6768,7 +6771,7 @@ window.saveAdminLlmModel = saveAdminLlmModel;
 
 async function saveAdminLlmContext(btn, numCtx) {
   const status = el('llm-context-status');
-  const label = Number(numCtx) >= 1024 ? `${Math.round(Number(numCtx) / 1024)}K` : String(numCtx);
+  const label = numCtx == null ? 'Default context' : (Number(numCtx) >= 1024 ? `${Math.round(Number(numCtx) / 1024)}K` : String(numCtx));
   btn.disabled = true;
   if (status) { status.textContent = 'Saving...'; status.className = 'save-status'; }
   try {

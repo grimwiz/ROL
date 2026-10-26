@@ -83,7 +83,7 @@ On first start, if no users exist, a default GM account is created:
 | `HOST` | `0.0.0.0` | Interface to bind the HTTP server to |
 | `OLLAMA_URL` | LAN default | Base URL of the Ollama server used to (re)generate scenario information |
 | `OLLAMA_MODEL` | `qwen3.6_36b:codex` | Ollama model used for scenario regeneration |
-| `OLLAMA_NUM_CTX` | `262144` | Default context window passed to Ollama. The Admin UI can persistently choose 128K or 256K, clamped to the selected model's max context |
+| `OLLAMA_NUM_CTX` | Ollama default | Optional explicit context size in tokens. Admin offers Use default, 128K, 256K, 512K, 1M, and the model's maximum. Use default omits the override so cloud models use their full hosted context; explicit sizes are checked against model metadata. |
 | `OLLAMA_TIMEOUT_MS` | `1800000` | Hard timeout for one streamed Ollama call |
 | `OLLAMA_KEEP_ALIVE` | `30m` | Ollama model keep-alive sent with chat/generation calls |
 | `JWT_SECRET` | *(insecure default)* | Secret for signing JWTs — **must be set in production** |
