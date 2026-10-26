@@ -75,6 +75,24 @@ test('authentication and authorization regressions over HTTP', async (t) => {
       assert.equal(res.status, 403);
       assert.equal(db.prepare('SELECT data FROM character_sheets WHERE id = ?').get(npcId).data, original);
     });
+    await t.test('renamed cases still return player sheets and NPCs to the character panel', async () => {
+      const originalName = 'Character linkage regression';
+      const caseId = Number(db.prepare('INSERT INTO sessions (name) VALUES (?)').run(originalName).lastInsertRowid);
+      db.prepare('INSERT INTO session_players (session_id, user_id) VALUES (?, ?)').run(caseId, playerId);
+      const insertSheet = db.prepare('INSERT INTO character_sheets (user_id, data) VALUES (?, ?)');
+      insertSheet.run(playerId, JSON.stringify({ name: 'Linked investigator', scope: [originalName], hp: 12 }));
+      insertSheet.run(null, JSON.stringify({ name: 'Linked NPC', scope: [originalName] }));
+      require('../src/sessionIdentity').updateSessionIdentity(db, caseId, 'Renamed linked case', null);
+      const panel = await request(`/character-sheets?case_id=${caseId}`, gmToken);
+      assert.equal(panel.status, 200);
+      assert.deepEqual((await panel.json()).map((c) => c.name).sort(), ['Linked NPC', 'Linked investigator']);
+      const sheet = await request(`/sessions/${caseId}/sheets/${playerId}`, playerToken);
+      assert.equal(sheet.status, 200);
+      const saved = (await sheet.json()).data;
+      assert.equal(saved.name, 'Linked investigator');
+      assert.equal(saved.hp, 12);
+      assert.deepEqual(saved.scope, ['Renamed linked case']);
+    });
     await t.test('password reset and deletion invalidate existing sessions', async () => {
       assert.equal((await request(`/users/${playerId}/password`, gmToken, { password: 'replacement-password' }, 'PUT')).status, 200);
       assert.equal((await request('/auth/me', playerToken)).status, 401);

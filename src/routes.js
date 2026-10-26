@@ -83,6 +83,7 @@ const {
 const sessionRolls = require('./sessionRolls');
 const { DEFAULT_PORTRAIT_STYLE } = require('./portraitDefaults');
 const { resetCanonicalCase } = require('./canonicalContent');
+const { updateSessionIdentity } = require('./sessionIdentity');
 const { buildPdf } = require('../scripts/export-character-sheet');
 const { sheetScope, sheetHasCase, addCaseToScope, scopeNameKey } = require('./characterScope');
 
@@ -854,8 +855,12 @@ router.put('/sessions/:id', requireGM, (req, res) => {
   const previous = db.prepare('SELECT * FROM sessions WHERE id = ?').get(req.params.id);
   if (!previous) return res.status(404).json({ error: 'Session not found' });
   if (previous.system_key) return res.status(400).json({ error: 'Built-in case files cannot be renamed. Edit the case files or use Reset instead.' });
-  const result = db.prepare('UPDATE sessions SET name = ?, description = ? WHERE id = ?').run(name, description || null, req.params.id);
-  if (!result.changes) return res.status(404).json({ error: 'Session not found' });
+  try {
+    updateSessionIdentity(db, previous.id, name, description);
+  } catch (error) {
+    if (error.statusCode === 409) return res.status(409).json({ error: error.message });
+    throw error;
+  }
   if (previous.description !== DOMESTIC_SYSTEM_DESCRIPTION && description !== DOMESTIC_SYSTEM_DESCRIPTION) {
     renameSessionDataFolder(previous.id, previous.name, name);
     ensureSessionDataFolderById(db, previous.id);

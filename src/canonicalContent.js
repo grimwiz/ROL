@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { updateSessionIdentity } = require('./sessionIdentity');
 const {
   ensureSessionDataFolders,
   seedGlobalSessionFiles,
@@ -145,8 +146,7 @@ function ensureBuiltInCase(db, config) {
       .run(title, description || null, systemKey);
     session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(result.lastInsertRowid);
   } else if (session.name !== title || (session.description || null) !== (description || null)) {
-    db.prepare('UPDATE sessions SET name = ?, description = ? WHERE id = ?')
-      .run(title, description || null, session.id);
+    updateSessionIdentity(db, session.id, title, description);
     session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(session.id);
   }
 
