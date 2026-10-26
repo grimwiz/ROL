@@ -325,8 +325,8 @@ Stop. Changing page, case or selected character stops playback.
 
 **Admin → LLM → Read aloud** configures the speech source, TTS URL and voice.
 The default is `http://tts37.dragon-net.local:8082` (Chatterbox), with browser
-speech as a fallback. The voice picker lists the server's voices with punctuation
-removed from display names. Browser-only speech can also be selected. Audio is
+speech as a fallback. The voice picker includes only voices whose original IDs and names contain letters
+or numbers, with no spaces or punctuation. Excluded names are never relabelled. Browser-only speech can also be selected. Audio is
 requested through the authenticated app; the browser does not need direct access
 to the TTS server. Only displayed subsection text is spoken; controls, hidden
 content and source filenames are excluded.

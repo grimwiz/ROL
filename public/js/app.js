@@ -6596,8 +6596,10 @@ async function renderAdminLlm() {
   let ttsConfig;
   try { ttsConfig = await api.getTtsSettings(); }
   catch { ttsConfig = { url: '', default_url: 'http://tts37.dragon-net.local:8082', voice: 'default', mode: 'auto', voices: [], error: 'Could not load TTS settings.' }; }
-  const ttsVoices = Array.isArray(ttsConfig.voices) ? ttsConfig.voices.slice() : [];
-  if (!ttsVoices.some(v => v.id === ttsConfig.voice)) ttsVoices.unshift({ id: ttsConfig.voice || 'default', name: String(ttsConfig.voice || 'default').replace(/[^\p{L}\p{N}\s]/gu, ' ') });
+  const eligibleTtsVoice = value => typeof value === 'string' && /^[\p{L}\p{N}]{1,100}$/u.test(value);
+  const ttsVoices = (Array.isArray(ttsConfig.voices) ? ttsConfig.voices : [])
+    .filter(v => v && eligibleTtsVoice(v.id) && eligibleTtsVoice(v.name));
+  const ttsSelectedVoice = ttsVoices.some(v => v.id === ttsConfig.voice) ? ttsConfig.voice : 'default';
   let cm;
   try {
     cm = await api.getComfyModels();
@@ -6723,7 +6725,7 @@ async function renderAdminLlm() {
       </div>
       <div class="form-group" style="max-width:560px">
         <label for="tts-voice">Voice</label>
-        <select id="tts-voice">${ttsVoices.map(v => `<option value="${esc(v.id)}"${v.id === ttsConfig.voice ? ' selected' : ''}>${esc(v.name)}</option>`).join('')}</select>
+        <select id="tts-voice">${ttsVoices.map(v => `<option value="${esc(v.id)}"${v.id === ttsSelectedVoice ? ' selected' : ''}>${esc(v.name)}</option>`).join('')}</select>
         ${ttsConfig.error ? `<div class="card-sub">${esc(ttsConfig.error)}</div>` : ''}
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center">
@@ -6759,7 +6761,7 @@ async function saveAdminTtsSettings(btn, reset) {
   btn.disabled = true;
   try {
     await api.setTtsSettings({ url: reset ? '' : el('tts-url').value.trim(),
-      voice: reset ? 'default' : el('tts-voice').value, mode: reset ? 'auto' : el('tts-mode').value });
+      voice: reset ? 'default' : (el('tts-voice').value || 'default'), mode: reset ? 'auto' : el('tts-mode').value });
     await renderAdminLlm();
     showAlert('Read aloud settings saved.', 'success', 'tts-alert');
   } catch (error) { showAlert(error.message || 'Could not save TTS settings.', 'danger', 'tts-alert'); }

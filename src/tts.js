@@ -1,8 +1,7 @@
 const express = require('express');
 
 const DEFAULT_URL = process.env.TTS_URL || 'http://tts37.dragon-net.local:8082';
-const voiceId = (value) => typeof value === 'string' && /^[\p{L}\p{N}_-]{1,100}$/u.test(value);
-const voiceLabel = (value) => String(value).replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+const voiceId = (value) => typeof value === 'string' && /^[\p{L}\p{N}]{1,100}$/u.test(value);
 function error(message, statusCode = 502) { return Object.assign(new Error(message), { statusCode }); }
 
 function createTts({ readConfig, writeConfig, fetchImpl = (...args) => fetch(...args) }) {
@@ -11,7 +10,7 @@ function createTts({ readConfig, writeConfig, fetchImpl = (...args) => fetch(...
   function config() {
     const saved = readConfig();
     return { url: saved.tts_url || DEFAULT_URL, default_url: DEFAULT_URL,
-      voice: saved.tts_voice || 'default', mode: saved.tts_mode === 'browser' ? 'browser' : 'auto' };
+      voice: voiceId(saved.tts_voice) ? saved.tts_voice : 'default', mode: saved.tts_mode === 'browser' ? 'browser' : 'auto' };
   }
   function save(patch) {
     const saved = readConfig();
@@ -48,9 +47,10 @@ function createTts({ readConfig, writeConfig, fetchImpl = (...args) => fetch(...
     const seen = new Set();
     const list = (Array.isArray(raw) ? raw : []).flatMap((item) => {
       const id = typeof item === 'string' ? item : item && item.id;
-      if (!voiceId(id) || seen.has(id)) return [];
+      const name = typeof item === 'string' ? item : item && (item.name || id);
+      if (!voiceId(id) || !voiceId(name) || seen.has(id)) return [];
       seen.add(id);
-      return [{ id, name: voiceLabel(typeof item === 'object' ? item.name || id : id) }];
+      return [{ id, name }];
     });
     catalogue = { url, expires: Date.now() + 60000, voices: list };
     return list;
@@ -117,4 +117,4 @@ function createTts({ readConfig, writeConfig, fetchImpl = (...args) => fetch(...
   return { config, save, voices, speech, router };
 }
 
-module.exports = { createTts, voiceLabel };
+module.exports = { createTts };
